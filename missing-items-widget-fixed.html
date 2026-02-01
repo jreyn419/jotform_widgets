@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Missing Items Summary</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    body {
+      margin: 0;
+      padding: 10px;
+      background: #fff;
+    }
+    
+    .summary-container {
+      max-width: 100%;
+    }
+    
+    .widget-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #dc3545;
+      margin: 0 0 15px 0;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #dc3545;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .widget-title.all-ok {
+      color: #28a745;
+      border-bottom-color: #28a745;
+    }
+    
+    .title-icon {
+      font-size: 24px;
+    }
+    
+    .all-ok-message {
+      background: #d4edda;
+      border: 2px solid #28a745;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      color: #155724;
+    }
+    
+    .all-ok-message .icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    
+    .all-ok-message h3 {
+      margin: 0 0 5px 0;
+      font-size: 18px;
+    }
+    
+    .all-ok-message p {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .area-section {
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .area-header {
+      background: #f8f9fa;
+      padding: 12px 15px;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .area-count {
+      background: #dc3545;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+    
+    .shortage-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .shortage-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .shortage-item:last-child {
+      border-bottom: none;
+    }
+    
+    .shortage-item.critical {
+      background: #f8d7da;
+    }
+    
+    .shortage-item.warning {
+      background: #fff3cd;
+    }
+    
+    .item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .item-name {
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .item-category {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .item-shortage {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .shortage-detail {
+      font-size: 13px;
+      color: #666;
+    }
+    
+    .shortage-badge {
+      background: #dc3545;
+      color: white;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    
+    .shortage-badge.warning {
+      background: #ffc107;
+      color: #333;
+    }
+    
+    .total-summary {
+      background: #333;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+    
+    .total-summary h4 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .total-stats {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+    
+    .total-stat {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .stat-number {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    
+    .no-data {
+      padding: 30px;
+      text-align: center;
+      color: #666;
+    }
+    
+    .no-data .icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+      opacity: 0.5;
+    }
+    
+    .refresh-note {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      margin-top: 15px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="summary-container" id="summaryContainer">
+    <div class="widget-title" id="widgetTitle">
+      <span class="title-icon">⚠️</span>
+      <span>Missing Items Summary</span>
+    </div>
+    
+    <div id="content">
+      <div class="no-data">
+        <div class="icon">📋</div>
+        <p>Complete the area checklists to see missing items here.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =====================================================
+    // WIDGET STATE
+    // =====================================================
+    
+    var allAreaData = {};
+    
+    // =====================================================
+    // LISTEN FOR DATA FROM PARENT (postMessage)
+    // =====================================================
+    
+    window.addEventListener('message', function(event) {
+      // In production, validate event.origin
+      
+      if (event.data && event.data.type === 'updateData') {
+        console.log('Summary widget received data update');
+        allAreaData = event.data.payload || {};
+        renderSummary();
+      }
+    });
+    
+    // =====================================================
+    // RENDER SUMMARY
+    // =====================================================
+    
+    function renderSummary() {
+      var content = document.getElementById('content');
+      var titleEl = document.getElementById('widgetTitle');
+      
+      // Collect all shortages from all areas
+      var areaKeys = Object.keys(allAreaData);
+      var totalShortages = 0;
+      var totalItems = 0;
+      var hasData = false;
+      var areasWithShortages = 0;
+      
+      for (var i = 0; i < areaKeys.length; i++) {
+        var areaData = allAreaData[areaKeys[i]];
+        if (areaData && areaData.shortages) {
+          hasData = true;
+          if (areaData.shortages.length > 0) {
+            areasWithShortages++;
+            totalShortages += areaData.shortages.length;
+            for (var j = 0; j < areaData.shortages.length; j++) {
+              totalItems += areaData.shortages[j].shortage;
+            }
+          }
+        }
+      }
+      
+      // No data yet
+      if (!hasData) {
+        content.innerHTML = '<div class="no-data"><div class="icon">📋</div><p>Complete the area checklists to see missing items here.</p></div>';
+        return;
+      }
+      
+      // All OK!
+      if (totalShortages === 0) {
+        titleEl.className = 'widget-title all-ok';
+        titleEl.innerHTML = '<span class="title-icon">✅</span><span>All Items Present</span>';
+        content.innerHTML = '<div class="all-ok-message"><div class="icon">✅</div><h3>Fully Stocked!</h3><p>All inventory items are present and accounted for.</p></div>';
+        resizeWidget();
+        return;
+      }
+      
+      // Has shortages - render them
+      titleEl.className = 'widget-title';
+      titleEl.innerHTML = '<span class="title-icon">⚠️</span><span>Missing Items Summary</span>';
+      
+      var html = '';
+      
+      // Render each area
+      for (var a = 0; a < areaKeys.length; a++) {
+        var key = areaKeys[a];
+        var areaData = allAreaData[key];
+        
+        if (!areaData || !areaData.shortages || areaData.shortages.length === 0) continue;
+        
+        html += '<div class="area-section">';
+        html += '<div class="area-header">';
+        html += '<span>' + escapeHtml(areaData.area || key) + '</span>';
+        html += '<span class="area-count">' + areaData.shortages.length + ' items</span>';
+        html += '</div>';
+        html += '<ul class="shortage-list">';
+        
+        for (var s = 0; s < areaData.shortages.length; s++) {
+          var item = areaData.shortages[s];
+          var isCritical = item.actual === 0;
+          var itemClass = isCritical ? 'critical' : 'warning';
+          var badgeClass = isCritical ? '' : 'warning';
+          
+          html += '<li class="shortage-item ' + itemClass + '">';
+          html += '<div class="item-info">';
+          html += '<span class="item-name">' + escapeHtml(item.name) + '</span>';
+          if (item.category) {
+            html += '<span class="item-category">' + escapeHtml(item.category) + '</span>';
+          }
+          html += '</div>';
+          html += '<div class="item-shortage">';
+          html += '<span class="shortage-detail">Have ' + item.actual + ' of ' + item.required + '</span>';
+          html += '<span class="shortage-badge ' + badgeClass + '">Need ' + item.shortage + '</span>';
+          html += '</div>';
+          html += '</li>';
+        }
+        
+        html += '</ul>';
+        html += '</div>';
+      }
+      
+      // Total summary
+      html += '<div class="total-summary">';
+      html += '<h4>TOTAL SHORTAGES</h4>';
+      html += '<div class="total-stats">';
+      html += '<div class="total-stat"><span class="stat-number">' + areasWithShortages + '</span><span class="stat-label">Areas</span></div>';
+      html += '<div class="total-stat"><span class="stat-number">' + totalShortages + '</span><span class="stat-label">Items Short</span></div>';
+      html += '<div class="total-stat"><span class="stat-number">' + totalItems + '</span><span class="stat-label">Units Needed</span></div>';
+      html += '</div>';
+      html += '</div>';
+      
+      content.innerHTML = html;
+      resizeWidget();
+    }
+    
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    // =====================================================
+    // RESIZE WIDGET
+    // =====================================================
+    
+    function resizeWidget() {
+      if (typeof JFCustomWidget === 'undefined') return;
+      
+      setTimeout(function() {
+        var height = document.body.scrollHeight + 20;
+        JFCustomWidget.requestFrameResize({ height: height });
+      }, 100);
+    }
+    
+    // =====================================================
+    // INITIALIZATION
+    // =====================================================
+    
+    var jotformReady = false;
+    
+    function initStandalone() {
+      if (jotformReady) return;
+      console.log("Summary widget running in standalone mode - waiting for data via postMessage");
+      renderSummary();
+    }
+    
+    function init() {
+      var fallbackTimer = setTimeout(function() {
+        if (!jotformReady) {
+          initStandalone();
+        }
+      }, 500);
+      
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
+        JFCustomWidget.subscribe("ready", function(data) {
+          jotformReady = true;
+          clearTimeout(fallbackTimer);
+          
+          // Check for saved data
+          if (data.value) {
+            try {
+              allAreaData = JSON.parse(data.value);
+              renderSummary();
+            } catch (e) {}
+          }
+          
+          resizeWidget();
+        });
+        
+        JFCustomWidget.subscribe("submit", function() {
+          var allShortages = [];
+          var areaKeys = Object.keys(allAreaData);
+          
+          for (var i = 0; i < areaKeys.length; i++) {
+            var areaData = allAreaData[areaKeys[i]];
+            if (areaData && areaData.shortages) {
+              for (var j = 0; j < areaData.shortages.length; j++) {
+                allShortages.push(areaData.shortages[j]);
+              }
+            }
+          }
+          
+          var summary = {
+            totalAreasChecked: areaKeys.length,
+            totalItemsShort: allShortages.length,
+            shortages: allShortages,
+            timestamp: new Date().toISOString()
+          };
+          
+          JFCustomWidget.sendSubmit({
+            valid: true,
+            value: JSON.stringify(summary, null, 2)
+          });
+        });
+      } else {
+        clearTimeout(fallbackTimer);
+        initStandalone();
+      }
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+  
+  <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
+</body>
+</html>
