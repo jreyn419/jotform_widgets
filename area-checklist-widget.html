@@ -29,17 +29,39 @@
       max-width: 100%;
     }
     
-    .section-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #333;
+    /* ===== SECTION HEADER WITH SELECT ALL ===== */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       margin: 12px 0 8px 0;
       padding-bottom: 4px;
       border-bottom: 2px solid #ccc;
     }
     
-    .section-title:first-child {
+    .section-header:first-child {
       margin-top: 0;
+    }
+    
+    .section-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: #28a745;
+      flex-shrink: 0;
+    }
+    
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      flex: 1;
+    }
+    
+    .section-status {
+      font-size: 11px;
+      color: #666;
+      font-weight: normal;
     }
     
     .checklist-items {
@@ -84,8 +106,8 @@
     /* Checkbox - spans both rows on mobile */
     .checklist-item input[type="checkbox"] {
       grid-row: 1 / 3;
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       margin: 0;
       cursor: pointer;
       accent-color: #28a745;
@@ -113,7 +135,7 @@
       border-radius: 4px;
       min-width: 45px;
       text-align: center;
-      visibility: hidden; /* Hidden but space reserved */
+      visibility: hidden;
     }
     
     .shortage-badge.visible {
@@ -131,39 +153,86 @@
       grid-row: 2;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       margin-top: 6px;
     }
     
-    .quantity-group {
-      display: flex;
-      align-items: center;
-      gap: 4px;
+    .req-display {
       font-size: 12px;
-    }
-    
-    .quantity-label {
       color: #666;
     }
     
-    .required-amount {
-      font-weight: 600;
+    .req-display strong {
       color: #0066cc;
+      font-weight: 600;
     }
     
-    .actual-input {
-      width: 52px;
-      padding: 4px 6px;
+    /* ===== CUSTOM NUMBER STEPPER ===== */
+    .qty-stepper {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: #fff;
       border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
-      text-align: center;
+      border-radius: 6px;
+      overflow: hidden;
     }
     
-    .actual-input:focus {
+    .qty-btn {
+      width: 44px;
+      height: 44px;
+      border: none;
+      background: #f0f0f0;
+      color: #333;
+      font-size: 22px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: background 0.1s;
+    }
+    
+    .qty-btn:hover {
+      background: #e0e0e0;
+    }
+    
+    .qty-btn:active {
+      background: #d0d0d0;
+    }
+    
+    .qty-btn.decrement {
+      border-right: 1px solid #ccc;
+    }
+    
+    .qty-btn.increment {
+      border-left: 1px solid #ccc;
+    }
+    
+    .qty-value {
+      width: 50px;
+      height: 44px;
+      border: none;
+      background: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      color: #333;
+      -moz-appearance: textfield;
+    }
+    
+    .qty-value::-webkit-outer-spin-button,
+    .qty-value::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    .qty-value:focus {
       outline: none;
-      border-color: #0066cc;
-      box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+      background: #f8f9fa;
     }
     
     /* ===== SUMMARY BAR ===== */
@@ -233,12 +302,16 @@
         grid-row: 1;
       }
       
-      .quantity-group {
-        font-size: 13px;
+      .qty-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
       }
       
-      .actual-input {
-        width: 60px;
+      .qty-value {
+        width: 45px;
+        height: 40px;
+        font-size: 15px;
       }
     }
   </style>
@@ -247,7 +320,7 @@
   <div id="widgetTitle" class="widget-title">Area Checklist</div>
   
   <div class="instructions">
-    ✓ Check = fully stocked &nbsp;|&nbsp; ✗ Unchecked = enter actual qty
+    ✓ Check = fully stocked &nbsp;|&nbsp; Use ◀ ▶ to adjust quantity
   </div>
   
   <div class="checklist-container" id="checklistContainer">
@@ -290,6 +363,10 @@
     var summaryFieldId = null;
     var widgetId = null;
     var broadcastDebounceTimer = null;
+    
+    // Track items by category for select-all functionality
+    var categoryItems = {}; // { categoryName: [item1, item2, ...] }
+    var categoryElements = {}; // { categoryName: { checkbox, statusEl, itemElements: [...] } }
     
     // =====================================================
     // PARSE INVENTORY FROM SETTINGS
@@ -342,23 +419,65 @@
       }
       
       container.innerHTML = '';
+      categoryItems = {};
+      categoryElements = {};
+      
       var currentCategory = null;
       var itemsDiv = null;
       
       for (var i = 0; i < inventory.length; i++) {
         var item = inventory[i];
         
+        // Track items by category
+        if (!categoryItems[item.category]) {
+          categoryItems[item.category] = [];
+        }
+        categoryItems[item.category].push(item);
+        
         if (item.category !== currentCategory) {
           currentCategory = item.category;
           
-          var titleDiv = document.createElement('div');
-          titleDiv.className = 'section-title';
-          titleDiv.textContent = currentCategory;
-          container.appendChild(titleDiv);
+          // Create section header with select-all checkbox
+          var headerDiv = document.createElement('div');
+          headerDiv.className = 'section-header';
+          
+          var sectionCheckbox = document.createElement('input');
+          sectionCheckbox.type = 'checkbox';
+          sectionCheckbox.className = 'section-checkbox';
+          sectionCheckbox.id = 'section_cb_' + i;
+          sectionCheckbox.setAttribute('aria-label', 'Select all in ' + currentCategory);
+          
+          var titleSpan = document.createElement('span');
+          titleSpan.className = 'section-title';
+          titleSpan.textContent = currentCategory;
+          
+          var statusSpan = document.createElement('span');
+          statusSpan.className = 'section-status';
+          statusSpan.textContent = '';
+          
+          headerDiv.appendChild(sectionCheckbox);
+          headerDiv.appendChild(titleSpan);
+          headerDiv.appendChild(statusSpan);
+          container.appendChild(headerDiv);
           
           itemsDiv = document.createElement('div');
           itemsDiv.className = 'checklist-items';
+          itemsDiv.setAttribute('data-category', currentCategory);
           container.appendChild(itemsDiv);
+          
+          // Store references for this category
+          categoryElements[currentCategory] = {
+            checkbox: sectionCheckbox,
+            statusEl: statusSpan,
+            itemElements: []
+          };
+          
+          // Select-all event listener
+          (function(catName, catCheckbox) {
+            catCheckbox.addEventListener('change', function() {
+              selectAllInCategory(catName, catCheckbox.checked);
+            });
+          })(currentCategory, sectionCheckbox);
         }
         
         if (!itemStates[item.key]) {
@@ -388,38 +507,44 @@
         var qtyDiv = document.createElement('div');
         qtyDiv.className = 'item-quantities';
         
-        // Required amount
-        var reqGroup = document.createElement('div');
-        reqGroup.className = 'quantity-group';
-        var reqLabel = document.createElement('span');
-        reqLabel.className = 'quantity-label';
-        reqLabel.textContent = 'Req:';
-        var reqAmount = document.createElement('span');
-        reqAmount.className = 'required-amount';
-        reqAmount.textContent = item.required;
-        reqGroup.appendChild(reqLabel);
-        reqGroup.appendChild(reqAmount);
+        // Required display
+        var reqDisplay = document.createElement('span');
+        reqDisplay.className = 'req-display';
+        reqDisplay.innerHTML = 'Need: <strong>' + item.required + '</strong>';
         
-        // Actual amount input
-        var actGroup = document.createElement('div');
-        actGroup.className = 'quantity-group';
-        var actLabel = document.createElement('span');
-        actLabel.className = 'quantity-label';
-        actLabel.textContent = 'Actual:';
-        var actInput = document.createElement('input');
-        actInput.type = 'number';
-        actInput.className = 'actual-input';
-        actInput.min = '0';
-        actInput.max = '9999';
-        actInput.value = state.checked ? item.required : state.actual;
-        actInput.id = 'act_' + i;
-        actGroup.appendChild(actLabel);
-        actGroup.appendChild(actInput);
+        // Custom stepper
+        var stepper = document.createElement('div');
+        stepper.className = 'qty-stepper';
         
-        qtyDiv.appendChild(reqGroup);
-        qtyDiv.appendChild(actGroup);
+        var decrementBtn = document.createElement('button');
+        decrementBtn.type = 'button';
+        decrementBtn.className = 'qty-btn decrement';
+        decrementBtn.textContent = '−';
+        decrementBtn.setAttribute('aria-label', 'Decrease quantity');
         
-        // Shortage badge - always present, visibility toggled
+        var valueInput = document.createElement('input');
+        valueInput.type = 'number';
+        valueInput.className = 'qty-value';
+        valueInput.min = '0';
+        valueInput.max = '9999';
+        valueInput.value = state.checked ? item.required : state.actual;
+        valueInput.id = 'act_' + i;
+        valueInput.setAttribute('aria-label', 'Actual quantity');
+        
+        var incrementBtn = document.createElement('button');
+        incrementBtn.type = 'button';
+        incrementBtn.className = 'qty-btn increment';
+        incrementBtn.textContent = '+';
+        incrementBtn.setAttribute('aria-label', 'Increase quantity');
+        
+        stepper.appendChild(decrementBtn);
+        stepper.appendChild(valueInput);
+        stepper.appendChild(incrementBtn);
+        
+        qtyDiv.appendChild(reqDisplay);
+        qtyDiv.appendChild(stepper);
+        
+        // Shortage badge
         var badge = document.createElement('span');
         badge.className = 'shortage-badge';
         badge.id = 'badge_' + i;
@@ -433,23 +558,21 @@
         
         itemsDiv.appendChild(itemDiv);
         
+        // Store element reference for select-all
+        categoryElements[item.category].itemElements.push({
+          item: item,
+          checkbox: checkbox,
+          valueInput: valueInput,
+          itemDiv: itemDiv,
+          badge: badge
+        });
+        
         // Event listeners
-        (function(key, required, cb, input, div, badgeEl) {
-          cb.addEventListener('change', function() {
-            if (cb.checked) {
-              input.value = required;
-              itemStates[key] = { checked: true, actual: required };
-            } else {
-              itemStates[key].checked = false;
-            }
-            updateItemClass(div, itemStates[key], required);
-            updateBadge(badgeEl, itemStates[key], required);
-            updateSummary();
-            broadcastDataDebounced();
-          });
+        (function(key, required, cb, input, div, badgeEl, decBtn, incBtn, catName) {
           
-          input.addEventListener('input', function() {
-            var val = parseInt(input.value, 10) || 0;
+          function updateFromValue(val) {
+            val = Math.max(0, Math.min(9999, val));
+            input.value = val;
             itemStates[key].actual = val;
             
             if (val >= required) {
@@ -463,13 +586,141 @@
             updateItemClass(div, itemStates[key], required);
             updateBadge(badgeEl, itemStates[key], required);
             updateSummary();
+            updateCategoryCheckbox(catName);
+            broadcastDataDebounced();
+          }
+          
+          cb.addEventListener('change', function() {
+            if (cb.checked) {
+              input.value = required;
+              itemStates[key] = { checked: true, actual: required };
+            } else {
+              itemStates[key].checked = false;
+            }
+            updateItemClass(div, itemStates[key], required);
+            updateBadge(badgeEl, itemStates[key], required);
+            updateSummary();
+            updateCategoryCheckbox(catName);
             broadcastDataDebounced();
           });
-        })(item.key, item.required, checkbox, actInput, itemDiv, badge);
+          
+          input.addEventListener('input', function() {
+            var val = parseInt(input.value, 10) || 0;
+            updateFromValue(val);
+          });
+          
+          input.addEventListener('blur', function() {
+            var val = parseInt(input.value, 10) || 0;
+            input.value = val;
+          });
+          
+          decBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var val = parseInt(input.value, 10) || 0;
+            updateFromValue(val - 1);
+          });
+          
+          incBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var val = parseInt(input.value, 10) || 0;
+            updateFromValue(val + 1);
+          });
+          
+        })(item.key, item.required, checkbox, valueInput, itemDiv, badge, decrementBtn, incrementBtn, item.category);
       }
       
       updateSummary();
+      updateAllCategoryCheckboxes();
     }
+    
+    // =====================================================
+    // SELECT ALL FUNCTIONALITY
+    // =====================================================
+    
+    function selectAllInCategory(categoryName, checked) {
+      var catEl = categoryElements[categoryName];
+      if (!catEl) return;
+      
+      for (var i = 0; i < catEl.itemElements.length; i++) {
+        var el = catEl.itemElements[i];
+        var item = el.item;
+        
+        if (checked) {
+          // Mark as fully stocked
+          el.checkbox.checked = true;
+          el.valueInput.value = item.required;
+          itemStates[item.key] = { checked: true, actual: item.required };
+        } else {
+          // Mark as missing (uncheck and set to 0)
+          el.checkbox.checked = false;
+          el.valueInput.value = 0;
+          itemStates[item.key] = { checked: false, actual: 0 };
+        }
+        
+        updateItemClass(el.itemDiv, itemStates[item.key], item.required);
+        updateBadge(el.badge, itemStates[item.key], item.required);
+      }
+      
+      updateSummary();
+      updateCategoryStatus(categoryName);
+      broadcastDataDebounced();
+    }
+    
+    function updateCategoryCheckbox(categoryName) {
+      var catEl = categoryElements[categoryName];
+      if (!catEl) return;
+      
+      var allChecked = true;
+      var noneChecked = true;
+      
+      for (var i = 0; i < catEl.itemElements.length; i++) {
+        var el = catEl.itemElements[i];
+        var item = el.item;
+        var state = itemStates[item.key];
+        
+        if (state && state.checked && state.actual >= item.required) {
+          noneChecked = false;
+        } else {
+          allChecked = false;
+        }
+      }
+      
+      catEl.checkbox.checked = allChecked;
+      catEl.checkbox.indeterminate = !allChecked && !noneChecked;
+      
+      updateCategoryStatus(categoryName);
+    }
+    
+    function updateCategoryStatus(categoryName) {
+      var catEl = categoryElements[categoryName];
+      if (!catEl) return;
+      
+      var total = catEl.itemElements.length;
+      var okCount = 0;
+      
+      for (var i = 0; i < catEl.itemElements.length; i++) {
+        var el = catEl.itemElements[i];
+        var item = el.item;
+        var state = itemStates[item.key];
+        
+        if (state && state.checked && state.actual >= item.required) {
+          okCount++;
+        }
+      }
+      
+      catEl.statusEl.textContent = '(' + okCount + '/' + total + ')';
+    }
+    
+    function updateAllCategoryCheckboxes() {
+      var categories = Object.keys(categoryElements);
+      for (var i = 0; i < categories.length; i++) {
+        updateCategoryCheckbox(categories[i]);
+      }
+    }
+    
+    // =====================================================
+    // ITEM STATE HELPERS
+    // =====================================================
     
     function updateItemClass(div, state, required) {
       div.classList.remove('checked', 'short', 'missing');
