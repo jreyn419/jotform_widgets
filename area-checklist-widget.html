@@ -20,7 +20,7 @@
       font-size: 16px;
       font-weight: 700;
       color: #0066cc;
-      margin: 0 0 15px 0;
+      margin: 0 0 12px 0;
       padding-bottom: 8px;
       border-bottom: 3px solid #0066cc;
     }
@@ -30,11 +30,11 @@
     }
     
     .section-title {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: #333;
-      margin: 15px 0 10px 0;
-      padding-bottom: 5px;
+      margin: 12px 0 8px 0;
+      padding-bottom: 4px;
       border-bottom: 2px solid #ccc;
     }
     
@@ -45,16 +45,20 @@
     .checklist-items {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
     
+    /* ===== CHECKLIST ITEM - MOBILE FIRST ===== */
     .checklist-item {
-      display: flex;
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      grid-template-rows: auto auto;
       align-items: center;
-      padding: 10px 12px;
+      gap: 0 8px;
+      padding: 10px;
       background: #f8f9fa;
       border-radius: 6px;
-      border: 2px solid transparent;
+      border-left: 4px solid transparent;
       transition: all 0.15s;
     }
     
@@ -64,47 +68,78 @@
     
     .checklist-item.checked {
       background: #d4edda;
-      border-color: #28a745;
+      border-left-color: #28a745;
     }
     
     .checklist-item.short {
       background: #fff3cd;
-      border-color: #ffc107;
+      border-left-color: #ffc107;
     }
     
     .checklist-item.missing {
       background: #f8d7da;
-      border-color: #dc3545;
+      border-left-color: #dc3545;
     }
     
+    /* Checkbox - spans both rows on mobile */
     .checklist-item input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      margin-right: 12px;
+      grid-row: 1 / 3;
+      width: 22px;
+      height: 22px;
+      margin: 0;
       cursor: pointer;
       accent-color: #28a745;
-      flex-shrink: 0;
     }
     
+    /* Item name */
     .item-name {
-      flex: 1;
+      grid-column: 2;
+      grid-row: 1;
       font-size: 14px;
       color: #333;
       font-weight: 500;
+      line-height: 1.3;
     }
     
+    /* Shortage badge - fixed position, always visible space reserved */
+    .shortage-badge {
+      grid-column: 3;
+      grid-row: 1 / 3;
+      background: #dc3545;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      min-width: 45px;
+      text-align: center;
+      visibility: hidden; /* Hidden but space reserved */
+    }
+    
+    .shortage-badge.visible {
+      visibility: visible;
+    }
+    
+    .shortage-badge.warning {
+      background: #ffc107;
+      color: #333;
+    }
+    
+    /* Quantities row */
     .item-quantities {
+      grid-column: 2;
+      grid-row: 2;
       display: flex;
       align-items: center;
-      gap: 15px;
-      flex-shrink: 0;
+      gap: 12px;
+      margin-top: 6px;
     }
     
     .quantity-group {
       display: flex;
       align-items: center;
-      gap: 5px;
-      font-size: 13px;
+      gap: 4px;
+      font-size: 12px;
     }
     
     .quantity-label {
@@ -114,13 +149,11 @@
     .required-amount {
       font-weight: 600;
       color: #0066cc;
-      min-width: 30px;
-      text-align: center;
     }
     
     .actual-input {
-      width: 60px;
-      padding: 5px 8px;
+      width: 52px;
+      padding: 4px 6px;
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 14px;
@@ -133,44 +166,36 @@
       box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
     }
     
-    .shortage-badge {
-      background: #dc3545;
-      color: white;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 10px;
-      margin-left: 10px;
-    }
-    
+    /* ===== SUMMARY BAR ===== */
     .summary-bar {
-      margin-top: 20px;
-      padding: 12px 15px;
+      margin-top: 15px;
+      padding: 10px 12px;
       background: #e9ecef;
       border-radius: 6px;
       display: flex;
       justify-content: space-between;
-      font-size: 13px;
+      font-size: 12px;
     }
     
     .summary-stat {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
     
     .stat-ok { color: #28a745; }
-    .stat-short { color: #ffc107; }
+    .stat-short { color: #856404; }
     .stat-missing { color: #dc3545; }
     
     .instructions {
       background: #e7f3ff;
       border: 1px solid #b3d7ff;
       border-radius: 6px;
-      padding: 12px;
-      margin-bottom: 15px;
-      font-size: 13px;
+      padding: 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
       color: #004085;
+      line-height: 1.4;
     }
     
     .no-items {
@@ -180,18 +205,41 @@
       font-style: italic;
     }
     
-    .config-error {
-      background: #f8d7da;
-      border: 1px solid #f5c6cb;
-      border-radius: 6px;
-      padding: 15px;
-      color: #721c24;
-      font-size: 13px;
-    }
-    
-    .config-error strong {
-      display: block;
-      margin-bottom: 5px;
+    /* ===== DESKTOP STYLES ===== */
+    @media (min-width: 480px) {
+      .checklist-item {
+        grid-template-columns: 28px 1fr auto auto;
+        grid-template-rows: auto;
+        padding: 10px 12px;
+      }
+      
+      .checklist-item input[type="checkbox"] {
+        grid-row: 1;
+      }
+      
+      .item-name {
+        grid-column: 2;
+      }
+      
+      .item-quantities {
+        grid-column: 3;
+        grid-row: 1;
+        margin-top: 0;
+        gap: 15px;
+      }
+      
+      .shortage-badge {
+        grid-column: 4;
+        grid-row: 1;
+      }
+      
+      .quantity-group {
+        font-size: 13px;
+      }
+      
+      .actual-input {
+        width: 60px;
+      }
     }
   </style>
 </head>
@@ -199,8 +247,7 @@
   <div id="widgetTitle" class="widget-title">Area Checklist</div>
   
   <div class="instructions">
-    ✓ Check the box if item is fully stocked<br>
-    ✗ Leave unchecked and enter actual quantity if item is short or missing
+    ✓ Check = fully stocked &nbsp;|&nbsp; ✗ Unchecked = enter actual qty
   </div>
   
   <div class="checklist-container" id="checklistContainer">
@@ -216,22 +263,39 @@
   <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
   <script>
     // =====================================================
+    // DEFAULT INVENTORY (used for standalone testing)
+    // =====================================================
+    
+    var DEFAULT_INVENTORY = [
+      "Driver Compartment",
+      "Flashlight|2",
+      "Maps/GPS Unit|1",
+      "Radio|1",
+      "Clipboard|1",
+      "",
+      "Main Supplies",
+      "Bandages|10",
+      "Gauze Pads|20",
+      "Gloves (pairs)|50",
+      "Alcohol Wipes|30"
+    ].join("\n");
+    
+    // =====================================================
     // WIDGET STATE
     // =====================================================
     
     var areaName = "Area Checklist";
-    var widgetId = "area1";
-    var hiddenFieldId = null;
     var inventory = [];
     var itemStates = {};
+    var summaryFieldId = null;
+    var widgetId = null;
+    var broadcastDebounceTimer = null;
     
     // =====================================================
     // PARSE INVENTORY FROM SETTINGS
     // =====================================================
     
     function parseInventory(text) {
-      if (!text || !text.trim()) return [];
-      
       var lines = text.split("\n");
       var items = [];
       var currentCategory = "Items";
@@ -243,31 +307,21 @@
         
         if (line.charAt(0) === '[' && line.charAt(line.length - 1) === ']') {
           currentCategory = line.substring(1, line.length - 1).trim();
-        } else if (line.indexOf('|') === -1) {
-          var nextHasPipe = false;
-          for (var j = i + 1; j < lines.length; j++) {
-            var nextLine = lines[j].trim();
-            if (nextLine) {
-              nextHasPipe = nextLine.indexOf('|') !== -1;
-              break;
-            }
-          }
-          if (nextHasPipe || i === 0) {
-            currentCategory = line;
-          }
-        } else {
+        } else if (line.indexOf('|') === -1 && lines[i + 1] && lines[i + 1].indexOf('|') !== -1) {
+          currentCategory = line;
+        } else if (line.indexOf('|') !== -1) {
           var parts = line.split('|');
           var itemName = parts[0].trim();
           var required = parseInt(parts[1], 10) || 1;
           
-          if (itemName) {
-            items.push({
-              category: currentCategory,
-              name: itemName,
-              required: required,
-              key: currentCategory + '::' + itemName
-            });
-          }
+          items.push({
+            category: currentCategory,
+            name: itemName,
+            required: required,
+            key: currentCategory + '::' + itemName
+          });
+        } else {
+          currentCategory = line;
         }
       }
       
@@ -283,7 +337,7 @@
       if (!container) return;
       
       if (inventory.length === 0) {
-        container.innerHTML = '<div class="config-error"><strong>No inventory items configured.</strong>Please configure the inventoryItems setting for this widget in the Form Builder.</div>';
+        container.innerHTML = '<div class="no-items">No checklist items configured.<br>Add items in Widget Settings.</div>';
         return;
       }
       
@@ -313,23 +367,28 @@
         
         var state = itemStates[item.key];
         
+        // Create item row
         var itemDiv = document.createElement('div');
         itemDiv.className = 'checklist-item';
         itemDiv.setAttribute('data-key', item.key);
         updateItemClass(itemDiv, state, item.required);
         
+        // Checkbox
         var checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = state.checked;
         checkbox.id = 'cb_' + i;
         
+        // Item name
         var nameSpan = document.createElement('span');
         nameSpan.className = 'item-name';
         nameSpan.textContent = item.name;
         
+        // Quantities container
         var qtyDiv = document.createElement('div');
         qtyDiv.className = 'item-quantities';
         
+        // Required amount
         var reqGroup = document.createElement('div');
         reqGroup.className = 'quantity-group';
         var reqLabel = document.createElement('span');
@@ -341,6 +400,7 @@
         reqGroup.appendChild(reqLabel);
         reqGroup.appendChild(reqAmount);
         
+        // Actual amount input
         var actGroup = document.createElement('div');
         actGroup.className = 'quantity-group';
         var actLabel = document.createElement('span');
@@ -356,21 +416,24 @@
         actGroup.appendChild(actLabel);
         actGroup.appendChild(actInput);
         
+        qtyDiv.appendChild(reqGroup);
+        qtyDiv.appendChild(actGroup);
+        
+        // Shortage badge - always present, visibility toggled
         var badge = document.createElement('span');
         badge.className = 'shortage-badge';
         badge.id = 'badge_' + i;
-        badge.style.display = 'none';
+        updateBadge(badge, state, item.required);
         
-        qtyDiv.appendChild(reqGroup);
-        qtyDiv.appendChild(actGroup);
-        qtyDiv.appendChild(badge);
-        
+        // Append in grid order
         itemDiv.appendChild(checkbox);
         itemDiv.appendChild(nameSpan);
         itemDiv.appendChild(qtyDiv);
+        itemDiv.appendChild(badge);
         
         itemsDiv.appendChild(itemDiv);
         
+        // Event listeners
         (function(key, required, cb, input, div, badgeEl) {
           cb.addEventListener('change', function() {
             if (cb.checked) {
@@ -382,7 +445,7 @@
             updateItemClass(div, itemStates[key], required);
             updateBadge(badgeEl, itemStates[key], required);
             updateSummary();
-            broadcastData();
+            broadcastDataDebounced();
           });
           
           input.addEventListener('input', function() {
@@ -400,15 +463,12 @@
             updateItemClass(div, itemStates[key], required);
             updateBadge(badgeEl, itemStates[key], required);
             updateSummary();
-            broadcastData();
+            broadcastDataDebounced();
           });
-          
-          updateBadge(badgeEl, itemStates[key], required);
         })(item.key, item.required, checkbox, actInput, itemDiv, badge);
       }
       
       updateSummary();
-      broadcastData();
     }
     
     function updateItemClass(div, state, required) {
@@ -425,11 +485,18 @@
     
     function updateBadge(badge, state, required) {
       if (state.checked && state.actual >= required) {
-        badge.style.display = 'none';
+        badge.classList.remove('visible', 'warning');
+        badge.textContent = '';
       } else {
         var shortage = required - (state.actual || 0);
         badge.textContent = '-' + shortage;
-        badge.style.display = 'inline';
+        badge.classList.add('visible');
+        
+        if (state.actual > 0) {
+          badge.classList.add('warning');
+        } else {
+          badge.classList.remove('warning');
+        }
       }
     }
     
@@ -455,8 +522,15 @@
     }
     
     // =====================================================
-    // BROADCAST DATA USING JOTFORM API
+    // BROADCAST DATA VIA JOTFORM API
     // =====================================================
+    
+    function broadcastDataDebounced() {
+      if (broadcastDebounceTimer) {
+        clearTimeout(broadcastDebounceTimer);
+      }
+      broadcastDebounceTimer = setTimeout(broadcastData, 150);
+    }
     
     function broadcastData() {
       var shortages = [];
@@ -466,13 +540,14 @@
         var state = itemStates[item.key] || { checked: false, actual: 0 };
         
         if (!state.checked || state.actual < item.required) {
+          var shortage = item.required - (state.actual || 0);
           shortages.push({
             area: areaName,
             category: item.category,
             name: item.name,
             required: item.required,
             actual: state.actual || 0,
-            shortage: item.required - (state.actual || 0)
+            shortage: shortage
           });
         }
       }
@@ -481,42 +556,38 @@
         widgetId: widgetId,
         area: areaName,
         shortages: shortages,
-        timestamp: new Date().toISOString()
+        timestamp: Date.now()
       };
       
-      // Send to JotForm (this widget's own value)
       if (typeof JFCustomWidget !== 'undefined') {
         JFCustomWidget.sendData({
           value: JSON.stringify(data)
         });
         
-        // Update the hidden field for cross-widget communication
-        if (hiddenFieldId) {
-          updateHiddenField(data);
+        if (summaryFieldId) {
+          updateSummaryField(data);
         }
       }
     }
     
-    function updateHiddenField(data) {
-      if (!hiddenFieldId || typeof JFCustomWidget === 'undefined') return;
+    function updateSummaryField(myData) {
+      if (!summaryFieldId || typeof JFCustomWidget === 'undefined') return;
       
-      // First, get existing data from the hidden field
-      JFCustomWidget.getFieldValue(hiddenFieldId, function(existingValue) {
-        var existingData = {};
+      JFCustomWidget.getFieldValue(summaryFieldId, function(existingValue) {
+        var allData = {};
         
         if (existingValue) {
           try {
-            existingData = JSON.parse(existingValue);
+            allData = JSON.parse(existingValue);
           } catch (e) {
-            existingData = {};
+            allData = {};
           }
         }
         
-        // Add/update this widget's data
-        existingData[widgetId] = data;
+        var myKey = widgetId || ('area_' + areaName.replace(/\s+/g, '_'));
+        allData[myKey] = myData;
         
-        // Write back to hidden field
-        JFCustomWidget.setFieldValue(hiddenFieldId, JSON.stringify(existingData));
+        JFCustomWidget.setFieldValue(summaryFieldId, JSON.stringify(allData));
       });
     }
     
@@ -537,19 +608,42 @@
     // INITIALIZATION
     // =====================================================
     
+    var jotformReady = false;
+    
+    function initStandalone() {
+      if (jotformReady) return;
+      
+      console.log("Running in standalone/test mode");
+      document.getElementById('widgetTitle').textContent = "Area Checklist (Test Mode)";
+      inventory = parseInventory(DEFAULT_INVENTORY);
+      buildChecklist();
+    }
+    
     function init() {
+      var fallbackTimer = setTimeout(function() {
+        if (!jotformReady) {
+          initStandalone();
+        }
+      }, 1000);
+      
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
         JFCustomWidget.subscribe("ready", function(data) {
-          // Get widget settings
+          jotformReady = true;
+          clearTimeout(fallbackTimer);
+          
           areaName = JFCustomWidget.getWidgetSetting('areaName') || 'Area Checklist';
-          widgetId = JFCustomWidget.getWidgetSetting('widgetId') || 'area_' + Math.random().toString(36).substr(2, 9);
-          hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId') || null;
-          var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || '';
+          var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
+          summaryFieldId = JFCustomWidget.getWidgetSetting('summaryFieldId') || null;
+          
+          widgetId = JFCustomWidget.getWidgetSetting('widgetId');
+          if (!widgetId) {
+            widgetId = 'area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+            console.warn('No widgetId configured - using generated ID: ' + widgetId);
+          }
           
           document.getElementById('widgetTitle').textContent = areaName;
           inventory = parseInventory(inventoryText);
           
-          // Restore saved state if editing a submission
           if (data.value) {
             try {
               var saved = JSON.parse(data.value);
@@ -558,8 +652,7 @@
                   var item = inventory[i];
                   var found = false;
                   for (var j = 0; j < saved.shortages.length; j++) {
-                    if (saved.shortages[j].name === item.name && 
-                        saved.shortages[j].category === item.category) {
+                    if (saved.shortages[j].name === item.name) {
                       itemStates[item.key] = {
                         checked: false,
                         actual: saved.shortages[j].actual
@@ -580,6 +673,7 @@
           
           buildChecklist();
           resizeWidget();
+          broadcastData();
         });
         
         JFCustomWidget.subscribe("submit", function() {
@@ -605,7 +699,7 @@
             widgetId: widgetId,
             area: areaName,
             shortages: shortages,
-            timestamp: new Date().toISOString()
+            timestamp: Date.now()
           };
           
           JFCustomWidget.sendSubmit({
@@ -614,8 +708,8 @@
           });
         });
       } else {
-        document.getElementById('checklistContainer').innerHTML = 
-          '<div class="config-error"><strong>Widget not loaded in JotForm</strong>This widget must be used within a JotForm form.</div>';
+        clearTimeout(fallbackTimer);
+        initStandalone();
       }
     }
     

@@ -207,29 +207,12 @@
       opacity: 0.5;
     }
     
-    .config-error {
-      background: #f8d7da;
-      border: 1px solid #f5c6cb;
-      border-radius: 6px;
-      padding: 15px;
-      color: #721c24;
-      font-size: 13px;
-    }
-    
-    .config-error strong {
-      display: block;
-      margin-bottom: 5px;
-    }
-    
-    .debug-info {
-      background: #f0f0f0;
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 11px;
-      font-family: monospace;
-      white-space: pre-wrap;
-      display: none;
+    .refresh-note {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      margin-top: 15px;
+      font-style: italic;
     }
   </style>
 </head>
@@ -246,46 +229,43 @@
         <p>Complete the area checklists to see missing items here.</p>
       </div>
     </div>
-    
-    <div id="debugInfo" class="debug-info"></div>
   </div>
 
   <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
   <script>
     // =====================================================
+    // DEFAULT TEST DATA (for standalone testing)
+    // =====================================================
+    
+    var TEST_DATA = {
+      "area_driver_compartment": {
+        widgetId: "area_driver_compartment",
+        area: "Driver Compartment",
+        shortages: [
+          { name: "Flashlight", category: "Equipment", required: 2, actual: 1, shortage: 1 },
+          { name: "Maps/GPS Unit", category: "Equipment", required: 1, actual: 0, shortage: 1 }
+        ],
+        timestamp: Date.now()
+      },
+      "area_patient_compartment": {
+        widgetId: "area_patient_compartment",
+        area: "Patient Compartment", 
+        shortages: [
+          { name: "Bandages", category: "Supplies", required: 10, actual: 3, shortage: 7 },
+          { name: "Gloves (pairs)", category: "PPE", required: 50, actual: 0, shortage: 50 }
+        ],
+        timestamp: Date.now()
+      }
+    };
+    
+    // =====================================================
     // WIDGET STATE
     // =====================================================
     
-    var hiddenFieldId = null;
+    var summaryFieldId = null;  // The field ID that area widgets write to
     var allAreaData = {};
     var pollInterval = null;
-    var lastDataString = '';
-    
-    // =====================================================
-    // READ DATA FROM HIDDEN FIELD VIA JOTFORM API
-    // =====================================================
-    
-    function readSharedData() {
-      if (!hiddenFieldId || typeof JFCustomWidget === 'undefined') return;
-      
-      JFCustomWidget.getFieldValue(hiddenFieldId, function(value) {
-        // Only update if data has changed
-        if (value && value !== lastDataString) {
-          lastDataString = value;
-          
-          try {
-            var parsed = JSON.parse(value);
-            if (parsed && typeof parsed === 'object') {
-              allAreaData = parsed;
-              renderSummary();
-              resizeWidget();
-            }
-          } catch (e) {
-            console.log("Could not parse hidden field data:", e);
-          }
-        }
-      });
-    }
+    var lastDataHash = '';  // Track changes to avoid unnecessary re-renders
     
     // =====================================================
     // RENDER SUMMARY
@@ -295,6 +275,7 @@
       var content = document.getElementById('content');
       var titleEl = document.getElementById('widgetTitle');
       
+      // Collect all shortages from all areas
       var areaKeys = Object.keys(allAreaData);
       var totalShortages = 0;
       var totalItems = 0;
@@ -303,7 +284,7 @@
       
       for (var i = 0; i < areaKeys.length; i++) {
         var areaData = allAreaData[areaKeys[i]];
-        if (areaData && areaData.shortages !== undefined) {
+        if (areaData && areaData.shortages) {
           hasData = true;
           if (areaData.shortages.length > 0) {
             areasWithShortages++;
@@ -318,6 +299,7 @@
       // No data yet
       if (!hasData) {
         content.innerHTML = '<div class="no-data"><div class="icon">📋</div><p>Complete the area checklists to see missing items here.</p></div>';
+        resizeWidget();
         return;
       }
       
@@ -326,15 +308,24 @@
         titleEl.className = 'widget-title all-ok';
         titleEl.innerHTML = '<span class="title-icon">✅</span><span>All Items Present</span>';
         content.innerHTML = '<div class="all-ok-message"><div class="icon">✅</div><h3>Fully Stocked!</h3><p>All inventory items are present and accounted for.</p></div>';
+        resizeWidget();
         return;
       }
       
-      // Has shortages
+      // Has shortages - render them
       titleEl.className = 'widget-title';
       titleEl.innerHTML = '<span class="title-icon">⚠️</span><span>Missing Items Summary</span>';
       
       var html = '';
       
+      // Sort areas by name for consistent display
+      areaKeys.sort(function(a, b) {
+        var nameA = allAreaData[a].area || a;
+        var nameB = allAreaData[b].area || b;
+        return nameA.localeCompare(nameB);
+      });
+      
+      // Render each area
       for (var a = 0; a < areaKeys.length; a++) {
         var key = areaKeys[a];
         var areaData = allAreaData[key];
@@ -383,12 +374,37 @@
       html += '</div>';
       
       content.innerHTML = html;
+      resizeWidget();
     }
     
     function escapeHtml(text) {
       var div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+    
+    // =====================================================
+    // POLL FOR DATA FROM SUMMARY FIELD
+    // Uses JotForm's getFieldValue API
+    // =====================================================
+    
+    function pollSummaryField() {
+      if (!summaryFieldId || typeof JFCustomWidget === 'undefined') return;
+      
+      JFCustomWidget.getFieldValue(summaryFieldId, function(value) {
+        if (!value) return;
+        
+        // Check if data actually changed to avoid unnecessary re-renders
+        if (value === lastDataHash) return;
+        lastDataHash = value;
+        
+        try {
+          allAreaData = JSON.parse(value);
+          renderSummary();
+        } catch (e) {
+          console.log("Could not parse summary field data:", e);
+        }
+      });
     }
     
     // =====================================================
@@ -408,31 +424,79 @@
     // INITIALIZATION
     // =====================================================
     
+    var jotformReady = false;
+    
+    function initStandalone() {
+      if (jotformReady) return;
+      
+      console.log("Running in standalone test mode");
+      allAreaData = TEST_DATA;
+      renderSummary();
+    }
+    
     function init() {
+      // Set a timeout - if JotForm doesn't respond in 1 second, run standalone
+      var fallbackTimer = setTimeout(function() {
+        if (!jotformReady) {
+          initStandalone();
+        }
+      }, 1000);
+      
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
         JFCustomWidget.subscribe("ready", function(data) {
-          hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId') || null;
+          jotformReady = true;
+          clearTimeout(fallbackTimer);
           
-          if (!hiddenFieldId) {
-            document.getElementById('content').innerHTML = 
-              '<div class="config-error"><strong>Hidden Field ID not configured</strong>Please set the hiddenFieldId setting to match the field ID used in the Area Checklist widgets.</div>';
-            resizeWidget();
-            return;
+          // Get the field ID that area widgets write their data to
+          summaryFieldId = JFCustomWidget.getWidgetSetting('summaryFieldId') || null;
+          
+          if (!summaryFieldId) {
+            console.warn('No summaryFieldId configured. This widget needs to know which field ' +
+                        'the area checklist widgets are writing to. Configure summaryFieldId in widget settings.');
           }
           
-          // Initial read
-          readSharedData();
+          // Try to read initial data
+          if (summaryFieldId) {
+            pollSummaryField();
+            
+            // Poll for changes every 500ms
+            // This is necessary because JotForm widgets can't directly communicate
+            pollInterval = setInterval(pollSummaryField, 500);
+          }
           
-          // Poll for changes every 500ms
-          pollInterval = setInterval(readSharedData, 500);
+          // Also check if we have saved data from a previous session
+          if (data.value) {
+            try {
+              var savedSummary = JSON.parse(data.value);
+              // This is the compiled summary from submit, not the live data
+              // Only use if we have shortages array (submit format)
+              if (savedSummary.shortages && !savedSummary.widgetId) {
+                // Reconstruct allAreaData from flat shortages list
+                allAreaData = {};
+                for (var i = 0; i < savedSummary.shortages.length; i++) {
+                  var item = savedSummary.shortages[i];
+                  var areaKey = 'area_' + (item.area || 'unknown').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+                  if (!allAreaData[areaKey]) {
+                    allAreaData[areaKey] = {
+                      area: item.area,
+                      shortages: []
+                    };
+                  }
+                  allAreaData[areaKey].shortages.push(item);
+                }
+                renderSummary();
+              }
+            } catch (e) {
+              console.log("Could not parse saved summary data:", e);
+            }
+          }
           
           resizeWidget();
         });
         
         JFCustomWidget.subscribe("submit", function() {
-          if (pollInterval) {
-            clearInterval(pollInterval);
-          }
+          // Clear polling
+          if (pollInterval) clearInterval(pollInterval);
           
           // Compile final summary
           var allShortages = [];
@@ -460,11 +524,13 @@
           });
         });
       } else {
-        document.getElementById('content').innerHTML = 
-          '<div class="config-error"><strong>Widget not loaded in JotForm</strong>This widget must be used within a JotForm form.</div>';
+        // JFCustomWidget not available
+        clearTimeout(fallbackTimer);
+        initStandalone();
       }
     }
     
+    // Start when DOM is ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
     } else {
