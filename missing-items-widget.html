@@ -16,15 +16,8 @@
       background: #fff;
     }
     
-    .debug-panel {
-      background: #fffde7;
-      border: 2px solid #ffc107;
-      border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 15px;
-      font-size: 11px;
-      font-family: monospace;
-      display: none; /* Set to block to debug */
+    .summary-container {
+      max-width: 100%;
     }
     
     .widget-title {
@@ -44,7 +37,9 @@
       border-bottom-color: #28a745;
     }
     
-    .title-icon { font-size: 24px; }
+    .title-icon {
+      font-size: 24px;
+    }
     
     .all-ok-message {
       background: #d4edda;
@@ -55,9 +50,21 @@
       color: #155724;
     }
     
-    .all-ok-message .icon { font-size: 48px; margin-bottom: 10px; }
-    .all-ok-message h3 { margin: 0 0 5px 0; font-size: 18px; }
-    .all-ok-message p { margin: 0; font-size: 14px; opacity: 0.8; }
+    .all-ok-message .icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    
+    .all-ok-message h3 {
+      margin: 0 0 5px 0;
+      font-size: 18px;
+    }
+    
+    .all-ok-message p {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.8;
+    }
     
     .area-section {
       margin-bottom: 20px;
@@ -101,9 +108,17 @@
       gap: 10px;
     }
     
-    .shortage-item:last-child { border-bottom: none; }
-    .shortage-item.critical { background: #f8d7da; }
-    .shortage-item.warning { background: #fff3cd; }
+    .shortage-item:last-child {
+      border-bottom: none;
+    }
+    
+    .shortage-item.critical {
+      background: #f8d7da;
+    }
+    
+    .shortage-item.warning {
+      background: #fff3cd;
+    }
     
     .item-info {
       display: flex;
@@ -113,8 +128,15 @@
       min-width: 0;
     }
     
-    .item-name { font-weight: 500; color: #333; }
-    .item-category { font-size: 12px; color: #666; }
+    .item-name {
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .item-category {
+      font-size: 12px;
+      color: #666;
+    }
     
     .item-shortage {
       display: flex;
@@ -164,9 +186,20 @@
       text-align: center;
     }
     
-    .total-stat { display: flex; flex-direction: column; }
-    .stat-number { font-size: 28px; font-weight: 700; }
-    .stat-label { font-size: 12px; opacity: 0.7; }
+    .total-stat {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .stat-number {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.7;
+    }
     
     .no-data {
       padding: 30px;
@@ -189,11 +222,17 @@
       font-size: 13px;
     }
     
+    .config-error strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+    
     @media (max-width: 400px) {
       .shortage-item {
         flex-direction: column;
         align-items: flex-start;
       }
+      
       .item-shortage {
         width: 100%;
         justify-content: space-between;
@@ -203,17 +242,15 @@
   </style>
 </head>
 <body>
-  <div class="debug-panel" id="debugPanel"></div>
-  
   <div class="summary-container">
     <div class="widget-title" id="widgetTitle">
-      <span class="title-icon">⚠️</span>
+      <span class="title-icon">âš ï¸</span>
       <span>Missing Items Summary</span>
     </div>
     
     <div id="content">
       <div class="no-data">
-        <div class="icon">📋</div>
+        <div class="icon">ðŸ“‹</div>
         <p>Waiting for checklist data...</p>
       </div>
     </div>
@@ -221,207 +258,318 @@
 
   <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
   <script>
-    var hiddenFieldId = null;
+    // =====================================================
+    // CONFIGURATION
+    // =====================================================
+    // Widget Settings needed:
+    //   - hiddenFieldId: Field ID of the shared hidden field (e.g., "42")
+    //                    Must match the hiddenFieldId used by area checklist widgets
+    
     var allAreaData = {};
-    var pollInterval = null;
-    var lastValue = '';
     
-    function debug(msg) {
-      console.log('[Summary] ' + msg);
-      var el = document.getElementById('debugPanel');
-      if (el) el.textContent += msg + '\n';
-    }
+    // =====================================================
+    // RENDER
+    // =====================================================
     
-    function escapeHtml(t) {
-      var d = document.createElement('div');
-      d.textContent = t;
-      return d.innerHTML;
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
     
     function renderSummary() {
       var content = document.getElementById('content');
       var titleEl = document.getElementById('widgetTitle');
-      var keys = Object.keys(allAreaData);
       
-      var totalShort = 0, totalUnits = 0, hasData = false, areasShort = 0;
+      var areaKeys = Object.keys(allAreaData);
+      var totalShortages = 0;
+      var totalUnits = 0;
+      var hasData = false;
+      var areasWithShortages = 0;
       
-      for (var i = 0; i < keys.length; i++) {
-        var area = allAreaData[keys[i]];
-        if (area && area.shortages) {
+      for (var i = 0; i < areaKeys.length; i++) {
+        var areaData = allAreaData[areaKeys[i]];
+        if (areaData && areaData.shortages) {
           hasData = true;
-          if (area.shortages.length > 0) {
-            areasShort++;
-            totalShort += area.shortages.length;
-            for (var j = 0; j < area.shortages.length; j++) {
-              totalUnits += area.shortages[j].shortage;
+          if (areaData.shortages.length > 0) {
+            areasWithShortages++;
+            totalShortages += areaData.shortages.length;
+            for (var j = 0; j < areaData.shortages.length; j++) {
+              totalUnits += areaData.shortages[j].shortage;
             }
           }
         }
       }
       
       if (!hasData) {
-        content.innerHTML = '<div class="no-data"><div class="icon">📋</div><p>No checklist data received yet.</p></div>';
+        content.innerHTML = '<div class="no-data"><div class="icon">ðŸ“‹</div><p>Complete the area checklists to see missing items here.</p></div>';
         resizeWidget();
         return;
       }
       
-      if (totalShort === 0) {
+      if (totalShortages === 0) {
         titleEl.className = 'widget-title all-ok';
-        titleEl.innerHTML = '<span class="title-icon">✅</span><span>All Items Present</span>';
-        content.innerHTML = '<div class="all-ok-message"><div class="icon">✅</div><h3>Fully Stocked!</h3><p>All items are present.</p></div>';
+        titleEl.innerHTML = '<span class="title-icon">âœ…</span><span>All Items Present</span>';
+        content.innerHTML = '<div class="all-ok-message"><div class="icon">âœ…</div><h3>Fully Stocked!</h3><p>All inventory items are present and accounted for.</p></div>';
         resizeWidget();
         return;
       }
       
       titleEl.className = 'widget-title';
-      titleEl.innerHTML = '<span class="title-icon">⚠️</span><span>Missing Items Summary</span>';
-      
-      keys.sort(function(a, b) {
-        return (allAreaData[a].area || a).localeCompare(allAreaData[b].area || b);
-      });
+      titleEl.innerHTML = '<span class="title-icon">âš ï¸</span><span>Missing Items Summary</span>';
       
       var html = '';
-      for (var k = 0; k < keys.length; k++) {
-        var area = allAreaData[keys[k]];
-        if (!area || !area.shortages || area.shortages.length === 0) continue;
+      
+      // Sort by area name
+      areaKeys.sort(function(a, b) {
+        var nameA = (allAreaData[a].area || a).toLowerCase();
+        var nameB = (allAreaData[b].area || b).toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+      
+      for (var a = 0; a < areaKeys.length; a++) {
+        var key = areaKeys[a];
+        var areaData = allAreaData[key];
         
-        html += '<div class="area-section"><div class="area-header">';
-        html += '<span>' + escapeHtml(area.area || keys[k]) + '</span>';
-        html += '<span class="area-count">' + area.shortages.length + ' items</span>';
-        html += '</div><ul class="shortage-list">';
+        if (!areaData || !areaData.shortages || areaData.shortages.length === 0) continue;
         
-        for (var s = 0; s < area.shortages.length; s++) {
-          var item = area.shortages[s];
-          var critical = item.actual === 0;
+        html += '<div class="area-section">';
+        html += '<div class="area-header">';
+        html += '<span>' + escapeHtml(areaData.area || key) + '</span>';
+        html += '<span class="area-count">' + areaData.shortages.length + ' items</span>';
+        html += '</div>';
+        html += '<ul class="shortage-list">';
+        
+        for (var s = 0; s < areaData.shortages.length; s++) {
+          var item = areaData.shortages[s];
+          var isCritical = item.actual === 0;
+          var itemClass = isCritical ? 'critical' : 'warning';
+          var badgeClass = isCritical ? '' : 'warning';
+          var badgeText = isCritical ? 'MISSING' : ('Need ' + item.shortage);
           
-          html += '<li class="shortage-item ' + (critical ? 'critical' : 'warning') + '">';
-          html += '<div class="item-info"><span class="item-name">' + escapeHtml(item.name) + '</span>';
-          if (item.category) html += '<span class="item-category">' + escapeHtml(item.category) + '</span>';
-          html += '</div><div class="item-shortage">';
+          html += '<li class="shortage-item ' + itemClass + '">';
+          html += '<div class="item-info">';
+          html += '<span class="item-name">' + escapeHtml(item.name) + '</span>';
+          if (item.category) {
+            html += '<span class="item-category">' + escapeHtml(item.category) + '</span>';
+          }
+          html += '</div>';
+          html += '<div class="item-shortage">';
           html += '<span class="shortage-detail">' + item.actual + ' / ' + item.required + '</span>';
-          html += '<span class="shortage-badge' + (critical ? '' : ' warning') + '">' + (critical ? 'MISSING' : 'Need ' + item.shortage) + '</span>';
-          html += '</div></li>';
+          html += '<span class="shortage-badge ' + badgeClass + '">' + badgeText + '</span>';
+          html += '</div>';
+          html += '</li>';
         }
-        html += '</ul></div>';
+        
+        html += '</ul>';
+        html += '</div>';
       }
       
-      html += '<div class="total-summary"><h4>TOTAL SHORTAGES</h4><div class="total-stats">';
-      html += '<div class="total-stat"><span class="stat-number">' + areasShort + '</span><span class="stat-label">Areas</span></div>';
-      html += '<div class="total-stat"><span class="stat-number">' + totalShort + '</span><span class="stat-label">Items</span></div>';
-      html += '<div class="total-stat"><span class="stat-number">' + totalUnits + '</span><span class="stat-label">Units</span></div>';
-      html += '</div></div>';
+      html += '<div class="total-summary">';
+      html += '<h4>TOTAL SHORTAGES</h4>';
+      html += '<div class="total-stats">';
+      html += '<div class="total-stat"><span class="stat-number">' + areasWithShortages + '</span><span class="stat-label">Areas</span></div>';
+      html += '<div class="total-stat"><span class="stat-number">' + totalShortages + '</span><span class="stat-label">Items Short</span></div>';
+      html += '<div class="total-stat"><span class="stat-number">' + totalUnits + '</span><span class="stat-label">Units Needed</span></div>';
+      html += '</div>';
+      html += '</div>';
       
       content.innerHTML = html;
       resizeWidget();
     }
     
     // =====================================================
-    // READ FROM PARENT DOM HIDDEN FIELD
+    // LISTEN FOR DATA FROM AREA WIDGETS
     // =====================================================
     
-    function pollHiddenField() {
-      if (!hiddenFieldId) return;
+    function setupFieldListeners(fieldIds) {
+      if (typeof JFCustomWidget === 'undefined') return;
       
-      try {
-        var hiddenInput = window.parent.document.getElementById('input_' + hiddenFieldId);
-        if (hiddenInput && hiddenInput.value && hiddenInput.value !== lastValue) {
-          lastValue = hiddenInput.value;
-          debug('Got data: ' + lastValue.substring(0, 80) + '...');
-          
-          try {
-            allAreaData = JSON.parse(lastValue);
-            renderSummary();
-          } catch(e) {
-            debug('Parse error: ' + e);
-          }
-        }
-      } catch(e) {
-        debug('DOM access error: ' + e);
+      // fieldIds should be an array of field IDs for the area checklist widgets
+      // e.g., ["101", "102", "103"]
+      
+      for (var i = 0; i < fieldIds.length; i++) {
+        (function(fieldId) {
+          JFCustomWidget.listenFromField(fieldId, function(data) {
+            if (data && data.widgetId) {
+              allAreaData[data.widgetId] = data;
+              renderSummary();
+            }
+          });
+        })(fieldIds[i]);
       }
     }
     
-    function generateReadableOutput() {
-      var keys = Object.keys(allAreaData);
-      var lines = [];
-      var totalShort = 0, totalUnits = 0;
+    function fetchInitialData(fieldIds) {
+      if (typeof JFCustomWidget === 'undefined') return;
       
-      keys.sort(function(a, b) {
-        return (allAreaData[a].area || a).localeCompare(allAreaData[b].area || b);
+      JFCustomWidget.getFieldsValueById(fieldIds, function(values) {
+        if (!values) return;
+        
+        for (var fieldId in values) {
+          var data = values[fieldId];
+          if (data && typeof data === 'object' && data.widgetId) {
+            allAreaData[data.widgetId] = data;
+          } else if (data && typeof data === 'string') {
+            try {
+              var parsed = JSON.parse(data);
+              if (parsed && parsed.widgetId) {
+                allAreaData[parsed.widgetId] = parsed;
+              }
+            } catch (e) {}
+          }
+        }
+        renderSummary();
+      });
+    }
+    
+    // =====================================================
+    // GENERATE READABLE OUTPUT
+    // =====================================================
+    
+    function generateReadableOutput() {
+      var areaKeys = Object.keys(allAreaData);
+      var lines = [];
+      var totalShort = 0;
+      var totalUnits = 0;
+      
+      areaKeys.sort(function(a, b) {
+        var nameA = (allAreaData[a].area || a).toLowerCase();
+        var nameB = (allAreaData[b].area || b).toLowerCase();
+        return nameA.localeCompare(nameB);
       });
       
-      for (var i = 0; i < keys.length; i++) {
-        var area = allAreaData[keys[i]];
-        if (!area || !area.shortages || area.shortages.length === 0) continue;
+      for (var i = 0; i < areaKeys.length; i++) {
+        var areaData = allAreaData[areaKeys[i]];
+        if (!areaData || !areaData.shortages || areaData.shortages.length === 0) continue;
         
         if (lines.length > 0) lines.push('');
-        lines.push('=== ' + (area.area || keys[i]).toUpperCase() + ' ===');
+        lines.push('=== ' + (areaData.area || areaKeys[i]).toUpperCase() + ' ===');
         
-        var byCat = {};
-        for (var j = 0; j < area.shortages.length; j++) {
-          var item = area.shortages[j];
+        // Group by category
+        var byCategory = {};
+        for (var j = 0; j < areaData.shortages.length; j++) {
+          var item = areaData.shortages[j];
           var cat = item.category || 'General';
-          if (!byCat[cat]) byCat[cat] = [];
-          byCat[cat].push(item);
+          if (!byCategory[cat]) byCategory[cat] = [];
+          byCategory[cat].push(item);
           totalShort++;
           totalUnits += item.shortage;
         }
         
-        for (var cat in byCat) {
+        for (var cat in byCategory) {
           lines.push('[' + cat + ']');
-          for (var k = 0; k < byCat[cat].length; k++) {
-            var item = byCat[cat][k];
+          for (var k = 0; k < byCategory[cat].length; k++) {
+            var item = byCategory[cat][k];
             var status = item.actual === 0 
               ? 'MISSING - need ' + item.required
               : 'have ' + item.actual + '/' + item.required + ' - need ' + item.shortage + ' more';
-            lines.push('  • ' + item.name + ': ' + status);
+            lines.push('  â€¢ ' + item.name + ': ' + status);
           }
         }
       }
       
-      if (totalShort === 0) return 'ALL ITEMS FULLY STOCKED';
+      if (totalShort === 0) {
+        return 'ALL ITEMS FULLY STOCKED\n\nNo missing or short items to report.';
+      }
       
-      return 'MISSING/SHORT ITEMS REPORT\nGenerated: ' + new Date().toLocaleString() + 
-             '\n================================\n\n' + lines.join('\n') +
-             '\n\n================================\nSUMMARY: ' + totalShort + ' items (' + totalUnits + ' units needed)';
+      var output = 'MISSING/SHORT ITEMS REPORT\n';
+      output += 'Generated: ' + new Date().toLocaleString() + '\n';
+      output += '================================\n\n';
+      output += lines.join('\n');
+      output += '\n\n================================\n';
+      output += 'SUMMARY: ' + totalShort + ' items need restocking (' + totalUnits + ' total units needed)';
+      
+      return output;
     }
     
+    // =====================================================
+    // RESIZE
+    // =====================================================
+    
     function resizeWidget() {
-      if (typeof JFCustomWidget !== 'undefined') {
-        setTimeout(function() {
-          JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-        }, 100);
-      }
+      if (typeof JFCustomWidget === 'undefined') return;
+      setTimeout(function() {
+        JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+      }, 100);
+    }
+    
+    // =====================================================
+    // INIT
+    // =====================================================
+    
+    var jotformReady = false;
+    
+    function initStandalone() {
+      if (jotformReady) return;
+      
+      // Test data
+      allAreaData = {
+        "driver": {
+          area: "Driver Compartment",
+          shortages: [
+            { name: "Flashlight", category: "Equipment", required: 2, actual: 1, shortage: 1 },
+            { name: "Maps/GPS Unit", category: "Equipment", required: 1, actual: 0, shortage: 1 }
+          ]
+        },
+        "patient": {
+          area: "Patient Compartment", 
+          shortages: [
+            { name: "Bandages", category: "Supplies", required: 10, actual: 3, shortage: 7 },
+            { name: "Gloves (pairs)", category: "PPE", required: 50, actual: 0, shortage: 50 }
+          ]
+        }
+      };
+      renderSummary();
     }
     
     function init() {
-      debug('Init');
+      var fallback = setTimeout(function() {
+        if (!jotformReady) initStandalone();
+      }, 1000);
       
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
-        JFCustomWidget.subscribe("ready", function() {
-          hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId');
-          debug('Ready. hiddenFieldId=' + hiddenFieldId);
+        JFCustomWidget.subscribe("ready", function(data) {
+          jotformReady = true;
+          clearTimeout(fallback);
           
-          if (!hiddenFieldId) {
+          // Get the list of area checklist widget field IDs from settings
+          // Format: comma-separated field IDs, e.g., "101,102,103"
+          var areaFieldIdsSetting = JFCustomWidget.getWidgetSetting('areaFieldIds') || '';
+          var areaFieldIds = areaFieldIdsSetting.split(',').map(function(id) {
+            return id.trim();
+          }).filter(function(id) {
+            return id.length > 0;
+          });
+          
+          if (areaFieldIds.length === 0) {
             document.getElementById('content').innerHTML = 
-              '<div class="config-error"><strong>Config needed:</strong> Set hiddenFieldId</div>';
+              '<div class="config-error">' +
+              '<strong>Configuration needed:</strong> Set <code>areaFieldIds</code> in widget settings ' +
+              'to a comma-separated list of field IDs for your area checklist widgets (e.g., "101,102,103").' +
+              '</div>';
             resizeWidget();
             return;
           }
           
-          // Start polling parent DOM
-          pollHiddenField();
-          pollInterval = setInterval(pollHiddenField, 500);
+          // Set up listeners for each area widget field
+          setupFieldListeners(areaFieldIds);
+          
+          // Fetch initial data from all fields
+          fetchInitialData(areaFieldIds);
+          
           resizeWidget();
         });
         
         JFCustomWidget.subscribe("submit", function() {
-          if (pollInterval) clearInterval(pollInterval);
-          JFCustomWidget.sendSubmit({ valid: true, value: generateReadableOutput() });
+          JFCustomWidget.sendSubmit({
+            valid: true,
+            value: generateReadableOutput()
+          });
         });
       } else {
-        debug('No JFCustomWidget - standalone');
-        document.getElementById('content').innerHTML = 
-          '<div class="no-data"><div class="icon">📋</div><p>Must run inside JotForm</p></div>';
+        clearTimeout(fallback);
+        initStandalone();
       }
     }
     
