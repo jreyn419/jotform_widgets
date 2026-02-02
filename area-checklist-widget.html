@@ -366,9 +366,11 @@
     //   - areaName: Display name for this area (e.g., "Driver Compartment")
     //   - widgetId: Unique ID for this widget (e.g., "driver" or "area1")
     //   - inventoryItems: The inventory list in format "Category\nItem|Qty"
-    // 
-    // Data is sent via JFCustomWidget.sendData() with a stringified JSON value
-    // Other widgets can listen using JFCustomWidget.listenFromField()
+    //   - hiddenFieldId: The ID of the hidden field used for data sharing (e.g., "85")
+    //
+    // This widget writes its data to a hidden field so other widgets can read it.
+    // Multiple area widgets can share the same hidden field - each one's data
+    // is stored under its widgetId key.
     
     var DEFAULT_INVENTORY = [
       "Driver Compartment",
@@ -390,6 +392,7 @@
     
     var areaName = "Area Checklist";
     var widgetId = null;
+    var hiddenFieldId = null;
     var inventory = [];
     var itemStates = {};
     var broadcastDebounceTimer = null;
@@ -695,7 +698,7 @@
     }
     
     // =====================================================
-    // BROADCAST TO FORM (for other widgets to listen)
+    // BROADCAST TO HIDDEN FIELD
     // =====================================================
     
     function broadcastDebounced() {
@@ -706,6 +709,11 @@
     function broadcastData() {
       if (typeof JFCustomWidget === 'undefined') {
         console.log('[Area Widget] JFCustomWidget not available');
+        return;
+      }
+      
+      if (!hiddenFieldId) {
+        console.log('[Area Widget] No hiddenFieldId configured');
         return;
       }
       
@@ -733,16 +741,33 @@
         timestamp: Date.now()
       };
       
-      // IMPORTANT: sendData expects { value: string }
-      // The value must be a STRING (JSON stringified)
-      try {
-        JFCustomWidget.sendData({
-          value: JSON.stringify(myData)
-        });
-        console.log('[Area Widget] Broadcast data:', myData);
-      } catch (e) {
-        console.log('[Area Widget] Error sending data:', e);
-      }
+      // First, read current hidden field value to merge with other areas' data
+      JFCustomWidget.getFieldsValueById([hiddenFieldId], function(response) {
+        var allData = {};
+        
+        console.log('[Area Widget] Read hidden field response:', response);
+        
+        // Parse existing data from hidden field
+        if (response && response.data && response.data.length > 0) {
+          var existingValue = response.data[0].value;
+          if (existingValue) {
+            try {
+              allData = JSON.parse(existingValue);
+            } catch (e) {
+              console.log('[Area Widget] Could not parse existing data:', e);
+            }
+          }
+        }
+        
+        // Add/update this area's data
+        allData[widgetId] = myData;
+        
+        // Write back to hidden field
+        var newValue = JSON.stringify(allData);
+        
+        JFCustomWidget.setFieldsValueById(hiddenFieldId, newValue);
+        console.log('[Area Widget] Wrote to hidden field ' + hiddenFieldId + ':', allData);
+      });
     }
     
     // =====================================================
@@ -772,7 +797,7 @@
     function init() {
       var fallback = setTimeout(function() {
         if (!jotformReady) initStandalone();
-      }, 1000);
+      }, 1500);
       
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
         JFCustomWidget.subscribe("ready", function(data) {
@@ -783,7 +808,17 @@
           
           areaName = JFCustomWidget.getWidgetSetting('areaName') || 'Area Checklist';
           widgetId = JFCustomWidget.getWidgetSetting('widgetId') || areaName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+          hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId') || '';
           var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
+          
+          console.log('[Area Widget] Config:', { areaName: areaName, widgetId: widgetId, hiddenFieldId: hiddenFieldId });
+          
+          if (!hiddenFieldId) {
+            document.getElementById('configError').style.display = 'block';
+            document.getElementById('configError').innerHTML = 
+              '<strong>Configuration needed:</strong> Set <code>hiddenFieldId</code> in widget settings ' +
+              'to the ID of the hidden field used for data sharing.';
+          }
           
           document.getElementById('widgetTitle').textContent = areaName;
           
@@ -817,8 +852,8 @@
           buildChecklist();
           resizeWidget();
           
-          // Broadcast initial state after a short delay to ensure form is ready
-          setTimeout(broadcastData, 200);
+          // Broadcast initial state after a short delay
+          setTimeout(broadcastData, 300);
         });
         
         JFCustomWidget.subscribe("submit", function() {

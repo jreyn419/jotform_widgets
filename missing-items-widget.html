@@ -227,22 +227,6 @@
       margin-bottom: 5px;
     }
     
-    .debug-info {
-      background: #f0f0f0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 11px;
-      font-family: monospace;
-      white-space: pre-wrap;
-      display: none;
-    }
-    
-    .debug-info.visible {
-      display: block;
-    }
-    
     @media (max-width: 400px) {
       .shortage-item {
         flex-direction: column;
@@ -270,8 +254,6 @@
         <p>Waiting for checklist data...</p>
       </div>
     </div>
-    
-    <div id="debugInfo" class="debug-info"></div>
   </div>
 
   <!-- Use the newer CDN to avoid CORS issues -->
@@ -281,33 +263,16 @@
     // CONFIGURATION
     // =====================================================
     // Widget Settings needed:
-    //   - areaFieldIds: Comma-separated list of field IDs for area checklist widgets
-    //                   e.g., "101,102,103"
+    //   - hiddenFieldId: The ID of the hidden field used for data sharing (e.g., "85")
+    //                    This must match the hiddenFieldId used by area checklist widgets
     //
-    // This widget listens for changes from area checklist widgets using
-    // JFCustomWidget.listenFromField() with the 'change' event type
+    // This widget reads data from a hidden field that area checklist widgets write to.
+    // It polls the hidden field periodically to get updates.
     
+    var hiddenFieldId = null;
     var allAreaData = {};
-    var debugMode = false; // Set to true to show debug info
-    
-    // =====================================================
-    // DEBUG LOGGING
-    // =====================================================
-    
-    function debugLog(message, data) {
-      console.log('[Summary Widget] ' + message, data || '');
-      if (debugMode) {
-        var debugEl = document.getElementById('debugInfo');
-        if (debugEl) {
-          debugEl.classList.add('visible');
-          var timestamp = new Date().toLocaleTimeString();
-          debugEl.textContent += '[' + timestamp + '] ' + message + '\n';
-          if (data) {
-            debugEl.textContent += JSON.stringify(data, null, 2) + '\n';
-          }
-        }
-      }
-    }
+    var pollInterval = null;
+    var POLL_INTERVAL_MS = 500; // Poll every 500ms
     
     // =====================================================
     // RENDER
@@ -342,12 +307,6 @@
           }
         }
       }
-      
-      debugLog('Rendering summary', { 
-        areaCount: areaKeys.length, 
-        hasData: hasData, 
-        totalShortages: totalShortages 
-      });
       
       if (!hasData) {
         content.innerHTML = '<div class="no-data"><div class="icon">[...]</div><p>Complete the area checklists to see missing items here.</p></div>';
@@ -427,92 +386,57 @@
     }
     
     // =====================================================
-    // PROCESS INCOMING DATA
+    // POLL HIDDEN FIELD FOR DATA
     // =====================================================
     
-    function processIncomingData(rawValue, sourceFieldId) {
-      debugLog('Processing data from field ' + sourceFieldId, rawValue);
-      
-      var data = null;
-      
-      // Handle different data formats
-      if (typeof rawValue === 'string') {
-        try {
-          data = JSON.parse(rawValue);
-        } catch (e) {
-          debugLog('Failed to parse as JSON', e.message);
-          return false;
-        }
-      } else if (typeof rawValue === 'object' && rawValue !== null) {
-        data = rawValue;
-      }
-      
-      if (data && data.widgetId) {
-        allAreaData[data.widgetId] = data;
-        debugLog('Stored data for widget: ' + data.widgetId, data);
-        return true;
-      }
-      
-      return false;
-    }
+    var lastDataHash = '';
     
-    // =====================================================
-    // LISTEN FOR DATA FROM AREA WIDGETS
-    // =====================================================
-    
-    function setupFieldListeners(fieldIds) {
-      if (typeof JFCustomWidget === 'undefined') {
-        debugLog('JFCustomWidget not available');
+    function pollHiddenField() {
+      if (typeof JFCustomWidget === 'undefined' || !hiddenFieldId) {
         return;
       }
       
-      debugLog('Setting up listeners for fields', fieldIds);
-      
-      // Set up listeners for each area widget field
-      // IMPORTANT: listenFromField requires 3 arguments: fieldId, eventType, callback
-      for (var i = 0; i < fieldIds.length; i++) {
-        (function(fieldId) {
-          debugLog('Adding listener for field: ' + fieldId);
+      JFCustomWidget.getFieldsValueById([hiddenFieldId], function(response) {
+        if (response && response.data && response.data.length > 0) {
+          var value = response.data[0].value;
           
-          // Listen for 'change' events on the field
-          JFCustomWidget.listenFromField(fieldId, 'change', function(value) {
-            debugLog('Received change event from field ' + fieldId, value);
-            if (processIncomingData(value, fieldId)) {
-              renderSummary();
+          // Only update if data has changed
+          if (value && value !== lastDataHash) {
+            lastDataHash = value;
+            
+            try {
+              var parsed = JSON.parse(value);
+              if (parsed && typeof parsed === 'object') {
+                allAreaData = parsed;
+                console.log('[Summary Widget] Received data from hidden field:', allAreaData);
+                renderSummary();
+              }
+            } catch (e) {
+              console.log('[Summary Widget] Could not parse hidden field data:', e);
             }
-          });
-        })(fieldIds[i]);
-      }
-    }
-    
-    function fetchInitialData(fieldIds) {
-      if (typeof JFCustomWidget === 'undefined') {
-        debugLog('JFCustomWidget not available for initial fetch');
-        return;
-      }
-      
-      debugLog('Fetching initial data for fields', fieldIds);
-      
-      // getFieldsValueById expects an array of string field IDs
-      JFCustomWidget.getFieldsValueById(fieldIds, function(values) {
-        debugLog('Received initial values', values);
-        
-        if (!values) {
-          debugLog('No values returned');
-          return;
-        }
-        
-        var dataFound = false;
-        for (var fieldId in values) {
-          if (processIncomingData(values[fieldId], fieldId)) {
-            dataFound = true;
           }
         }
-        
-        if (dataFound) {
-          renderSummary();
-        }
       });
+    }
+    
+    function startPolling() {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+      
+      // Initial poll
+      pollHiddenField();
+      
+      // Set up recurring poll
+      pollInterval = setInterval(pollHiddenField, POLL_INTERVAL_MS);
+      console.log('[Summary Widget] Started polling hidden field ' + hiddenFieldId + ' every ' + POLL_INTERVAL_MS + 'ms');
+    }
+    
+    function stopPolling() {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
     }
     
     // =====================================================
@@ -595,7 +519,7 @@
     function initStandalone() {
       if (jotformReady) return;
       
-      debugLog('Initializing in standalone/test mode');
+      console.log('[Summary Widget] Initializing in standalone/test mode');
       
       // Test data for standalone testing
       allAreaData = {
@@ -618,70 +542,59 @@
     }
     
     function init() {
-      debugLog('Initializing widget');
+      console.log('[Summary Widget] Initializing widget');
       
       var fallback = setTimeout(function() {
         if (!jotformReady) {
-          debugLog('Fallback timeout reached, initializing standalone');
+          console.log('[Summary Widget] Fallback timeout reached');
           initStandalone();
         }
       }, 1500);
       
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
-        debugLog('JFCustomWidget available, subscribing to ready event');
+        console.log('[Summary Widget] JFCustomWidget available');
         
         JFCustomWidget.subscribe("ready", function(data) {
           jotformReady = true;
           clearTimeout(fallback);
           
-          debugLog('Ready event received', data);
+          console.log('[Summary Widget] Ready event received', data);
           
-          // Get the list of area checklist widget field IDs from settings
-          // Format: comma-separated field IDs, e.g., "101,102,103"
-          var areaFieldIdsSetting = JFCustomWidget.getWidgetSetting('areaFieldIds') || '';
-          debugLog('areaFieldIds setting: ' + areaFieldIdsSetting);
+          // Get the hidden field ID from settings
+          hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId') || '';
           
-          var areaFieldIds = areaFieldIdsSetting.split(',').map(function(id) {
-            return id.trim();
-          }).filter(function(id) {
-            return id.length > 0;
-          });
+          console.log('[Summary Widget] hiddenFieldId setting:', hiddenFieldId);
           
-          if (areaFieldIds.length === 0) {
+          if (!hiddenFieldId) {
             document.getElementById('content').innerHTML = 
               '<div class="config-error">' +
-              '<strong>Configuration needed:</strong> Set <code>areaFieldIds</code> in widget settings ' +
-              'to a comma-separated list of field IDs for your area checklist widgets (e.g., "101,102,103").' +
-              '<br><br>To find field IDs: In the form builder, click on each area checklist widget and note the ' +
-              'field ID shown in the URL or properties panel.' +
+              '<strong>Configuration needed:</strong> Set <code>hiddenFieldId</code> in widget settings ' +
+              'to the ID of the hidden field used for data sharing. This must match the hiddenFieldId ' +
+              'configured in your area checklist widgets.' +
               '</div>';
             resizeWidget();
             return;
           }
           
-          // Clear any test data
+          // Clear test data
           allAreaData = {};
           
-          // Set up listeners for real-time updates (INSIDE ready callback as required)
-          setupFieldListeners(areaFieldIds);
+          // Start polling the hidden field for updates
+          startPolling();
           
-          // Fetch initial data from all fields
-          fetchInitialData(areaFieldIds);
-          
-          // Show waiting message initially
-          renderSummary();
           resizeWidget();
         });
         
         JFCustomWidget.subscribe("submit", function() {
-          debugLog('Submit event received');
+          console.log('[Summary Widget] Submit event received');
+          stopPolling();
           JFCustomWidget.sendSubmit({
             valid: true,
             value: generateReadableOutput()
           });
         });
       } else {
-        debugLog('JFCustomWidget not available');
+        console.log('[Summary Widget] JFCustomWidget not available');
         clearTimeout(fallback);
         initStandalone();
       }
