@@ -335,9 +335,11 @@
         
         for (var s = 0; s < areaData.shortages.length; s++) {
           var item = areaData.shortages[s];
-          var isCritical = item.actual === 0;
+          // Item is critical (MISSING) if actual is 0, warning (SHORT) if > 0 but < required
+          var isCritical = (item.actual === 0);
           var itemClass = isCritical ? 'critical' : 'warning';
           var badgeClass = isCritical ? '' : 'warning';
+          var badgeText = isCritical ? 'MISSING' : ('Need ' + item.shortage);
           
           html += '<li class="shortage-item ' + itemClass + '">';
           html += '<div class="item-info">';
@@ -347,8 +349,8 @@
           }
           html += '</div>';
           html += '<div class="item-shortage">';
-          html += '<span class="shortage-detail">' + item.actual + '/' + item.required + '</span>';
-          html += '<span class="shortage-badge ' + badgeClass + '">Need ' + item.shortage + '</span>';
+          html += '<span class="shortage-detail">' + item.actual + ' / ' + item.required + '</span>';
+          html += '<span class="shortage-badge ' + badgeClass + '">' + badgeText + '</span>';
           html += '</div>';
           html += '</li>';
         }
@@ -418,6 +420,75 @@
     }
     
     // =====================================================
+    // GENERATE READABLE OUTPUT FOR SUBMISSION
+    // =====================================================
+    
+    function generateReadableOutput() {
+      var areaKeys = Object.keys(allAreaData);
+      var lines = [];
+      var totalShort = 0;
+      var totalUnits = 0;
+      
+      // Sort areas alphabetically
+      areaKeys.sort(function(a, b) {
+        var nameA = (allAreaData[a].area || a).toLowerCase();
+        var nameB = (allAreaData[b].area || b).toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+      
+      for (var i = 0; i < areaKeys.length; i++) {
+        var areaData = allAreaData[areaKeys[i]];
+        if (!areaData || !areaData.shortages || areaData.shortages.length === 0) continue;
+        
+        if (lines.length > 0) lines.push(''); // Blank line between areas
+        lines.push('=== ' + (areaData.area || areaKeys[i]).toUpperCase() + ' ===');
+        
+        // Group by category within each area
+        var byCategory = {};
+        for (var j = 0; j < areaData.shortages.length; j++) {
+          var item = areaData.shortages[j];
+          var cat = item.category || 'General';
+          if (!byCategory[cat]) byCategory[cat] = [];
+          byCategory[cat].push(item);
+          totalShort++;
+          totalUnits += item.shortage;
+        }
+        
+        var categories = Object.keys(byCategory);
+        for (var c = 0; c < categories.length; c++) {
+          var catName = categories[c];
+          var catItems = byCategory[catName];
+          
+          lines.push('[' + catName + ']');
+          
+          for (var k = 0; k < catItems.length; k++) {
+            var item = catItems[k];
+            var status;
+            if (item.actual === 0) {
+              status = 'MISSING - need ' + item.required;
+            } else {
+              status = 'have ' + item.actual + '/' + item.required + ' - need ' + item.shortage + ' more';
+            }
+            lines.push('  • ' + item.name + ': ' + status);
+          }
+        }
+      }
+      
+      if (totalShort === 0) {
+        return 'ALL ITEMS FULLY STOCKED\n\nNo missing or short items to report.';
+      }
+      
+      var output = 'MISSING/SHORT ITEMS REPORT\n';
+      output += 'Generated: ' + new Date().toLocaleString() + '\n';
+      output += '================================\n\n';
+      output += lines.join('\n');
+      output += '\n\n================================\n';
+      output += 'SUMMARY: ' + totalShort + ' items need restocking (' + totalUnits + ' total units needed)';
+      
+      return output;
+    }
+    
+    // =====================================================
     // RESIZE WIDGET
     // =====================================================
     
@@ -441,7 +512,7 @@
       
       console.log("Missing Items Summary: Running in standalone test mode");
       
-      // Test data
+      // Test data - note actual values are explicitly 0 for missing items
       allAreaData = {
         "driver": {
           area: "Driver Compartment",
@@ -508,48 +579,8 @@
         JFCustomWidget.subscribe("submit", function() {
           if (pollInterval) clearInterval(pollInterval);
           
-          var areaKeys = Object.keys(allAreaData);
-          var lines = [];
-          var totalShort = 0;
-          var totalUnits = 0;
-          
-          // Sort areas alphabetically
-          areaKeys.sort(function(a, b) {
-            var nameA = (allAreaData[a].area || a).toLowerCase();
-            var nameB = (allAreaData[b].area || b).toLowerCase();
-            return nameA.localeCompare(nameB);
-          });
-          
-          for (var i = 0; i < areaKeys.length; i++) {
-            var areaData = allAreaData[areaKeys[i]];
-            if (!areaData || !areaData.shortages || areaData.shortages.length === 0) continue;
-            
-            lines.push('━━━ ' + (areaData.area || areaKeys[i]).toUpperCase() + ' ━━━');
-            
-            for (var j = 0; j < areaData.shortages.length; j++) {
-              var item = areaData.shortages[j];
-              totalShort++;
-              totalUnits += item.shortage;
-              
-              if (item.actual === 0) {
-                lines.push('  ✗ ' + item.name + ': MISSING (need ' + item.required + ')');
-              } else {
-                lines.push('  ⚠ ' + item.name + ': have ' + item.actual + ', need ' + item.shortage + ' more');
-              }
-            }
-            lines.push('');
-          }
-          
-          var output = '';
-          if (totalShort === 0) {
-            output = '✓ ALL ITEMS FULLY STOCKED';
-          } else {
-            output = 'MISSING ITEMS SUMMARY\n';
-            output += '═══════════════════════════════\n\n';
-            output += lines.join('\n');
-            output += '\n═══════════════════════════════\n';
-            output += 'TOTAL: ' + totalShort + ' items short (' + totalUnits + ' units needed)';
-          }
+          // Generate readable output with all missing items
+          var output = generateReadableOutput();
           
           JFCustomWidget.sendSubmit({
             valid: true,

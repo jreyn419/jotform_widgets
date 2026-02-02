@@ -382,7 +382,6 @@
     var areaName = "Area Checklist";
     var inventory = [];
     var itemStates = {};
-    var summaryFieldId = null;
     var widgetId = null;
     var broadcastDebounceTimer = null;
     
@@ -502,6 +501,7 @@
           })(currentCategory, sectionCheckbox);
         }
         
+        // Initialize state - default to unchecked with 0 actual
         if (!itemStates[item.key]) {
           itemStates[item.key] = { checked: false, actual: 0 };
         }
@@ -561,7 +561,8 @@
         valueInput.className = 'qty-value';
         valueInput.min = '0';
         valueInput.max = '9999';
-        valueInput.value = state.checked ? item.required : state.actual;
+        // Display value should match actual state
+        valueInput.value = state.actual;
         valueInput.id = 'act_' + i;
         valueInput.setAttribute('aria-label', 'Actual quantity');
         
@@ -597,18 +598,18 @@
         // Event listeners
         (function(key, required, cb, input, div, badgeEl, decBtn, incBtn, catName) {
           
-          function updateFromValue(val) {
-            val = Math.max(0, Math.min(9999, val));
-            input.value = val;
-            itemStates[key].actual = val;
+          function setItemState(newActual) {
+            newActual = Math.max(0, Math.min(9999, newActual));
             
-            if (val >= required) {
-              cb.checked = true;
-              itemStates[key].checked = true;
-            } else {
-              cb.checked = false;
-              itemStates[key].checked = false;
-            }
+            var isFullyStocked = newActual >= required;
+            
+            itemStates[key] = { 
+              checked: isFullyStocked, 
+              actual: newActual 
+            };
+            
+            cb.checked = isFullyStocked;
+            input.value = newActual;
             
             updateItemClass(div, itemStates[key], required);
             updateBadge(badgeEl, itemStates[key], required);
@@ -617,26 +618,19 @@
             broadcastDataDebounced();
           }
           
-          // BUG FIX: When unchecking, reset to 0
           cb.addEventListener('change', function() {
             if (cb.checked) {
-              input.value = required;
-              itemStates[key] = { checked: true, actual: required };
+              // Checking = set to fully stocked
+              setItemState(required);
             } else {
-              // Reset to 0 when manually unchecking
-              input.value = 0;
-              itemStates[key] = { checked: false, actual: 0 };
+              // Unchecking = reset to 0
+              setItemState(0);
             }
-            updateItemClass(div, itemStates[key], required);
-            updateBadge(badgeEl, itemStates[key], required);
-            updateSummary();
-            updateCategoryCheckbox(catName);
-            broadcastDataDebounced();
           });
           
           input.addEventListener('input', function() {
             var val = parseInt(input.value, 10) || 0;
-            updateFromValue(val);
+            setItemState(val);
           });
           
           input.addEventListener('blur', function() {
@@ -647,13 +641,13 @@
           decBtn.addEventListener('click', function(e) {
             e.preventDefault();
             var val = parseInt(input.value, 10) || 0;
-            updateFromValue(val - 1);
+            setItemState(val - 1);
           });
           
           incBtn.addEventListener('click', function(e) {
             e.preventDefault();
             var val = parseInt(input.value, 10) || 0;
-            updateFromValue(val + 1);
+            setItemState(val + 1);
           });
           
         })(item.key, item.required, checkbox, valueInput, itemDiv, badge, decrementBtn, incrementBtn, item.category);
@@ -753,21 +747,21 @@
     function updateItemClass(div, state, required) {
       div.classList.remove('checked', 'short', 'missing');
       
-      if (state.checked && state.actual >= required) {
+      if (state.actual >= required) {
         div.classList.add('checked');
-      } else if (state.actual > 0 && state.actual < required) {
+      } else if (state.actual > 0) {
         div.classList.add('short');
-      } else if (!state.checked && state.actual === 0) {
+      } else {
         div.classList.add('missing');
       }
     }
     
     function updateBadge(badge, state, required) {
-      if (state.checked && state.actual >= required) {
+      if (state.actual >= required) {
         badge.classList.remove('visible', 'warning');
         badge.textContent = '';
       } else {
-        var shortage = required - (state.actual || 0);
+        var shortage = required - state.actual;
         badge.textContent = '-' + shortage;
         badge.classList.add('visible');
         
@@ -784,11 +778,11 @@
       
       for (var i = 0; i < inventory.length; i++) {
         var item = inventory[i];
-        var state = itemStates[item.key];
+        var state = itemStates[item.key] || { checked: false, actual: 0 };
         
-        if (state && state.checked && state.actual >= item.required) {
+        if (state.actual >= item.required) {
           ok++;
-        } else if (state && state.actual > 0 && state.actual < item.required) {
+        } else if (state.actual > 0) {
           short++;
         } else {
           missing++;
@@ -818,15 +812,15 @@
         var item = inventory[i];
         var state = itemStates[item.key] || { checked: false, actual: 0 };
         
-        if (!state.checked || state.actual < item.required) {
-          var shortage = item.required - (state.actual || 0);
+        // Include any item that isn't fully stocked
+        if (state.actual < item.required) {
           shortages.push({
             area: areaName,
             category: item.category,
             name: item.name,
             required: item.required,
-            actual: state.actual || 0,
-            shortage: shortage
+            actual: state.actual,
+            shortage: item.required - state.actual
           });
         }
       }
@@ -838,42 +832,12 @@
         timestamp: Date.now()
       };
       
+      // Save to this widget's own field for the summary widget to read
       if (typeof JFCustomWidget !== 'undefined') {
-        // Save to this widget's own field
         JFCustomWidget.sendData({
           value: JSON.stringify(data)
         });
-        
-        // Also update the shared summary field for cross-widget communication
-        if (summaryFieldId) {
-          updateSummaryField(data);
-        }
       }
-    }
-    
-    function updateSummaryField(myData) {
-      if (!summaryFieldId || typeof JFCustomWidget === 'undefined') return;
-      
-      // Read current data from the summary field
-      JFCustomWidget.getFieldValue(summaryFieldId, function(existingValue) {
-        var allData = {};
-        
-        if (existingValue) {
-          try {
-            allData = JSON.parse(existingValue);
-          } catch (e) {
-            console.log("Could not parse existing summary data:", e);
-            allData = {};
-          }
-        }
-        
-        // Add/update our data using widgetId as key
-        var myKey = widgetId || ('area_' + areaName.replace(/\s+/g, '_'));
-        allData[myKey] = myData;
-        
-        // Write back to the summary field
-        JFCustomWidget.setFieldValue(summaryFieldId, JSON.stringify(allData));
-      });
     }
     
     // =====================================================
@@ -918,42 +882,37 @@
           
           areaName = JFCustomWidget.getWidgetSetting('areaName') || 'Area Checklist';
           var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
-          summaryFieldId = JFCustomWidget.getWidgetSetting('summaryFieldId') || null;
           
           widgetId = JFCustomWidget.getWidgetSetting('widgetId');
           if (!widgetId) {
             widgetId = 'area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-            console.warn('No widgetId configured - using generated ID: ' + widgetId);
           }
-          
-          console.log('Area Checklist initialized:', {
-            areaName: areaName,
-            widgetId: widgetId,
-            summaryFieldId: summaryFieldId
-          });
           
           document.getElementById('widgetTitle').textContent = areaName;
           inventory = parseInventory(inventoryText);
           
+          // Restore saved state if editing a submission
           if (data.value) {
             try {
               var saved = JSON.parse(data.value);
               if (saved.shortages) {
+                // First, mark all items as fully stocked
                 for (var i = 0; i < inventory.length; i++) {
                   var item = inventory[i];
-                  var found = false;
-                  for (var j = 0; j < saved.shortages.length; j++) {
-                    if (saved.shortages[j].name === item.name) {
-                      itemStates[item.key] = {
-                        checked: false,
-                        actual: saved.shortages[j].actual
+                  itemStates[item.key] = { checked: true, actual: item.required };
+                }
+                // Then update the ones that had shortages
+                for (var j = 0; j < saved.shortages.length; j++) {
+                  var shortage = saved.shortages[j];
+                  for (var k = 0; k < inventory.length; k++) {
+                    if (inventory[k].name === shortage.name && inventory[k].category === shortage.category) {
+                      var actual = shortage.actual || 0;
+                      itemStates[inventory[k].key] = {
+                        checked: actual >= inventory[k].required,
+                        actual: actual
                       };
-                      found = true;
                       break;
                     }
-                  }
-                  if (!found) {
-                    itemStates[item.key] = { checked: true, actual: item.required };
                   }
                 }
               }
@@ -967,41 +926,11 @@
           broadcastData();
         });
         
+        // On submit, send empty string (summary widget handles the output)
         JFCustomWidget.subscribe("submit", function() {
-          var lines = [];
-          var currentCategory = null;
-          
-          for (var i = 0; i < inventory.length; i++) {
-            var item = inventory[i];
-            var state = itemStates[item.key] || { checked: false, actual: 0 };
-            
-            if (!state.checked || state.actual < item.required) {
-              // Add category header if changed
-              if (item.category !== currentCategory) {
-                currentCategory = item.category;
-                if (lines.length > 0) lines.push(''); // blank line between categories
-                lines.push('[' + currentCategory + ']');
-              }
-              
-              var shortage = item.required - (state.actual || 0);
-              if (state.actual === 0) {
-                lines.push('  • ' + item.name + ': MISSING (need ' + item.required + ')');
-              } else {
-                lines.push('  • ' + item.name + ': have ' + state.actual + ', need ' + shortage + ' more');
-              }
-            }
-          }
-          
-          var output = '';
-          if (lines.length === 0) {
-            output = areaName + ': ✓ Fully stocked';
-          } else {
-            output = areaName + ' - Items Needed:\n' + lines.join('\n');
-          }
-          
           JFCustomWidget.sendSubmit({
             valid: true,
-            value: output
+            value: ''
           });
         });
       } else {
