@@ -968,34 +968,40 @@
         });
         
         JFCustomWidget.subscribe("submit", function() {
-          var shortages = [];
+          var lines = [];
+          var currentCategory = null;
           
           for (var i = 0; i < inventory.length; i++) {
             var item = inventory[i];
             var state = itemStates[item.key] || { checked: false, actual: 0 };
             
             if (!state.checked || state.actual < item.required) {
-              shortages.push({
-                area: areaName,
-                category: item.category,
-                name: item.name,
-                required: item.required,
-                actual: state.actual || 0,
-                shortage: item.required - (state.actual || 0)
-              });
+              // Add category header if changed
+              if (item.category !== currentCategory) {
+                currentCategory = item.category;
+                if (lines.length > 0) lines.push(''); // blank line between categories
+                lines.push('[' + currentCategory + ']');
+              }
+              
+              var shortage = item.required - (state.actual || 0);
+              if (state.actual === 0) {
+                lines.push('  • ' + item.name + ': MISSING (need ' + item.required + ')');
+              } else {
+                lines.push('  • ' + item.name + ': have ' + state.actual + ', need ' + shortage + ' more');
+              }
             }
           }
           
-          var data = {
-            widgetId: widgetId,
-            area: areaName,
-            shortages: shortages,
-            timestamp: Date.now()
-          };
+          var output = '';
+          if (lines.length === 0) {
+            output = areaName + ': ✓ Fully stocked';
+          } else {
+            output = areaName + ' - Items Needed:\n' + lines.join('\n');
+          }
           
           JFCustomWidget.sendSubmit({
             valid: true,
-            value: JSON.stringify(data)
+            value: output
           });
         });
       } else {

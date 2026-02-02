@@ -508,28 +508,52 @@
         JFCustomWidget.subscribe("submit", function() {
           if (pollInterval) clearInterval(pollInterval);
           
-          var allShortages = [];
           var areaKeys = Object.keys(allAreaData);
+          var lines = [];
+          var totalShort = 0;
+          var totalUnits = 0;
+          
+          // Sort areas alphabetically
+          areaKeys.sort(function(a, b) {
+            var nameA = (allAreaData[a].area || a).toLowerCase();
+            var nameB = (allAreaData[b].area || b).toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
           
           for (var i = 0; i < areaKeys.length; i++) {
             var areaData = allAreaData[areaKeys[i]];
-            if (areaData && areaData.shortages) {
-              for (var j = 0; j < areaData.shortages.length; j++) {
-                allShortages.push(areaData.shortages[j]);
+            if (!areaData || !areaData.shortages || areaData.shortages.length === 0) continue;
+            
+            lines.push('━━━ ' + (areaData.area || areaKeys[i]).toUpperCase() + ' ━━━');
+            
+            for (var j = 0; j < areaData.shortages.length; j++) {
+              var item = areaData.shortages[j];
+              totalShort++;
+              totalUnits += item.shortage;
+              
+              if (item.actual === 0) {
+                lines.push('  ✗ ' + item.name + ': MISSING (need ' + item.required + ')');
+              } else {
+                lines.push('  ⚠ ' + item.name + ': have ' + item.actual + ', need ' + item.shortage + ' more');
               }
             }
+            lines.push('');
           }
           
-          var summary = {
-            totalAreasChecked: areaKeys.length,
-            totalItemsShort: allShortages.length,
-            shortages: allShortages,
-            timestamp: new Date().toISOString()
-          };
+          var output = '';
+          if (totalShort === 0) {
+            output = '✓ ALL ITEMS FULLY STOCKED';
+          } else {
+            output = 'MISSING ITEMS SUMMARY\n';
+            output += '═══════════════════════════════\n\n';
+            output += lines.join('\n');
+            output += '\n═══════════════════════════════\n';
+            output += 'TOTAL: ' + totalShort + ' items short (' + totalUnits + ' units needed)';
+          }
           
           JFCustomWidget.sendSubmit({
             valid: true,
-            value: JSON.stringify(summary, null, 2)
+            value: output
           });
         });
       } else {
