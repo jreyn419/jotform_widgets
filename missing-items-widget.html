@@ -244,13 +244,13 @@
 <body>
   <div class="summary-container">
     <div class="widget-title" id="widgetTitle">
-      <span class="title-icon">âš ï¸</span>
+      <span class="title-icon">!</span>
       <span>Missing Items Summary</span>
     </div>
     
     <div id="content">
       <div class="no-data">
-        <div class="icon">ðŸ“‹</div>
+        <div class="icon">[...]</div>
         <p>Waiting for checklist data...</p>
       </div>
     </div>
@@ -302,21 +302,21 @@
       }
       
       if (!hasData) {
-        content.innerHTML = '<div class="no-data"><div class="icon">ðŸ“‹</div><p>Complete the area checklists to see missing items here.</p></div>';
+        content.innerHTML = '<div class="no-data"><div class="icon">[...]</div><p>Complete the area checklists to see missing items here.</p></div>';
         resizeWidget();
         return;
       }
       
       if (totalShortages === 0) {
         titleEl.className = 'widget-title all-ok';
-        titleEl.innerHTML = '<span class="title-icon">âœ…</span><span>All Items Present</span>';
-        content.innerHTML = '<div class="all-ok-message"><div class="icon">âœ…</div><h3>Fully Stocked!</h3><p>All inventory items are present and accounted for.</p></div>';
+        titleEl.innerHTML = '<span class="title-icon">&#10003;</span><span>All Items Present</span>';
+        content.innerHTML = '<div class="all-ok-message"><div class="icon">&#10003;</div><h3>Fully Stocked!</h3><p>All inventory items are present and accounted for.</p></div>';
         resizeWidget();
         return;
       }
       
       titleEl.className = 'widget-title';
-      titleEl.innerHTML = '<span class="title-icon">âš ï¸</span><span>Missing Items Summary</span>';
+      titleEl.innerHTML = '<span class="title-icon">!</span><span>Missing Items Summary</span>';
       
       var html = '';
       
@@ -464,7 +464,7 @@
             var status = item.actual === 0 
               ? 'MISSING - need ' + item.required
               : 'have ' + item.actual + '/' + item.required + ' - need ' + item.shortage + ' more';
-            lines.push('  â€¢ ' + item.name + ': ' + status);
+            lines.push('  - ' + item.name + ': ' + status);
           }
         }
       }
