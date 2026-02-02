@@ -227,6 +227,22 @@
       margin-bottom: 5px;
     }
     
+    .debug-info {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 11px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      display: none;
+    }
+    
+    .debug-info.visible {
+      display: block;
+    }
+    
     @media (max-width: 400px) {
       .shortage-item {
         flex-direction: column;
@@ -254,18 +270,44 @@
         <p>Waiting for checklist data...</p>
       </div>
     </div>
+    
+    <div id="debugInfo" class="debug-info"></div>
   </div>
 
-  <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
+  <!-- Use the newer CDN to avoid CORS issues -->
+  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
   <script>
     // =====================================================
     // CONFIGURATION
     // =====================================================
     // Widget Settings needed:
-    //   - hiddenFieldId: Field ID of the shared hidden field (e.g., "42")
-    //                    Must match the hiddenFieldId used by area checklist widgets
+    //   - areaFieldIds: Comma-separated list of field IDs for area checklist widgets
+    //                   e.g., "101,102,103"
+    //
+    // This widget listens for changes from area checklist widgets using
+    // JFCustomWidget.listenFromField() with the 'change' event type
     
     var allAreaData = {};
+    var debugMode = false; // Set to true to show debug info
+    
+    // =====================================================
+    // DEBUG LOGGING
+    // =====================================================
+    
+    function debugLog(message, data) {
+      console.log('[Summary Widget] ' + message, data || '');
+      if (debugMode) {
+        var debugEl = document.getElementById('debugInfo');
+        if (debugEl) {
+          debugEl.classList.add('visible');
+          var timestamp = new Date().toLocaleTimeString();
+          debugEl.textContent += '[' + timestamp + '] ' + message + '\n';
+          if (data) {
+            debugEl.textContent += JSON.stringify(data, null, 2) + '\n';
+          }
+        }
+      }
+    }
     
     // =====================================================
     // RENDER
@@ -300,6 +342,12 @@
           }
         }
       }
+      
+      debugLog('Rendering summary', { 
+        areaCount: areaKeys.length, 
+        hasData: hasData, 
+        totalShortages: totalShortages 
+      });
       
       if (!hasData) {
         content.innerHTML = '<div class="no-data"><div class="icon">[...]</div><p>Complete the area checklists to see missing items here.</p></div>';
@@ -379,20 +427,57 @@
     }
     
     // =====================================================
+    // PROCESS INCOMING DATA
+    // =====================================================
+    
+    function processIncomingData(rawValue, sourceFieldId) {
+      debugLog('Processing data from field ' + sourceFieldId, rawValue);
+      
+      var data = null;
+      
+      // Handle different data formats
+      if (typeof rawValue === 'string') {
+        try {
+          data = JSON.parse(rawValue);
+        } catch (e) {
+          debugLog('Failed to parse as JSON', e.message);
+          return false;
+        }
+      } else if (typeof rawValue === 'object' && rawValue !== null) {
+        data = rawValue;
+      }
+      
+      if (data && data.widgetId) {
+        allAreaData[data.widgetId] = data;
+        debugLog('Stored data for widget: ' + data.widgetId, data);
+        return true;
+      }
+      
+      return false;
+    }
+    
+    // =====================================================
     // LISTEN FOR DATA FROM AREA WIDGETS
     // =====================================================
     
     function setupFieldListeners(fieldIds) {
-      if (typeof JFCustomWidget === 'undefined') return;
+      if (typeof JFCustomWidget === 'undefined') {
+        debugLog('JFCustomWidget not available');
+        return;
+      }
       
-      // fieldIds should be an array of field IDs for the area checklist widgets
-      // e.g., ["101", "102", "103"]
+      debugLog('Setting up listeners for fields', fieldIds);
       
+      // Set up listeners for each area widget field
+      // IMPORTANT: listenFromField requires 3 arguments: fieldId, eventType, callback
       for (var i = 0; i < fieldIds.length; i++) {
         (function(fieldId) {
-          JFCustomWidget.listenFromField(fieldId, function(data) {
-            if (data && data.widgetId) {
-              allAreaData[data.widgetId] = data;
+          debugLog('Adding listener for field: ' + fieldId);
+          
+          // Listen for 'change' events on the field
+          JFCustomWidget.listenFromField(fieldId, 'change', function(value) {
+            debugLog('Received change event from field ' + fieldId, value);
+            if (processIncomingData(value, fieldId)) {
               renderSummary();
             }
           });
@@ -401,30 +486,37 @@
     }
     
     function fetchInitialData(fieldIds) {
-      if (typeof JFCustomWidget === 'undefined') return;
+      if (typeof JFCustomWidget === 'undefined') {
+        debugLog('JFCustomWidget not available for initial fetch');
+        return;
+      }
       
+      debugLog('Fetching initial data for fields', fieldIds);
+      
+      // getFieldsValueById expects an array of string field IDs
       JFCustomWidget.getFieldsValueById(fieldIds, function(values) {
-        if (!values) return;
+        debugLog('Received initial values', values);
         
+        if (!values) {
+          debugLog('No values returned');
+          return;
+        }
+        
+        var dataFound = false;
         for (var fieldId in values) {
-          var data = values[fieldId];
-          if (data && typeof data === 'object' && data.widgetId) {
-            allAreaData[data.widgetId] = data;
-          } else if (data && typeof data === 'string') {
-            try {
-              var parsed = JSON.parse(data);
-              if (parsed && parsed.widgetId) {
-                allAreaData[parsed.widgetId] = parsed;
-              }
-            } catch (e) {}
+          if (processIncomingData(values[fieldId], fieldId)) {
+            dataFound = true;
           }
         }
-        renderSummary();
+        
+        if (dataFound) {
+          renderSummary();
+        }
       });
     }
     
     // =====================================================
-    // GENERATE READABLE OUTPUT
+    // GENERATE READABLE OUTPUT FOR SUBMISSION
     // =====================================================
     
     function generateReadableOutput() {
@@ -503,7 +595,9 @@
     function initStandalone() {
       if (jotformReady) return;
       
-      // Test data
+      debugLog('Initializing in standalone/test mode');
+      
+      // Test data for standalone testing
       allAreaData = {
         "driver": {
           area: "Driver Compartment",
@@ -524,18 +618,29 @@
     }
     
     function init() {
+      debugLog('Initializing widget');
+      
       var fallback = setTimeout(function() {
-        if (!jotformReady) initStandalone();
-      }, 1000);
+        if (!jotformReady) {
+          debugLog('Fallback timeout reached, initializing standalone');
+          initStandalone();
+        }
+      }, 1500);
       
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
+        debugLog('JFCustomWidget available, subscribing to ready event');
+        
         JFCustomWidget.subscribe("ready", function(data) {
           jotformReady = true;
           clearTimeout(fallback);
           
+          debugLog('Ready event received', data);
+          
           // Get the list of area checklist widget field IDs from settings
           // Format: comma-separated field IDs, e.g., "101,102,103"
           var areaFieldIdsSetting = JFCustomWidget.getWidgetSetting('areaFieldIds') || '';
+          debugLog('areaFieldIds setting: ' + areaFieldIdsSetting);
+          
           var areaFieldIds = areaFieldIdsSetting.split(',').map(function(id) {
             return id.trim();
           }).filter(function(id) {
@@ -547,27 +652,36 @@
               '<div class="config-error">' +
               '<strong>Configuration needed:</strong> Set <code>areaFieldIds</code> in widget settings ' +
               'to a comma-separated list of field IDs for your area checklist widgets (e.g., "101,102,103").' +
+              '<br><br>To find field IDs: In the form builder, click on each area checklist widget and note the ' +
+              'field ID shown in the URL or properties panel.' +
               '</div>';
             resizeWidget();
             return;
           }
           
-          // Set up listeners for each area widget field
+          // Clear any test data
+          allAreaData = {};
+          
+          // Set up listeners for real-time updates (INSIDE ready callback as required)
           setupFieldListeners(areaFieldIds);
           
           // Fetch initial data from all fields
           fetchInitialData(areaFieldIds);
           
+          // Show waiting message initially
+          renderSummary();
           resizeWidget();
         });
         
         JFCustomWidget.subscribe("submit", function() {
+          debugLog('Submit event received');
           JFCustomWidget.sendSubmit({
             valid: true,
             value: generateReadableOutput()
           });
         });
       } else {
+        debugLog('JFCustomWidget not available');
         clearTimeout(fallback);
         initStandalone();
       }

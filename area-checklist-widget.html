@@ -356,7 +356,8 @@
     <span class="summary-stat stat-missing">X Missing: <strong id="missingCount">0</strong></span>
   </div>
 
-  <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
+  <!-- Use the newer CDN to avoid CORS issues -->
+  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
   <script>
     // =====================================================
     // CONFIGURATION
@@ -366,8 +367,8 @@
     //   - widgetId: Unique ID for this widget (e.g., "driver" or "area1")
     //   - inventoryItems: The inventory list in format "Category\nItem|Qty"
     // 
-    // Data is sent via JFCustomWidget.sendData() and can be received by 
-    // other widgets using JFCustomWidget.listenFromField()
+    // Data is sent via JFCustomWidget.sendData() with a stringified JSON value
+    // Other widgets can listen using JFCustomWidget.listenFromField()
     
     var DEFAULT_INVENTORY = [
       "Driver Compartment",
@@ -694,7 +695,7 @@
     }
     
     // =====================================================
-    // BROADCAST TO HIDDEN FIELD
+    // BROADCAST TO FORM (for other widgets to listen)
     // =====================================================
     
     function broadcastDebounced() {
@@ -703,7 +704,10 @@
     }
     
     function broadcastData() {
-      if (typeof JFCustomWidget === 'undefined') return;
+      if (typeof JFCustomWidget === 'undefined') {
+        console.log('[Area Widget] JFCustomWidget not available');
+        return;
+      }
       
       // Build this area's shortage data
       var shortages = [];
@@ -729,11 +733,15 @@
         timestamp: Date.now()
       };
       
-      // Send data to the parent form
+      // IMPORTANT: sendData expects { value: string }
+      // The value must be a STRING (JSON stringified)
       try {
-        JFCustomWidget.sendData(myData);
+        JFCustomWidget.sendData({
+          value: JSON.stringify(myData)
+        });
+        console.log('[Area Widget] Broadcast data:', myData);
       } catch (e) {
-        console.log('Error sending data:', e);
+        console.log('[Area Widget] Error sending data:', e);
       }
     }
     
@@ -771,6 +779,8 @@
           jotformReady = true;
           clearTimeout(fallback);
           
+          console.log('[Area Widget] Ready event received', data);
+          
           areaName = JFCustomWidget.getWidgetSetting('areaName') || 'Area Checklist';
           widgetId = JFCustomWidget.getWidgetSetting('widgetId') || areaName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
           var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
@@ -779,7 +789,7 @@
           
           inventory = parseInventory(inventoryText);
           
-          // Restore state if editing
+          // Restore state if editing a submission
           if (data.value) {
             try {
               var saved = JSON.parse(data.value);
@@ -799,17 +809,47 @@
                   }
                 }
               }
-            } catch (e) {}
+            } catch (e) {
+              console.log('[Area Widget] Error parsing saved value:', e);
+            }
           }
           
           buildChecklist();
           resizeWidget();
-          broadcastData();
+          
+          // Broadcast initial state after a short delay to ensure form is ready
+          setTimeout(broadcastData, 200);
         });
         
         JFCustomWidget.subscribe("submit", function() {
-          // Don't output anything - summary widget handles it
-          JFCustomWidget.sendSubmit({ valid: true, value: '' });
+          // Build final data for submission
+          var shortages = [];
+          for (var i = 0; i < inventory.length; i++) {
+            var item = inventory[i];
+            var actual = (itemStates[item.key] || { actual: 0 }).actual;
+            if (actual < item.required) {
+              shortages.push({
+                area: areaName,
+                category: item.category,
+                name: item.name,
+                required: item.required,
+                actual: actual,
+                shortage: item.required - actual
+              });
+            }
+          }
+          
+          var submitData = {
+            widgetId: widgetId,
+            area: areaName,
+            shortages: shortages,
+            timestamp: Date.now()
+          };
+          
+          JFCustomWidget.sendSubmit({ 
+            valid: true, 
+            value: JSON.stringify(submitData)
+          });
         });
       } else {
         clearTimeout(fallback);
