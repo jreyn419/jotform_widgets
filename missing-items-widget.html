@@ -22,23 +22,9 @@
       border-radius: 6px;
       padding: 10px;
       margin-bottom: 15px;
-      font-size: 12px;
+      font-size: 11px;
       font-family: monospace;
-    }
-    
-    .debug-panel h4 {
-      margin: 0 0 8px 0;
-      color: #856404;
-    }
-    
-    .debug-log {
-      background: #fff;
-      border: 1px solid #ddd;
-      padding: 8px;
-      max-height: 150px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
+      display: none; /* Set to block to debug */
     }
     
     .widget-title {
@@ -58,9 +44,7 @@
       border-bottom-color: #28a745;
     }
     
-    .title-icon {
-      font-size: 24px;
-    }
+    .title-icon { font-size: 24px; }
     
     .all-ok-message {
       background: #d4edda;
@@ -71,21 +55,9 @@
       color: #155724;
     }
     
-    .all-ok-message .icon {
-      font-size: 48px;
-      margin-bottom: 10px;
-    }
-    
-    .all-ok-message h3 {
-      margin: 0 0 5px 0;
-      font-size: 18px;
-    }
-    
-    .all-ok-message p {
-      margin: 0;
-      font-size: 14px;
-      opacity: 0.8;
-    }
+    .all-ok-message .icon { font-size: 48px; margin-bottom: 10px; }
+    .all-ok-message h3 { margin: 0 0 5px 0; font-size: 18px; }
+    .all-ok-message p { margin: 0; font-size: 14px; opacity: 0.8; }
     
     .area-section {
       margin-bottom: 20px;
@@ -129,17 +101,9 @@
       gap: 10px;
     }
     
-    .shortage-item:last-child {
-      border-bottom: none;
-    }
-    
-    .shortage-item.critical {
-      background: #f8d7da;
-    }
-    
-    .shortage-item.warning {
-      background: #fff3cd;
-    }
+    .shortage-item:last-child { border-bottom: none; }
+    .shortage-item.critical { background: #f8d7da; }
+    .shortage-item.warning { background: #fff3cd; }
     
     .item-info {
       display: flex;
@@ -149,15 +113,8 @@
       min-width: 0;
     }
     
-    .item-name {
-      font-weight: 500;
-      color: #333;
-    }
-    
-    .item-category {
-      font-size: 12px;
-      color: #666;
-    }
+    .item-name { font-weight: 500; color: #333; }
+    .item-category { font-size: 12px; color: #666; }
     
     .item-shortage {
       display: flex;
@@ -207,20 +164,9 @@
       text-align: center;
     }
     
-    .total-stat {
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .stat-number {
-      font-size: 28px;
-      font-weight: 700;
-    }
-    
-    .stat-label {
-      font-size: 12px;
-      opacity: 0.7;
-    }
+    .total-stat { display: flex; flex-direction: column; }
+    .stat-number { font-size: 28px; font-weight: 700; }
+    .stat-label { font-size: 12px; opacity: 0.7; }
     
     .no-data {
       padding: 30px;
@@ -248,7 +194,6 @@
         flex-direction: column;
         align-items: flex-start;
       }
-      
       .item-shortage {
         width: 100%;
         justify-content: space-between;
@@ -258,11 +203,8 @@
   </style>
 </head>
 <body>
-  <div class="debug-panel">
-    <h4>🔧 Debug Info (remove for production)</h4>
-    <div class="debug-log" id="debugLog">Initializing...</div>
-  </div>
-
+  <div class="debug-panel" id="debugPanel"></div>
+  
   <div class="summary-container">
     <div class="widget-title" id="widgetTitle">
       <span class="title-icon">⚠️</span>
@@ -279,79 +221,54 @@
 
   <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
   <script>
-    // =====================================================
-    // DEBUG LOGGING
-    // =====================================================
-    
-    var debugLines = [];
-    
-    function debug(msg) {
-      var time = new Date().toLocaleTimeString();
-      debugLines.push('[' + time + '] ' + msg);
-      if (debugLines.length > 20) debugLines.shift();
-      
-      var el = document.getElementById('debugLog');
-      if (el) el.textContent = debugLines.join('\n');
-      
-      console.log('[MissingSummary] ' + msg);
-    }
-    
-    // =====================================================
-    // STATE
-    // =====================================================
-    
     var hiddenFieldId = null;
     var allAreaData = {};
     var pollInterval = null;
-    var lastDataHash = '';
-    var jotformReady = false;
+    var lastValue = '';
     
-    // =====================================================
-    // RENDER
-    // =====================================================
+    function debug(msg) {
+      console.log('[Summary] ' + msg);
+      var el = document.getElementById('debugPanel');
+      if (el) el.textContent += msg + '\n';
+    }
     
-    function escapeHtml(text) {
-      var div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
+    function escapeHtml(t) {
+      var d = document.createElement('div');
+      d.textContent = t;
+      return d.innerHTML;
     }
     
     function renderSummary() {
       var content = document.getElementById('content');
       var titleEl = document.getElementById('widgetTitle');
+      var keys = Object.keys(allAreaData);
       
-      var areaKeys = Object.keys(allAreaData);
-      debug('Rendering ' + areaKeys.length + ' areas');
+      var totalShort = 0, totalUnits = 0, hasData = false, areasShort = 0;
       
-      var totalShortages = 0;
-      var totalUnits = 0;
-      var hasData = false;
-      var areasWithShortages = 0;
-      
-      for (var i = 0; i < areaKeys.length; i++) {
-        var areaData = allAreaData[areaKeys[i]];
-        if (areaData && areaData.shortages) {
+      for (var i = 0; i < keys.length; i++) {
+        var area = allAreaData[keys[i]];
+        if (area && area.shortages) {
           hasData = true;
-          if (areaData.shortages.length > 0) {
-            areasWithShortages++;
-            totalShortages += areaData.shortages.length;
-            for (var j = 0; j < areaData.shortages.length; j++) {
-              totalUnits += areaData.shortages[j].shortage;
+          if (area.shortages.length > 0) {
+            areasShort++;
+            totalShort += area.shortages.length;
+            for (var j = 0; j < area.shortages.length; j++) {
+              totalUnits += area.shortages[j].shortage;
             }
           }
         }
       }
       
       if (!hasData) {
-        content.innerHTML = '<div class="no-data"><div class="icon">📋</div><p>No data received yet. Waiting for area checklists...</p></div>';
+        content.innerHTML = '<div class="no-data"><div class="icon">📋</div><p>No checklist data received yet.</p></div>';
         resizeWidget();
         return;
       }
       
-      if (totalShortages === 0) {
+      if (totalShort === 0) {
         titleEl.className = 'widget-title all-ok';
         titleEl.innerHTML = '<span class="title-icon">✅</span><span>All Items Present</span>';
-        content.innerHTML = '<div class="all-ok-message"><div class="icon">✅</div><h3>Fully Stocked!</h3><p>All inventory items are present and accounted for.</p></div>';
+        content.innerHTML = '<div class="all-ok-message"><div class="icon">✅</div><h3>Fully Stocked!</h3><p>All items are present.</p></div>';
         resizeWidget();
         return;
       }
@@ -359,143 +276,100 @@
       titleEl.className = 'widget-title';
       titleEl.innerHTML = '<span class="title-icon">⚠️</span><span>Missing Items Summary</span>';
       
-      var html = '';
-      
-      areaKeys.sort(function(a, b) {
-        var nameA = (allAreaData[a].area || a).toLowerCase();
-        var nameB = (allAreaData[b].area || b).toLowerCase();
-        return nameA.localeCompare(nameB);
+      keys.sort(function(a, b) {
+        return (allAreaData[a].area || a).localeCompare(allAreaData[b].area || b);
       });
       
-      for (var a = 0; a < areaKeys.length; a++) {
-        var key = areaKeys[a];
-        var areaData = allAreaData[key];
+      var html = '';
+      for (var k = 0; k < keys.length; k++) {
+        var area = allAreaData[keys[k]];
+        if (!area || !area.shortages || area.shortages.length === 0) continue;
         
-        if (!areaData || !areaData.shortages || areaData.shortages.length === 0) continue;
+        html += '<div class="area-section"><div class="area-header">';
+        html += '<span>' + escapeHtml(area.area || keys[k]) + '</span>';
+        html += '<span class="area-count">' + area.shortages.length + ' items</span>';
+        html += '</div><ul class="shortage-list">';
         
-        html += '<div class="area-section">';
-        html += '<div class="area-header">';
-        html += '<span>' + escapeHtml(areaData.area || key) + '</span>';
-        html += '<span class="area-count">' + areaData.shortages.length + ' items</span>';
-        html += '</div>';
-        html += '<ul class="shortage-list">';
-        
-        for (var s = 0; s < areaData.shortages.length; s++) {
-          var item = areaData.shortages[s];
-          var isCritical = item.actual === 0;
-          var itemClass = isCritical ? 'critical' : 'warning';
-          var badgeClass = isCritical ? '' : 'warning';
-          var badgeText = isCritical ? 'MISSING' : ('Need ' + item.shortage);
+        for (var s = 0; s < area.shortages.length; s++) {
+          var item = area.shortages[s];
+          var critical = item.actual === 0;
           
-          html += '<li class="shortage-item ' + itemClass + '">';
-          html += '<div class="item-info">';
-          html += '<span class="item-name">' + escapeHtml(item.name) + '</span>';
-          if (item.category) {
-            html += '<span class="item-category">' + escapeHtml(item.category) + '</span>';
-          }
-          html += '</div>';
-          html += '<div class="item-shortage">';
+          html += '<li class="shortage-item ' + (critical ? 'critical' : 'warning') + '">';
+          html += '<div class="item-info"><span class="item-name">' + escapeHtml(item.name) + '</span>';
+          if (item.category) html += '<span class="item-category">' + escapeHtml(item.category) + '</span>';
+          html += '</div><div class="item-shortage">';
           html += '<span class="shortage-detail">' + item.actual + ' / ' + item.required + '</span>';
-          html += '<span class="shortage-badge ' + badgeClass + '">' + badgeText + '</span>';
-          html += '</div>';
-          html += '</li>';
+          html += '<span class="shortage-badge' + (critical ? '' : ' warning') + '">' + (critical ? 'MISSING' : 'Need ' + item.shortage) + '</span>';
+          html += '</div></li>';
         }
-        
-        html += '</ul>';
-        html += '</div>';
+        html += '</ul></div>';
       }
       
-      html += '<div class="total-summary">';
-      html += '<h4>TOTAL SHORTAGES</h4>';
-      html += '<div class="total-stats">';
-      html += '<div class="total-stat"><span class="stat-number">' + areasWithShortages + '</span><span class="stat-label">Areas</span></div>';
-      html += '<div class="total-stat"><span class="stat-number">' + totalShortages + '</span><span class="stat-label">Items Short</span></div>';
-      html += '<div class="total-stat"><span class="stat-number">' + totalUnits + '</span><span class="stat-label">Units Needed</span></div>';
-      html += '</div>';
-      html += '</div>';
+      html += '<div class="total-summary"><h4>TOTAL SHORTAGES</h4><div class="total-stats">';
+      html += '<div class="total-stat"><span class="stat-number">' + areasShort + '</span><span class="stat-label">Areas</span></div>';
+      html += '<div class="total-stat"><span class="stat-number">' + totalShort + '</span><span class="stat-label">Items</span></div>';
+      html += '<div class="total-stat"><span class="stat-number">' + totalUnits + '</span><span class="stat-label">Units</span></div>';
+      html += '</div></div>';
       
       content.innerHTML = html;
       resizeWidget();
     }
     
     // =====================================================
-    // POLL HIDDEN FIELD
+    // READ FROM PARENT DOM HIDDEN FIELD
     // =====================================================
     
     function pollHiddenField() {
-      if (!hiddenFieldId) {
-        debug('No hiddenFieldId configured!');
-        return;
+      if (!hiddenFieldId) return;
+      
+      try {
+        var hiddenInput = window.parent.document.getElementById('input_' + hiddenFieldId);
+        if (hiddenInput && hiddenInput.value && hiddenInput.value !== lastValue) {
+          lastValue = hiddenInput.value;
+          debug('Got data: ' + lastValue.substring(0, 80) + '...');
+          
+          try {
+            allAreaData = JSON.parse(lastValue);
+            renderSummary();
+          } catch(e) {
+            debug('Parse error: ' + e);
+          }
+        }
+      } catch(e) {
+        debug('DOM access error: ' + e);
       }
-      
-      if (typeof JFCustomWidget === 'undefined') {
-        debug('JFCustomWidget not available');
-        return;
-      }
-      
-      debug('Polling field: ' + hiddenFieldId);
-      
-      JFCustomWidget.getFieldValue(hiddenFieldId, function(value) {
-        debug('Got value: ' + (value ? value.substring(0, 100) + '...' : '(empty)'));
-        
-        if (!value) {
-          debug('Hidden field is empty');
-          return;
-        }
-        
-        if (value === lastDataHash) {
-          return; // No change
-        }
-        
-        lastDataHash = value;
-        
-        try {
-          allAreaData = JSON.parse(value);
-          debug('Parsed OK, keys: ' + Object.keys(allAreaData).join(', '));
-          renderSummary();
-        } catch (e) {
-          debug('Parse error: ' + e.message);
-        }
-      });
     }
     
-    // =====================================================
-    // READABLE OUTPUT
-    // =====================================================
-    
     function generateReadableOutput() {
-      var areaKeys = Object.keys(allAreaData);
+      var keys = Object.keys(allAreaData);
       var lines = [];
-      var totalShort = 0;
-      var totalUnits = 0;
+      var totalShort = 0, totalUnits = 0;
       
-      areaKeys.sort(function(a, b) {
-        var nameA = (allAreaData[a].area || a).toLowerCase();
-        var nameB = (allAreaData[b].area || b).toLowerCase();
-        return nameA.localeCompare(nameB);
+      keys.sort(function(a, b) {
+        return (allAreaData[a].area || a).localeCompare(allAreaData[b].area || b);
       });
       
-      for (var i = 0; i < areaKeys.length; i++) {
-        var areaData = allAreaData[areaKeys[i]];
-        if (!areaData || !areaData.shortages || areaData.shortages.length === 0) continue;
+      for (var i = 0; i < keys.length; i++) {
+        var area = allAreaData[keys[i]];
+        if (!area || !area.shortages || area.shortages.length === 0) continue;
         
         if (lines.length > 0) lines.push('');
-        lines.push('=== ' + (areaData.area || areaKeys[i]).toUpperCase() + ' ===');
+        lines.push('=== ' + (area.area || keys[i]).toUpperCase() + ' ===');
         
-        var byCategory = {};
-        for (var j = 0; j < areaData.shortages.length; j++) {
-          var item = areaData.shortages[j];
+        var byCat = {};
+        for (var j = 0; j < area.shortages.length; j++) {
+          var item = area.shortages[j];
           var cat = item.category || 'General';
-          if (!byCategory[cat]) byCategory[cat] = [];
-          byCategory[cat].push(item);
+          if (!byCat[cat]) byCat[cat] = [];
+          byCat[cat].push(item);
           totalShort++;
           totalUnits += item.shortage;
         }
         
-        for (var cat in byCategory) {
+        for (var cat in byCat) {
           lines.push('[' + cat + ']');
-          for (var k = 0; k < byCategory[cat].length; k++) {
-            var item = byCategory[cat][k];
+          for (var k = 0; k < byCat[cat].length; k++) {
+            var item = byCat[cat][k];
             var status = item.actual === 0 
               ? 'MISSING - need ' + item.required
               : 'have ' + item.actual + '/' + item.required + ' - need ' + item.shortage + ' more';
@@ -504,87 +378,52 @@
         }
       }
       
-      if (totalShort === 0) {
-        return 'ALL ITEMS FULLY STOCKED';
-      }
+      if (totalShort === 0) return 'ALL ITEMS FULLY STOCKED';
       
-      var output = 'MISSING/SHORT ITEMS REPORT\n';
-      output += 'Generated: ' + new Date().toLocaleString() + '\n';
-      output += '================================\n\n';
-      output += lines.join('\n');
-      output += '\n\n================================\n';
-      output += 'SUMMARY: ' + totalShort + ' items (' + totalUnits + ' units needed)';
-      
-      return output;
+      return 'MISSING/SHORT ITEMS REPORT\nGenerated: ' + new Date().toLocaleString() + 
+             '\n================================\n\n' + lines.join('\n') +
+             '\n\n================================\nSUMMARY: ' + totalShort + ' items (' + totalUnits + ' units needed)';
     }
-    
-    // =====================================================
-    // RESIZE
-    // =====================================================
     
     function resizeWidget() {
-      if (typeof JFCustomWidget === 'undefined') return;
-      setTimeout(function() {
-        JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-      }, 100);
+      if (typeof JFCustomWidget !== 'undefined') {
+        setTimeout(function() {
+          JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+        }, 100);
+      }
     }
     
-    // =====================================================
-    // INIT
-    // =====================================================
-    
     function init() {
-      debug('Init called');
-      debug('JFCustomWidget exists: ' + (typeof JFCustomWidget !== 'undefined'));
+      debug('Init');
       
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
-        debug('Subscribing to JotForm events...');
-        
-        JFCustomWidget.subscribe("ready", function(data) {
-          jotformReady = true;
-          debug('JotForm READY event fired');
-          debug('data.value: ' + (data.value ? data.value.substring(0, 50) : '(none)'));
-          
-          // Get settings
+        JFCustomWidget.subscribe("ready", function() {
           hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId');
-          debug('hiddenFieldId setting: ' + hiddenFieldId);
+          debug('Ready. hiddenFieldId=' + hiddenFieldId);
           
           if (!hiddenFieldId) {
-            debug('ERROR: No hiddenFieldId configured!');
             document.getElementById('content').innerHTML = 
-              '<div class="config-error">' +
-              '<strong>Configuration needed:</strong> Set hiddenFieldId in widget settings.</div>';
+              '<div class="config-error"><strong>Config needed:</strong> Set hiddenFieldId</div>';
             resizeWidget();
             return;
           }
           
-          // Start polling
-          debug('Starting poll interval...');
+          // Start polling parent DOM
           pollHiddenField();
-          pollInterval = setInterval(pollHiddenField, 1000);
-          
+          pollInterval = setInterval(pollHiddenField, 500);
           resizeWidget();
         });
         
         JFCustomWidget.subscribe("submit", function() {
-          debug('Submit event');
           if (pollInterval) clearInterval(pollInterval);
-          
-          JFCustomWidget.sendSubmit({
-            valid: true,
-            value: generateReadableOutput()
-          });
+          JFCustomWidget.sendSubmit({ valid: true, value: generateReadableOutput() });
         });
       } else {
-        debug('JFCustomWidget not available - standalone mode');
-        // Don't load test data - just show waiting message
+        debug('No JFCustomWidget - standalone');
         document.getElementById('content').innerHTML = 
-          '<div class="no-data"><div class="icon">📋</div>' +
-          '<p>JotForm widget API not detected.<br>This widget must run inside JotForm.</p></div>';
+          '<div class="no-data"><div class="icon">📋</div><p>Must run inside JotForm</p></div>';
       }
     }
-    
-    debug('Script loaded');
     
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
