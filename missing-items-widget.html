@@ -16,8 +16,29 @@
       background: #fff;
     }
     
-    .summary-container {
-      max-width: 100%;
+    .debug-panel {
+      background: #fffde7;
+      border: 2px solid #ffc107;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+    
+    .debug-panel h4 {
+      margin: 0 0 8px 0;
+      color: #856404;
+    }
+    
+    .debug-log {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
     
     .widget-title {
@@ -222,11 +243,6 @@
       font-size: 13px;
     }
     
-    .config-error strong {
-      display: block;
-      margin-bottom: 5px;
-    }
-    
     @media (max-width: 400px) {
       .shortage-item {
         flex-direction: column;
@@ -242,6 +258,11 @@
   </style>
 </head>
 <body>
+  <div class="debug-panel">
+    <h4>🔧 Debug Info (remove for production)</h4>
+    <div class="debug-log" id="debugLog">Initializing...</div>
+  </div>
+
   <div class="summary-container">
     <div class="widget-title" id="widgetTitle">
       <span class="title-icon">⚠️</span>
@@ -259,16 +280,31 @@
   <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
   <script>
     // =====================================================
-    // CONFIGURATION
+    // DEBUG LOGGING
     // =====================================================
-    // Widget Settings needed:
-    //   - hiddenFieldId: Field ID of the shared hidden field (e.g., "42")
-    //                    Must match the hiddenFieldId used by area checklist widgets
+    
+    var debugLines = [];
+    
+    function debug(msg) {
+      var time = new Date().toLocaleTimeString();
+      debugLines.push('[' + time + '] ' + msg);
+      if (debugLines.length > 20) debugLines.shift();
+      
+      var el = document.getElementById('debugLog');
+      if (el) el.textContent = debugLines.join('\n');
+      
+      console.log('[MissingSummary] ' + msg);
+    }
+    
+    // =====================================================
+    // STATE
+    // =====================================================
     
     var hiddenFieldId = null;
     var allAreaData = {};
     var pollInterval = null;
     var lastDataHash = '';
+    var jotformReady = false;
     
     // =====================================================
     // RENDER
@@ -285,6 +321,8 @@
       var titleEl = document.getElementById('widgetTitle');
       
       var areaKeys = Object.keys(allAreaData);
+      debug('Rendering ' + areaKeys.length + ' areas');
+      
       var totalShortages = 0;
       var totalUnits = 0;
       var hasData = false;
@@ -305,7 +343,7 @@
       }
       
       if (!hasData) {
-        content.innerHTML = '<div class="no-data"><div class="icon">📋</div><p>Complete the area checklists to see missing items here.</p></div>';
+        content.innerHTML = '<div class="no-data"><div class="icon">📋</div><p>No data received yet. Waiting for area checklists...</p></div>';
         resizeWidget();
         return;
       }
@@ -323,7 +361,6 @@
       
       var html = '';
       
-      // Sort by area name
       areaKeys.sort(function(a, b) {
         var nameA = (allAreaData[a].area || a).toLowerCase();
         var nameB = (allAreaData[b].area || b).toLowerCase();
@@ -386,23 +423,44 @@
     // =====================================================
     
     function pollHiddenField() {
-      if (!hiddenFieldId || typeof JFCustomWidget === 'undefined') return;
+      if (!hiddenFieldId) {
+        debug('No hiddenFieldId configured!');
+        return;
+      }
+      
+      if (typeof JFCustomWidget === 'undefined') {
+        debug('JFCustomWidget not available');
+        return;
+      }
+      
+      debug('Polling field: ' + hiddenFieldId);
       
       JFCustomWidget.getFieldValue(hiddenFieldId, function(value) {
-        if (!value || value === lastDataHash) return;
+        debug('Got value: ' + (value ? value.substring(0, 100) + '...' : '(empty)'));
+        
+        if (!value) {
+          debug('Hidden field is empty');
+          return;
+        }
+        
+        if (value === lastDataHash) {
+          return; // No change
+        }
+        
         lastDataHash = value;
         
         try {
           allAreaData = JSON.parse(value);
+          debug('Parsed OK, keys: ' + Object.keys(allAreaData).join(', '));
           renderSummary();
         } catch (e) {
-          console.log('Could not parse hidden field:', e);
+          debug('Parse error: ' + e.message);
         }
       });
     }
     
     // =====================================================
-    // GENERATE READABLE OUTPUT
+    // READABLE OUTPUT
     // =====================================================
     
     function generateReadableOutput() {
@@ -424,7 +482,6 @@
         if (lines.length > 0) lines.push('');
         lines.push('=== ' + (areaData.area || areaKeys[i]).toUpperCase() + ' ===');
         
-        // Group by category
         var byCategory = {};
         for (var j = 0; j < areaData.shortages.length; j++) {
           var item = areaData.shortages[j];
@@ -448,7 +505,7 @@
       }
       
       if (totalShort === 0) {
-        return 'ALL ITEMS FULLY STOCKED\n\nNo missing or short items to report.';
+        return 'ALL ITEMS FULLY STOCKED';
       }
       
       var output = 'MISSING/SHORT ITEMS REPORT\n';
@@ -456,7 +513,7 @@
       output += '================================\n\n';
       output += lines.join('\n');
       output += '\n\n================================\n';
-      output += 'SUMMARY: ' + totalShort + ' items need restocking (' + totalUnits + ' total units needed)';
+      output += 'SUMMARY: ' + totalShort + ' items (' + totalUnits + ' units needed)';
       
       return output;
     }
@@ -476,62 +533,41 @@
     // INIT
     // =====================================================
     
-    var jotformReady = false;
-    
-    function initStandalone() {
-      if (jotformReady) return;
-      
-      // Test data
-      allAreaData = {
-        "driver": {
-          area: "Driver Compartment",
-          shortages: [
-            { name: "Flashlight", category: "Equipment", required: 2, actual: 1, shortage: 1 },
-            { name: "Maps/GPS Unit", category: "Equipment", required: 1, actual: 0, shortage: 1 }
-          ]
-        },
-        "patient": {
-          area: "Patient Compartment", 
-          shortages: [
-            { name: "Bandages", category: "Supplies", required: 10, actual: 3, shortage: 7 },
-            { name: "Gloves (pairs)", category: "PPE", required: 50, actual: 0, shortage: 50 }
-          ]
-        }
-      };
-      renderSummary();
-    }
-    
     function init() {
-      var fallback = setTimeout(function() {
-        if (!jotformReady) initStandalone();
-      }, 1000);
+      debug('Init called');
+      debug('JFCustomWidget exists: ' + (typeof JFCustomWidget !== 'undefined'));
       
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
+        debug('Subscribing to JotForm events...');
+        
         JFCustomWidget.subscribe("ready", function(data) {
           jotformReady = true;
-          clearTimeout(fallback);
+          debug('JotForm READY event fired');
+          debug('data.value: ' + (data.value ? data.value.substring(0, 50) : '(none)'));
           
-          hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId') || null;
+          // Get settings
+          hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId');
+          debug('hiddenFieldId setting: ' + hiddenFieldId);
           
           if (!hiddenFieldId) {
+            debug('ERROR: No hiddenFieldId configured!');
             document.getElementById('content').innerHTML = 
               '<div class="config-error">' +
-              '<strong>Configuration needed:</strong> Set <code>hiddenFieldId</code> in widget settings ' +
-              'to the field ID of your hidden field (e.g., "42"). ' +
-              'This must match the hiddenFieldId used by your area checklist widgets.' +
-              '</div>';
+              '<strong>Configuration needed:</strong> Set hiddenFieldId in widget settings.</div>';
             resizeWidget();
             return;
           }
           
           // Start polling
+          debug('Starting poll interval...');
           pollHiddenField();
-          pollInterval = setInterval(pollHiddenField, 500);
+          pollInterval = setInterval(pollHiddenField, 1000);
           
           resizeWidget();
         });
         
         JFCustomWidget.subscribe("submit", function() {
+          debug('Submit event');
           if (pollInterval) clearInterval(pollInterval);
           
           JFCustomWidget.sendSubmit({
@@ -540,10 +576,15 @@
           });
         });
       } else {
-        clearTimeout(fallback);
-        initStandalone();
+        debug('JFCustomWidget not available - standalone mode');
+        // Don't load test data - just show waiting message
+        document.getElementById('content').innerHTML = 
+          '<div class="no-data"><div class="icon">📋</div>' +
+          '<p>JotForm widget API not detected.<br>This widget must run inside JotForm.</p></div>';
       }
     }
+    
+    debug('Script loaded');
     
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
