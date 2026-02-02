@@ -242,7 +242,7 @@
   </style>
 </head>
 <body>
-  <div class="summary-container" id="summaryContainer">
+  <div class="summary-container">
     <div class="widget-title" id="widgetTitle">
       <span class="title-icon">⚠️</span>
       <span>Missing Items Summary</span>
@@ -259,17 +259,26 @@
   <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
   <script>
     // =====================================================
-    // WIDGET STATE
+    // CONFIGURATION
     // =====================================================
+    // Widget Settings needed:
+    //   - hiddenFieldId: Field ID of the shared hidden field (e.g., "42")
+    //                    Must match the hiddenFieldId used by area checklist widgets
     
-    var areaFieldIds = [];  // List of field IDs for area checklist widgets
+    var hiddenFieldId = null;
     var allAreaData = {};
     var pollInterval = null;
     var lastDataHash = '';
     
     // =====================================================
-    // RENDER SUMMARY
+    // RENDER
     // =====================================================
+    
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
     
     function renderSummary() {
       var content = document.getElementById('content');
@@ -277,7 +286,7 @@
       
       var areaKeys = Object.keys(allAreaData);
       var totalShortages = 0;
-      var totalItems = 0;
+      var totalUnits = 0;
       var hasData = false;
       var areasWithShortages = 0;
       
@@ -289,7 +298,7 @@
             areasWithShortages++;
             totalShortages += areaData.shortages.length;
             for (var j = 0; j < areaData.shortages.length; j++) {
-              totalItems += areaData.shortages[j].shortage;
+              totalUnits += areaData.shortages[j].shortage;
             }
           }
         }
@@ -314,6 +323,7 @@
       
       var html = '';
       
+      // Sort by area name
       areaKeys.sort(function(a, b) {
         var nameA = (allAreaData[a].area || a).toLowerCase();
         var nameB = (allAreaData[b].area || b).toLowerCase();
@@ -335,8 +345,7 @@
         
         for (var s = 0; s < areaData.shortages.length; s++) {
           var item = areaData.shortages[s];
-          // Item is critical (MISSING) if actual is 0, warning (SHORT) if > 0 but < required
-          var isCritical = (item.actual === 0);
+          var isCritical = item.actual === 0;
           var itemClass = isCritical ? 'critical' : 'warning';
           var badgeClass = isCritical ? '' : 'warning';
           var badgeText = isCritical ? 'MISSING' : ('Need ' + item.shortage);
@@ -364,7 +373,7 @@
       html += '<div class="total-stats">';
       html += '<div class="total-stat"><span class="stat-number">' + areasWithShortages + '</span><span class="stat-label">Areas</span></div>';
       html += '<div class="total-stat"><span class="stat-number">' + totalShortages + '</span><span class="stat-label">Items Short</span></div>';
-      html += '<div class="total-stat"><span class="stat-number">' + totalItems + '</span><span class="stat-label">Units Needed</span></div>';
+      html += '<div class="total-stat"><span class="stat-number">' + totalUnits + '</span><span class="stat-label">Units Needed</span></div>';
       html += '</div>';
       html += '</div>';
       
@@ -372,55 +381,28 @@
       resizeWidget();
     }
     
-    function escapeHtml(text) {
-      var div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
+    // =====================================================
+    // POLL HIDDEN FIELD
+    // =====================================================
+    
+    function pollHiddenField() {
+      if (!hiddenFieldId || typeof JFCustomWidget === 'undefined') return;
+      
+      JFCustomWidget.getFieldValue(hiddenFieldId, function(value) {
+        if (!value || value === lastDataHash) return;
+        lastDataHash = value;
+        
+        try {
+          allAreaData = JSON.parse(value);
+          renderSummary();
+        } catch (e) {
+          console.log('Could not parse hidden field:', e);
+        }
+      });
     }
     
     // =====================================================
-    // POLL AREA CHECKLIST FIELDS
-    // =====================================================
-    
-    function pollAreaFields() {
-      if (areaFieldIds.length === 0 || typeof JFCustomWidget === 'undefined') return;
-      
-      var pendingRequests = areaFieldIds.length;
-      var newData = {};
-      
-      for (var i = 0; i < areaFieldIds.length; i++) {
-        (function(fieldId) {
-          JFCustomWidget.getFieldValue(fieldId, function(value) {
-            pendingRequests--;
-            
-            if (value) {
-              try {
-                var data = JSON.parse(value);
-                if (data && data.area) {
-                  var key = data.widgetId || data.area;
-                  newData[key] = data;
-                }
-              } catch (e) {
-                console.log('Could not parse field ' + fieldId + ':', e);
-              }
-            }
-            
-            // When all requests complete, update if changed
-            if (pendingRequests === 0) {
-              var newHash = JSON.stringify(newData);
-              if (newHash !== lastDataHash) {
-                lastDataHash = newHash;
-                allAreaData = newData;
-                renderSummary();
-              }
-            }
-          });
-        })(areaFieldIds[i]);
-      }
-    }
-    
-    // =====================================================
-    // GENERATE READABLE OUTPUT FOR SUBMISSION
+    // GENERATE READABLE OUTPUT
     // =====================================================
     
     function generateReadableOutput() {
@@ -429,7 +411,6 @@
       var totalShort = 0;
       var totalUnits = 0;
       
-      // Sort areas alphabetically
       areaKeys.sort(function(a, b) {
         var nameA = (allAreaData[a].area || a).toLowerCase();
         var nameB = (allAreaData[b].area || b).toLowerCase();
@@ -440,10 +421,10 @@
         var areaData = allAreaData[areaKeys[i]];
         if (!areaData || !areaData.shortages || areaData.shortages.length === 0) continue;
         
-        if (lines.length > 0) lines.push(''); // Blank line between areas
+        if (lines.length > 0) lines.push('');
         lines.push('=== ' + (areaData.area || areaKeys[i]).toUpperCase() + ' ===');
         
-        // Group by category within each area
+        // Group by category
         var byCategory = {};
         for (var j = 0; j < areaData.shortages.length; j++) {
           var item = areaData.shortages[j];
@@ -454,21 +435,13 @@
           totalUnits += item.shortage;
         }
         
-        var categories = Object.keys(byCategory);
-        for (var c = 0; c < categories.length; c++) {
-          var catName = categories[c];
-          var catItems = byCategory[catName];
-          
-          lines.push('[' + catName + ']');
-          
-          for (var k = 0; k < catItems.length; k++) {
-            var item = catItems[k];
-            var status;
-            if (item.actual === 0) {
-              status = 'MISSING - need ' + item.required;
-            } else {
-              status = 'have ' + item.actual + '/' + item.required + ' - need ' + item.shortage + ' more';
-            }
+        for (var cat in byCategory) {
+          lines.push('[' + cat + ']');
+          for (var k = 0; k < byCategory[cat].length; k++) {
+            var item = byCategory[cat][k];
+            var status = item.actual === 0 
+              ? 'MISSING - need ' + item.required
+              : 'have ' + item.actual + '/' + item.required + ' - need ' + item.shortage + ' more';
             lines.push('  • ' + item.name + ': ' + status);
           }
         }
@@ -489,20 +462,18 @@
     }
     
     // =====================================================
-    // RESIZE WIDGET
+    // RESIZE
     // =====================================================
     
     function resizeWidget() {
       if (typeof JFCustomWidget === 'undefined') return;
-      
       setTimeout(function() {
-        var height = document.body.scrollHeight + 20;
-        JFCustomWidget.requestFrameResize({ height: height });
+        JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
       }, 100);
     }
     
     // =====================================================
-    // INITIALIZATION
+    // INIT
     // =====================================================
     
     var jotformReady = false;
@@ -510,9 +481,7 @@
     function initStandalone() {
       if (jotformReady) return;
       
-      console.log("Missing Items Summary: Running in standalone test mode");
-      
-      // Test data - note actual values are explicitly 0 for missing items
+      // Test data
       allAreaData = {
         "driver": {
           area: "Driver Compartment",
@@ -533,45 +502,31 @@
     }
     
     function init() {
-      var fallbackTimer = setTimeout(function() {
-        if (!jotformReady) {
-          initStandalone();
-        }
+      var fallback = setTimeout(function() {
+        if (!jotformReady) initStandalone();
       }, 1000);
       
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
         JFCustomWidget.subscribe("ready", function(data) {
           jotformReady = true;
-          clearTimeout(fallbackTimer);
+          clearTimeout(fallback);
           
-          // Get list of area checklist field IDs from widget settings
-          // Format: comma-separated list like "15,16,17" or "15, 16, 17"
-          var fieldIdsStr = JFCustomWidget.getWidgetSetting('areaFieldIds') || '';
+          hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId') || null;
           
-          if (fieldIdsStr) {
-            areaFieldIds = fieldIdsStr.split(',').map(function(id) {
-              return id.trim();
-            }).filter(function(id) {
-              return id.length > 0;
-            });
-          }
-          
-          console.log('Missing Items Summary initialized. Monitoring fields:', areaFieldIds);
-          
-          if (areaFieldIds.length === 0) {
+          if (!hiddenFieldId) {
             document.getElementById('content').innerHTML = 
               '<div class="config-error">' +
-              '<strong>Configuration needed</strong>' +
-              'Set <code>areaFieldIds</code> in widget settings to a comma-separated list of ' +
-              'field IDs for your area checklist widgets (e.g., "15,16,17").' +
+              '<strong>Configuration needed:</strong> Set <code>hiddenFieldId</code> in widget settings ' +
+              'to the field ID of your hidden field (e.g., "42"). ' +
+              'This must match the hiddenFieldId used by your area checklist widgets.' +
               '</div>';
             resizeWidget();
             return;
           }
           
           // Start polling
-          pollAreaFields();
-          pollInterval = setInterval(pollAreaFields, 500);
+          pollHiddenField();
+          pollInterval = setInterval(pollHiddenField, 500);
           
           resizeWidget();
         });
@@ -579,16 +534,13 @@
         JFCustomWidget.subscribe("submit", function() {
           if (pollInterval) clearInterval(pollInterval);
           
-          // Generate readable output with all missing items
-          var output = generateReadableOutput();
-          
           JFCustomWidget.sendSubmit({
             valid: true,
-            value: output
+            value: generateReadableOutput()
           });
         });
       } else {
-        clearTimeout(fallbackTimer);
+        clearTimeout(fallback);
         initStandalone();
       }
     }
