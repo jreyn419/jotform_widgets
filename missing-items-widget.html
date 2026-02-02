@@ -105,6 +105,7 @@
       align-items: center;
       padding: 10px 15px;
       border-bottom: 1px solid #eee;
+      gap: 10px;
     }
     
     .shortage-item:last-child {
@@ -123,6 +124,8 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+      flex: 1;
+      min-width: 0;
     }
     
     .item-name {
@@ -138,12 +141,14 @@
     .item-shortage {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-shrink: 0;
     }
     
     .shortage-detail {
-      font-size: 13px;
+      font-size: 12px;
       color: #666;
+      white-space: nowrap;
     }
     
     .shortage-badge {
@@ -153,6 +158,7 @@
       padding: 4px 10px;
       border-radius: 4px;
       font-size: 13px;
+      white-space: nowrap;
     }
     
     .shortage-badge.warning {
@@ -207,12 +213,33 @@
       opacity: 0.5;
     }
     
-    .refresh-note {
-      font-size: 12px;
-      color: #999;
-      text-align: center;
+    .debug-info {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
       margin-top: 15px;
-      font-style: italic;
+      font-size: 11px;
+      font-family: monospace;
+      color: #666;
+      display: none;
+    }
+    
+    .debug-info.visible {
+      display: block;
+    }
+    
+    @media (max-width: 400px) {
+      .shortage-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .item-shortage {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 6px;
+      }
     }
   </style>
 </head>
@@ -229,6 +256,8 @@
         <p>Complete the area checklists to see missing items here.</p>
       </div>
     </div>
+    
+    <div id="debugInfo" class="debug-info"></div>
   </div>
 
   <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
@@ -265,7 +294,35 @@
     var summaryFieldId = null;  // The field ID that area widgets write to
     var allAreaData = {};
     var pollInterval = null;
-    var lastDataHash = '';  // Track changes to avoid unnecessary re-renders
+    var lastDataHash = '';
+    var debugMode = false;  // Set to true to see debug info
+    
+    // =====================================================
+    // DEBUG LOGGING
+    // =====================================================
+    
+    function debugLog(msg, data) {
+      if (!debugMode) return;
+      
+      var debugEl = document.getElementById('debugInfo');
+      debugEl.classList.add('visible');
+      
+      var timestamp = new Date().toLocaleTimeString();
+      var line = '[' + timestamp + '] ' + msg;
+      if (data !== undefined) {
+        line += ': ' + (typeof data === 'object' ? JSON.stringify(data) : data);
+      }
+      
+      debugEl.innerHTML = line + '<br>' + debugEl.innerHTML;
+      
+      // Keep only last 10 lines
+      var lines = debugEl.innerHTML.split('<br>');
+      if (lines.length > 10) {
+        debugEl.innerHTML = lines.slice(0, 10).join('<br>');
+      }
+      
+      console.log(msg, data);
+    }
     
     // =====================================================
     // RENDER SUMMARY
@@ -275,7 +332,6 @@
       var content = document.getElementById('content');
       var titleEl = document.getElementById('widgetTitle');
       
-      // Collect all shortages from all areas
       var areaKeys = Object.keys(allAreaData);
       var totalShortages = 0;
       var totalItems = 0;
@@ -296,14 +352,14 @@
         }
       }
       
-      // No data yet
+      debugLog('Rendering summary', { areas: areaKeys.length, shortages: totalShortages });
+      
       if (!hasData) {
         content.innerHTML = '<div class="no-data"><div class="icon">📋</div><p>Complete the area checklists to see missing items here.</p></div>';
         resizeWidget();
         return;
       }
       
-      // All OK!
       if (totalShortages === 0) {
         titleEl.className = 'widget-title all-ok';
         titleEl.innerHTML = '<span class="title-icon">✅</span><span>All Items Present</span>';
@@ -312,20 +368,17 @@
         return;
       }
       
-      // Has shortages - render them
       titleEl.className = 'widget-title';
       titleEl.innerHTML = '<span class="title-icon">⚠️</span><span>Missing Items Summary</span>';
       
       var html = '';
       
-      // Sort areas by name for consistent display
       areaKeys.sort(function(a, b) {
         var nameA = allAreaData[a].area || a;
         var nameB = allAreaData[b].area || b;
         return nameA.localeCompare(nameB);
       });
       
-      // Render each area
       for (var a = 0; a < areaKeys.length; a++) {
         var key = areaKeys[a];
         var areaData = allAreaData[key];
@@ -353,7 +406,7 @@
           }
           html += '</div>';
           html += '<div class="item-shortage">';
-          html += '<span class="shortage-detail">Have ' + item.actual + ' of ' + item.required + '</span>';
+          html += '<span class="shortage-detail">' + item.actual + '/' + item.required + '</span>';
           html += '<span class="shortage-badge ' + badgeClass + '">Need ' + item.shortage + '</span>';
           html += '</div>';
           html += '</li>';
@@ -363,7 +416,6 @@
         html += '</div>';
       }
       
-      // Total summary
       html += '<div class="total-summary">';
       html += '<h4>TOTAL SHORTAGES</h4>';
       html += '<div class="total-stats">';
@@ -384,25 +436,30 @@
     }
     
     // =====================================================
-    // POLL FOR DATA FROM SUMMARY FIELD
-    // Uses JotForm's getFieldValue API
+    // POLL FOR DATA USING JOTFORM API
     // =====================================================
     
     function pollSummaryField() {
-      if (!summaryFieldId || typeof JFCustomWidget === 'undefined') return;
+      if (!summaryFieldId || typeof JFCustomWidget === 'undefined') {
+        debugLog('Cannot poll - no summaryFieldId or JFCustomWidget');
+        return;
+      }
       
       JFCustomWidget.getFieldValue(summaryFieldId, function(value) {
+        debugLog('Polled field ' + summaryFieldId, value ? 'Got data (' + value.length + ' chars)' : 'Empty');
+        
         if (!value) return;
         
-        // Check if data actually changed to avoid unnecessary re-renders
+        // Check if data changed
         if (value === lastDataHash) return;
         lastDataHash = value;
         
         try {
           allAreaData = JSON.parse(value);
+          debugLog('Parsed data', Object.keys(allAreaData));
           renderSummary();
         } catch (e) {
-          console.log("Could not parse summary field data:", e);
+          debugLog('Parse error', e.message);
         }
       });
     }
@@ -429,13 +486,14 @@
     function initStandalone() {
       if (jotformReady) return;
       
-      console.log("Running in standalone test mode");
+      console.log("Missing Items Summary: Running in standalone test mode");
+      debugMode = true;
+      debugLog('Standalone mode - using test data');
       allAreaData = TEST_DATA;
       renderSummary();
     }
     
     function init() {
-      // Set a timeout - if JotForm doesn't respond in 1 second, run standalone
       var fallbackTimer = setTimeout(function() {
         if (!jotformReady) {
           initStandalone();
@@ -447,12 +505,21 @@
           jotformReady = true;
           clearTimeout(fallbackTimer);
           
-          // Get the field ID that area widgets write their data to
+          // Get the field ID that area widgets write to
+          // This should match the summaryFieldId setting in the area checklist widgets
           summaryFieldId = JFCustomWidget.getWidgetSetting('summaryFieldId') || null;
           
+          console.log('Missing Items Summary initialized:', {
+            summaryFieldId: summaryFieldId
+          });
+          
+          debugLog('JotForm ready', { summaryFieldId: summaryFieldId });
+          
           if (!summaryFieldId) {
-            console.warn('No summaryFieldId configured. This widget needs to know which field ' +
-                        'the area checklist widgets are writing to. Configure summaryFieldId in widget settings.');
+            debugLog('WARNING: No summaryFieldId configured!');
+            console.warn('Missing Items Summary: No summaryFieldId configured. ' +
+                        'Set summaryFieldId in widget settings to the field ID of the hidden text field ' +
+                        'that area checklist widgets write to.');
           }
           
           // Try to read initial data
@@ -460,18 +527,16 @@
             pollSummaryField();
             
             // Poll for changes every 500ms
-            // This is necessary because JotForm widgets can't directly communicate
             pollInterval = setInterval(pollSummaryField, 500);
           }
           
-          // Also check if we have saved data from a previous session
+          // Check for saved data from previous session
           if (data.value) {
             try {
               var savedSummary = JSON.parse(data.value);
-              // This is the compiled summary from submit, not the live data
-              // Only use if we have shortages array (submit format)
+              debugLog('Found saved data', savedSummary);
+              
               if (savedSummary.shortages && !savedSummary.widgetId) {
-                // Reconstruct allAreaData from flat shortages list
                 allAreaData = {};
                 for (var i = 0; i < savedSummary.shortages.length; i++) {
                   var item = savedSummary.shortages[i];
@@ -487,7 +552,7 @@
                 renderSummary();
               }
             } catch (e) {
-              console.log("Could not parse saved summary data:", e);
+              debugLog('Could not parse saved data', e.message);
             }
           }
           
@@ -495,10 +560,8 @@
         });
         
         JFCustomWidget.subscribe("submit", function() {
-          // Clear polling
           if (pollInterval) clearInterval(pollInterval);
           
-          // Compile final summary
           var allShortages = [];
           var areaKeys = Object.keys(allAreaData);
           
@@ -524,13 +587,11 @@
           });
         });
       } else {
-        // JFCustomWidget not available
         clearTimeout(fallbackTimer);
         initStandalone();
       }
     }
     
-    // Start when DOM is ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
     } else {

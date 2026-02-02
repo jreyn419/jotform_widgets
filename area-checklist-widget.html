@@ -73,10 +73,10 @@
     /* ===== CHECKLIST ITEM - MOBILE FIRST ===== */
     .checklist-item {
       display: grid;
-      grid-template-columns: 28px 1fr auto;
-      grid-template-rows: auto auto;
+      grid-template-columns: 28px 1fr;
+      grid-template-rows: auto auto auto;
       align-items: center;
-      gap: 0 8px;
+      gap: 4px 8px;
       padding: 10px;
       background: #f8f9fa;
       border-radius: 6px;
@@ -103,39 +103,48 @@
       border-left-color: #dc3545;
     }
     
-    /* Checkbox - spans both rows on mobile */
+    /* Checkbox */
     .checklist-item input[type="checkbox"] {
-      grid-row: 1 / 3;
+      grid-column: 1;
+      grid-row: 1 / 4;
       width: 24px;
       height: 24px;
       margin: 0;
       cursor: pointer;
       accent-color: #28a745;
+      align-self: start;
+      margin-top: 2px;
     }
     
-    /* Item name */
-    .item-name {
+    /* Item name row */
+    .item-name-row {
       grid-column: 2;
       grid-row: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    
+    .item-name {
       font-size: 14px;
       color: #333;
       font-weight: 500;
       line-height: 1.3;
+      flex: 1;
     }
     
-    /* Shortage badge - fixed position, always visible space reserved */
+    /* Shortage badge - in the name row on mobile */
     .shortage-badge {
-      grid-column: 3;
-      grid-row: 1 / 3;
       background: #dc3545;
       color: white;
       font-size: 12px;
       font-weight: 600;
-      padding: 4px 8px;
+      padding: 2px 8px;
       border-radius: 4px;
-      min-width: 45px;
-      text-align: center;
+      white-space: nowrap;
       visibility: hidden;
+      flex-shrink: 0;
     }
     
     .shortage-badge.visible {
@@ -154,7 +163,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-top: 6px;
+      margin-top: 4px;
     }
     
     .req-display {
@@ -275,7 +284,7 @@
     }
     
     /* ===== DESKTOP STYLES ===== */
-    @media (min-width: 480px) {
+    @media (min-width: 500px) {
       .checklist-item {
         grid-template-columns: 28px 1fr auto auto;
         grid-template-rows: auto;
@@ -284,10 +293,22 @@
       
       .checklist-item input[type="checkbox"] {
         grid-row: 1;
+        align-self: center;
+        margin-top: 0;
+      }
+      
+      .item-name-row {
+        grid-column: 2;
+        display: block;
       }
       
       .item-name {
-        grid-column: 2;
+        display: block;
+      }
+      
+      /* Badge moves to its own column on desktop */
+      .shortage-badge {
+        position: absolute;
       }
       
       .item-quantities {
@@ -297,7 +318,8 @@
         gap: 15px;
       }
       
-      .shortage-badge {
+      /* Separate badge column on desktop */
+      .badge-cell {
         grid-column: 4;
         grid-row: 1;
       }
@@ -320,7 +342,7 @@
   <div id="widgetTitle" class="widget-title">Area Checklist</div>
   
   <div class="instructions">
-    ✓ Check = fully stocked &nbsp;|&nbsp; Use ◀ ▶ to adjust quantity
+    ✓ Check = fully stocked &nbsp;|&nbsp; Use − + to adjust quantity
   </div>
   
   <div class="checklist-container" id="checklistContainer">
@@ -365,8 +387,8 @@
     var broadcastDebounceTimer = null;
     
     // Track items by category for select-all functionality
-    var categoryItems = {}; // { categoryName: [item1, item2, ...] }
-    var categoryElements = {}; // { categoryName: { checkbox, statusEl, itemElements: [...] } }
+    var categoryItems = {};
+    var categoryElements = {};
     
     // =====================================================
     // PARSE INVENTORY FROM SETTINGS
@@ -498,10 +520,22 @@
         checkbox.checked = state.checked;
         checkbox.id = 'cb_' + i;
         
-        // Item name
+        // Item name row (contains name + badge on mobile)
+        var nameRow = document.createElement('div');
+        nameRow.className = 'item-name-row';
+        
         var nameSpan = document.createElement('span');
         nameSpan.className = 'item-name';
         nameSpan.textContent = item.name;
+        
+        // Shortage badge
+        var badge = document.createElement('span');
+        badge.className = 'shortage-badge';
+        badge.id = 'badge_' + i;
+        updateBadge(badge, state, item.required);
+        
+        nameRow.appendChild(nameSpan);
+        nameRow.appendChild(badge);
         
         // Quantities container
         var qtyDiv = document.createElement('div');
@@ -544,17 +578,10 @@
         qtyDiv.appendChild(reqDisplay);
         qtyDiv.appendChild(stepper);
         
-        // Shortage badge
-        var badge = document.createElement('span');
-        badge.className = 'shortage-badge';
-        badge.id = 'badge_' + i;
-        updateBadge(badge, state, item.required);
-        
         // Append in grid order
         itemDiv.appendChild(checkbox);
-        itemDiv.appendChild(nameSpan);
+        itemDiv.appendChild(nameRow);
         itemDiv.appendChild(qtyDiv);
-        itemDiv.appendChild(badge);
         
         itemsDiv.appendChild(itemDiv);
         
@@ -590,12 +617,15 @@
             broadcastDataDebounced();
           }
           
+          // BUG FIX: When unchecking, reset to 0
           cb.addEventListener('change', function() {
             if (cb.checked) {
               input.value = required;
               itemStates[key] = { checked: true, actual: required };
             } else {
-              itemStates[key].checked = false;
+              // Reset to 0 when manually unchecking
+              input.value = 0;
+              itemStates[key] = { checked: false, actual: 0 };
             }
             updateItemClass(div, itemStates[key], required);
             updateBadge(badgeEl, itemStates[key], required);
@@ -646,12 +676,10 @@
         var item = el.item;
         
         if (checked) {
-          // Mark as fully stocked
           el.checkbox.checked = true;
           el.valueInput.value = item.required;
           itemStates[item.key] = { checked: true, actual: item.required };
         } else {
-          // Mark as missing (uncheck and set to 0)
           el.checkbox.checked = false;
           el.valueInput.value = 0;
           itemStates[item.key] = { checked: false, actual: 0 };
@@ -811,10 +839,12 @@
       };
       
       if (typeof JFCustomWidget !== 'undefined') {
+        // Save to this widget's own field
         JFCustomWidget.sendData({
           value: JSON.stringify(data)
         });
         
+        // Also update the shared summary field for cross-widget communication
         if (summaryFieldId) {
           updateSummaryField(data);
         }
@@ -824,6 +854,7 @@
     function updateSummaryField(myData) {
       if (!summaryFieldId || typeof JFCustomWidget === 'undefined') return;
       
+      // Read current data from the summary field
       JFCustomWidget.getFieldValue(summaryFieldId, function(existingValue) {
         var allData = {};
         
@@ -831,13 +862,16 @@
           try {
             allData = JSON.parse(existingValue);
           } catch (e) {
+            console.log("Could not parse existing summary data:", e);
             allData = {};
           }
         }
         
+        // Add/update our data using widgetId as key
         var myKey = widgetId || ('area_' + areaName.replace(/\s+/g, '_'));
         allData[myKey] = myData;
         
+        // Write back to the summary field
         JFCustomWidget.setFieldValue(summaryFieldId, JSON.stringify(allData));
       });
     }
@@ -891,6 +925,12 @@
             widgetId = 'area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
             console.warn('No widgetId configured - using generated ID: ' + widgetId);
           }
+          
+          console.log('Area Checklist initialized:', {
+            areaName: areaName,
+            widgetId: widgetId,
+            summaryFieldId: summaryFieldId
+          });
           
           document.getElementById('widgetTitle').textContent = areaName;
           inventory = parseInventory(inventoryText);
