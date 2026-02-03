@@ -213,18 +213,31 @@
       opacity: 0.5;
     }
     
-    .config-error {
-      background: #f8d7da;
-      border: 1px solid #f5c6cb;
+    .listening-indicator {
+      background: #e7f3ff;
+      border: 1px solid #b3d7ff;
       border-radius: 6px;
-      padding: 15px;
-      color: #721c24;
-      font-size: 13px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      font-size: 11px;
+      color: #004085;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
-    .config-error strong {
-      display: block;
-      margin-bottom: 5px;
+    .pulse {
+      width: 8px;
+      height: 8px;
+      background: #28a745;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
     }
     
     @media (max-width: 400px) {
@@ -248,31 +261,28 @@
       <span>Missing Items Summary</span>
     </div>
     
+    <div class="listening-indicator" id="listeningIndicator">
+      <span class="pulse"></span>
+      <span>Listening for area checklist updates...</span>
+    </div>
+    
     <div id="content">
       <div class="no-data">
         <div class="icon">[...]</div>
-        <p>Waiting for checklist data...</p>
+        <p>Complete the area checklists to see missing items here.</p>
       </div>
     </div>
   </div>
 
-  <!-- Use the newer CDN to avoid CORS issues -->
   <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
   <script>
     // =====================================================
     // CONFIGURATION
     // =====================================================
-    // Widget Settings needed:
-    //   - hiddenFieldId: The ID of the hidden field used for data sharing (e.g., "85")
-    //                    This must match the hiddenFieldId used by area checklist widgets
-    //
-    // This widget reads data from a hidden field that area checklist widgets write to.
-    // It polls the hidden field periodically to get updates.
+    // No special settings needed - this widget listens for
+    // postMessage events from area checklist widgets
     
-    var hiddenFieldId = null;
     var allAreaData = {};
-    var pollInterval = null;
-    var POLL_INTERVAL_MS = 500; // Poll every 500ms
     
     // =====================================================
     // RENDER
@@ -287,6 +297,7 @@
     function renderSummary() {
       var content = document.getElementById('content');
       var titleEl = document.getElementById('widgetTitle');
+      var indicator = document.getElementById('listeningIndicator');
       
       var areaKeys = Object.keys(allAreaData);
       var totalShortages = 0;
@@ -306,6 +317,13 @@
             }
           }
         }
+      }
+      
+      console.log('[Summary Widget] Rendering:', { areaCount: areaKeys.length, hasData: hasData, totalShortages: totalShortages });
+      
+      // Hide listening indicator once we have data
+      if (hasData) {
+        indicator.style.display = 'none';
       }
       
       if (!hasData) {
@@ -386,61 +404,41 @@
     }
     
     // =====================================================
-    // POLL HIDDEN FIELD FOR DATA
+    // LISTEN FOR POSTMESSAGE FROM AREA WIDGETS
     // =====================================================
     
-    var lastDataHash = '';
-    
-    function pollHiddenField() {
-      if (typeof JFCustomWidget === 'undefined' || !hiddenFieldId) {
-        return;
-      }
-      
-      JFCustomWidget.getFieldsValueById([hiddenFieldId], function(response) {
-        if (response && response.data && response.data.length > 0) {
-          var value = response.data[0].value;
-          
-          // Only update if data has changed
-          if (value && value !== lastDataHash) {
-            lastDataHash = value;
-            
-            try {
-              var parsed = JSON.parse(value);
-              if (parsed && typeof parsed === 'object') {
-                allAreaData = parsed;
-                console.log('[Summary Widget] Received data from hidden field:', allAreaData);
-                renderSummary();
-              }
-            } catch (e) {
-              console.log('[Summary Widget] Could not parse hidden field data:', e);
-            }
-          }
+    function handleMessage(event) {
+      // Check if this is an area checklist update
+      if (event.data && event.data.type === 'areaChecklistUpdate') {
+        console.log('[Summary Widget] Received postMessage:', event.data);
+        
+        var data = event.data;
+        if (data.widgetId) {
+          allAreaData[data.widgetId] = {
+            area: data.area,
+            shortages: data.shortages,
+            timestamp: data.timestamp
+          };
+          renderSummary();
         }
-      });
-    }
-    
-    function startPolling() {
-      if (pollInterval) {
-        clearInterval(pollInterval);
       }
-      
-      // Initial poll
-      pollHiddenField();
-      
-      // Set up recurring poll
-      pollInterval = setInterval(pollHiddenField, POLL_INTERVAL_MS);
-      console.log('[Summary Widget] Started polling hidden field ' + hiddenFieldId + ' every ' + POLL_INTERVAL_MS + 'ms');
     }
     
-    function stopPolling() {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-        pollInterval = null;
+    // Listen on window for messages from sibling iframes via parent
+    window.addEventListener('message', handleMessage, false);
+    
+    // Also listen on parent's messages to us
+    if (window.parent !== window) {
+      try {
+        // The parent page will relay messages between iframes
+        console.log('[Summary Widget] Listening for postMessage events');
+      } catch (e) {
+        console.log('[Summary Widget] Cannot access parent:', e);
       }
     }
     
     // =====================================================
-    // GENERATE READABLE OUTPUT FOR SUBMISSION
+    // GENERATE READABLE OUTPUT
     // =====================================================
     
     function generateReadableOutput() {
@@ -462,7 +460,6 @@
         if (lines.length > 0) lines.push('');
         lines.push('=== ' + (areaData.area || areaKeys[i]).toUpperCase() + ' ===');
         
-        // Group by category
         var byCategory = {};
         for (var j = 0; j < areaData.shortages.length; j++) {
           var item = areaData.shortages[j];
@@ -518,10 +515,9 @@
     
     function initStandalone() {
       if (jotformReady) return;
+      console.log('[Summary Widget] Running in standalone mode');
       
-      console.log('[Summary Widget] Initializing in standalone/test mode');
-      
-      // Test data for standalone testing
+      // Test data
       allAreaData = {
         "driver": {
           area: "Driver Compartment",
@@ -542,59 +538,35 @@
     }
     
     function init() {
-      console.log('[Summary Widget] Initializing widget');
+      console.log('[Summary Widget] Initializing');
       
       var fallback = setTimeout(function() {
         if (!jotformReady) {
-          console.log('[Summary Widget] Fallback timeout reached');
+          console.log('[Summary Widget] Fallback to standalone');
           initStandalone();
         }
-      }, 1500);
+      }, 2000);
       
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
-        console.log('[Summary Widget] JFCustomWidget available');
-        
         JFCustomWidget.subscribe("ready", function(data) {
           jotformReady = true;
           clearTimeout(fallback);
           
-          console.log('[Summary Widget] Ready event received', data);
+          console.log('[Summary Widget] Ready', data);
           
-          // Get the hidden field ID from settings
-          hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId') || '';
-          
-          console.log('[Summary Widget] hiddenFieldId setting:', hiddenFieldId);
-          
-          if (!hiddenFieldId) {
-            document.getElementById('content').innerHTML = 
-              '<div class="config-error">' +
-              '<strong>Configuration needed:</strong> Set <code>hiddenFieldId</code> in widget settings ' +
-              'to the ID of the hidden field used for data sharing. This must match the hiddenFieldId ' +
-              'configured in your area checklist widgets.' +
-              '</div>';
-            resizeWidget();
-            return;
-          }
-          
-          // Clear test data
+          // No special config needed - just listen for postMessage
           allAreaData = {};
-          
-          // Start polling the hidden field for updates
-          startPolling();
-          
+          renderSummary();
           resizeWidget();
         });
         
         JFCustomWidget.subscribe("submit", function() {
-          console.log('[Summary Widget] Submit event received');
-          stopPolling();
           JFCustomWidget.sendSubmit({
             valid: true,
             value: generateReadableOutput()
           });
         });
       } else {
-        console.log('[Summary Widget] JFCustomWidget not available');
         clearTimeout(fallback);
         initStandalone();
       }

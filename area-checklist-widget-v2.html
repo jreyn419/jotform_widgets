@@ -356,21 +356,16 @@
     <span class="summary-stat stat-missing">X Missing: <strong id="missingCount">0</strong></span>
   </div>
 
-  <!-- Use the newer CDN to avoid CORS issues -->
   <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
   <script>
     // =====================================================
     // CONFIGURATION
     // =====================================================
-    // Widget Settings needed:
-    //   - areaName: Display name for this area (e.g., "Driver Compartment")
-    //   - widgetId: Unique ID for this widget (e.g., "driver" or "area1")
-    //   - inventoryItems: The inventory list in format "Category\nItem|Qty"
-    //   - hiddenFieldId: The ID of the hidden field used for data sharing (e.g., "85")
-    //
-    // This widget writes its data to a hidden field so other widgets can read it.
-    // Multiple area widgets can share the same hidden field - each one's data
-    // is stored under its widgetId key.
+    // Widget Settings:
+    //   - areaName: Display name for this area
+    //   - widgetId: Unique ID for this widget
+    //   - inventoryItems: Inventory list in format "Category\nItem|Qty"
+    //   - summaryWidgetQid: The QID of the summary widget to send data to
     
     var DEFAULT_INVENTORY = [
       "Driver Compartment",
@@ -386,17 +381,13 @@
       "Alcohol Wipes|30"
     ].join("\n");
     
-    // =====================================================
-    // WIDGET STATE
-    // =====================================================
-    
     var areaName = "Area Checklist";
     var widgetId = null;
-    var hiddenFieldId = null;
+    var summaryWidgetQid = null;
+    var formId = null;
     var inventory = [];
     var itemStates = {};
     var broadcastDebounceTimer = null;
-    
     var categoryItems = {};
     var categoryElements = {};
     
@@ -698,7 +689,7 @@
     }
     
     // =====================================================
-    // BROADCAST TO HIDDEN FIELD
+    // BROADCAST VIA POSTMESSAGE TO PARENT
     // =====================================================
     
     function broadcastDebounced() {
@@ -707,17 +698,7 @@
     }
     
     function broadcastData() {
-      if (typeof JFCustomWidget === 'undefined') {
-        console.log('[Area Widget] JFCustomWidget not available');
-        return;
-      }
-      
-      if (!hiddenFieldId) {
-        console.log('[Area Widget] No hiddenFieldId configured');
-        return;
-      }
-      
-      // Build this area's shortage data
+      // Build shortage data
       var shortages = [];
       for (var i = 0; i < inventory.length; i++) {
         var item = inventory[i];
@@ -735,39 +716,20 @@
       }
       
       var myData = {
+        type: 'areaChecklistUpdate',
         widgetId: widgetId,
         area: areaName,
         shortages: shortages,
         timestamp: Date.now()
       };
       
-      // First, read current hidden field value to merge with other areas' data
-      JFCustomWidget.getFieldsValueById([hiddenFieldId], function(response) {
-        var allData = {};
-        
-        console.log('[Area Widget] Read hidden field response:', response);
-        
-        // Parse existing data from hidden field
-        if (response && response.data && response.data.length > 0) {
-          var existingValue = response.data[0].value;
-          if (existingValue) {
-            try {
-              allData = JSON.parse(existingValue);
-            } catch (e) {
-              console.log('[Area Widget] Could not parse existing data:', e);
-            }
-          }
-        }
-        
-        // Add/update this area's data
-        allData[widgetId] = myData;
-        
-        // Write back to hidden field
-        var newValue = JSON.stringify(allData);
-        
-        JFCustomWidget.setFieldsValueById(hiddenFieldId, newValue);
-        console.log('[Area Widget] Wrote to hidden field ' + hiddenFieldId + ':', allData);
-      });
+      // Send to parent window - this will be received by all iframes
+      try {
+        window.parent.postMessage(myData, '*');
+        console.log('[Area Widget] Sent postMessage to parent:', myData);
+      } catch (e) {
+        console.log('[Area Widget] postMessage failed:', e);
+      }
     }
     
     // =====================================================
@@ -808,32 +770,23 @@
           
           areaName = JFCustomWidget.getWidgetSetting('areaName') || 'Area Checklist';
           widgetId = JFCustomWidget.getWidgetSetting('widgetId') || areaName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-          hiddenFieldId = JFCustomWidget.getWidgetSetting('hiddenFieldId') || '';
+          formId = data.formID;
           var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
           
-          console.log('[Area Widget] Config:', { areaName: areaName, widgetId: widgetId, hiddenFieldId: hiddenFieldId });
-          
-          if (!hiddenFieldId) {
-            document.getElementById('configError').style.display = 'block';
-            document.getElementById('configError').innerHTML = 
-              '<strong>Configuration needed:</strong> Set <code>hiddenFieldId</code> in widget settings ' +
-              'to the ID of the hidden field used for data sharing.';
-          }
+          console.log('[Area Widget] Config:', { areaName: areaName, widgetId: widgetId, formId: formId });
           
           document.getElementById('widgetTitle').textContent = areaName;
           
           inventory = parseInventory(inventoryText);
           
-          // Restore state if editing a submission
+          // Restore state if editing
           if (data.value) {
             try {
               var saved = JSON.parse(data.value);
               if (saved.shortages) {
-                // Mark all as stocked first
                 for (var i = 0; i < inventory.length; i++) {
                   itemStates[inventory[i].key] = { actual: inventory[i].required };
                 }
-                // Then apply shortages
                 for (var j = 0; j < saved.shortages.length; j++) {
                   var s = saved.shortages[j];
                   for (var k = 0; k < inventory.length; k++) {
@@ -844,20 +797,17 @@
                   }
                 }
               }
-            } catch (e) {
-              console.log('[Area Widget] Error parsing saved value:', e);
-            }
+            } catch (e) {}
           }
           
           buildChecklist();
           resizeWidget();
           
-          // Broadcast initial state after a short delay
-          setTimeout(broadcastData, 300);
+          // Broadcast initial state
+          setTimeout(broadcastData, 500);
         });
         
         JFCustomWidget.subscribe("submit", function() {
-          // Build final data for submission
           var shortages = [];
           for (var i = 0; i < inventory.length; i++) {
             var item = inventory[i];
@@ -874,16 +824,14 @@
             }
           }
           
-          var submitData = {
-            widgetId: widgetId,
-            area: areaName,
-            shortages: shortages,
-            timestamp: Date.now()
-          };
-          
           JFCustomWidget.sendSubmit({ 
             valid: true, 
-            value: JSON.stringify(submitData)
+            value: JSON.stringify({
+              widgetId: widgetId,
+              area: areaName,
+              shortages: shortages,
+              timestamp: Date.now()
+            })
           });
         });
       } else {
