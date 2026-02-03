@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMS Inventory Checklist</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .widget-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-height: 100vh;
+      background: #f5f5f5;
+    }
+    
+    .widget-header {
+      background: linear-gradient(135deg, #0066cc, #004499);
+      color: white;
+      padding: 12px 15px;
+      flex-shrink: 0;
+    }
+    
+    .widget-header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .widget-header .subtitle {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+    
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+    
+    .areas-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      min-height: 0;
+    }
+    
+    /* Area sections */
+    .area-section {
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .area-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      background: #f8f9fa;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid #eee;
+      gap: 10px;
+    }
+    
+    .area-header:hover {
+      background: #e9ecef;
+    }
+    
+    .area-header.has-issues {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+    }
+    
+    .area-header.all-ok {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+    }
+    
+    .collapse-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #666;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    
+    .area-section.expanded .collapse-icon {
+      transform: rotate(90deg);
+    }
+    
+    .area-title {
+      flex: 1;
+      font-weight: 600;
+      font-size: 14px;
+      color: #333;
+    }
+    
+    .area-status {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: #e9ecef;
+      color: #666;
+    }
+    
+    .area-status.issues {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .area-status.ok {
+      background: #28a745;
+      color: white;
+    }
+    
+    .area-content {
+      display: none;
+      max-height: 350px;
+      overflow-y: auto;
+      border-top: 1px solid #eee;
+    }
+    
+    .area-section.expanded .area-content {
+      display: block;
+    }
+    
+    /* Category within area */
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 15px;
+      background: #f0f0f0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .category-checkbox {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #28a745;
+    }
+    
+    .category-status {
+      margin-left: auto;
+      font-weight: normal;
+      color: #888;
+    }
+    
+    /* Checklist items */
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 10px;
+    }
+    
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+    
+    .checklist-item.checked {
+      background: #f0fff0;
+    }
+    
+    .checklist-item.short {
+      background: #fffbeb;
+    }
+    
+    .checklist-item.missing {
+      background: #fff5f5;
+    }
+    
+    .item-checkbox {
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      accent-color: #28a745;
+      flex-shrink: 0;
+    }
+    
+    .item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .item-name {
+      font-size: 14px;
+      color: #333;
+    }
+    
+    .item-required {
+      font-size: 11px;
+      color: #888;
+    }
+    
+    .qty-stepper {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    
+    .qty-btn {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: #f0f0f0;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .qty-btn:hover {
+      background: #e0e0e0;
+    }
+    
+    .qty-btn:active {
+      background: #d0d0d0;
+    }
+    
+    .qty-value {
+      width: 45px;
+      height: 36px;
+      border: none;
+      border-left: 1px solid #ccc;
+      border-right: 1px solid #ccc;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      -moz-appearance: textfield;
+    }
+    
+    .qty-value::-webkit-outer-spin-button,
+    .qty-value::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+    
+    .shortage-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #dc3545;
+      color: white;
+      margin-left: 5px;
+    }
+    
+    .shortage-badge.warning {
+      background: #ffc107;
+      color: #333;
+    }
+    
+    /* Summary section */
+    .summary-section {
+      flex-shrink: 0;
+      background: white;
+      border-top: 3px solid #dc3545;
+      max-height: 40vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .summary-section.all-ok {
+      border-top-color: #28a745;
+    }
+    
+    .summary-header {
+      padding: 12px 15px;
+      background: #333;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    
+    .summary-header h2 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .summary-stats {
+      display: flex;
+      gap: 15px;
+      font-size: 12px;
+    }
+    
+    .summary-stat {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .stat-count {
+      font-weight: 700;
+      font-size: 16px;
+    }
+    
+    .stat-count.ok { color: #28a745; }
+    .stat-count.short { color: #ffc107; }
+    .stat-count.missing { color: #ff6b6b; }
+    
+    .summary-content {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+    }
+    
+    .summary-empty {
+      padding: 20px;
+      text-align: center;
+      color: #28a745;
+      font-size: 14px;
+    }
+    
+    .summary-empty .icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    
+    .shortage-group {
+      border-bottom: 1px solid #eee;
+    }
+    
+    .shortage-group:last-child {
+      border-bottom: none;
+    }
+    
+    .shortage-group-header {
+      padding: 8px 15px;
+      background: #f8f9fa;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+    }
+    
+    .shortage-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 15px;
+      font-size: 13px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .shortage-item:last-child {
+      border-bottom: none;
+    }
+    
+    .shortage-item.critical {
+      background: #fff5f5;
+    }
+    
+    .shortage-item.warning {
+      background: #fffbeb;
+    }
+    
+    .shortage-item-name {
+      flex: 1;
+    }
+    
+    .shortage-item-detail {
+      color: #888;
+      font-size: 12px;
+      margin-right: 10px;
+    }
+    
+    .shortage-item-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #dc3545;
+      color: white;
+    }
+    
+    .shortage-item-badge.warning {
+      background: #ffc107;
+      color: #333;
+    }
+    
+    /* Quick actions bar */
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      padding: 10px 15px;
+      background: #f8f9fa;
+      border-top: 1px solid #eee;
+      flex-shrink: 0;
+    }
+    
+    .quick-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .quick-btn.expand-all {
+      background: #e7f3ff;
+      color: #0066cc;
+    }
+    
+    .quick-btn.expand-all:hover {
+      background: #cce5ff;
+    }
+    
+    .quick-btn.mark-all {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .quick-btn.mark-all:hover {
+      background: #c3e6cb;
+    }
+    
+    .quick-btn.clear-all {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .quick-btn.clear-all:hover {
+      background: #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget-container">
+    <div class="widget-header">
+      <h1>EMS Inventory Checklist</h1>
+      <div class="subtitle">Checklist A - Airway, CCT Cabinet, Benches</div>
+    </div>
+    
+    <div class="quick-actions">
+      <button class="quick-btn expand-all" onclick="toggleAllAreas()">Expand/Collapse All</button>
+      <button class="quick-btn mark-all" onclick="markAllStocked()">Mark All Stocked</button>
+      <button class="quick-btn clear-all" onclick="clearAll()">Clear All</button>
+    </div>
+    
+    <div class="main-content">
+      <div class="areas-container" id="areasContainer">
+        <!-- Areas will be generated here -->
+      </div>
+      
+      <div class="summary-section" id="summarySection">
+        <div class="summary-header">
+          <h2>Missing/Short Items</h2>
+          <div class="summary-stats">
+            <div class="summary-stat">
+              <span class="stat-count ok" id="statOk">0</span>
+              <span>OK</span>
+            </div>
+            <div class="summary-stat">
+              <span class="stat-count short" id="statShort">0</span>
+              <span>Short</span>
+            </div>
+            <div class="summary-stat">
+              <span class="stat-count missing" id="statMissing">0</span>
+              <span>Missing</span>
+            </div>
+          </div>
+        </div>
+        <div class="summary-content" id="summaryContent">
+          <div class="summary-empty">
+            <div class="icon">✓</div>
+            <div>All items fully stocked!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+  <script>
+    // =====================================================
+    // INVENTORY DATA - Checklist A
+    // =====================================================
+    
+    var INVENTORY = {
+      "Upper CCT Cabinet": {
+        "Upper Shelf": [
+          { name: "Hamilton Humidifier", required: 1 },
+          { name: "Jackery + charger", required: 1 },
+          { name: "HFNC Cell", required: 1 },
+          { name: "Portable Suction + charger", required: 1 },
+          { name: "Doppler", required: 1 }
+        ],
+        "Lower Shelf": [
+          { name: "Ventilator", required: 1 },
+          { name: "IV Pumps", required: 5 },
+          { name: "Bracket for 3 IV Pumps", required: 1 },
+          { name: "Bracket for 2 IV Pumps", required: 1 },
+          { name: "Power Strip", required: 1 },
+          { name: "IV Pump Chargers", required: 3 }
+        ]
+      },
+      "HFNC Cell, Universal": {
+        "Loose": [
+          { name: "L Adult High-Flow Nasal Cannula", required: 2 },
+          { name: "M Adult High-Flow Nasal Cannula", required: 2 },
+          { name: "S Adult High-Flow Nasal Cannula", required: 2 },
+          { name: "XL Pediatric High-Flow Nasal Cannula", required: 1 },
+          { name: "L Pediatric High-Flow Nasal Cannula", required: 1 },
+          { name: "Equipment Mount - Aluminum", required: 1 }
+        ]
+      },
+      "Lower CCT Cabinet": {
+        "Top Shelf, Large Items": [
+          { name: "Ventilator Circuit", required: 3 },
+          { name: "Adult High-Flow Circuit", required: 3 },
+          { name: "Infant/Pediatric High-Flow Circuit", required: 3 }
+        ],
+        "Top Shelf, Small Items": [
+          { name: "Ventilator filters", required: 3 },
+          { name: "Omniflex", required: 3 },
+          { name: "Inline ETCO2", required: 3 },
+          { name: "Nebulizer (inline)", required: 3 },
+          { name: "Full Sets", required: 10 },
+          { name: "Half Sets", required: 10 }
+        ],
+        "Bottom Shelf, Blue Bin": [
+          { name: "SpO2 Sensor, Clip", required: 1 },
+          { name: "Monitor-to-SpO2 Cable", required: 1 },
+          { name: "Monitor-to-BP-cuff connector", required: 1 },
+          { name: "4-lead cord", required: 1 },
+          { name: "BP cuff connector tubing", required: 1 },
+          { name: "Monitor Battery (charged)", required: 1 },
+          { name: "BP Cuff - 7", required: 1 },
+          { name: "BP Cuff - 8", required: 1 },
+          { name: "BP Cuff - 9", required: 1 },
+          { name: "BP Cuff - 10", required: 1 },
+          { name: "BP Cuff - 11", required: 1 },
+          { name: "BP Cuff - 12", required: 1 }
+        ],
+        "Bottom Shelf, Middle Pink Bin": [
+          { name: "Glucometer (Backup)", required: 1 },
+          { name: "Adult/Neonatal Adhesive SpO2 Sensor", required: 3 },
+          { name: "Infant Adhesive SpO2 Sensor", required: 3 },
+          { name: "Monitor Printer Paper Rolls", required: 2 },
+          { name: "Boxes of Oral/Axillary Temp Probe Sheaths", required: 2 },
+          { name: "Razors (For EKG Prep)", required: 2 },
+          { name: "Electrode Bag", required: 1 },
+          { name: "Adult Defib Pads", required: 1 },
+          { name: "Pediatric Defib Pads", required: 1 }
+        ],
+        "Bottom Shelf, Right Pink Bin": [
+          { name: "Bubbler", required: 2 }
+        ]
+      },
+      "Airway Cabinet": {
+        "Left Side": [
+          { name: "Adult BVMs", required: 2 },
+          { name: "Pediatric BVMs", required: 2 },
+          { name: "Infant BVMs", required: 2 },
+          { name: "Large Adult CPAP Masks", required: 2 },
+          { name: "Medium/Small Adult CPAP Masks", required: 2 },
+          { name: "Cricothyrotomy Kit", required: 1 },
+          { name: "Manual Jet Ventilator", required: 1 },
+          { name: "Handheld Nebulizer Kits", required: 3 },
+          { name: "PEEP Valves", required: 3 }
+        ],
+        "Right Side": [
+          { name: "Adult EtCO2 Nasal Cannulas", required: 3 },
+          { name: "Adult Nasal Cannulas", required: 3 },
+          { name: "Adult NRB", required: 3 },
+          { name: "Adult Nebulizer Masks", required: 3 },
+          { name: "Pediatric EtCO2 Nasal Cannulas", required: 3 },
+          { name: "Pediatric Nasal Cannulas", required: 3 },
+          { name: "Pediatric NRB", required: 3 },
+          { name: "Pediatric Nebulizer Masks", required: 3 },
+          { name: "NPA 20 Fr.", required: 1 },
+          { name: "NPA 22 Fr.", required: 1 },
+          { name: "NPA 24 Fr.", required: 1 },
+          { name: "NPA 26 Fr.", required: 1 },
+          { name: "NPA 28 Fr.", required: 1 },
+          { name: "NPA 30 Fr.", required: 1 },
+          { name: "NPA 32 Fr.", required: 1 },
+          { name: "NPA 34 Fr.", required: 1 },
+          { name: "NPA 36 Fr.", required: 1 },
+          { name: "Lubricant packets", required: 6 },
+          { name: "OPA set (9 total)", required: 9 },
+          { name: "iGel >90kg ORANGE", required: 1 },
+          { name: "iGel 50-90kg GREEN", required: 1 },
+          { name: "iGel 30-60kg YELLOW", required: 1 },
+          { name: "iGel 25-35kg WHITE", required: 1 },
+          { name: "iGel 10-25kg GRAY", required: 1 },
+          { name: "iGel 5-12kg BLUE", required: 1 },
+          { name: "iGel 2-5kg PINK", required: 1 }
+        ]
+      },
+      "Action Area": {
+        "Items": [
+          { name: "Unused Suction Container", required: 1 },
+          { name: "Unused Suction Tubing & Suction Tip", required: 1 },
+          { name: "Curos strip", required: 3 }
+        ]
+      },
+      "Action Area Cabinet": {
+        "Left Side": [
+          { name: "I/O stabilizer", required: 1 },
+          { name: "15mm I/O needle", required: 1 },
+          { name: "45mm I/O needle", required: 1 },
+          { name: "25mm I/O needle", required: 1 },
+          { name: "I/O drill", required: 1 },
+          { name: "OB kit (Life Assist)", required: 1 },
+          { name: "OB kit (DMS)", required: 1 },
+          { name: "OB kit (Dynarex)", required: 1 },
+          { name: "Infectious control cleanup kit", required: 1 },
+          { name: "Stethoscope (disposable)", required: 1 },
+          { name: "Posey restraints (red-ankle)", required: 2 },
+          { name: "Posey restraints (blue-wrist)", required: 2 },
+          { name: "Emesis bags (sleeve)", required: 1 }
+        ],
+        "Right Side": [
+          { name: "Spit Hoods", required: 3 },
+          { name: "Posey Soft Restraints", required: 3 },
+          { name: "Urinals", required: 3 },
+          { name: "Bedpans", required: 3 },
+          { name: "Paper Towel Roll", required: 1 }
+        ]
+      },
+      "Suction Cabinet": {
+        "Left Side": [
+          { name: "Yankauer Suction Tip and Tubing", required: 3 },
+          { name: "DuCanto Suction Tip", required: 1 },
+          { name: "Suction Canister Tub", required: 3 },
+          { name: "Suction Canister Top", required: 3 },
+          { name: "Manual Suction Device", required: 1 },
+          { name: "Biohazard Bag", required: 2 },
+          { name: "Manual BP Cuff (infant)", required: 1 },
+          { name: "Manual BP Cuff (child)", required: 1 },
+          { name: "Manual BP Cuff (sm adult)", required: 1 },
+          { name: "Manual BP Cuff (reg adult)", required: 1 },
+          { name: "Manual BP Cuff (lg adult)", required: 1 },
+          { name: "Manual BP Cuff (thigh)", required: 1 }
+        ],
+        "Right Side": [
+          { name: "Ventilator filters", required: 3 },
+          { name: "Omniflex", required: 3 },
+          { name: "Inline ETCO2", required: 3 },
+          { name: "Nebulizer (inline)", required: 3 },
+          { name: "Full Sets", required: 10 },
+          { name: "Half Sets", required: 10 }
+        ]
+      },
+      "Driver's Side Bench Storage": {
+        "Loose": [
+          { name: "Pillows", required: 3 },
+          { name: "D tanks (behind Capt chair)", required: 2 },
+          { name: "D tank (with regulator/pigtail)", required: 1 },
+          { name: "Blankets", required: 6 },
+          { name: "Evacu-aid", required: 1 },
+          { name: "Pillow cases (disposable)", required: 4 }
+        ]
+      },
+      "Passenger Side Bench Storage": {
+        "Left Side": [
+          { name: "Pediatric Board (orange)", required: 1 },
+          { name: "Infant Board (green)", required: 1 },
+          { name: "Pedi-mate", required: 1 }
+        ],
+        "Right Side": [
+          { name: "Evacu-Aide", required: 1 },
+          { name: "Spine Immobilization Bag", required: 1 },
+          { name: "MCI Bag", required: 1 },
+          { name: "Soft Neck Collars - sm", required: 1 },
+          { name: "Soft Neck Collars - med", required: 1 },
+          { name: "Soft Neck Collars - lg", required: 1 },
+          { name: "Soft Neck Collars - xl", required: 1 }
+        ]
+      }
+    };
+    
+    // =====================================================
+    // STATE
+    // =====================================================
+    
+    var itemStates = {}; // key -> { actual: number }
+    var allExpanded = false;
+    
+    // =====================================================
+    // BUILD UI
+    // =====================================================
+    
+    function generateKey(areaName, categoryName, itemName) {
+      return areaName + '::' + categoryName + '::' + itemName;
+    }
+    
+    function buildUI() {
+      var container = document.getElementById('areasContainer');
+      container.innerHTML = '';
+      
+      for (var areaName in INVENTORY) {
+        var areaDiv = document.createElement('div');
+        areaDiv.className = 'area-section';
+        areaDiv.id = 'area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
+        
+        // Area header
+        var headerDiv = document.createElement('div');
+        headerDiv.className = 'area-header';
+        headerDiv.innerHTML = '<span class="collapse-icon">▶</span>' +
+          '<span class="area-title">' + escapeHtml(areaName) + '</span>' +
+          '<span class="area-status" id="status_' + areaDiv.id + '">0/0</span>';
+        
+        headerDiv.onclick = (function(div) {
+          return function() { toggleArea(div); };
+        })(areaDiv);
+        
+        areaDiv.appendChild(headerDiv);
+        
+        // Area content
+        var contentDiv = document.createElement('div');
+        contentDiv.className = 'area-content';
+        
+        var categories = INVENTORY[areaName];
+        for (var catName in categories) {
+          // Category header
+          var catHeader = document.createElement('div');
+          catHeader.className = 'category-header';
+          
+          var catCheckbox = document.createElement('input');
+          catCheckbox.type = 'checkbox';
+          catCheckbox.className = 'category-checkbox';
+          catCheckbox.onclick = (function(area, cat) {
+            return function(e) {
+              e.stopPropagation();
+              toggleCategory(area, cat, this.checked);
+            };
+          })(areaName, catName);
+          
+          catHeader.appendChild(catCheckbox);
+          catHeader.innerHTML += '<span>' + escapeHtml(catName) + '</span>' +
+            '<span class="category-status" id="cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_') + '"></span>';
+          
+          contentDiv.appendChild(catHeader);
+          
+          // Items
+          var items = categories[catName];
+          for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            var key = generateKey(areaName, catName, item.name);
+            
+            if (!itemStates[key]) {
+              itemStates[key] = { actual: 0 };
+            }
+            
+            var itemDiv = document.createElement('div');
+            itemDiv.className = 'checklist-item';
+            itemDiv.id = 'item_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+            
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'item-checkbox';
+            checkbox.checked = itemStates[key].actual >= item.required;
+            checkbox.onchange = (function(k, req) {
+              return function() { setItemValue(k, this.checked ? req : 0); };
+            })(key, item.required);
+            
+            var infoDiv = document.createElement('div');
+            infoDiv.className = 'item-info';
+            infoDiv.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>' +
+              '<div class="item-required">Need: ' + item.required + '</div>';
+            
+            var stepperDiv = document.createElement('div');
+            stepperDiv.className = 'qty-stepper';
+            
+            var decBtn = document.createElement('button');
+            decBtn.className = 'qty-btn';
+            decBtn.textContent = '-';
+            decBtn.onclick = (function(k) {
+              return function() { adjustItem(k, -1); };
+            })(key);
+            
+            var valueInput = document.createElement('input');
+            valueInput.type = 'number';
+            valueInput.className = 'qty-value';
+            valueInput.value = itemStates[key].actual;
+            valueInput.min = '0';
+            valueInput.id = 'input_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+            valueInput.onchange = (function(k) {
+              return function() { setItemValue(k, parseInt(this.value) || 0); };
+            })(key);
+            
+            var incBtn = document.createElement('button');
+            incBtn.className = 'qty-btn';
+            incBtn.textContent = '+';
+            incBtn.onclick = (function(k) {
+              return function() { adjustItem(k, 1); };
+            })(key);
+            
+            stepperDiv.appendChild(decBtn);
+            stepperDiv.appendChild(valueInput);
+            stepperDiv.appendChild(incBtn);
+            
+            itemDiv.appendChild(checkbox);
+            itemDiv.appendChild(infoDiv);
+            itemDiv.appendChild(stepperDiv);
+            
+            contentDiv.appendChild(itemDiv);
+          }
+        }
+        
+        areaDiv.appendChild(contentDiv);
+        container.appendChild(areaDiv);
+      }
+      
+      updateAllStatuses();
+      updateSummary();
+    }
+    
+    // =====================================================
+    // INTERACTIONS
+    // =====================================================
+    
+    function toggleArea(areaDiv) {
+      areaDiv.classList.toggle('expanded');
+    }
+    
+    function toggleAllAreas() {
+      allExpanded = !allExpanded;
+      var areas = document.querySelectorAll('.area-section');
+      for (var i = 0; i < areas.length; i++) {
+        if (allExpanded) {
+          areas[i].classList.add('expanded');
+        } else {
+          areas[i].classList.remove('expanded');
+        }
+      }
+    }
+    
+    function toggleCategory(areaName, catName, checked) {
+      var items = INVENTORY[areaName][catName];
+      for (var i = 0; i < items.length; i++) {
+        var key = generateKey(areaName, catName, items[i].name);
+        setItemValue(key, checked ? items[i].required : 0, true);
+      }
+      updateAllStatuses();
+      updateSummary();
+    }
+    
+    function setItemValue(key, value, skipUpdate) {
+      value = Math.max(0, Math.min(9999, value));
+      itemStates[key] = { actual: value };
+      
+      // Update input
+      var input = document.getElementById('input_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (input) input.value = value;
+      
+      // Update checkbox
+      var parts = key.split('::');
+      var item = findItem(parts[0], parts[1], parts[2]);
+      if (item) {
+        var itemDiv = document.getElementById('item_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (itemDiv) {
+          var cb = itemDiv.querySelector('.item-checkbox');
+          if (cb) cb.checked = value >= item.required;
+          
+          itemDiv.classList.remove('checked', 'short', 'missing');
+          if (value >= item.required) itemDiv.classList.add('checked');
+          else if (value > 0) itemDiv.classList.add('short');
+          else itemDiv.classList.add('missing');
+        }
+      }
+      
+      if (!skipUpdate) {
+        updateAllStatuses();
+        updateSummary();
+      }
+    }
+    
+    function adjustItem(key, delta) {
+      var current = (itemStates[key] || { actual: 0 }).actual;
+      setItemValue(key, current + delta);
+    }
+    
+    function findItem(areaName, catName, itemName) {
+      if (INVENTORY[areaName] && INVENTORY[areaName][catName]) {
+        var items = INVENTORY[areaName][catName];
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].name === itemName) return items[i];
+        }
+      }
+      return null;
+    }
+    
+    function markAllStocked() {
+      for (var areaName in INVENTORY) {
+        for (var catName in INVENTORY[areaName]) {
+          var items = INVENTORY[areaName][catName];
+          for (var i = 0; i < items.length; i++) {
+            var key = generateKey(areaName, catName, items[i].name);
+            setItemValue(key, items[i].required, true);
+          }
+        }
+      }
+      updateAllStatuses();
+      updateSummary();
+    }
+    
+    function clearAll() {
+      for (var key in itemStates) {
+        setItemValue(key, 0, true);
+      }
+      updateAllStatuses();
+      updateSummary();
+    }
+    
+    // =====================================================
+    // STATUS UPDATES
+    // =====================================================
+    
+    function updateAllStatuses() {
+      for (var areaName in INVENTORY) {
+        var areaOk = 0, areaTotal = 0;
+        
+        for (var catName in INVENTORY[areaName]) {
+          var catOk = 0;
+          var items = INVENTORY[areaName][catName];
+          
+          for (var i = 0; i < items.length; i++) {
+            var key = generateKey(areaName, catName, items[i].name);
+            var actual = (itemStates[key] || { actual: 0 }).actual;
+            if (actual >= items[i].required) {
+              catOk++;
+              areaOk++;
+            }
+            areaTotal++;
+          }
+          
+          // Update category checkbox
+          var catStatusId = 'cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_');
+          var catStatusEl = document.getElementById(catStatusId);
+          if (catStatusEl) {
+            catStatusEl.textContent = '(' + catOk + '/' + items.length + ')';
+          }
+        }
+        
+        // Update area header
+        var areaId = 'area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
+        var areaDiv = document.getElementById(areaId);
+        var statusEl = document.getElementById('status_' + areaId);
+        
+        if (areaDiv && statusEl) {
+          var header = areaDiv.querySelector('.area-header');
+          header.classList.remove('has-issues', 'all-ok');
+          statusEl.classList.remove('issues', 'ok');
+          
+          statusEl.textContent = areaOk + '/' + areaTotal;
+          
+          if (areaOk === areaTotal) {
+            header.classList.add('all-ok');
+            statusEl.classList.add('ok');
+          } else {
+            header.classList.add('has-issues');
+            statusEl.classList.add('issues');
+          }
+        }
+      }
+    }
+    
+    function updateSummary() {
+      var shortages = [];
+      var okCount = 0, shortCount = 0, missingCount = 0;
+      
+      for (var areaName in INVENTORY) {
+        for (var catName in INVENTORY[areaName]) {
+          var items = INVENTORY[areaName][catName];
+          for (var i = 0; i < items.length; i++) {
+            var key = generateKey(areaName, catName, items[i].name);
+            var actual = (itemStates[key] || { actual: 0 }).actual;
+            var required = items[i].required;
+            
+            if (actual >= required) {
+              okCount++;
+            } else if (actual > 0) {
+              shortCount++;
+              shortages.push({
+                area: areaName,
+                category: catName,
+                name: items[i].name,
+                required: required,
+                actual: actual,
+                shortage: required - actual,
+                isCritical: false
+              });
+            } else {
+              missingCount++;
+              shortages.push({
+                area: areaName,
+                category: catName,
+                name: items[i].name,
+                required: required,
+                actual: 0,
+                shortage: required,
+                isCritical: true
+              });
+            }
+          }
+        }
+      }
+      
+      document.getElementById('statOk').textContent = okCount;
+      document.getElementById('statShort').textContent = shortCount;
+      document.getElementById('statMissing').textContent = missingCount;
+      
+      var summarySection = document.getElementById('summarySection');
+      var summaryContent = document.getElementById('summaryContent');
+      
+      if (shortages.length === 0) {
+        summarySection.classList.add('all-ok');
+        summaryContent.innerHTML = '<div class="summary-empty"><div class="icon">✓</div><div>All items fully stocked!</div></div>';
+      } else {
+        summarySection.classList.remove('all-ok');
+        
+        // Group by area
+        var byArea = {};
+        for (var j = 0; j < shortages.length; j++) {
+          var s = shortages[j];
+          if (!byArea[s.area]) byArea[s.area] = [];
+          byArea[s.area].push(s);
+        }
+        
+        var html = '';
+        for (var area in byArea) {
+          html += '<div class="shortage-group">';
+          html += '<div class="shortage-group-header">' + escapeHtml(area) + ' (' + byArea[area].length + ' items)</div>';
+          
+          for (var k = 0; k < byArea[area].length; k++) {
+            var item = byArea[area][k];
+            var itemClass = item.isCritical ? 'critical' : 'warning';
+            var badgeClass = item.isCritical ? '' : 'warning';
+            var badgeText = item.isCritical ? 'MISSING' : ('Need ' + item.shortage);
+            
+            html += '<div class="shortage-item ' + itemClass + '">';
+            html += '<span class="shortage-item-name">' + escapeHtml(item.name) + '</span>';
+            html += '<span class="shortage-item-detail">' + item.actual + '/' + item.required + '</span>';
+            html += '<span class="shortage-item-badge ' + badgeClass + '">' + badgeText + '</span>';
+            html += '</div>';
+          }
+          
+          html += '</div>';
+        }
+        
+        summaryContent.innerHTML = html;
+      }
+    }
+    
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    // =====================================================
+    // JOTFORM INTEGRATION
+    // =====================================================
+    
+    function generateSubmitValue() {
+      var shortages = [];
+      
+      for (var areaName in INVENTORY) {
+        for (var catName in INVENTORY[areaName]) {
+          var items = INVENTORY[areaName][catName];
+          for (var i = 0; i < items.length; i++) {
+            var key = generateKey(areaName, catName, items[i].name);
+            var actual = (itemStates[key] || { actual: 0 }).actual;
+            if (actual < items[i].required) {
+              shortages.push({
+                area: areaName,
+                category: catName,
+                name: items[i].name,
+                required: items[i].required,
+                actual: actual,
+                shortage: items[i].required - actual
+              });
+            }
+          }
+        }
+      }
+      
+      if (shortages.length === 0) {
+        return 'ALL ITEMS FULLY STOCKED - No missing or short items.';
+      }
+      
+      var lines = ['MISSING/SHORT ITEMS REPORT', 'Generated: ' + new Date().toLocaleString(), ''];
+      var currentArea = '';
+      
+      for (var j = 0; j < shortages.length; j++) {
+        var s = shortages[j];
+        if (s.area !== currentArea) {
+          if (currentArea) lines.push('');
+          lines.push('=== ' + s.area.toUpperCase() + ' ===');
+          currentArea = s.area;
+        }
+        var status = s.actual === 0 ? 'MISSING' : ('have ' + s.actual + ', need ' + s.shortage + ' more');
+        lines.push('  - ' + s.name + ': ' + status);
+      }
+      
+      lines.push('');
+      lines.push('TOTAL: ' + shortages.length + ' items need attention');
+      
+      return lines.join('\n');
+    }
+    
+    function resizeWidget() {
+      if (typeof JFCustomWidget !== 'undefined') {
+        JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight });
+      }
+    }
+    
+    // =====================================================
+    // INIT
+    // =====================================================
+    
+    function init() {
+      buildUI();
+      
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
+        JFCustomWidget.subscribe('ready', function(data) {
+          console.log('[Widget] Ready', data);
+          
+          // Restore saved state if editing
+          if (data.value) {
+            try {
+              var saved = JSON.parse(data.value);
+              if (saved.itemStates) {
+                itemStates = saved.itemStates;
+                buildUI();
+              }
+            } catch (e) {}
+          }
+          
+          resizeWidget();
+        });
+        
+        JFCustomWidget.subscribe('submit', function() {
+          JFCustomWidget.sendSubmit({
+            valid: true,
+            value: JSON.stringify({
+              report: generateSubmitValue(),
+              itemStates: itemStates,
+              timestamp: Date.now()
+            })
+          });
+        });
+      }
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
