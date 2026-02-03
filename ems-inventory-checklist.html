@@ -39,6 +39,7 @@
       overflow-y: auto;
       padding: 10px;
       min-height: 0;
+      position: relative;
     }
     
     /* Area sections */
@@ -51,7 +52,16 @@
     }
     
     .area-section.expanded {
-      position: relative;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: 0;
+      border-radius: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
     }
     
     .area-header {
@@ -63,13 +73,7 @@
       user-select: none;
       border-bottom: 1px solid #eee;
       gap: 10px;
-    }
-    
-    .area-section.expanded .area-header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      flex-shrink: 0;
     }
     
     .area-header:hover {
@@ -84,6 +88,42 @@
     .area-header.all-ok {
       background: #d4edda;
       border-left: 4px solid #28a745;
+    }
+    
+    .area-section.expanded .area-header {
+      background: #333;
+      color: white;
+      border-left: none;
+    }
+    
+    .area-section.expanded .area-header:hover {
+      background: #444;
+    }
+    
+    .area-section.expanded .area-header.has-issues,
+    .area-section.expanded .area-header.all-ok {
+      border-left: none;
+    }
+    
+    .area-section.expanded .collapse-icon {
+      color: white;
+    }
+    
+    .area-section.expanded .area-title {
+      color: white;
+    }
+    
+    .area-section.expanded .area-status {
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+    
+    .area-section.expanded .area-status.issues {
+      background: #dc3545;
+    }
+    
+    .area-section.expanded .area-status.ok {
+      background: #28a745;
     }
     
     .collapse-icon {
@@ -136,6 +176,9 @@
     
     .area-section.expanded .area-content {
       display: block;
+      max-height: none;
+      flex: 1;
+      overflow-y: auto;
     }
     
     /* Category within area */
