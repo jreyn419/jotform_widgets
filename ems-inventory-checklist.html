@@ -50,6 +50,10 @@
       overflow: hidden;
     }
     
+    .area-section.expanded {
+      position: relative;
+    }
+    
     .area-header {
       display: flex;
       align-items: center;
@@ -59,6 +63,13 @@
       user-select: none;
       border-bottom: 1px solid #eee;
       gap: 10px;
+    }
+    
+    .area-section.expanded .area-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .area-header:hover {
