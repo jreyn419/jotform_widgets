@@ -156,18 +156,31 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
-    /* Check buttons */
-    .check-prompt {
+    /* Cylinder check */
+    .cylinder-item {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .cylinder-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .cylinder-label {
       font-size: 14px;
       color: #333;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       text-align: center;
     }
     
-    .check-prompt strong {
+    .cylinder-label strong {
       color: #0066cc;
     }
     
+    /* Check buttons */
     .check-buttons {
       display: flex;
       gap: 10px;
@@ -175,17 +188,17 @@
     
     .check-btn {
       flex: 1;
-      padding: 20px 15px;
+      padding: 16px 12px;
       border: 2px solid #dee2e6;
       border-radius: 12px;
       background: white;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       transition: all 0.15s;
     }
     
@@ -225,11 +238,11 @@
     }
     
     .check-btn-icon {
-      font-size: 32px;
+      font-size: 28px;
     }
     
     .check-btn-text {
-      font-size: 14px;
+      font-size: 13px;
     }
     
     /* Summary */
@@ -238,24 +251,31 @@
       border-top: 1px solid #ddd;
       padding: 12px 15px;
       display: flex;
-      justify-content: space-around;
+      justify-content: center;
       flex-shrink: 0;
     }
     
-    .summary-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
+    .summary-status {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 20px;
     }
     
-    .summary-icon {
-      font-size: 18px;
+    .summary-status.ok {
+      background: #d4edda;
+      color: #155724;
     }
     
-    .summary-icon.ok { color: #28a745; }
-    .summary-icon.low { color: #ffc107; }
-    .summary-icon.unchecked { color: #6c757d; }
+    .summary-status.low {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .summary-status.unchecked {
+      background: #e9ecef;
+      color: #495057;
+    }
   </style>
 </head>
 <body>
@@ -264,19 +284,8 @@
       <!-- Areas will be generated here -->
     </div>
     
-    <div class="summary-bar" id="summaryBar">
-      <div class="summary-item">
-        <span class="summary-icon ok">✓</span>
-        <span><strong id="okCount">0</strong> OK</span>
-      </div>
-      <div class="summary-item">
-        <span class="summary-icon low">!</span>
-        <span><strong id="lowCount">0</strong> Low</span>
-      </div>
-      <div class="summary-item">
-        <span class="summary-icon unchecked">?</span>
-        <span><strong id="uncheckedCount">0</strong> Unchecked</span>
-      </div>
+    <div class="summary-bar">
+      <div class="summary-status unchecked" id="summaryStatus">Not Checked</div>
     </div>
   </div>
 
@@ -286,34 +295,47 @@
     // CONFIGURATION
     // =====================================================
     // Widget Settings:
-    //   - mainO2Threshold: Minimum PSI for Main O2 Closet (default: 1500)
+    //   - mainO2Threshold: Minimum PSI for Main O2 (default: 1500)
+    //   - mainO2Cylinders: Number of cylinders in Main O2 (default: 1, max: 2)
     //   - stretcherO2Threshold: Minimum PSI for Stretcher O2 (default: 1000)
-    
-    var DEFAULT_AREAS = [
-      {
-        id: 'main_o2',
-        name: 'Main O2 Closet',
-        icon: '🫁',
-        thresholdSetting: 'mainO2Threshold',
-        defaultThreshold: 1500,
-        unit: 'PSI'
-      },
-      {
-        id: 'stretcher_o2',
-        name: 'Stretcher O2',
-        icon: '🛏️',
-        thresholdSetting: 'stretcherO2Threshold',
-        defaultThreshold: 1000,
-        unit: 'PSI'
-      }
-    ];
+    //   - enableMedicalAir: "true" or "false" to show Medical Air section (default: false)
+    //   - medicalAirThreshold: Minimum PSI for Medical Air (default: 1500)
     
     var areas = [];
-    var areaStates = {}; // id -> { checked: bool, isOk: bool|null }
+    var areaStates = {}; // areaId -> { cylinders: { 0: bool|null, 1: bool|null } }
     
     // =====================================================
     // BUILD UI
     // =====================================================
+    
+    function getAreaStatus(areaId) {
+      var state = areaStates[areaId];
+      if (!state) return 'unchecked';
+      
+      var area = areas.find(function(a) { return a.id === areaId; });
+      if (!area) return 'unchecked';
+      
+      var allChecked = true;
+      var allOk = true;
+      
+      for (var i = 0; i < area.cylinderCount; i++) {
+        if (state.cylinders[i] === null || state.cylinders[i] === undefined) {
+          allChecked = false;
+        } else if (state.cylinders[i] === false) {
+          allOk = false;
+        }
+      }
+      
+      if (!allChecked) return 'unchecked';
+      if (!allOk) return 'low';
+      return 'ok';
+    }
+    
+    function getStatusText(status) {
+      if (status === 'ok') return 'OK';
+      if (status === 'low') return 'Low';
+      return 'Unchecked';
+    }
     
     function buildUI() {
       var container = document.getElementById('mainContent');
@@ -323,27 +345,34 @@
         var area = areas[i];
         
         if (!areaStates[area.id]) {
-          areaStates[area.id] = { checked: false, isOk: null };
+          areaStates[area.id] = { cylinders: {} };
+          for (var c = 0; c < area.cylinderCount; c++) {
+            areaStates[area.id].cylinders[c] = null;
+          }
         }
         
-        var state = areaStates[area.id];
-        var statusClass = !state.checked ? 'unchecked' : (state.isOk ? 'ok' : 'low');
-        var statusText = !state.checked ? 'Unchecked' : (state.isOk ? 'OK' : 'Low');
+        var status = getAreaStatus(area.id);
+        var statusText = getStatusText(status);
         
         var sectionDiv = document.createElement('div');
         sectionDiv.className = 'area-section';
         sectionDiv.id = 'area_' + area.id;
         
+        var subtitleText = 'Min: ' + area.threshold + ' ' + area.unit;
+        if (area.cylinderCount > 1) {
+          subtitleText += ' · ' + area.cylinderCount + ' cylinders';
+        }
+        
         var headerDiv = document.createElement('div');
-        headerDiv.className = 'area-header ' + statusClass;
+        headerDiv.className = 'area-header ' + status;
         headerDiv.innerHTML = 
           '<span class="collapse-icon">▶</span>' +
           '<span class="area-icon">' + area.icon + '</span>' +
           '<div class="area-info">' +
             '<div class="area-title">' + escapeHtml(area.name) + '</div>' +
-            '<div class="area-subtitle">Minimum: ' + area.threshold + ' ' + area.unit + '</div>' +
+            '<div class="area-subtitle">' + subtitleText + '</div>' +
           '</div>' +
-          '<span class="area-status ' + statusClass + '">' + statusText + '</span>';
+          '<span class="area-status ' + status + '">' + statusText + '</span>';
         
         headerDiv.onclick = (function(div) {
           return function() { toggleArea(div); };
@@ -351,18 +380,29 @@
         
         var contentDiv = document.createElement('div');
         contentDiv.className = 'area-content';
-        contentDiv.innerHTML = 
-          '<div class="check-prompt">Is the supply above <strong>' + area.threshold + ' ' + area.unit + '</strong>?</div>' +
-          '<div class="check-buttons">' +
-            '<button class="check-btn yes' + (state.checked && state.isOk ? ' selected' : '') + '" onclick="setAreaStatus(\'' + area.id + '\', true)">' +
-              '<span class="check-btn-icon">✓</span>' +
-              '<span class="check-btn-text">Yes, OK</span>' +
-            '</button>' +
-            '<button class="check-btn no' + (state.checked && !state.isOk ? ' selected' : '') + '" onclick="setAreaStatus(\'' + area.id + '\', false)">' +
-              '<span class="check-btn-icon">!</span>' +
-              '<span class="check-btn-text">No, Low</span>' +
-            '</button>' +
-          '</div>';
+        
+        // Build cylinder checks
+        var contentHtml = '';
+        for (var c = 0; c < area.cylinderCount; c++) {
+          var cylinderState = areaStates[area.id].cylinders[c];
+          var cylinderLabel = area.cylinderCount > 1 ? 'Cylinder ' + (c + 1) + ': ' : '';
+          
+          contentHtml += '<div class="cylinder-item">';
+          contentHtml += '<div class="cylinder-label">' + cylinderLabel + 'Above <strong>' + area.threshold + ' ' + area.unit + '</strong>?</div>';
+          contentHtml += '<div class="check-buttons">';
+          contentHtml += '<button class="check-btn yes' + (cylinderState === true ? ' selected' : '') + '" onclick="setCylinderStatus(\'' + area.id + '\', ' + c + ', true)">';
+          contentHtml += '<span class="check-btn-icon">✓</span>';
+          contentHtml += '<span class="check-btn-text">Yes</span>';
+          contentHtml += '</button>';
+          contentHtml += '<button class="check-btn no' + (cylinderState === false ? ' selected' : '') + '" onclick="setCylinderStatus(\'' + area.id + '\', ' + c + ', false)">';
+          contentHtml += '<span class="check-btn-icon">!</span>';
+          contentHtml += '<span class="check-btn-text">No</span>';
+          contentHtml += '</button>';
+          contentHtml += '</div>';
+          contentHtml += '</div>';
+        }
+        
+        contentDiv.innerHTML = contentHtml;
         
         sectionDiv.appendChild(headerDiv);
         sectionDiv.appendChild(contentDiv);
@@ -394,54 +434,77 @@
       }
     }
     
-    function setAreaStatus(areaId, isOk) {
-      areaStates[areaId] = { checked: true, isOk: isOk };
+    function setCylinderStatus(areaId, cylinderIndex, isOk) {
+      if (!areaStates[areaId]) {
+        areaStates[areaId] = { cylinders: {} };
+      }
+      areaStates[areaId].cylinders[cylinderIndex] = isOk;
       
-      // Update UI
+      // Update button states
       var sectionDiv = document.getElementById('area_' + areaId);
       if (sectionDiv) {
+        var cylinderItems = sectionDiv.querySelectorAll('.cylinder-item');
+        if (cylinderItems[cylinderIndex]) {
+          var yesBtn = cylinderItems[cylinderIndex].querySelector('.check-btn.yes');
+          var noBtn = cylinderItems[cylinderIndex].querySelector('.check-btn.no');
+          
+          yesBtn.classList.remove('selected');
+          noBtn.classList.remove('selected');
+          
+          if (isOk) {
+            yesBtn.classList.add('selected');
+          } else {
+            noBtn.classList.add('selected');
+          }
+        }
+        
+        // Update header status
+        var status = getAreaStatus(areaId);
+        var statusText = getStatusText(status);
         var headerDiv = sectionDiv.querySelector('.area-header');
         var statusSpan = headerDiv.querySelector('.area-status');
-        var yesBtn = sectionDiv.querySelector('.check-btn.yes');
-        var noBtn = sectionDiv.querySelector('.check-btn.no');
         
         headerDiv.classList.remove('unchecked', 'ok', 'low');
+        headerDiv.classList.add(status);
         statusSpan.classList.remove('unchecked', 'ok', 'low');
-        yesBtn.classList.remove('selected');
-        noBtn.classList.remove('selected');
-        
-        if (isOk) {
-          headerDiv.classList.add('ok');
-          statusSpan.classList.add('ok');
-          statusSpan.textContent = 'OK';
-          yesBtn.classList.add('selected');
-        } else {
-          headerDiv.classList.add('low');
-          statusSpan.classList.add('low');
-          statusSpan.textContent = 'Low';
-          noBtn.classList.add('selected');
-        }
+        statusSpan.classList.add(status);
+        statusSpan.textContent = statusText;
       }
       
       updateSummary();
       
-      // Auto-advance to next unchecked area
-      var nextUnchecked = findNextUncheckedArea(areaId);
-      if (nextUnchecked) {
-        setTimeout(function() {
-          var nextSection = document.getElementById('area_' + nextUnchecked);
-          if (nextSection) {
-            toggleArea(nextSection);
+      // Check if we should auto-advance
+      var area = areas.find(function(a) { return a.id === areaId; });
+      if (area) {
+        // Check if all cylinders in this area are done
+        var allDone = true;
+        for (var c = 0; c < area.cylinderCount; c++) {
+          if (areaStates[areaId].cylinders[c] === null || areaStates[areaId].cylinders[c] === undefined) {
+            allDone = false;
+            break;
           }
-        }, 300);
-      } else {
-        // All done - close current area
-        setTimeout(function() {
-          var allAreas = document.querySelectorAll('.area-section');
-          for (var i = 0; i < allAreas.length; i++) {
-            allAreas[i].classList.remove('expanded');
+        }
+        
+        if (allDone) {
+          // Find next unchecked area
+          var nextArea = findNextUncheckedArea(areaId);
+          if (nextArea) {
+            setTimeout(function() {
+              var nextSection = document.getElementById('area_' + nextArea);
+              if (nextSection) {
+                toggleArea(nextSection);
+              }
+            }, 300);
+          } else {
+            // All done - close current area
+            setTimeout(function() {
+              var allAreas = document.querySelectorAll('.area-section');
+              for (var i = 0; i < allAreas.length; i++) {
+                allAreas[i].classList.remove('expanded');
+              }
+            }, 300);
           }
-        }, 300);
+        }
       }
     }
     
@@ -452,14 +515,14 @@
           foundCurrent = true;
           continue;
         }
-        if (foundCurrent && !areaStates[areas[i].id].checked) {
+        if (foundCurrent && getAreaStatus(areas[i].id) === 'unchecked') {
           return areas[i].id;
         }
       }
       // Check from beginning
       for (var j = 0; j < areas.length; j++) {
         if (areas[j].id === currentId) break;
-        if (!areaStates[areas[j].id].checked) {
+        if (getAreaStatus(areas[j].id) === 'unchecked') {
           return areas[j].id;
         }
       }
@@ -467,22 +530,34 @@
     }
     
     function updateSummary() {
-      var okCount = 0, lowCount = 0, uncheckedCount = 0;
+      var statusEl = document.getElementById('summaryStatus');
+      
+      var allChecked = true;
+      var allOk = true;
+      var lowAreas = [];
       
       for (var i = 0; i < areas.length; i++) {
-        var state = areaStates[areas[i].id];
-        if (!state || !state.checked) {
-          uncheckedCount++;
-        } else if (state.isOk) {
-          okCount++;
-        } else {
-          lowCount++;
+        var status = getAreaStatus(areas[i].id);
+        if (status === 'unchecked') {
+          allChecked = false;
+        } else if (status === 'low') {
+          allOk = false;
+          lowAreas.push(areas[i].name);
         }
       }
       
-      document.getElementById('okCount').textContent = okCount;
-      document.getElementById('lowCount').textContent = lowCount;
-      document.getElementById('uncheckedCount').textContent = uncheckedCount;
+      statusEl.classList.remove('ok', 'low', 'unchecked');
+      
+      if (!allChecked) {
+        statusEl.classList.add('unchecked');
+        statusEl.textContent = 'Not Checked';
+      } else if (allOk) {
+        statusEl.classList.add('ok');
+        statusEl.textContent = '✓ All OK';
+      } else {
+        statusEl.classList.add('low');
+        statusEl.textContent = '! Low: ' + lowAreas.join(', ');
+      }
     }
     
     function escapeHtml(text) {
@@ -496,40 +571,30 @@
     // =====================================================
     
     function generateSubmitValue() {
-      var results = [];
-      var allOk = true;
       var allChecked = true;
+      var allOk = true;
+      var lowAreas = [];
       
       for (var i = 0; i < areas.length; i++) {
-        var area = areas[i];
-        var state = areaStates[area.id] || { checked: false, isOk: null };
-        
-        if (!state.checked) {
+        var status = getAreaStatus(areas[i].id);
+        if (status === 'unchecked') {
           allChecked = false;
-          results.push(area.name + ': NOT CHECKED');
-        } else if (state.isOk) {
-          results.push(area.name + ': OK (above ' + area.threshold + ' ' + area.unit + ')');
-        } else {
+        } else if (status === 'low') {
           allOk = false;
-          results.push(area.name + ': LOW (below ' + area.threshold + ' ' + area.unit + ')');
+          lowAreas.push(areas[i].name);
         }
       }
       
-      var summary = '';
+      var output = '';
       if (!allChecked) {
-        summary = 'INCOMPLETE - Some areas not checked';
+        output = 'Not checked';
       } else if (allOk) {
-        summary = 'ALL OK - Oxygen supplies adequate';
+        output = 'All OK';
       } else {
-        summary = 'ATTENTION NEEDED - Some supplies low';
+        output = 'Low: ' + lowAreas.join(', ');
       }
       
-      return {
-        summary: summary,
-        details: results.join('\n'),
-        areas: areaStates,
-        timestamp: Date.now()
-      };
+      return output;
     }
     
     function resizeWidget() {
@@ -547,21 +612,47 @@
         JFCustomWidget.subscribe('ready', function(data) {
           console.log('[O2 Widget] Ready', data);
           
-          // Build areas with thresholds from settings
+          // Build areas from settings
           areas = [];
-          for (var i = 0; i < DEFAULT_AREAS.length; i++) {
-            var areaDef = DEFAULT_AREAS[i];
-            var threshold = parseInt(JFCustomWidget.getWidgetSetting(areaDef.thresholdSetting), 10);
-            if (isNaN(threshold) || threshold <= 0) {
-              threshold = areaDef.defaultThreshold;
-            }
+          
+          // Main O2
+          var mainO2Threshold = parseInt(JFCustomWidget.getWidgetSetting('mainO2Threshold'), 10) || 1500;
+          var mainO2Cylinders = parseInt(JFCustomWidget.getWidgetSetting('mainO2Cylinders'), 10) || 1;
+          mainO2Cylinders = Math.max(1, Math.min(2, mainO2Cylinders)); // Clamp 1-2
+          
+          areas.push({
+            id: 'main_o2',
+            name: 'Main O2',
+            icon: '🫁',
+            threshold: mainO2Threshold,
+            unit: 'PSI',
+            cylinderCount: mainO2Cylinders
+          });
+          
+          // Stretcher O2
+          var stretcherO2Threshold = parseInt(JFCustomWidget.getWidgetSetting('stretcherO2Threshold'), 10) || 1000;
+          
+          areas.push({
+            id: 'stretcher_o2',
+            name: 'Stretcher O2',
+            icon: '🛏️',
+            threshold: stretcherO2Threshold,
+            unit: 'PSI',
+            cylinderCount: 1
+          });
+          
+          // Medical Air (optional)
+          var enableMedicalAir = JFCustomWidget.getWidgetSetting('enableMedicalAir');
+          if (enableMedicalAir === 'true' || enableMedicalAir === true) {
+            var medicalAirThreshold = parseInt(JFCustomWidget.getWidgetSetting('medicalAirThreshold'), 10) || 1500;
             
             areas.push({
-              id: areaDef.id,
-              name: areaDef.name,
-              icon: areaDef.icon,
-              threshold: threshold,
-              unit: areaDef.unit
+              id: 'medical_air',
+              name: 'Medical Air',
+              icon: '💨',
+              threshold: medicalAirThreshold,
+              unit: 'PSI',
+              cylinderCount: 1
             });
           }
           
@@ -571,8 +662,8 @@
           if (data.value) {
             try {
               var saved = JSON.parse(data.value);
-              if (saved.areas) {
-                areaStates = saved.areas;
+              if (saved.areaStates) {
+                areaStates = saved.areaStates;
                 buildUI();
               }
             } catch (e) {}
@@ -582,25 +673,18 @@
         });
         
         JFCustomWidget.subscribe('submit', function() {
-          var submitData = generateSubmitValue();
           JFCustomWidget.sendSubmit({
             valid: true,
-            value: JSON.stringify(submitData)
+            value: generateSubmitValue()
           });
         });
       } else {
-        // Standalone mode
-        areas = [];
-        for (var i = 0; i < DEFAULT_AREAS.length; i++) {
-          var areaDef = DEFAULT_AREAS[i];
-          areas.push({
-            id: areaDef.id,
-            name: areaDef.name,
-            icon: areaDef.icon,
-            threshold: areaDef.defaultThreshold,
-            unit: areaDef.unit
-          });
-        }
+        // Standalone mode - use defaults
+        areas = [
+          { id: 'main_o2', name: 'Main O2', icon: '🫁', threshold: 1500, unit: 'PSI', cylinderCount: 2 },
+          { id: 'stretcher_o2', name: 'Stretcher O2', icon: '🛏️', threshold: 1000, unit: 'PSI', cylinderCount: 1 },
+          { id: 'medical_air', name: 'Medical Air', icon: '💨', threshold: 1500, unit: 'PSI', cylinderCount: 1 }
+        ];
         buildUI();
       }
     }
