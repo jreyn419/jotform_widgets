@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oxygen Supply Check</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .widget-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-height: 100vh;
+      background: #f5f5f5;
+    }
+    
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      min-height: 0;
+    }
+    
+    /* Area sections */
+    .area-section {
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: visible;
+    }
+    
+    .area-header {
+      display: flex;
+      align-items: center;
+      padding: 14px 15px;
+      background: #f8f9fa;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid #eee;
+      gap: 12px;
+      border-radius: 8px;
+    }
+    
+    .area-section.expanded .area-header {
+      border-radius: 8px 8px 0 0;
+    }
+    
+    .area-header:hover {
+      background: #e9ecef;
+    }
+    
+    .area-header.ok {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+    }
+    
+    .area-header.low {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+    }
+    
+    .area-header.unchecked {
+      background: #f8f9fa;
+      border-left: 4px solid #6c757d;
+    }
+    
+    .collapse-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #666;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    
+    .area-section.expanded .collapse-icon {
+      transform: rotate(90deg);
+    }
+    
+    .area-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    
+    .area-info {
+      flex: 1;
+    }
+    
+    .area-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: #333;
+    }
+    
+    .area-subtitle {
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+    }
+    
+    .area-status {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    .area-status.ok {
+      background: #28a745;
+      color: white;
+    }
+    
+    .area-status.low {
+      background: #ffc107;
+      color: #333;
+    }
+    
+    .area-status.unchecked {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .area-content {
+      display: none;
+      padding: 15px;
+      border-top: 1px solid #eee;
+    }
+    
+    .area-section.expanded .area-content {
+      display: block;
+    }
+    
+    .area-section.expanded .area-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-radius: 0;
+      margin: 0 -10px;
+      width: calc(100% + 20px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Check buttons */
+    .check-prompt {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .check-prompt strong {
+      color: #0066cc;
+    }
+    
+    .check-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .check-btn {
+      flex: 1;
+      padding: 20px 15px;
+      border: 2px solid #dee2e6;
+      border-radius: 12px;
+      background: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+    
+    .check-btn:hover {
+      border-color: #adb5bd;
+      background: #f8f9fa;
+    }
+    
+    .check-btn.yes {
+      color: #155724;
+    }
+    
+    .check-btn.yes:hover {
+      border-color: #28a745;
+      background: #d4edda;
+    }
+    
+    .check-btn.yes.selected {
+      border-color: #28a745;
+      background: #28a745;
+      color: white;
+    }
+    
+    .check-btn.no {
+      color: #856404;
+    }
+    
+    .check-btn.no:hover {
+      border-color: #ffc107;
+      background: #fff3cd;
+    }
+    
+    .check-btn.no.selected {
+      border-color: #ffc107;
+      background: #ffc107;
+      color: #333;
+    }
+    
+    .check-btn-icon {
+      font-size: 32px;
+    }
+    
+    .check-btn-text {
+      font-size: 14px;
+    }
+    
+    /* Summary */
+    .summary-bar {
+      background: white;
+      border-top: 1px solid #ddd;
+      padding: 12px 15px;
+      display: flex;
+      justify-content: space-around;
+      flex-shrink: 0;
+    }
+    
+    .summary-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    
+    .summary-icon {
+      font-size: 18px;
+    }
+    
+    .summary-icon.ok { color: #28a745; }
+    .summary-icon.low { color: #ffc107; }
+    .summary-icon.unchecked { color: #6c757d; }
+  </style>
+</head>
+<body>
+  <div class="widget-container">
+    <div class="main-content" id="mainContent">
+      <!-- Areas will be generated here -->
+    </div>
+    
+    <div class="summary-bar" id="summaryBar">
+      <div class="summary-item">
+        <span class="summary-icon ok">✓</span>
+        <span><strong id="okCount">0</strong> OK</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-icon low">!</span>
+        <span><strong id="lowCount">0</strong> Low</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-icon unchecked">?</span>
+        <span><strong id="uncheckedCount">0</strong> Unchecked</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+  <script>
+    // =====================================================
+    // CONFIGURATION
+    // =====================================================
+    // Widget Settings:
+    //   - mainO2Threshold: Minimum PSI for Main O2 Closet (default: 1500)
+    //   - stretcherO2Threshold: Minimum PSI for Stretcher O2 (default: 1000)
+    
+    var DEFAULT_AREAS = [
+      {
+        id: 'main_o2',
+        name: 'Main O2 Closet',
+        icon: '🫁',
+        thresholdSetting: 'mainO2Threshold',
+        defaultThreshold: 1500,
+        unit: 'PSI'
+      },
+      {
+        id: 'stretcher_o2',
+        name: 'Stretcher O2',
+        icon: '🛏️',
+        thresholdSetting: 'stretcherO2Threshold',
+        defaultThreshold: 1000,
+        unit: 'PSI'
+      }
+    ];
+    
+    var areas = [];
+    var areaStates = {}; // id -> { checked: bool, isOk: bool|null }
+    
+    // =====================================================
+    // BUILD UI
+    // =====================================================
+    
+    function buildUI() {
+      var container = document.getElementById('mainContent');
+      container.innerHTML = '';
+      
+      for (var i = 0; i < areas.length; i++) {
+        var area = areas[i];
+        
+        if (!areaStates[area.id]) {
+          areaStates[area.id] = { checked: false, isOk: null };
+        }
+        
+        var state = areaStates[area.id];
+        var statusClass = !state.checked ? 'unchecked' : (state.isOk ? 'ok' : 'low');
+        var statusText = !state.checked ? 'Unchecked' : (state.isOk ? 'OK' : 'Low');
+        
+        var sectionDiv = document.createElement('div');
+        sectionDiv.className = 'area-section';
+        sectionDiv.id = 'area_' + area.id;
+        
+        var headerDiv = document.createElement('div');
+        headerDiv.className = 'area-header ' + statusClass;
+        headerDiv.innerHTML = 
+          '<span class="collapse-icon">▶</span>' +
+          '<span class="area-icon">' + area.icon + '</span>' +
+          '<div class="area-info">' +
+            '<div class="area-title">' + escapeHtml(area.name) + '</div>' +
+            '<div class="area-subtitle">Minimum: ' + area.threshold + ' ' + area.unit + '</div>' +
+          '</div>' +
+          '<span class="area-status ' + statusClass + '">' + statusText + '</span>';
+        
+        headerDiv.onclick = (function(div) {
+          return function() { toggleArea(div); };
+        })(sectionDiv);
+        
+        var contentDiv = document.createElement('div');
+        contentDiv.className = 'area-content';
+        contentDiv.innerHTML = 
+          '<div class="check-prompt">Is the supply above <strong>' + area.threshold + ' ' + area.unit + '</strong>?</div>' +
+          '<div class="check-buttons">' +
+            '<button class="check-btn yes' + (state.checked && state.isOk ? ' selected' : '') + '" onclick="setAreaStatus(\'' + area.id + '\', true)">' +
+              '<span class="check-btn-icon">✓</span>' +
+              '<span class="check-btn-text">Yes, OK</span>' +
+            '</button>' +
+            '<button class="check-btn no' + (state.checked && !state.isOk ? ' selected' : '') + '" onclick="setAreaStatus(\'' + area.id + '\', false)">' +
+              '<span class="check-btn-icon">!</span>' +
+              '<span class="check-btn-text">No, Low</span>' +
+            '</button>' +
+          '</div>';
+        
+        sectionDiv.appendChild(headerDiv);
+        sectionDiv.appendChild(contentDiv);
+        container.appendChild(sectionDiv);
+      }
+      
+      updateSummary();
+    }
+    
+    // =====================================================
+    // INTERACTIONS
+    // =====================================================
+    
+    function toggleArea(areaDiv) {
+      var wasExpanded = areaDiv.classList.contains('expanded');
+      
+      // Close all areas first
+      var allAreas = document.querySelectorAll('.area-section');
+      for (var i = 0; i < allAreas.length; i++) {
+        allAreas[i].classList.remove('expanded');
+      }
+      
+      // If it wasn't expanded, open it
+      if (!wasExpanded) {
+        areaDiv.classList.add('expanded');
+        setTimeout(function() {
+          areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+      }
+    }
+    
+    function setAreaStatus(areaId, isOk) {
+      areaStates[areaId] = { checked: true, isOk: isOk };
+      
+      // Update UI
+      var sectionDiv = document.getElementById('area_' + areaId);
+      if (sectionDiv) {
+        var headerDiv = sectionDiv.querySelector('.area-header');
+        var statusSpan = headerDiv.querySelector('.area-status');
+        var yesBtn = sectionDiv.querySelector('.check-btn.yes');
+        var noBtn = sectionDiv.querySelector('.check-btn.no');
+        
+        headerDiv.classList.remove('unchecked', 'ok', 'low');
+        statusSpan.classList.remove('unchecked', 'ok', 'low');
+        yesBtn.classList.remove('selected');
+        noBtn.classList.remove('selected');
+        
+        if (isOk) {
+          headerDiv.classList.add('ok');
+          statusSpan.classList.add('ok');
+          statusSpan.textContent = 'OK';
+          yesBtn.classList.add('selected');
+        } else {
+          headerDiv.classList.add('low');
+          statusSpan.classList.add('low');
+          statusSpan.textContent = 'Low';
+          noBtn.classList.add('selected');
+        }
+      }
+      
+      updateSummary();
+      
+      // Auto-advance to next unchecked area
+      var nextUnchecked = findNextUncheckedArea(areaId);
+      if (nextUnchecked) {
+        setTimeout(function() {
+          var nextSection = document.getElementById('area_' + nextUnchecked);
+          if (nextSection) {
+            toggleArea(nextSection);
+          }
+        }, 300);
+      } else {
+        // All done - close current area
+        setTimeout(function() {
+          var allAreas = document.querySelectorAll('.area-section');
+          for (var i = 0; i < allAreas.length; i++) {
+            allAreas[i].classList.remove('expanded');
+          }
+        }, 300);
+      }
+    }
+    
+    function findNextUncheckedArea(currentId) {
+      var foundCurrent = false;
+      for (var i = 0; i < areas.length; i++) {
+        if (areas[i].id === currentId) {
+          foundCurrent = true;
+          continue;
+        }
+        if (foundCurrent && !areaStates[areas[i].id].checked) {
+          return areas[i].id;
+        }
+      }
+      // Check from beginning
+      for (var j = 0; j < areas.length; j++) {
+        if (areas[j].id === currentId) break;
+        if (!areaStates[areas[j].id].checked) {
+          return areas[j].id;
+        }
+      }
+      return null;
+    }
+    
+    function updateSummary() {
+      var okCount = 0, lowCount = 0, uncheckedCount = 0;
+      
+      for (var i = 0; i < areas.length; i++) {
+        var state = areaStates[areas[i].id];
+        if (!state || !state.checked) {
+          uncheckedCount++;
+        } else if (state.isOk) {
+          okCount++;
+        } else {
+          lowCount++;
+        }
+      }
+      
+      document.getElementById('okCount').textContent = okCount;
+      document.getElementById('lowCount').textContent = lowCount;
+      document.getElementById('uncheckedCount').textContent = uncheckedCount;
+    }
+    
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    // =====================================================
+    // JOTFORM INTEGRATION
+    // =====================================================
+    
+    function generateSubmitValue() {
+      var results = [];
+      var allOk = true;
+      var allChecked = true;
+      
+      for (var i = 0; i < areas.length; i++) {
+        var area = areas[i];
+        var state = areaStates[area.id] || { checked: false, isOk: null };
+        
+        if (!state.checked) {
+          allChecked = false;
+          results.push(area.name + ': NOT CHECKED');
+        } else if (state.isOk) {
+          results.push(area.name + ': OK (above ' + area.threshold + ' ' + area.unit + ')');
+        } else {
+          allOk = false;
+          results.push(area.name + ': LOW (below ' + area.threshold + ' ' + area.unit + ')');
+        }
+      }
+      
+      var summary = '';
+      if (!allChecked) {
+        summary = 'INCOMPLETE - Some areas not checked';
+      } else if (allOk) {
+        summary = 'ALL OK - Oxygen supplies adequate';
+      } else {
+        summary = 'ATTENTION NEEDED - Some supplies low';
+      }
+      
+      return {
+        summary: summary,
+        details: results.join('\n'),
+        areas: areaStates,
+        timestamp: Date.now()
+      };
+    }
+    
+    function resizeWidget() {
+      if (typeof JFCustomWidget !== 'undefined') {
+        JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight });
+      }
+    }
+    
+    // =====================================================
+    // INIT
+    // =====================================================
+    
+    function init() {
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
+        JFCustomWidget.subscribe('ready', function(data) {
+          console.log('[O2 Widget] Ready', data);
+          
+          // Build areas with thresholds from settings
+          areas = [];
+          for (var i = 0; i < DEFAULT_AREAS.length; i++) {
+            var areaDef = DEFAULT_AREAS[i];
+            var threshold = parseInt(JFCustomWidget.getWidgetSetting(areaDef.thresholdSetting), 10);
+            if (isNaN(threshold) || threshold <= 0) {
+              threshold = areaDef.defaultThreshold;
+            }
+            
+            areas.push({
+              id: areaDef.id,
+              name: areaDef.name,
+              icon: areaDef.icon,
+              threshold: threshold,
+              unit: areaDef.unit
+            });
+          }
+          
+          buildUI();
+          
+          // Restore saved state if editing
+          if (data.value) {
+            try {
+              var saved = JSON.parse(data.value);
+              if (saved.areas) {
+                areaStates = saved.areas;
+                buildUI();
+              }
+            } catch (e) {}
+          }
+          
+          resizeWidget();
+        });
+        
+        JFCustomWidget.subscribe('submit', function() {
+          var submitData = generateSubmitValue();
+          JFCustomWidget.sendSubmit({
+            valid: true,
+            value: JSON.stringify(submitData)
+          });
+        });
+      } else {
+        // Standalone mode
+        areas = [];
+        for (var i = 0; i < DEFAULT_AREAS.length; i++) {
+          var areaDef = DEFAULT_AREAS[i];
+          areas.push({
+            id: areaDef.id,
+            name: areaDef.name,
+            icon: areaDef.icon,
+            threshold: areaDef.defaultThreshold,
+            unit: areaDef.unit
+          });
+        }
+        buildUI();
+      }
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
