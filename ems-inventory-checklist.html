@@ -48,20 +48,7 @@
       border-radius: 8px;
       margin-bottom: 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-    
-    .area-section.expanded {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      margin: 0;
-      border-radius: 0;
-      z-index: 50;
-      display: flex;
-      flex-direction: column;
+      overflow: visible;
     }
     
     .area-header {
@@ -74,6 +61,11 @@
       border-bottom: 1px solid #eee;
       gap: 10px;
       flex-shrink: 0;
+      border-radius: 8px 8px 0 0;
+    }
+    
+    .area-section:not(.expanded) .area-header {
+      border-radius: 8px;
     }
     
     .area-header:hover {
@@ -91,39 +83,13 @@
     }
     
     .area-section.expanded .area-header {
-      background: #333;
-      color: white;
-      border-left: none;
-    }
-    
-    .area-section.expanded .area-header:hover {
-      background: #444;
-    }
-    
-    .area-section.expanded .area-header.has-issues,
-    .area-section.expanded .area-header.all-ok {
-      border-left: none;
-    }
-    
-    .area-section.expanded .collapse-icon {
-      color: white;
-    }
-    
-    .area-section.expanded .area-title {
-      color: white;
-    }
-    
-    .area-section.expanded .area-status {
-      background: rgba(255,255,255,0.2);
-      color: white;
-    }
-    
-    .area-section.expanded .area-status.issues {
-      background: #dc3545;
-    }
-    
-    .area-section.expanded .area-status.ok {
-      background: #28a745;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-radius: 0;
+      margin: 0 -10px;
+      width: calc(100% + 20px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .collapse-icon {
@@ -169,16 +135,12 @@
     
     .area-content {
       display: none;
-      max-height: 350px;
-      overflow-y: auto;
+      overflow-y: visible;
       border-top: 1px solid #eee;
     }
     
     .area-section.expanded .area-content {
       display: block;
-      max-height: none;
-      flex: 1;
-      overflow-y: auto;
     }
     
     /* Category within area */
@@ -1077,17 +1039,14 @@
     // =====================================================
     
     function toggleArea(areaDiv) {
-      var isExpanded = areaDiv.classList.contains('expanded');
+      var wasExpanded = areaDiv.classList.contains('expanded');
+      areaDiv.classList.toggle('expanded');
       
-      // Close all areas first
-      var allAreas = document.querySelectorAll('.area-section');
-      for (var i = 0; i < allAreas.length; i++) {
-        allAreas[i].classList.remove('expanded');
-      }
-      
-      // If it wasn't expanded, open it
-      if (!isExpanded) {
-        areaDiv.classList.add('expanded');
+      // If opening, scroll the header into view
+      if (!wasExpanded) {
+        setTimeout(function() {
+          areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
       }
     }
     
