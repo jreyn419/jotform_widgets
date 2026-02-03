@@ -25,25 +25,7 @@
       background: #f5f5f5;
     }
     
-    .widget-header {
-      background: linear-gradient(135deg, #0066cc, #004499);
-      color: white;
-      padding: 12px 15px;
-      flex-shrink: 0;
-    }
-    
-    .widget-header h1 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-    }
-    
-    .widget-header .subtitle {
-      font-size: 12px;
-      opacity: 0.8;
-      margin-top: 2px;
-    }
-    
+
     .main-content {
       flex: 1;
       display: flex;
@@ -281,63 +263,168 @@
       color: #333;
     }
     
-    /* Summary section */
-    .summary-section {
-      flex-shrink: 0;
-      background: white;
-      border-top: 3px solid #dc3545;
-      max-height: 40vh;
+    /* Floating Restock Button */
+    .restock-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
       display: flex;
-      flex-direction: column;
-    }
-    
-    .summary-section.all-ok {
-      border-top-color: #28a745;
-    }
-    
-    .summary-header {
-      padding: 12px 15px;
-      background: #333;
-      color: white;
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      flex-shrink: 0;
-    }
-    
-    .summary-header h2 {
-      margin: 0;
+      gap: 8px;
+      padding: 12px 20px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 50px;
       font-size: 14px;
       font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+      transition: all 0.2s;
+      z-index: 100;
     }
     
-    .summary-stats {
-      display: flex;
-      gap: 15px;
+    .restock-btn:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(220, 53, 69, 0.5);
+    }
+    
+    .restock-btn.all-ok {
+      background: #28a745;
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    }
+    
+    .restock-btn.all-ok:hover {
+      background: #218838;
+      box-shadow: 0 6px 16px rgba(40, 167, 69, 0.5);
+    }
+    
+    .restock-icon {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    
+    .restock-count {
+      background: rgba(255,255,255,0.25);
+      padding: 2px 8px;
+      border-radius: 12px;
       font-size: 12px;
     }
     
-    .summary-stat {
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+    }
+    
+    .modal-overlay.open {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 0;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: none;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #333;
+      color: white;
+      border-radius: 0;
+      flex-shrink: 0;
+    }
+    
+    .modal-header h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      opacity: 0.7;
+    }
+    
+    .modal-close:hover {
+      opacity: 1;
+    }
+    
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      padding-bottom: 80px;
+    }
+    
+    .modal-footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 15px 20px;
+      background: white;
+      border-top: 1px solid #eee;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .restock-all-btn {
+      width: 100%;
+      padding: 16px 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
+      gap: 8px;
     }
     
-    .stat-count {
-      font-weight: 700;
-      font-size: 16px;
+    .restock-all-btn:hover {
+      background: #218838;
     }
     
-    .stat-count.ok { color: #28a745; }
-    .stat-count.short { color: #ffc107; }
-    .stat-count.missing { color: #ff6b6b; }
+    .restock-all-btn:active {
+      background: #1e7e34;
+    }
     
-    .summary-content {
+
+    .modal-body {
       flex: 1;
       overflow-y: auto;
       min-height: 0;
     }
     
+
     .summary-empty {
       padding: 20px;
       text-align: center;
@@ -359,148 +446,358 @@
     }
     
     .shortage-group-header {
-      padding: 8px 15px;
+      padding: 12px 15px;
       background: #f8f9fa;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      color: #666;
+      color: #333;
+      border-bottom: 1px solid #e0e0e0;
     }
     
     .shortage-item {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 15px;
-      font-size: 13px;
-      border-bottom: 1px solid #f5f5f5;
+      flex-direction: column;
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 8px;
     }
     
     .shortage-item:last-child {
       border-bottom: none;
     }
     
-    .shortage-item.critical {
-      background: #fff5f5;
+    .shortage-item.restocked {
+      background: #d4edda;
+      opacity: 0.7;
     }
     
-    .shortage-item.warning {
-      background: #fffbeb;
+    .shortage-item.out-of-stock {
+      background: #f8d7da;
     }
     
     .shortage-item-name {
-      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+      color: #333;
     }
     
-    .shortage-item-detail {
-      color: #888;
-      font-size: 12px;
-      margin-right: 10px;
+    .shortage-item-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     
-    .shortage-item-badge {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 4px;
+    .shortage-item-need {
+      display: inline-flex;
+      align-items: center;
       background: #dc3545;
       color: white;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 6px;
     }
     
-    .shortage-item-badge.warning {
+    .shortage-item-need.partial {
       background: #ffc107;
       color: #333;
     }
     
-    /* Quick actions bar */
-    .quick-actions {
+    .shortage-item-actions {
       display: flex;
       gap: 8px;
-      padding: 10px 15px;
-      background: #f8f9fa;
-      border-top: 1px solid #eee;
-      flex-shrink: 0;
+      flex: 1;
+      justify-content: flex-end;
     }
     
-    .quick-btn {
-      flex: 1;
-      padding: 10px;
+    .action-btn {
+      padding: 8px 14px;
       border: none;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+      min-width: 110px;
+      justify-content: center;
     }
     
-    .quick-btn.expand-all {
+    .action-btn.restock {
+      background: #28a745;
+      color: white;
+    }
+    
+    .action-btn.restock:hover {
+      background: #218838;
+    }
+    
+    .action-btn.out-of-stock {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .action-btn.out-of-stock:hover {
+      background: #5a6268;
+    }
+    
+    .action-btn.undo {
+      background: #e9ecef;
+      color: #333;
+      min-width: auto;
+      padding: 6px 12px;
+    }
+    
+    .action-btn.undo:hover {
+      background: #dee2e6;
+    }
+    
+    .shortage-item-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      flex-wrap: wrap;
+    }
+    
+    .shortage-item-status.restocked {
+      background: #c3e6cb;
+      color: #155724;
+    }
+    
+    .shortage-item-status.unavailable {
+      background: #f5c6cb;
+      color: #721c24;
+    }
+    
+    .status-reason {
+      font-weight: normal;
+      font-style: italic;
+      opacity: 0.9;
+    }
+    
+    /* Out of Stock Dialog */
+    .dialog-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 300;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .dialog-overlay.open {
+      display: flex;
+    }
+    
+    .dialog-content {
+      background: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    
+    .dialog-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .dialog-header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .dialog-body {
+      padding: 20px;
+    }
+    
+    .dialog-item-name {
+      font-weight: 600;
+      color: #333;
+      margin: 0 0 15px 0;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+    
+    .dialog-body label {
+      display: block;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    
+    .reason-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .reason-btn {
+      padding: 14px 16px;
+      border: 2px solid #dee2e6;
+      border-radius: 8px;
+      background: white;
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+    
+    .reason-btn:hover {
+      border-color: #adb5bd;
+      background: #f8f9fa;
+    }
+    
+    .reason-btn.selected {
+      border-color: #0066cc;
       background: #e7f3ff;
       color: #0066cc;
     }
     
-    .quick-btn.expand-all:hover {
-      background: #cce5ff;
+    .other-reason-container {
+      display: none;
+      margin-top: 12px;
     }
     
-    .quick-btn.mark-all {
-      background: #d4edda;
-      color: #155724;
+    .other-reason-container.visible {
+      display: block;
     }
     
-    .quick-btn.mark-all:hover {
-      background: #c3e6cb;
+    .dialog-body textarea {
+      width: 100%;
+      height: 80px;
+      padding: 12px;
+      border: 2px solid #dee2e6;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
     }
     
-    .quick-btn.clear-all {
-      background: #f8d7da;
-      color: #721c24;
+    .dialog-body textarea:focus {
+      outline: none;
+      border-color: #0066cc;
     }
     
-    .quick-btn.clear-all:hover {
-      background: #f5c6cb;
+    .dialog-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
     }
-  </style>
+    
+    .dialog-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .dialog-btn.cancel {
+      background: #e9ecef;
+      color: #333;
+    }
+    
+    .dialog-btn.cancel:hover {
+      background: #dee2e6;
+    }
+    
+    .dialog-btn.confirm {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .dialog-btn.confirm:hover:not(:disabled) {
+      background: #c82333;
+    }
+    
+    .dialog-btn.confirm:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+</style>
 </head>
 <body>
   <div class="widget-container">
-    <div class="widget-header">
-      <h1>EMS Inventory Checklist</h1>
-      <div class="subtitle">Checklist A - Airway, CCT Cabinet, Benches</div>
-    </div>
-    
-    <div class="quick-actions">
-      <button class="quick-btn expand-all" onclick="toggleAllAreas()">Expand/Collapse All</button>
-      <button class="quick-btn mark-all" onclick="markAllStocked()">Mark All Stocked</button>
-      <button class="quick-btn clear-all" onclick="clearAll()">Clear All</button>
-    </div>
+
     
     <div class="main-content">
       <div class="areas-container" id="areasContainer">
         <!-- Areas will be generated here -->
       </div>
       
-      <div class="summary-section" id="summarySection">
-        <div class="summary-header">
-          <h2>Missing/Short Items</h2>
-          <div class="summary-stats">
-            <div class="summary-stat">
-              <span class="stat-count ok" id="statOk">0</span>
-              <span>OK</span>
-            </div>
-            <div class="summary-stat">
-              <span class="stat-count short" id="statShort">0</span>
-              <span>Short</span>
-            </div>
-            <div class="summary-stat">
-              <span class="stat-count missing" id="statMissing">0</span>
-              <span>Missing</span>
-            </div>
-          </div>
+    </div>
+    
+    <!-- Floating Restock Button -->
+    <button class="restock-btn" id="restockBtn" onclick="openRestockModal()">
+      <span class="restock-icon">!</span>
+      <span>Restock</span>
+      <span class="restock-count" id="restockCount">0</span>
+    </button>
+    
+    <!-- Restock Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeRestockModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Items to Restock</h2>
+          <button class="modal-close" onclick="closeRestockModal()">×</button>
         </div>
-        <div class="summary-content" id="summaryContent">
+        <div class="modal-body" id="summaryContent">
           <div class="summary-empty">
             <div class="icon">✓</div>
             <div>All items fully stocked!</div>
           </div>
+        </div>
+        <div class="modal-footer" id="modalFooter">
+          <button class="restock-all-btn" onclick="restockAllItems()">
+            <span>✓</span> Mark All Restocked
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Out of Stock Explanation Dialog -->
+    <div class="dialog-overlay" id="dialogOverlay" onclick="closeOutOfStockDialog()">
+      <div class="dialog-content" onclick="event.stopPropagation()">
+        <div class="dialog-header">
+          <h3>Item Unavailable</h3>
+        </div>
+        <div class="dialog-body">
+          <p class="dialog-item-name" id="dialogItemName"></p>
+          <label>Select reason:</label>
+          <div class="reason-buttons">
+            <button class="reason-btn" onclick="selectReason(this, 'National shortage')">National shortage</button>
+            <button class="reason-btn" onclick="selectReason(this, 'Equipment being fixed')">Equipment being fixed</button>
+            <button class="reason-btn" onclick="selectReason(this, 'other')">Other</button>
+          </div>
+          <div class="other-reason-container" id="otherReasonContainer">
+            <textarea id="outOfStockReason"></textarea>
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button class="dialog-btn cancel" onclick="closeOutOfStockDialog()">Cancel</button>
+          <button class="dialog-btn confirm" id="confirmBtn" onclick="confirmOutOfStock()" disabled>Confirm</button>
         </div>
       </div>
     </div>
@@ -509,210 +806,79 @@
   <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
   <script>
     // =====================================================
-    // INVENTORY DATA - Checklist A
+    // INVENTORY DATA - Loaded from widget settings
     // =====================================================
     
-    var INVENTORY = {
-      "Upper CCT Cabinet": {
-        "Upper Shelf": [
-          { name: "Hamilton Humidifier", required: 1 },
-          { name: "Jackery + charger", required: 1 },
-          { name: "HFNC Cell", required: 1 },
-          { name: "Portable Suction + charger", required: 1 },
-          { name: "Doppler", required: 1 }
-        ],
-        "Lower Shelf": [
-          { name: "Ventilator", required: 1 },
-          { name: "IV Pumps", required: 5 },
-          { name: "Bracket for 3 IV Pumps", required: 1 },
-          { name: "Bracket for 2 IV Pumps", required: 1 },
-          { name: "Power Strip", required: 1 },
-          { name: "IV Pump Chargers", required: 3 }
-        ]
-      },
-      "HFNC Cell, Universal": {
-        "Loose": [
-          { name: "L Adult High-Flow Nasal Cannula", required: 2 },
-          { name: "M Adult High-Flow Nasal Cannula", required: 2 },
-          { name: "S Adult High-Flow Nasal Cannula", required: 2 },
-          { name: "XL Pediatric High-Flow Nasal Cannula", required: 1 },
-          { name: "L Pediatric High-Flow Nasal Cannula", required: 1 },
-          { name: "Equipment Mount - Aluminum", required: 1 }
-        ]
-      },
-      "Lower CCT Cabinet": {
-        "Top Shelf, Large Items": [
-          { name: "Ventilator Circuit", required: 3 },
-          { name: "Adult High-Flow Circuit", required: 3 },
-          { name: "Infant/Pediatric High-Flow Circuit", required: 3 }
-        ],
-        "Top Shelf, Small Items": [
-          { name: "Ventilator filters", required: 3 },
-          { name: "Omniflex", required: 3 },
-          { name: "Inline ETCO2", required: 3 },
-          { name: "Nebulizer (inline)", required: 3 },
-          { name: "Full Sets", required: 10 },
-          { name: "Half Sets", required: 10 }
-        ],
-        "Bottom Shelf, Blue Bin": [
-          { name: "SpO2 Sensor, Clip", required: 1 },
-          { name: "Monitor-to-SpO2 Cable", required: 1 },
-          { name: "Monitor-to-BP-cuff connector", required: 1 },
-          { name: "4-lead cord", required: 1 },
-          { name: "BP cuff connector tubing", required: 1 },
-          { name: "Monitor Battery (charged)", required: 1 },
-          { name: "BP Cuff - 7", required: 1 },
-          { name: "BP Cuff - 8", required: 1 },
-          { name: "BP Cuff - 9", required: 1 },
-          { name: "BP Cuff - 10", required: 1 },
-          { name: "BP Cuff - 11", required: 1 },
-          { name: "BP Cuff - 12", required: 1 }
-        ],
-        "Bottom Shelf, Middle Pink Bin": [
-          { name: "Glucometer (Backup)", required: 1 },
-          { name: "Adult/Neonatal Adhesive SpO2 Sensor", required: 3 },
-          { name: "Infant Adhesive SpO2 Sensor", required: 3 },
-          { name: "Monitor Printer Paper Rolls", required: 2 },
-          { name: "Boxes of Oral/Axillary Temp Probe Sheaths", required: 2 },
-          { name: "Razors (For EKG Prep)", required: 2 },
-          { name: "Electrode Bag", required: 1 },
-          { name: "Adult Defib Pads", required: 1 },
-          { name: "Pediatric Defib Pads", required: 1 }
-        ],
-        "Bottom Shelf, Right Pink Bin": [
-          { name: "Bubbler", required: 2 }
-        ]
-      },
-      "Airway Cabinet": {
-        "Left Side": [
-          { name: "Adult BVMs", required: 2 },
-          { name: "Pediatric BVMs", required: 2 },
-          { name: "Infant BVMs", required: 2 },
-          { name: "Large Adult CPAP Masks", required: 2 },
-          { name: "Medium/Small Adult CPAP Masks", required: 2 },
-          { name: "Cricothyrotomy Kit", required: 1 },
-          { name: "Manual Jet Ventilator", required: 1 },
-          { name: "Handheld Nebulizer Kits", required: 3 },
-          { name: "PEEP Valves", required: 3 }
-        ],
-        "Right Side": [
-          { name: "Adult EtCO2 Nasal Cannulas", required: 3 },
-          { name: "Adult Nasal Cannulas", required: 3 },
-          { name: "Adult NRB", required: 3 },
-          { name: "Adult Nebulizer Masks", required: 3 },
-          { name: "Pediatric EtCO2 Nasal Cannulas", required: 3 },
-          { name: "Pediatric Nasal Cannulas", required: 3 },
-          { name: "Pediatric NRB", required: 3 },
-          { name: "Pediatric Nebulizer Masks", required: 3 },
-          { name: "NPA 20 Fr.", required: 1 },
-          { name: "NPA 22 Fr.", required: 1 },
-          { name: "NPA 24 Fr.", required: 1 },
-          { name: "NPA 26 Fr.", required: 1 },
-          { name: "NPA 28 Fr.", required: 1 },
-          { name: "NPA 30 Fr.", required: 1 },
-          { name: "NPA 32 Fr.", required: 1 },
-          { name: "NPA 34 Fr.", required: 1 },
-          { name: "NPA 36 Fr.", required: 1 },
-          { name: "Lubricant packets", required: 6 },
-          { name: "OPA set (9 total)", required: 9 },
-          { name: "iGel >90kg ORANGE", required: 1 },
-          { name: "iGel 50-90kg GREEN", required: 1 },
-          { name: "iGel 30-60kg YELLOW", required: 1 },
-          { name: "iGel 25-35kg WHITE", required: 1 },
-          { name: "iGel 10-25kg GRAY", required: 1 },
-          { name: "iGel 5-12kg BLUE", required: 1 },
-          { name: "iGel 2-5kg PINK", required: 1 }
-        ]
-      },
-      "Action Area": {
-        "Items": [
-          { name: "Unused Suction Container", required: 1 },
-          { name: "Unused Suction Tubing & Suction Tip", required: 1 },
-          { name: "Curos strip", required: 3 }
-        ]
-      },
-      "Action Area Cabinet": {
-        "Left Side": [
-          { name: "I/O stabilizer", required: 1 },
-          { name: "15mm I/O needle", required: 1 },
-          { name: "45mm I/O needle", required: 1 },
-          { name: "25mm I/O needle", required: 1 },
-          { name: "I/O drill", required: 1 },
-          { name: "OB kit (Life Assist)", required: 1 },
-          { name: "OB kit (DMS)", required: 1 },
-          { name: "OB kit (Dynarex)", required: 1 },
-          { name: "Infectious control cleanup kit", required: 1 },
-          { name: "Stethoscope (disposable)", required: 1 },
-          { name: "Posey restraints (red-ankle)", required: 2 },
-          { name: "Posey restraints (blue-wrist)", required: 2 },
-          { name: "Emesis bags (sleeve)", required: 1 }
-        ],
-        "Right Side": [
-          { name: "Spit Hoods", required: 3 },
-          { name: "Posey Soft Restraints", required: 3 },
-          { name: "Urinals", required: 3 },
-          { name: "Bedpans", required: 3 },
-          { name: "Paper Towel Roll", required: 1 }
-        ]
-      },
-      "Suction Cabinet": {
-        "Left Side": [
-          { name: "Yankauer Suction Tip and Tubing", required: 3 },
-          { name: "DuCanto Suction Tip", required: 1 },
-          { name: "Suction Canister Tub", required: 3 },
-          { name: "Suction Canister Top", required: 3 },
-          { name: "Manual Suction Device", required: 1 },
-          { name: "Biohazard Bag", required: 2 },
-          { name: "Manual BP Cuff (infant)", required: 1 },
-          { name: "Manual BP Cuff (child)", required: 1 },
-          { name: "Manual BP Cuff (sm adult)", required: 1 },
-          { name: "Manual BP Cuff (reg adult)", required: 1 },
-          { name: "Manual BP Cuff (lg adult)", required: 1 },
-          { name: "Manual BP Cuff (thigh)", required: 1 }
-        ],
-        "Right Side": [
-          { name: "Ventilator filters", required: 3 },
-          { name: "Omniflex", required: 3 },
-          { name: "Inline ETCO2", required: 3 },
-          { name: "Nebulizer (inline)", required: 3 },
-          { name: "Full Sets", required: 10 },
-          { name: "Half Sets", required: 10 }
-        ]
-      },
-      "Driver's Side Bench Storage": {
-        "Loose": [
-          { name: "Pillows", required: 3 },
-          { name: "D tanks (behind Capt chair)", required: 2 },
-          { name: "D tank (with regulator/pigtail)", required: 1 },
-          { name: "Blankets", required: 6 },
-          { name: "Evacu-aid", required: 1 },
-          { name: "Pillow cases (disposable)", required: 4 }
-        ]
-      },
-      "Passenger Side Bench Storage": {
-        "Left Side": [
-          { name: "Pediatric Board (orange)", required: 1 },
-          { name: "Infant Board (green)", required: 1 },
-          { name: "Pedi-mate", required: 1 }
-        ],
-        "Right Side": [
-          { name: "Evacu-Aide", required: 1 },
-          { name: "Spine Immobilization Bag", required: 1 },
-          { name: "MCI Bag", required: 1 },
-          { name: "Soft Neck Collars - sm", required: 1 },
-          { name: "Soft Neck Collars - med", required: 1 },
-          { name: "Soft Neck Collars - lg", required: 1 },
-          { name: "Soft Neck Collars - xl", required: 1 }
-        ]
-      }
-    };
+    var INVENTORY = {};
+    
+    var DEFAULT_INVENTORY = [
+      "Sample Area",
+      "Sample Category",
+      "Sample Item|1",
+      "Another Item|2"
+    ].join("\n");
     
     // =====================================================
     // STATE
     // =====================================================
     
     var itemStates = {}; // key -> { actual: number }
-    var allExpanded = false;
+    var restockStatus = {}; // key -> { restocked: bool, outOfStock: bool, reason: string }
+    var currentOutOfStockKey = null; // For dialog
+    var selectedReason = null; // For dialog reason selection
+    
+    // =====================================================
+    // PARSE INVENTORY FROM SETTINGS
+    // =====================================================
+    
+    function parseInventory(text) {
+      var lines = text.split("\n");
+      var result = {};
+      var currentArea = "Items";
+      var currentCategory = "General";
+      
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (!line) continue;
+        
+        // Check if it's an area (starts with "Area Name:" or similar pattern)
+        if (line.toLowerCase().indexOf('area name:') === 0) {
+          currentArea = line.substring(10).trim();
+          currentCategory = "General";
+          if (!result[currentArea]) {
+            result[currentArea] = {};
+          }
+          continue;
+        }
+        
+        // Check if it's an item (contains |)
+        if (line.indexOf('|') !== -1) {
+          var parts = line.split('|');
+          var itemName = parts[0].trim();
+          var qty = parseInt(parts[1], 10) || 1;
+          
+          if (!result[currentArea]) {
+            result[currentArea] = {};
+          }
+          if (!result[currentArea][currentCategory]) {
+            result[currentArea][currentCategory] = [];
+          }
+          
+          result[currentArea][currentCategory].push({
+            name: itemName,
+            required: qty
+          });
+        } else {
+          // It's a category name
+          currentCategory = line;
+          if (!result[currentArea]) {
+            result[currentArea] = {};
+          }
+        }
+      }
+      
+      return result;
+    }
     
     // =====================================================
     // BUILD UI
@@ -764,9 +930,16 @@
             };
           })(areaName, catName);
           
+          var catLabel = document.createElement('span');
+          catLabel.textContent = catName;
+          
+          var catStatus = document.createElement('span');
+          catStatus.className = 'category-status';
+          catStatus.id = 'cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_');
+          
           catHeader.appendChild(catCheckbox);
-          catHeader.innerHTML += '<span>' + escapeHtml(catName) + '</span>' +
-            '<span class="category-status" id="cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_') + '"></span>';
+          catHeader.appendChild(catLabel);
+          catHeader.appendChild(catStatus);
           
           contentDiv.appendChild(catHeader);
           
@@ -812,6 +985,7 @@
             valueInput.className = 'qty-value';
             valueInput.value = itemStates[key].actual;
             valueInput.min = '0';
+            valueInput.max = item.required;
             valueInput.id = 'input_' + key.replace(/[^a-zA-Z0-9]/g, '_');
             valueInput.onchange = (function(k) {
               return function() { setItemValue(k, parseInt(this.value) || 0); };
@@ -849,21 +1023,21 @@
     // =====================================================
     
     function toggleArea(areaDiv) {
-      areaDiv.classList.toggle('expanded');
-    }
-    
-    function toggleAllAreas() {
-      allExpanded = !allExpanded;
-      var areas = document.querySelectorAll('.area-section');
-      for (var i = 0; i < areas.length; i++) {
-        if (allExpanded) {
-          areas[i].classList.add('expanded');
-        } else {
-          areas[i].classList.remove('expanded');
-        }
+      var isExpanded = areaDiv.classList.contains('expanded');
+      
+      // Close all areas first
+      var allAreas = document.querySelectorAll('.area-section');
+      for (var i = 0; i < allAreas.length; i++) {
+        allAreas[i].classList.remove('expanded');
+      }
+      
+      // If it wasn't expanded, open it
+      if (!isExpanded) {
+        areaDiv.classList.add('expanded');
       }
     }
     
+
     function toggleCategory(areaName, catName, checked) {
       var items = INVENTORY[areaName][catName];
       for (var i = 0; i < items.length; i++) {
@@ -875,7 +1049,11 @@
     }
     
     function setItemValue(key, value, skipUpdate) {
-      value = Math.max(0, Math.min(9999, value));
+      var parts = key.split('::');
+      var item = findItem(parts[0], parts[1], parts[2]);
+      var maxValue = item ? item.required : 9999;
+      
+      value = Math.max(0, Math.min(maxValue, value));
       itemStates[key] = { actual: value };
       
       // Update input
@@ -919,28 +1097,7 @@
       return null;
     }
     
-    function markAllStocked() {
-      for (var areaName in INVENTORY) {
-        for (var catName in INVENTORY[areaName]) {
-          var items = INVENTORY[areaName][catName];
-          for (var i = 0; i < items.length; i++) {
-            var key = generateKey(areaName, catName, items[i].name);
-            setItemValue(key, items[i].required, true);
-          }
-        }
-      }
-      updateAllStatuses();
-      updateSummary();
-    }
-    
-    function clearAll() {
-      for (var key in itemStates) {
-        setItemValue(key, 0, true);
-      }
-      updateAllStatuses();
-      updateSummary();
-    }
-    
+
     // =====================================================
     // STATUS UPDATES
     // =====================================================
@@ -1008,45 +1165,62 @@
             
             if (actual >= required) {
               okCount++;
-            } else if (actual > 0) {
-              shortCount++;
+            } else {
+              var shortage = required - actual;
+              if (actual > 0) {
+                shortCount++;
+              } else {
+                missingCount++;
+              }
               shortages.push({
+                key: key,
                 area: areaName,
                 category: catName,
                 name: items[i].name,
                 required: required,
                 actual: actual,
-                shortage: required - actual,
-                isCritical: false
-              });
-            } else {
-              missingCount++;
-              shortages.push({
-                area: areaName,
-                category: catName,
-                name: items[i].name,
-                required: required,
-                actual: 0,
-                shortage: required,
-                isCritical: true
+                shortage: shortage,
+                isPartial: actual > 0
               });
             }
           }
         }
       }
       
-      document.getElementById('statOk').textContent = okCount;
-      document.getElementById('statShort').textContent = shortCount;
-      document.getElementById('statMissing').textContent = missingCount;
+      // Update floating button
+      var restockBtn = document.getElementById('restockBtn');
+      var restockCount = document.getElementById('restockCount');
+      var totalIssues = shortCount + missingCount;
       
-      var summarySection = document.getElementById('summarySection');
+      // Count how many are not yet handled
+      var unhandledCount = 0;
+      for (var j = 0; j < shortages.length; j++) {
+        var status = restockStatus[shortages[j].key];
+        if (!status || (!status.restocked && !status.outOfStock)) {
+          unhandledCount++;
+        }
+      }
+      
+      restockCount.textContent = unhandledCount;
+      
+      if (totalIssues === 0) {
+        restockBtn.classList.add('all-ok');
+        restockBtn.querySelector('.restock-icon').textContent = '✓';
+        restockBtn.querySelector('span:nth-child(2)').textContent = 'All Stocked';
+      } else {
+        restockBtn.classList.remove('all-ok');
+        restockBtn.querySelector('.restock-icon').textContent = '!';
+        restockBtn.querySelector('span:nth-child(2)').textContent = 'Restock';
+      }
+      
       var summaryContent = document.getElementById('summaryContent');
+      var modalFooter = document.getElementById('modalFooter');
       
       if (shortages.length === 0) {
-        summarySection.classList.add('all-ok');
         summaryContent.innerHTML = '<div class="summary-empty"><div class="icon">✓</div><div>All items fully stocked!</div></div>';
+        modalFooter.style.display = 'none';
       } else {
-        summarySection.classList.remove('all-ok');
+        modalFooter.style.display = 'block';
         
         // Group by area
         var byArea = {};
@@ -1059,18 +1233,41 @@
         var html = '';
         for (var area in byArea) {
           html += '<div class="shortage-group">';
-          html += '<div class="shortage-group-header">' + escapeHtml(area) + ' (' + byArea[area].length + ' items)</div>';
+          html += '<div class="shortage-group-header">' + escapeHtml(area) + '</div>';
           
           for (var k = 0; k < byArea[area].length; k++) {
             var item = byArea[area][k];
-            var itemClass = item.isCritical ? 'critical' : 'warning';
-            var badgeClass = item.isCritical ? '' : 'warning';
-            var badgeText = item.isCritical ? 'MISSING' : ('Need ' + item.shortage);
+            var status = restockStatus[item.key] || {};
+            var itemClass = '';
+            if (status.restocked) itemClass = 'restocked';
+            else if (status.outOfStock) itemClass = 'out-of-stock';
             
-            html += '<div class="shortage-item ' + itemClass + '">';
-            html += '<span class="shortage-item-name">' + escapeHtml(item.name) + '</span>';
-            html += '<span class="shortage-item-detail">' + item.actual + '/' + item.required + '</span>';
-            html += '<span class="shortage-item-badge ' + badgeClass + '">' + badgeText + '</span>';
+            html += '<div class="shortage-item ' + itemClass + '" data-key="' + escapeHtml(item.key) + '">';
+            html += '<div class="shortage-item-name">' + escapeHtml(item.name) + '</div>';
+            
+            if (status.restocked) {
+              html += '<div class="shortage-item-status restocked">';
+              html += '<span>✓ Restocked</span>';
+              html += '<button class="action-btn undo" onclick="undoRestock(\'' + escapeHtml(item.key) + '\')">Undo</button>';
+              html += '</div>';
+            } else if (status.outOfStock) {
+              html += '<div class="shortage-item-status unavailable">';
+              html += '<span>✗ Out of Stock</span>';
+              if (status.reason) {
+                html += '<span class="status-reason">- ' + escapeHtml(status.reason) + '</span>';
+              }
+              html += '<button class="action-btn undo" onclick="undoRestock(\'' + escapeHtml(item.key) + '\')">Undo</button>';
+              html += '</div>';
+            } else {
+              html += '<div class="shortage-item-row">';
+              html += '<span class="shortage-item-need' + (item.isPartial ? ' partial' : '') + '">Need ' + item.shortage + '</span>';
+              html += '<div class="shortage-item-actions">';
+              html += '<button class="action-btn restock" onclick="markRestocked(\'' + escapeHtml(item.key) + '\')">✓ Restocked</button>';
+              html += '<button class="action-btn out-of-stock" onclick="openOutOfStockDialog(\'' + escapeHtml(item.key) + '\', \'' + escapeHtml(item.name) + '\')">Out of Stock</button>';
+              html += '</div>';
+              html += '</div>';
+            }
+            
             html += '</div>';
           }
           
@@ -1087,55 +1284,184 @@
       return div.innerHTML;
     }
     
-    // =====================================================
-    // JOTFORM INTEGRATION
-    // =====================================================
+    function openRestockModal() {
+      document.getElementById('modalOverlay').classList.add('open');
+    }
     
-    function generateSubmitValue() {
-      var shortages = [];
+    function closeRestockModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+    }
+    
+    function markRestocked(key) {
+      restockStatus[key] = { restocked: true, outOfStock: false, reason: '' };
+      updateSummary();
+    }
+    
+    function openOutOfStockDialog(key, name) {
+      currentOutOfStockKey = key;
+      selectedReason = null;
+      document.getElementById('dialogItemName').textContent = name;
+      document.getElementById('outOfStockReason').value = '';
+      document.getElementById('otherReasonContainer').classList.remove('visible');
+      document.getElementById('confirmBtn').disabled = true;
       
+      // Reset all reason buttons
+      var buttons = document.querySelectorAll('.reason-btn');
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('selected');
+      }
+      
+      document.getElementById('dialogOverlay').classList.add('open');
+    }
+    
+    function closeOutOfStockDialog() {
+      document.getElementById('dialogOverlay').classList.remove('open');
+      currentOutOfStockKey = null;
+      selectedReason = null;
+    }
+    
+    function selectReason(btn, reason) {
+      // Remove selected from all buttons
+      var buttons = document.querySelectorAll('.reason-btn');
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('selected');
+      }
+      
+      // Select this button
+      btn.classList.add('selected');
+      
+      // Handle "other" option
+      var otherContainer = document.getElementById('otherReasonContainer');
+      if (reason === 'other') {
+        otherContainer.classList.add('visible');
+        selectedReason = null; // Will be set from textarea
+        document.getElementById('confirmBtn').disabled = true;
+        document.getElementById('outOfStockReason').focus();
+      } else {
+        otherContainer.classList.remove('visible');
+        selectedReason = reason;
+        document.getElementById('confirmBtn').disabled = false;
+      }
+    }
+    
+    function confirmOutOfStock() {
+      if (currentOutOfStockKey) {
+        var reason = selectedReason;
+        if (!reason) {
+          reason = document.getElementById('outOfStockReason').value.trim();
+        }
+        if (reason) {
+          restockStatus[currentOutOfStockKey] = { restocked: false, outOfStock: true, reason: reason };
+          closeOutOfStockDialog();
+          updateSummary();
+        }
+      }
+    }
+    
+    function undoRestock(key) {
+      delete restockStatus[key];
+      updateSummary();
+    }
+    
+    function restockAllItems() {
+      // Get all shortage keys
       for (var areaName in INVENTORY) {
         for (var catName in INVENTORY[areaName]) {
           var items = INVENTORY[areaName][catName];
           for (var i = 0; i < items.length; i++) {
             var key = generateKey(areaName, catName, items[i].name);
             var actual = (itemStates[key] || { actual: 0 }).actual;
-            if (actual < items[i].required) {
-              shortages.push({
-                area: areaName,
-                category: catName,
-                name: items[i].name,
-                required: items[i].required,
-                actual: actual,
-                shortage: items[i].required - actual
-              });
+            var required = items[i].required;
+            
+            if (actual < required) {
+              var status = restockStatus[key];
+              // Only mark as restocked if not already marked as out of stock
+              if (!status || !status.outOfStock) {
+                restockStatus[key] = { restocked: true, outOfStock: false, reason: '' };
+              }
             }
           }
         }
       }
+      updateSummary();
+    }
+    
+    // =====================================================
+    // JOTFORM INTEGRATION
+    // =====================================================
+    
+    function generateSubmitValue() {
+      var restockedItems = [];
+      var unavailableItems = [];
       
-      if (shortages.length === 0) {
-        return 'ALL ITEMS FULLY STOCKED - No missing or short items.';
-      }
-      
-      var lines = ['MISSING/SHORT ITEMS REPORT', 'Generated: ' + new Date().toLocaleString(), ''];
-      var currentArea = '';
-      
-      for (var j = 0; j < shortages.length; j++) {
-        var s = shortages[j];
-        if (s.area !== currentArea) {
-          if (currentArea) lines.push('');
-          lines.push('=== ' + s.area.toUpperCase() + ' ===');
-          currentArea = s.area;
+      for (var key in restockStatus) {
+        var status = restockStatus[key];
+        if (!status) continue;
+        
+        var parts = key.split('::');
+        var areaName = parts[0];
+        var catName = parts[1];
+        var itemName = parts[2];
+        
+        // Find the item details
+        var item = findItem(areaName, catName, itemName);
+        if (!item) continue;
+        
+        var actual = (itemStates[key] || { actual: 0 }).actual;
+        var shortage = item.required - actual;
+        
+        if (status.restocked) {
+          restockedItems.push({
+            area: areaName,
+            category: catName,
+            name: itemName,
+            quantityRestocked: shortage
+          });
+        } else if (status.outOfStock) {
+          unavailableItems.push({
+            area: areaName,
+            category: catName,
+            name: itemName,
+            quantityNeeded: shortage,
+            reason: status.reason || 'No reason provided'
+          });
         }
-        var status = s.actual === 0 ? 'MISSING' : ('have ' + s.actual + ', need ' + s.shortage + ' more');
-        lines.push('  - ' + s.name + ': ' + status);
       }
       
-      lines.push('');
-      lines.push('TOTAL: ' + shortages.length + ' items need attention');
+      // Generate readable output
+      var lines = [];
       
-      return lines.join('\n');
+      if (restockedItems.length > 0) {
+        lines.push('RESTOCKED ITEMS (' + restockedItems.length + ')');
+        lines.push('================');
+        for (var i = 0; i < restockedItems.length; i++) {
+          var r = restockedItems[i];
+          lines.push('• ' + r.name + ' (x' + r.quantityRestocked + ') - ' + r.area);
+        }
+        lines.push('');
+      }
+      
+      if (unavailableItems.length > 0) {
+        lines.push('UNAVAILABLE ITEMS (' + unavailableItems.length + ')');
+        lines.push('==================');
+        for (var j = 0; j < unavailableItems.length; j++) {
+          var u = unavailableItems[j];
+          lines.push('• ' + u.name + ' (need ' + u.quantityNeeded + ') - ' + u.area);
+          lines.push('  Reason: ' + u.reason);
+        }
+        lines.push('');
+      }
+      
+      if (lines.length === 0) {
+        lines.push('No restock actions recorded.');
+      }
+      
+      return {
+        report: lines.join('\n'),
+        restockedItems: restockedItems,
+        unavailableItems: unavailableItems,
+        timestamp: Date.now()
+      };
     }
     
     function resizeWidget() {
@@ -1149,11 +1475,21 @@
     // =====================================================
     
     function init() {
-      buildUI();
+      // Add input handler for other reason textarea
+      document.getElementById('outOfStockReason').addEventListener('input', function() {
+        var hasText = this.value.trim().length > 0;
+        document.getElementById('confirmBtn').disabled = !hasText;
+      });
       
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
         JFCustomWidget.subscribe('ready', function(data) {
           console.log('[Widget] Ready', data);
+          
+          // Load inventory from widget settings
+          var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
+          INVENTORY = parseInventory(inventoryText);
+          
+          buildUI();
           
           // Restore saved state if editing
           if (data.value) {
@@ -1170,15 +1506,16 @@
         });
         
         JFCustomWidget.subscribe('submit', function() {
+          var submitData = generateSubmitValue();
           JFCustomWidget.sendSubmit({
             valid: true,
-            value: JSON.stringify({
-              report: generateSubmitValue(),
-              itemStates: itemStates,
-              timestamp: Date.now()
-            })
+            value: JSON.stringify(submitData)
           });
         });
+      } else {
+        // Standalone mode - use default inventory
+        INVENTORY = parseInventory(DEFAULT_INVENTORY);
+        buildUI();
       }
     }
     
