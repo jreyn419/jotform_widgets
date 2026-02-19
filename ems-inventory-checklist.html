@@ -985,7 +985,7 @@
     var selectedReason = null; // For dialog reason selection
     var taggedAreas = {}; // areaName -> { taggedDate: 'YYYY-MM-DD', taggedTimestamp: ms }
     var enableTaggedAreas = false;
-    var sealReviewDays = 30;
+    var sealReviewDay = 0; // Day of month (1-31) for mandatory expiration review, 0 = disabled
     
     // =====================================================
     // PARSE INVENTORY FROM SETTINGS
@@ -1078,7 +1078,7 @@
           // Render tagged/sealed panel instead of items
           var tagInfo = taggedAreas[areaName];
           var daysSince = daysSinceTagged(tagInfo.taggedTimestamp);
-          var reviewNeeded = sealReviewDays > 0 && daysSince >= sealReviewDays;
+          var reviewNeeded = isReviewOverdue(tagInfo.taggedTimestamp);
 
           var panel = document.createElement('div');
           panel.className = 'tagged-panel' + (reviewNeeded ? ' review-needed' : '');
@@ -1096,11 +1096,12 @@
           panelHtml += '<div class="seal-days">Sealed for ' + daysSince + ' day' + (daysSince !== 1 ? 's' : '') + '</div>';
 
           if (reviewNeeded) {
-            var daysOverdue = daysSince - sealReviewDays;
-            panelHtml += '<div class="seal-expired-warning">Seal expired ' + daysOverdue + ' day' + (daysOverdue !== 1 ? 's' : '') + ' ago! Break seal to review expiration dates of contents.</div>';
-          } else if (sealReviewDays > 0) {
-            var daysUntilReview = sealReviewDays - daysSince;
-            panelHtml += '<div class="seal-warning">Review expiration dates in ' + daysUntilReview + ' day' + (daysUntilReview !== 1 ? 's' : '') + '.</div>';
+            panelHtml += '<div class="seal-expired-warning">Monthly review was due on the ' + sealReviewDay + getOrdinalSuffix(sealReviewDay) + '. Break seal to review expiration dates of contents.</div>';
+          } else if (sealReviewDay > 0) {
+            var nextReview = getNextReviewDate();
+            if (nextReview) {
+              panelHtml += '<div class="seal-warning">Next expiration review: ' + formatTagDate(nextReview.toISOString().split('T')[0]) + '</div>';
+            }
           }
 
           panelHtml += '<button class="break-seal-btn" onclick="breakSeal(\'' + escapeHtml(areaName).replace(/'/g, "\\'") + '\')">Break Seal &amp; Review</button>';
@@ -1377,10 +1378,52 @@
     function daysSinceTagged(timestamp) {
       var now = new Date();
       var tagged = new Date(timestamp);
-      // Compare dates only (ignore time)
       var nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       var tagDate = new Date(tagged.getFullYear(), tagged.getMonth(), tagged.getDate());
       return Math.floor((nowDate - tagDate) / (1000 * 60 * 60 * 24));
+    }
+
+    // Check if the monthly review day has passed since the area was tagged
+    function isReviewOverdue(taggedTimestamp) {
+      if (sealReviewDay <= 0) return false;
+      var now = new Date();
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      var tagged = new Date(taggedTimestamp);
+      var tagDate = new Date(tagged.getFullYear(), tagged.getMonth(), tagged.getDate());
+
+      // Find the most recent review date (on or before today)
+      var mostRecentReview;
+      if (now.getDate() >= sealReviewDay) {
+        // Review day already occurred this month
+        mostRecentReview = new Date(now.getFullYear(), now.getMonth(), sealReviewDay);
+      } else {
+        // Review day hasn't come yet this month; last one was previous month
+        mostRecentReview = new Date(now.getFullYear(), now.getMonth() - 1, sealReviewDay);
+      }
+
+      // If the area was tagged before the most recent review date, it's overdue
+      return tagDate < mostRecentReview;
+    }
+
+    // Get the next upcoming review date
+    function getNextReviewDate() {
+      if (sealReviewDay <= 0) return null;
+      var now = new Date();
+      if (now.getDate() < sealReviewDay) {
+        return new Date(now.getFullYear(), now.getMonth(), sealReviewDay);
+      } else {
+        return new Date(now.getFullYear(), now.getMonth() + 1, sealReviewDay);
+      }
+    }
+
+    function getOrdinalSuffix(day) {
+      if (day >= 11 && day <= 13) return 'th';
+      switch (day % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
     }
 
     // =====================================================
@@ -1401,8 +1444,7 @@
             statusEl.classList.remove('issues', 'ok', 'tagged', 'review-needed');
 
             var tagInfo = taggedAreas[areaName];
-            var daysSince = daysSinceTagged(tagInfo.taggedTimestamp);
-            var reviewNeeded = sealReviewDays > 0 && daysSince >= sealReviewDays;
+            var reviewNeeded = isReviewOverdue(tagInfo.taggedTimestamp);
 
             if (reviewNeeded) {
               header.classList.add('tagged', 'review-needed');
@@ -1755,7 +1797,7 @@
       for (var taggedArea in taggedAreas) {
         var info = taggedAreas[taggedArea];
         var days = daysSinceTagged(info.taggedTimestamp);
-        var needsReview = sealReviewDays > 0 && days >= sealReviewDays;
+        var needsReview = isReviewOverdue(info.taggedTimestamp);
         taggedList.push({
           area: taggedArea,
           taggedDate: info.taggedDate,
@@ -1845,9 +1887,9 @@
           // Load tagged area settings
           var tagSetting = JFCustomWidget.getWidgetSetting('enableTaggedAreas');
           enableTaggedAreas = (tagSetting === 'true' || tagSetting === true);
-          var reviewDays = JFCustomWidget.getWidgetSetting('sealReviewDays');
-          if (reviewDays !== undefined && reviewDays !== null && reviewDays !== '') {
-            sealReviewDays = parseInt(reviewDays, 10) || 30;
+          var reviewDay = JFCustomWidget.getWidgetSetting('sealReviewDay');
+          if (reviewDay !== undefined && reviewDay !== null && reviewDay !== '') {
+            sealReviewDay = Math.max(1, Math.min(31, parseInt(reviewDay, 10) || 0));
           }
 
           buildUI();
