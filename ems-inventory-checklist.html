@@ -761,7 +761,143 @@
       background: #ccc;
       cursor: not-allowed;
     }
-    
+
+    /* Tagged/Sealed Area */
+    .area-header.tagged {
+      background: #d1ecf1;
+      border-left: 4px solid #17a2b8;
+    }
+
+    .area-header.tagged:hover {
+      background: #bee5eb;
+    }
+
+    .area-header.tagged.review-needed {
+      background: #fff3cd;
+      border-left: 4px solid #fd7e14;
+    }
+
+    .area-header.tagged.review-needed:hover {
+      background: #ffe8a1;
+    }
+
+    .area-status.tagged {
+      background: #17a2b8;
+      color: white;
+    }
+
+    .area-status.review-needed {
+      background: #fd7e14;
+      color: white;
+    }
+
+    .tagged-panel {
+      padding: 24px 20px;
+      text-align: center;
+      background: #f0fafb;
+    }
+
+    .tagged-panel.review-needed {
+      background: #fffbf0;
+    }
+
+    .tagged-panel .seal-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .tagged-panel .seal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0c5460;
+      margin-bottom: 6px;
+    }
+
+    .tagged-panel.review-needed .seal-title {
+      color: #856404;
+    }
+
+    .tagged-panel .seal-date {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .tagged-panel .seal-days {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 16px;
+    }
+
+    .tagged-panel .seal-warning {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 0 auto 16px auto;
+      max-width: 320px;
+      font-size: 13px;
+      color: #0c5460;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .tagged-panel .seal-expired-warning {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 0 auto 16px auto;
+      max-width: 320px;
+      font-size: 13px;
+      color: #721c24;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .break-seal-btn {
+      padding: 12px 24px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .break-seal-btn:hover {
+      background: #c82333;
+    }
+
+    .break-seal-btn:active {
+      background: #bd2130;
+    }
+
+    .tag-area-btn {
+      display: none;
+      width: calc(100% - 30px);
+      margin: 12px 15px;
+      padding: 12px;
+      background: #17a2b8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .tag-area-btn:hover {
+      background: #138496;
+    }
+
+    .tag-area-btn:active {
+      background: #117a8b;
+    }
+
 </style>
 </head>
 <body>
@@ -847,6 +983,9 @@
     var restockStatus = {}; // key -> { restocked: bool, outOfStock: bool, reason: string }
     var currentOutOfStockKey = null; // For dialog
     var selectedReason = null; // For dialog reason selection
+    var taggedAreas = {}; // areaName -> { taggedDate: 'YYYY-MM-DD', taggedTimestamp: ms }
+    var enableTaggedAreas = false;
+    var sealReviewDays = 30;
     
     // =====================================================
     // PARSE INVENTORY FROM SETTINGS
@@ -935,99 +1074,162 @@
         var contentDiv = document.createElement('div');
         contentDiv.className = 'area-content';
         
-        var categories = INVENTORY[areaName];
-        for (var catName in categories) {
-          // Category header
-          var catHeader = document.createElement('div');
-          catHeader.className = 'category-header';
-          
-          var catCheckbox = document.createElement('input');
-          catCheckbox.type = 'checkbox';
-          catCheckbox.className = 'category-checkbox';
-          catCheckbox.onclick = (function(area, cat) {
-            return function(e) {
-              e.stopPropagation();
-              toggleCategory(area, cat, this.checked);
-            };
-          })(areaName, catName);
-          
-          var catLabel = document.createElement('span');
-          catLabel.textContent = catName;
-          
-          var catStatus = document.createElement('span');
-          catStatus.className = 'category-status';
-          catStatus.id = 'cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_');
-          
-          catHeader.appendChild(catCheckbox);
-          catHeader.appendChild(catLabel);
-          catHeader.appendChild(catStatus);
-          
-          contentDiv.appendChild(catHeader);
-          
-          // Items
-          var items = categories[catName];
-          for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            var key = generateKey(areaName, catName, item.name);
-            
-            if (!itemStates[key]) {
-              itemStates[key] = { actual: 0 };
+        if (taggedAreas[areaName]) {
+          // Render tagged/sealed panel instead of items
+          var tagInfo = taggedAreas[areaName];
+          var daysSince = daysSinceTagged(tagInfo.taggedTimestamp);
+          var reviewNeeded = sealReviewDays > 0 && daysSince >= sealReviewDays;
+
+          var panel = document.createElement('div');
+          panel.className = 'tagged-panel' + (reviewNeeded ? ' review-needed' : '');
+
+          var panelHtml = '';
+          if (reviewNeeded) {
+            panelHtml += '<div class="seal-icon">&#9888;</div>';
+            panelHtml += '<div class="seal-title">EXPIRATION REVIEW NEEDED</div>';
+          } else {
+            panelHtml += '<div class="seal-icon">&#x1F512;</div>';
+            panelHtml += '<div class="seal-title">AREA SEALED</div>';
+          }
+
+          panelHtml += '<div class="seal-date">Tagged: ' + formatTagDate(tagInfo.taggedDate) + '</div>';
+          panelHtml += '<div class="seal-days">Sealed for ' + daysSince + ' day' + (daysSince !== 1 ? 's' : '') + '</div>';
+
+          if (reviewNeeded) {
+            var daysOverdue = daysSince - sealReviewDays;
+            panelHtml += '<div class="seal-expired-warning">Seal expired ' + daysOverdue + ' day' + (daysOverdue !== 1 ? 's' : '') + ' ago! Break seal to review expiration dates of contents.</div>';
+          } else if (sealReviewDays > 0) {
+            var daysUntilReview = sealReviewDays - daysSince;
+            panelHtml += '<div class="seal-warning">Review expiration dates in ' + daysUntilReview + ' day' + (daysUntilReview !== 1 ? 's' : '') + '.</div>';
+          }
+
+          panelHtml += '<button class="break-seal-btn" onclick="breakSeal(\'' + escapeHtml(areaName).replace(/'/g, "\\'") + '\')">Break Seal &amp; Review</button>';
+
+          panel.innerHTML = panelHtml;
+          contentDiv.appendChild(panel);
+
+          // Still initialize itemStates keys for tagged areas
+          var categories = INVENTORY[areaName];
+          for (var catName in categories) {
+            var items = categories[catName];
+            for (var i = 0; i < items.length; i++) {
+              var key = generateKey(areaName, catName, items[i].name);
+              if (!itemStates[key]) {
+                itemStates[key] = { actual: items[i].required };
+              }
             }
-            
-            var itemDiv = document.createElement('div');
-            itemDiv.className = 'checklist-item';
-            itemDiv.id = 'item_' + key.replace(/[^a-zA-Z0-9]/g, '_');
-            
-            var checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.className = 'item-checkbox';
-            checkbox.checked = itemStates[key].actual >= item.required;
-            checkbox.onchange = (function(k, req) {
-              return function() { setItemValue(k, this.checked ? req : 0); };
-            })(key, item.required);
-            
-            var infoDiv = document.createElement('div');
-            infoDiv.className = 'item-info';
-            infoDiv.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>' +
-              '<div class="item-required">Need: ' + item.required + '</div>';
-            
-            var stepperDiv = document.createElement('div');
-            stepperDiv.className = 'qty-stepper';
-            
-            var decBtn = document.createElement('button');
-            decBtn.className = 'qty-btn';
-            decBtn.textContent = '-';
-            decBtn.onclick = (function(k) {
-              return function() { adjustItem(k, -1); };
-            })(key);
-            
-            var valueInput = document.createElement('input');
-            valueInput.type = 'number';
-            valueInput.className = 'qty-value';
-            valueInput.value = itemStates[key].actual;
-            valueInput.min = '0';
-            valueInput.max = item.required;
-            valueInput.id = 'input_' + key.replace(/[^a-zA-Z0-9]/g, '_');
-            valueInput.onchange = (function(k) {
-              return function() { setItemValue(k, parseInt(this.value) || 0); };
-            })(key);
-            
-            var incBtn = document.createElement('button');
-            incBtn.className = 'qty-btn';
-            incBtn.textContent = '+';
-            incBtn.onclick = (function(k) {
-              return function() { adjustItem(k, 1); };
-            })(key);
-            
-            stepperDiv.appendChild(decBtn);
-            stepperDiv.appendChild(valueInput);
-            stepperDiv.appendChild(incBtn);
-            
-            itemDiv.appendChild(checkbox);
-            itemDiv.appendChild(infoDiv);
-            itemDiv.appendChild(stepperDiv);
-            
-            contentDiv.appendChild(itemDiv);
+          }
+        } else {
+          // Normal rendering: categories and items
+          var categories = INVENTORY[areaName];
+          for (var catName in categories) {
+            // Category header
+            var catHeader = document.createElement('div');
+            catHeader.className = 'category-header';
+
+            var catCheckbox = document.createElement('input');
+            catCheckbox.type = 'checkbox';
+            catCheckbox.className = 'category-checkbox';
+            catCheckbox.onclick = (function(area, cat) {
+              return function(e) {
+                e.stopPropagation();
+                toggleCategory(area, cat, this.checked);
+              };
+            })(areaName, catName);
+
+            var catLabel = document.createElement('span');
+            catLabel.textContent = catName;
+
+            var catStatus = document.createElement('span');
+            catStatus.className = 'category-status';
+            catStatus.id = 'cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_');
+
+            catHeader.appendChild(catCheckbox);
+            catHeader.appendChild(catLabel);
+            catHeader.appendChild(catStatus);
+
+            contentDiv.appendChild(catHeader);
+
+            // Items
+            var items = categories[catName];
+            for (var i = 0; i < items.length; i++) {
+              var item = items[i];
+              var key = generateKey(areaName, catName, item.name);
+
+              if (!itemStates[key]) {
+                itemStates[key] = { actual: 0 };
+              }
+
+              var itemDiv = document.createElement('div');
+              itemDiv.className = 'checklist-item';
+              itemDiv.id = 'item_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+
+              var checkbox = document.createElement('input');
+              checkbox.type = 'checkbox';
+              checkbox.className = 'item-checkbox';
+              checkbox.checked = itemStates[key].actual >= item.required;
+              checkbox.onchange = (function(k, req) {
+                return function() { setItemValue(k, this.checked ? req : 0); };
+              })(key, item.required);
+
+              var infoDiv = document.createElement('div');
+              infoDiv.className = 'item-info';
+              infoDiv.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>' +
+                '<div class="item-required">Need: ' + item.required + '</div>';
+
+              var stepperDiv = document.createElement('div');
+              stepperDiv.className = 'qty-stepper';
+
+              var decBtn = document.createElement('button');
+              decBtn.className = 'qty-btn';
+              decBtn.textContent = '-';
+              decBtn.onclick = (function(k) {
+                return function() { adjustItem(k, -1); };
+              })(key);
+
+              var valueInput = document.createElement('input');
+              valueInput.type = 'number';
+              valueInput.className = 'qty-value';
+              valueInput.value = itemStates[key].actual;
+              valueInput.min = '0';
+              valueInput.max = item.required;
+              valueInput.id = 'input_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+              valueInput.onchange = (function(k) {
+                return function() { setItemValue(k, parseInt(this.value) || 0); };
+              })(key);
+
+              var incBtn = document.createElement('button');
+              incBtn.className = 'qty-btn';
+              incBtn.textContent = '+';
+              incBtn.onclick = (function(k) {
+                return function() { adjustItem(k, 1); };
+              })(key);
+
+              stepperDiv.appendChild(decBtn);
+              stepperDiv.appendChild(valueInput);
+              stepperDiv.appendChild(incBtn);
+
+              itemDiv.appendChild(checkbox);
+              itemDiv.appendChild(infoDiv);
+              itemDiv.appendChild(stepperDiv);
+
+              contentDiv.appendChild(itemDiv);
+            }
+          }
+
+          // Add "Seal This Area" button if tagged areas feature is enabled
+          if (enableTaggedAreas) {
+            var tagBtn = document.createElement('button');
+            tagBtn.className = 'tag-area-btn';
+            tagBtn.id = 'tag_btn_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
+            tagBtn.textContent = 'Seal This Area';
+            tagBtn.onclick = (function(name) {
+              return function(e) {
+                e.stopPropagation();
+                tagArea(name);
+              };
+            })(areaName);
+            contentDiv.appendChild(tagBtn);
           }
         }
         
@@ -1123,17 +1325,105 @@
     
 
     // =====================================================
+    // TAGGED AREA FUNCTIONS
+    // =====================================================
+
+    function isAreaAllOk(areaName) {
+      for (var catName in INVENTORY[areaName]) {
+        var items = INVENTORY[areaName][catName];
+        for (var i = 0; i < items.length; i++) {
+          var key = generateKey(areaName, catName, items[i].name);
+          var actual = (itemStates[key] || { actual: 0 }).actual;
+          if (actual < items[i].required) return false;
+        }
+      }
+      return true;
+    }
+
+    function tagArea(areaName) {
+      if (!isAreaAllOk(areaName)) return;
+      var now = new Date();
+      taggedAreas[areaName] = {
+        taggedDate: now.toISOString().split('T')[0],
+        taggedTimestamp: now.getTime()
+      };
+      buildUI();
+    }
+
+    function breakSeal(areaName) {
+      if (!confirm('Breaking the seal will reset all items in this area. You will need to re-verify every item. Continue?')) {
+        return;
+      }
+      delete taggedAreas[areaName];
+      // Reset all items in this area to 0
+      for (var catName in INVENTORY[areaName]) {
+        var items = INVENTORY[areaName][catName];
+        for (var i = 0; i < items.length; i++) {
+          var key = generateKey(areaName, catName, items[i].name);
+          itemStates[key] = { actual: 0 };
+          delete restockStatus[key];
+        }
+      }
+      buildUI();
+    }
+
+    function formatTagDate(dateStr) {
+      var parts = dateStr.split('-');
+      var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+      return months[parseInt(parts[1], 10) - 1] + ' ' + parseInt(parts[2], 10) + ', ' + parts[0];
+    }
+
+    function daysSinceTagged(timestamp) {
+      var now = new Date();
+      var tagged = new Date(timestamp);
+      // Compare dates only (ignore time)
+      var nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      var tagDate = new Date(tagged.getFullYear(), tagged.getMonth(), tagged.getDate());
+      return Math.floor((nowDate - tagDate) / (1000 * 60 * 60 * 24));
+    }
+
+    // =====================================================
     // STATUS UPDATES
     // =====================================================
     
     function updateAllStatuses() {
       for (var areaName in INVENTORY) {
+        var areaId = 'area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
+        var areaDiv = document.getElementById(areaId);
+        var statusEl = document.getElementById('status_' + areaId);
+
+        // Handle tagged areas
+        if (taggedAreas[areaName]) {
+          if (areaDiv && statusEl) {
+            var header = areaDiv.querySelector('.area-header');
+            header.classList.remove('has-issues', 'all-ok', 'tagged', 'review-needed');
+            statusEl.classList.remove('issues', 'ok', 'tagged', 'review-needed');
+
+            var tagInfo = taggedAreas[areaName];
+            var daysSince = daysSinceTagged(tagInfo.taggedTimestamp);
+            var reviewNeeded = sealReviewDays > 0 && daysSince >= sealReviewDays;
+
+            if (reviewNeeded) {
+              header.classList.add('tagged', 'review-needed');
+              statusEl.classList.add('review-needed');
+              statusEl.textContent = 'REVIEW DUE';
+            } else {
+              header.classList.add('tagged');
+              statusEl.classList.add('tagged');
+              statusEl.textContent = 'SEALED';
+            }
+          }
+          continue;
+        }
+
+        // Normal (non-tagged) area status
         var areaOk = 0, areaTotal = 0;
-        
+
         for (var catName in INVENTORY[areaName]) {
           var catOk = 0;
           var items = INVENTORY[areaName][catName];
-          
+
           for (var i = 0; i < items.length; i++) {
             var key = generateKey(areaName, catName, items[i].name);
             var actual = (itemStates[key] || { actual: 0 }).actual;
@@ -1143,7 +1433,7 @@
             }
             areaTotal++;
           }
-          
+
           // Update category checkbox
           var catStatusId = 'cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_');
           var catStatusEl = document.getElementById(catStatusId);
@@ -1151,19 +1441,14 @@
             catStatusEl.textContent = '(' + catOk + '/' + items.length + ')';
           }
         }
-        
-        // Update area header
-        var areaId = 'area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
-        var areaDiv = document.getElementById(areaId);
-        var statusEl = document.getElementById('status_' + areaId);
-        
+
         if (areaDiv && statusEl) {
           var header = areaDiv.querySelector('.area-header');
-          header.classList.remove('has-issues', 'all-ok');
-          statusEl.classList.remove('issues', 'ok');
-          
+          header.classList.remove('has-issues', 'all-ok', 'tagged', 'review-needed');
+          statusEl.classList.remove('issues', 'ok', 'tagged', 'review-needed');
+
           statusEl.textContent = areaOk + '/' + areaTotal;
-          
+
           if (areaOk === areaTotal) {
             header.classList.add('all-ok');
             statusEl.classList.add('ok');
@@ -1172,14 +1457,23 @@
             statusEl.classList.add('issues');
           }
         }
+
+        // Show/hide tag button
+        if (enableTaggedAreas) {
+          var tagBtn = document.getElementById('tag_btn_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
+          if (tagBtn) {
+            tagBtn.style.display = (areaOk === areaTotal && areaTotal > 0) ? 'block' : 'none';
+          }
+        }
       }
     }
     
     function updateSummary() {
       var shortages = [];
       var okCount = 0, shortCount = 0, missingCount = 0;
-      
+
       for (var areaName in INVENTORY) {
+        if (taggedAreas[areaName]) continue; // Skip sealed areas
         for (var catName in INVENTORY[areaName]) {
           var items = INVENTORY[areaName][catName];
           for (var i = 0; i < items.length; i++) {
@@ -1390,6 +1684,7 @@
     function restockAllItems() {
       // Get all shortage keys
       for (var areaName in INVENTORY) {
+        if (taggedAreas[areaName]) continue; // Skip sealed areas
         for (var catName in INVENTORY[areaName]) {
           var items = INVENTORY[areaName][catName];
           for (var i = 0; i < items.length; i++) {
@@ -1417,23 +1712,26 @@
     function generateSubmitValue() {
       var restockedItems = [];
       var unavailableItems = [];
-      
+
       for (var key in restockStatus) {
         var status = restockStatus[key];
         if (!status) continue;
-        
+
         var parts = key.split('::');
         var areaName = parts[0];
         var catName = parts[1];
         var itemName = parts[2];
-        
+
+        // Skip items in tagged areas
+        if (taggedAreas[areaName]) continue;
+
         // Find the item details
         var item = findItem(areaName, catName, itemName);
         if (!item) continue;
-        
+
         var actual = (itemStates[key] || { actual: 0 }).actual;
         var shortage = item.required - actual;
-        
+
         if (status.restocked) {
           restockedItems.push({
             area: areaName,
@@ -1451,10 +1749,38 @@
           });
         }
       }
-      
+
+      // Build tagged areas list for report
+      var taggedList = [];
+      for (var taggedArea in taggedAreas) {
+        var info = taggedAreas[taggedArea];
+        var days = daysSinceTagged(info.taggedTimestamp);
+        var needsReview = sealReviewDays > 0 && days >= sealReviewDays;
+        taggedList.push({
+          area: taggedArea,
+          taggedDate: info.taggedDate,
+          daysSinceTagged: days,
+          reviewNeeded: needsReview
+        });
+      }
+
       // Generate readable output
       var lines = [];
-      
+
+      if (taggedList.length > 0) {
+        lines.push('SEALED/TAGGED AREAS (' + taggedList.length + ')');
+        lines.push('====================');
+        for (var t = 0; t < taggedList.length; t++) {
+          var ta = taggedList[t];
+          var tagLine = '• ' + ta.area + ' - Tagged: ' + formatTagDate(ta.taggedDate) + ' (' + ta.daysSinceTagged + ' days)';
+          if (ta.reviewNeeded) {
+            tagLine += ' [REVIEW OVERDUE]';
+          }
+          lines.push(tagLine);
+        }
+        lines.push('');
+      }
+
       if (restockedItems.length > 0) {
         lines.push('RESTOCKED ITEMS (' + restockedItems.length + ')');
         lines.push('================');
@@ -1464,7 +1790,7 @@
         }
         lines.push('');
       }
-      
+
       if (unavailableItems.length > 0) {
         lines.push('UNAVAILABLE ITEMS (' + unavailableItems.length + ')');
         lines.push('==================');
@@ -1475,15 +1801,18 @@
         }
         lines.push('');
       }
-      
+
       if (lines.length === 0) {
         lines.push('No restock actions recorded.');
       }
-      
+
       return {
         report: lines.join('\n'),
         restockedItems: restockedItems,
         unavailableItems: unavailableItems,
+        taggedAreas: taggedAreas,
+        itemStates: itemStates,
+        restockStatus: restockStatus,
         timestamp: Date.now()
       };
     }
@@ -1512,17 +1841,31 @@
           // Load inventory from widget settings
           var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
           INVENTORY = parseInventory(inventoryText);
-          
+
+          // Load tagged area settings
+          var tagSetting = JFCustomWidget.getWidgetSetting('enableTaggedAreas');
+          enableTaggedAreas = (tagSetting === 'true' || tagSetting === true);
+          var reviewDays = JFCustomWidget.getWidgetSetting('sealReviewDays');
+          if (reviewDays !== undefined && reviewDays !== null && reviewDays !== '') {
+            sealReviewDays = parseInt(reviewDays, 10) || 30;
+          }
+
           buildUI();
-          
+
           // Restore saved state if editing
           if (data.value) {
             try {
               var saved = JSON.parse(data.value);
               if (saved.itemStates) {
                 itemStates = saved.itemStates;
-                buildUI();
               }
+              if (saved.taggedAreas) {
+                taggedAreas = saved.taggedAreas;
+              }
+              if (saved.restockStatus) {
+                restockStatus = saved.restockStatus;
+              }
+              buildUI();
             } catch (e) {}
           }
           
