@@ -1130,6 +1130,7 @@
     var sealReviewDay = 0; // Day of month (1-31) for mandatory expiration review, 0 = disabled
     var categoryMeta = {}; // "area::category" -> { level: 0|1, parent: null|string }
     var collapsedCategories = {}; // "area::category" -> true if collapsed
+    var sealableAreas = {}; // areaName -> true if area can be sealed
     
     // =====================================================
     // PARSE INVENTORY FROM SETTINGS
@@ -1142,6 +1143,7 @@
       var currentCategory = "General";
       var currentTopCategory = "General";
       categoryMeta = {};
+      sealableAreas = {};
 
       for (var i = 0; i < lines.length; i++) {
         var line = lines[i].trim();
@@ -1154,6 +1156,15 @@
           currentTopCategory = "General";
           if (!result[currentArea]) {
             result[currentArea] = {};
+          }
+          continue;
+        }
+
+        // Check if it marks the current area as sealable
+        if (line.toLowerCase().indexOf('sealable:') === 0) {
+          var val = line.substring(9).trim().toLowerCase();
+          if (val === 'yes' || val === 'true') {
+            sealableAreas[currentArea] = true;
           }
           continue;
         }
@@ -1481,8 +1492,8 @@
             contentDiv.appendChild(itemsContainer);
           }
 
-          // Add "Seal This Area" button if tagged areas feature is enabled
-          if (enableTaggedAreas) {
+          // Add "Seal This Area" button if this area is marked sealable
+          if (sealableAreas[areaName]) {
             var tagBtn = document.createElement('button');
             tagBtn.className = 'tag-area-btn';
             tagBtn.id = 'tag_btn_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
@@ -1623,7 +1634,7 @@
     function sealAllAreas() {
       var sealed = 0;
       for (var areaName in INVENTORY) {
-        if (isAreaSealable(areaName)) {
+        if (sealableAreas[areaName] && isAreaSealable(areaName)) {
           var now = new Date();
           taggedAreas[areaName] = {
             taggedDate: now.toISOString().split('T')[0],
@@ -1685,6 +1696,7 @@
     }
 
     function tagArea(areaName) {
+      if (!sealableAreas[areaName]) return;
       if (!isAreaAllOk(areaName) && !isAreaSealable(areaName)) return;
       var now = new Date();
       taggedAreas[areaName] = {
@@ -1864,8 +1876,8 @@
           }
         }
 
-        // Show/hide tag button (show if area is fully OK or sealable via restock)
-        if (enableTaggedAreas) {
+        // Show/hide tag button (show if area is marked sealable and fully OK or sealable via restock)
+        if (sealableAreas[areaName]) {
           var tagBtn = document.getElementById('tag_btn_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
           if (tagBtn) {
             var sealable = (areaOk === areaTotal && areaTotal > 0) || isAreaSealable(areaName);
@@ -1947,7 +1959,7 @@
         var anySealable = false;
         if (enableTaggedAreas) {
           for (var sArea in INVENTORY) {
-            if (isAreaSealable(sArea)) { anySealable = true; break; }
+            if (sealableAreas[sArea] && isAreaSealable(sArea)) { anySealable = true; break; }
           }
         }
         sealAllBtn.style.display = anySealable ? 'flex' : 'none';
@@ -2274,9 +2286,8 @@
           var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
           INVENTORY = parseInventory(inventoryText);
 
-          // Load tagged area settings
-          var tagSetting = JFCustomWidget.getWidgetSetting('enableTaggedAreas');
-          enableTaggedAreas = (tagSetting === 'true' || tagSetting === true);
+          // Derive tagged area support from per-area Sealable: config
+          enableTaggedAreas = Object.keys(sealableAreas).length > 0;
           var reviewDay = JFCustomWidget.getWidgetSetting('sealReviewDay');
           if (reviewDay !== undefined && reviewDay !== null && reviewDay !== '') {
             sealReviewDay = Math.max(1, Math.min(31, parseInt(reviewDay, 10) || 0));
@@ -2314,6 +2325,7 @@
       } else {
         // Standalone mode - use default inventory
         INVENTORY = parseInventory(DEFAULT_INVENTORY);
+        enableTaggedAreas = Object.keys(sealableAreas).length > 0;
         buildUI();
       }
     }
