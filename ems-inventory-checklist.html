@@ -898,6 +898,137 @@
       background: #117a8b;
     }
 
+    /* Completion Popup */
+    .completion-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.97);
+      z-index: 400;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .completion-overlay.open {
+      display: flex;
+    }
+
+    .completion-close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 32px;
+      color: #666;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .completion-close:hover {
+      color: #333;
+    }
+
+    .completion-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .completion-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #28a745;
+      margin-bottom: 12px;
+    }
+
+    .completion-message {
+      font-size: 16px;
+      color: #555;
+      line-height: 1.5;
+      max-width: 340px;
+    }
+
+    /* Seal All Button */
+    .seal-all-btn {
+      width: 100%;
+      padding: 16px 20px;
+      background: #17a2b8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .seal-all-btn:hover {
+      background: #138496;
+    }
+
+    .seal-all-btn:active {
+      background: #117a8b;
+    }
+
+    /* Collapsible Categories */
+    .category-header {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .category-collapse-icon {
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #888;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    /* Subcategory */
+    .subcategory-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 15px 6px 30px;
+      background: #f5f5f5;
+      font-size: 11px;
+      font-weight: 600;
+      color: #666;
+      border-bottom: 1px solid #e8e8e8;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .subcategory-header .category-collapse-icon {
+      font-size: 9px;
+      width: 12px;
+      height: 12px;
+    }
+
+    .subcategory-header .category-checkbox {
+      width: 14px;
+      height: 14px;
+    }
+
+    .subcategory-items .checklist-item {
+      padding-left: 30px;
+    }
+
 </style>
 </head>
 <body>
@@ -935,6 +1066,9 @@
           <button class="restock-all-btn" onclick="restockAllItems()">
             <span>✓</span> Mark All Restocked
           </button>
+          <button class="seal-all-btn" id="sealAllBtn" onclick="sealAllAreas()" style="display:none">
+            <span>&#x1F512;</span> Seal All Eligible Areas
+          </button>
         </div>
       </div>
     </div>
@@ -963,6 +1097,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Completion Popup -->
+    <div class="completion-overlay" id="completionOverlay">
+      <button class="completion-close" onclick="closeCompletionPopup()">&times;</button>
+      <div class="completion-icon">&#10003;</div>
+      <div class="completion-title">Done!</div>
+      <div class="completion-message" id="completionMessage"></div>
+    </div>
   </div>
 
   <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
@@ -986,6 +1128,8 @@
     var taggedAreas = {}; // areaName -> { taggedDate: 'YYYY-MM-DD', taggedTimestamp: ms }
     var enableTaggedAreas = false;
     var sealReviewDay = 0; // Day of month (1-31) for mandatory expiration review, 0 = disabled
+    var categoryMeta = {}; // "area::category" -> { level: 0|1, parent: null|string }
+    var collapsedCategories = {}; // "area::category" -> true if collapsed
     
     // =====================================================
     // PARSE INVENTORY FROM SETTINGS
@@ -996,47 +1140,61 @@
       var result = {};
       var currentArea = "Items";
       var currentCategory = "General";
-      
+      var currentTopCategory = "General";
+      categoryMeta = {};
+
       for (var i = 0; i < lines.length; i++) {
         var line = lines[i].trim();
         if (!line) continue;
-        
+
         // Check if it's an area (starts with "Area Name:" or similar pattern)
         if (line.toLowerCase().indexOf('area name:') === 0) {
           currentArea = line.substring(10).trim();
           currentCategory = "General";
+          currentTopCategory = "General";
           if (!result[currentArea]) {
             result[currentArea] = {};
           }
           continue;
         }
-        
+
         // Check if it's an item (contains |)
         if (line.indexOf('|') !== -1) {
-          var parts = line.split('|');
+          var itemLine = line.charAt(0) === '>' ? line.substring(1).trim() : line;
+          var parts = itemLine.split('|');
           var itemName = parts[0].trim();
           var qty = parseInt(parts[1], 10) || 1;
-          
+
           if (!result[currentArea]) {
             result[currentArea] = {};
           }
           if (!result[currentArea][currentCategory]) {
             result[currentArea][currentCategory] = [];
           }
-          
+
           result[currentArea][currentCategory].push({
             name: itemName,
             required: qty
           });
-        } else {
-          // It's a category name
-          currentCategory = line;
+        } else if (line.charAt(0) === '>') {
+          // Subcategory (line starts with >)
+          var subCatName = line.substring(1).trim();
+          currentCategory = subCatName;
           if (!result[currentArea]) {
             result[currentArea] = {};
           }
+          categoryMeta[currentArea + '::' + subCatName] = { level: 1, parent: currentTopCategory };
+        } else {
+          // Top-level category name
+          currentCategory = line;
+          currentTopCategory = line;
+          if (!result[currentArea]) {
+            result[currentArea] = {};
+          }
+          categoryMeta[currentArea + '::' + line] = { level: 0, parent: null };
         }
       }
-      
+
       return result;
     }
     
@@ -1047,7 +1205,70 @@
     function generateKey(areaName, categoryName, itemName) {
       return areaName + '::' + categoryName + '::' + itemName;
     }
-    
+
+    function buildItemRow(areaName, catName, item) {
+      var key = generateKey(areaName, catName, item.name);
+
+      if (!itemStates[key]) {
+        itemStates[key] = { actual: 0 };
+      }
+
+      var itemDiv = document.createElement('div');
+      itemDiv.className = 'checklist-item';
+      itemDiv.id = 'item_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'item-checkbox';
+      checkbox.checked = itemStates[key].actual >= item.required;
+      checkbox.onchange = (function(k, req) {
+        return function() { setItemValue(k, this.checked ? req : 0); };
+      })(key, item.required);
+
+      var infoDiv = document.createElement('div');
+      infoDiv.className = 'item-info';
+      infoDiv.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>' +
+        '<div class="item-required">Need: ' + item.required + '</div>';
+
+      var stepperDiv = document.createElement('div');
+      stepperDiv.className = 'qty-stepper';
+
+      var decBtn = document.createElement('button');
+      decBtn.className = 'qty-btn';
+      decBtn.textContent = '-';
+      decBtn.onclick = (function(k) {
+        return function() { adjustItem(k, -1); };
+      })(key);
+
+      var valueInput = document.createElement('input');
+      valueInput.type = 'number';
+      valueInput.className = 'qty-value';
+      valueInput.value = itemStates[key].actual;
+      valueInput.min = '0';
+      valueInput.max = item.required;
+      valueInput.id = 'input_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+      valueInput.onchange = (function(k) {
+        return function() { setItemValue(k, parseInt(this.value) || 0); };
+      })(key);
+
+      var incBtn = document.createElement('button');
+      incBtn.className = 'qty-btn';
+      incBtn.textContent = '+';
+      incBtn.onclick = (function(k) {
+        return function() { adjustItem(k, 1); };
+      })(key);
+
+      stepperDiv.appendChild(decBtn);
+      stepperDiv.appendChild(valueInput);
+      stepperDiv.appendChild(incBtn);
+
+      itemDiv.appendChild(checkbox);
+      itemDiv.appendChild(infoDiv);
+      itemDiv.appendChild(stepperDiv);
+
+      return itemDiv;
+    }
+
     function buildUI() {
       var container = document.getElementById('areasContainer');
       container.innerHTML = '';
@@ -1121,22 +1342,59 @@
             }
           }
         } else {
-          // Normal rendering: categories and items
+          // Normal rendering: collapsible categories with optional subcategories
           var categories = INVENTORY[areaName];
+
+          // Group categories into top-level and subcategories
+          var catOrder = [];
+          var catChildren = {};
           for (var catName in categories) {
-            // Category header
+            var metaKey = areaName + '::' + catName;
+            var meta = categoryMeta[metaKey] || { level: 0, parent: null };
+            if (meta.level === 0) {
+              catOrder.push(catName);
+              if (!catChildren[catName]) catChildren[catName] = [];
+            } else if (meta.parent) {
+              if (!catChildren[meta.parent]) catChildren[meta.parent] = [];
+              catChildren[meta.parent].push(catName);
+            }
+          }
+
+          for (var ci = 0; ci < catOrder.length; ci++) {
+            var catName = catOrder[ci];
+            var catItems = categories[catName] || [];
+            var subCats = catChildren[catName] || [];
+            var catKey = areaName + '::' + catName;
+            var isCollapsed = collapsedCategories[catKey] || false;
+
+            // Category header (collapsible)
             var catHeader = document.createElement('div');
             catHeader.className = 'category-header';
+            catHeader.onclick = (function(area, cat) {
+              return function(e) {
+                if (e.target.classList.contains('category-checkbox')) return;
+                toggleCategoryCollapse(area, cat);
+              };
+            })(areaName, catName);
+
+            var collapseIcon = document.createElement('span');
+            collapseIcon.className = 'category-collapse-icon';
+            collapseIcon.id = 'cat_icon_' + catKey.replace(/[^a-zA-Z0-9]/g, '_');
+            collapseIcon.textContent = '\u25B6';
+            collapseIcon.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)';
 
             var catCheckbox = document.createElement('input');
             catCheckbox.type = 'checkbox';
             catCheckbox.className = 'category-checkbox';
-            catCheckbox.onclick = (function(area, cat) {
+            catCheckbox.onclick = (function(area, cat, subs) {
               return function(e) {
                 e.stopPropagation();
                 toggleCategory(area, cat, this.checked);
+                for (var s = 0; s < subs.length; s++) {
+                  toggleCategory(area, subs[s], this.checked);
+                }
               };
-            })(areaName, catName);
+            })(areaName, catName, subCats);
 
             var catLabel = document.createElement('span');
             catLabel.textContent = catName;
@@ -1145,77 +1403,82 @@
             catStatus.className = 'category-status';
             catStatus.id = 'cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_');
 
+            catHeader.appendChild(collapseIcon);
             catHeader.appendChild(catCheckbox);
             catHeader.appendChild(catLabel);
             catHeader.appendChild(catStatus);
-
             contentDiv.appendChild(catHeader);
 
-            // Items
-            var items = categories[catName];
-            for (var i = 0; i < items.length; i++) {
-              var item = items[i];
-              var key = generateKey(areaName, catName, item.name);
+            // Items container (collapsible)
+            var itemsContainer = document.createElement('div');
+            itemsContainer.className = 'category-items';
+            itemsContainer.id = 'cat_items_' + catKey.replace(/[^a-zA-Z0-9]/g, '_');
+            itemsContainer.style.display = isCollapsed ? 'none' : 'block';
 
-              if (!itemStates[key]) {
-                itemStates[key] = { actual: 0 };
-              }
-
-              var itemDiv = document.createElement('div');
-              itemDiv.className = 'checklist-item';
-              itemDiv.id = 'item_' + key.replace(/[^a-zA-Z0-9]/g, '_');
-
-              var checkbox = document.createElement('input');
-              checkbox.type = 'checkbox';
-              checkbox.className = 'item-checkbox';
-              checkbox.checked = itemStates[key].actual >= item.required;
-              checkbox.onchange = (function(k, req) {
-                return function() { setItemValue(k, this.checked ? req : 0); };
-              })(key, item.required);
-
-              var infoDiv = document.createElement('div');
-              infoDiv.className = 'item-info';
-              infoDiv.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>' +
-                '<div class="item-required">Need: ' + item.required + '</div>';
-
-              var stepperDiv = document.createElement('div');
-              stepperDiv.className = 'qty-stepper';
-
-              var decBtn = document.createElement('button');
-              decBtn.className = 'qty-btn';
-              decBtn.textContent = '-';
-              decBtn.onclick = (function(k) {
-                return function() { adjustItem(k, -1); };
-              })(key);
-
-              var valueInput = document.createElement('input');
-              valueInput.type = 'number';
-              valueInput.className = 'qty-value';
-              valueInput.value = itemStates[key].actual;
-              valueInput.min = '0';
-              valueInput.max = item.required;
-              valueInput.id = 'input_' + key.replace(/[^a-zA-Z0-9]/g, '_');
-              valueInput.onchange = (function(k) {
-                return function() { setItemValue(k, parseInt(this.value) || 0); };
-              })(key);
-
-              var incBtn = document.createElement('button');
-              incBtn.className = 'qty-btn';
-              incBtn.textContent = '+';
-              incBtn.onclick = (function(k) {
-                return function() { adjustItem(k, 1); };
-              })(key);
-
-              stepperDiv.appendChild(decBtn);
-              stepperDiv.appendChild(valueInput);
-              stepperDiv.appendChild(incBtn);
-
-              itemDiv.appendChild(checkbox);
-              itemDiv.appendChild(infoDiv);
-              itemDiv.appendChild(stepperDiv);
-
-              contentDiv.appendChild(itemDiv);
+            // Direct items for this category
+            for (var i = 0; i < catItems.length; i++) {
+              itemsContainer.appendChild(buildItemRow(areaName, catName, catItems[i]));
             }
+
+            // Subcategories
+            for (var si = 0; si < subCats.length; si++) {
+              var subCatName = subCats[si];
+              var subCatItems = categories[subCatName] || [];
+              var subCatKey = areaName + '::' + subCatName;
+              var isSubCollapsed = collapsedCategories[subCatKey] || false;
+
+              // Subcategory header
+              var subHeader = document.createElement('div');
+              subHeader.className = 'subcategory-header';
+              subHeader.onclick = (function(area, sub) {
+                return function(e) {
+                  if (e.target.classList.contains('category-checkbox')) return;
+                  toggleCategoryCollapse(area, sub);
+                };
+              })(areaName, subCatName);
+
+              var subIcon = document.createElement('span');
+              subIcon.className = 'category-collapse-icon';
+              subIcon.id = 'cat_icon_' + subCatKey.replace(/[^a-zA-Z0-9]/g, '_');
+              subIcon.textContent = '\u25B6';
+              subIcon.style.transform = isSubCollapsed ? 'rotate(0deg)' : 'rotate(90deg)';
+
+              var subCheckbox = document.createElement('input');
+              subCheckbox.type = 'checkbox';
+              subCheckbox.className = 'category-checkbox';
+              subCheckbox.onclick = (function(area, sub) {
+                return function(e) {
+                  e.stopPropagation();
+                  toggleCategory(area, sub, this.checked);
+                };
+              })(areaName, subCatName);
+
+              var subLabel = document.createElement('span');
+              subLabel.textContent = subCatName;
+
+              var subStatus = document.createElement('span');
+              subStatus.className = 'category-status';
+              subStatus.id = 'cat_status_' + generateKey(areaName, subCatName, '').replace(/[^a-zA-Z0-9]/g, '_');
+
+              subHeader.appendChild(subIcon);
+              subHeader.appendChild(subCheckbox);
+              subHeader.appendChild(subLabel);
+              subHeader.appendChild(subStatus);
+              itemsContainer.appendChild(subHeader);
+
+              // Subcategory items container
+              var subItemsContainer = document.createElement('div');
+              subItemsContainer.className = 'subcategory-items';
+              subItemsContainer.id = 'cat_items_' + subCatKey.replace(/[^a-zA-Z0-9]/g, '_');
+              subItemsContainer.style.display = isSubCollapsed ? 'none' : 'block';
+
+              for (var j = 0; j < subCatItems.length; j++) {
+                subItemsContainer.appendChild(buildItemRow(areaName, subCatName, subCatItems[j]));
+              }
+              itemsContainer.appendChild(subItemsContainer);
+            }
+
+            contentDiv.appendChild(itemsContainer);
           }
 
           // Add "Seal This Area" button if tagged areas feature is enabled
@@ -1341,8 +1604,88 @@
       return true;
     }
 
+    function isAreaSealable(areaName) {
+      if (taggedAreas[areaName]) return false;
+      for (var catName in INVENTORY[areaName]) {
+        var items = INVENTORY[areaName][catName];
+        for (var i = 0; i < items.length; i++) {
+          var key = generateKey(areaName, catName, items[i].name);
+          var actual = (itemStates[key] || { actual: 0 }).actual;
+          if (actual >= items[i].required) continue;
+          var status = restockStatus[key];
+          if (status && (status.restocked || status.outOfStock)) continue;
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function sealAllAreas() {
+      var sealed = 0;
+      for (var areaName in INVENTORY) {
+        if (isAreaSealable(areaName)) {
+          var now = new Date();
+          taggedAreas[areaName] = {
+            taggedDate: now.toISOString().split('T')[0],
+            taggedTimestamp: now.getTime()
+          };
+          sealed++;
+        }
+      }
+      if (sealed > 0) {
+        closeRestockModal();
+        buildUI();
+        showCompletionPopup();
+      }
+    }
+
+    function isEverythingComplete() {
+      for (var areaName in INVENTORY) {
+        if (taggedAreas[areaName]) continue;
+        for (var catName in INVENTORY[areaName]) {
+          var items = INVENTORY[areaName][catName];
+          for (var i = 0; i < items.length; i++) {
+            var key = generateKey(areaName, catName, items[i].name);
+            var actual = (itemStates[key] || { actual: 0 }).actual;
+            if (actual >= items[i].required) continue;
+            var status = restockStatus[key];
+            if (status && (status.restocked || status.outOfStock)) continue;
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    function showCompletionPopup() {
+      var msgEl = document.getElementById('completionMessage');
+      if (enableTaggedAreas) {
+        msgEl.textContent = 'Please make sure all areas marked as sealed have been tied off before continuing.';
+      } else {
+        msgEl.textContent = 'Please press Next.';
+      }
+      document.getElementById('completionOverlay').classList.add('open');
+    }
+
+    function closeCompletionPopup() {
+      document.getElementById('completionOverlay').classList.remove('open');
+    }
+
+    function toggleCategoryCollapse(areaName, catName) {
+      var key = areaName + '::' + catName;
+      collapsedCategories[key] = !collapsedCategories[key];
+      var itemsDiv = document.getElementById('cat_items_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (itemsDiv) {
+        itemsDiv.style.display = collapsedCategories[key] ? 'none' : 'block';
+      }
+      var icon = document.getElementById('cat_icon_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (icon) {
+        icon.style.transform = collapsedCategories[key] ? 'rotate(0deg)' : 'rotate(90deg)';
+      }
+    }
+
     function tagArea(areaName) {
-      if (!isAreaAllOk(areaName)) return;
+      if (!isAreaAllOk(areaName) && !isAreaSealable(areaName)) return;
       var now = new Date();
       taggedAreas[areaName] = {
         taggedDate: now.toISOString().split('T')[0],
@@ -1465,6 +1808,8 @@
         for (var catName in INVENTORY[areaName]) {
           var catOk = 0;
           var items = INVENTORY[areaName][catName];
+          var metaKey = areaName + '::' + catName;
+          var meta = categoryMeta[metaKey] || { level: 0, parent: null };
 
           for (var i = 0; i < items.length; i++) {
             var key = generateKey(areaName, catName, items[i].name);
@@ -1476,11 +1821,30 @@
             areaTotal++;
           }
 
-          // Update category checkbox
+          // Update this category/subcategory status
           var catStatusId = 'cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_');
           var catStatusEl = document.getElementById(catStatusId);
           if (catStatusEl) {
-            catStatusEl.textContent = '(' + catOk + '/' + items.length + ')';
+            // For parent categories, aggregate subcategory counts too
+            if (meta.level === 0) {
+              var parentOk = catOk;
+              var parentTotal = items.length;
+              for (var subCat in INVENTORY[areaName]) {
+                var subMeta = categoryMeta[areaName + '::' + subCat];
+                if (subMeta && subMeta.level === 1 && subMeta.parent === catName) {
+                  var subItems = INVENTORY[areaName][subCat];
+                  for (var si = 0; si < subItems.length; si++) {
+                    var subKey = generateKey(areaName, subCat, subItems[si].name);
+                    var subActual = (itemStates[subKey] || { actual: 0 }).actual;
+                    if (subActual >= subItems[si].required) parentOk++;
+                    parentTotal++;
+                  }
+                }
+              }
+              catStatusEl.textContent = '(' + parentOk + '/' + parentTotal + ')';
+            } else {
+              catStatusEl.textContent = '(' + catOk + '/' + items.length + ')';
+            }
           }
         }
 
@@ -1500,11 +1864,12 @@
           }
         }
 
-        // Show/hide tag button
+        // Show/hide tag button (show if area is fully OK or sealable via restock)
         if (enableTaggedAreas) {
           var tagBtn = document.getElementById('tag_btn_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
           if (tagBtn) {
-            tagBtn.style.display = (areaOk === areaTotal && areaTotal > 0) ? 'block' : 'none';
+            var sealable = (areaOk === areaTotal && areaTotal > 0) || isAreaSealable(areaName);
+            tagBtn.style.display = sealable ? 'block' : 'none';
           }
         }
       }
@@ -1576,9 +1941,21 @@
       var summaryContent = document.getElementById('summaryContent');
       var modalFooter = document.getElementById('modalFooter');
       
+      // Show/hide seal-all button in modal
+      var sealAllBtn = document.getElementById('sealAllBtn');
+      if (sealAllBtn) {
+        var anySealable = false;
+        if (enableTaggedAreas) {
+          for (var sArea in INVENTORY) {
+            if (isAreaSealable(sArea)) { anySealable = true; break; }
+          }
+        }
+        sealAllBtn.style.display = anySealable ? 'flex' : 'none';
+      }
+
       if (shortages.length === 0) {
         summaryContent.innerHTML = '<div class="summary-empty"><div class="icon">✓</div><div>All items fully stocked!</div></div>';
-        modalFooter.style.display = 'none';
+        modalFooter.style.display = (sealAllBtn && anySealable) ? 'block' : 'none';
       } else {
         modalFooter.style.display = 'block';
         
@@ -1645,6 +2022,10 @@
     }
     
     function openRestockModal() {
+      if (isEverythingComplete()) {
+        showCompletionPopup();
+        return;
+      }
       document.getElementById('modalOverlay').classList.add('open');
     }
     
@@ -1745,8 +2126,17 @@
         }
       }
       updateSummary();
+      // After restocking all, check if everything is complete
+      if (isEverythingComplete()) {
+        if (enableTaggedAreas) {
+          // Don't auto-popup; let user see the seal-all button
+        } else {
+          closeRestockModal();
+          showCompletionPopup();
+        }
+      }
     }
-    
+
     // =====================================================
     // JOTFORM INTEGRATION
     // =====================================================
