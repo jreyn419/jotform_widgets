@@ -1159,6 +1159,48 @@
     var collapsedCategories = {}; // "area::category" -> true if collapsed
     var sealableAreas = {}; // areaName -> true if area can be sealed
     var brokenSeals = []; // [{ area, reason, taggedDate, brokenTimestamp }]
+    var stateReady = false; // true after initial state load is complete
+
+    // =====================================================
+    // LOCAL PERSISTENCE (survives across form sessions)
+    // =====================================================
+
+    function getStorageKey() {
+      try {
+        // Scope to the widget's iframe src for uniqueness across forms
+        var src = window.location.href || '';
+        if (src) {
+          // Extract a stable identifier from the URL (formID, qid, etc.)
+          var match = src.match(/[?&](?:formID|qid)=([^&]+)/);
+          if (match) return 'ems_checklist_' + match[1];
+        }
+      } catch (e) {}
+      return 'ems_checklist_state';
+    }
+
+    function saveState() {
+      if (!stateReady) return;
+      try {
+        var state = {
+          itemStates: itemStates,
+          taggedAreas: taggedAreas,
+          restockStatus: restockStatus,
+          brokenSeals: brokenSeals,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(getStorageKey(), JSON.stringify(state));
+      } catch (e) {
+        // localStorage unavailable or quota exceeded
+      }
+    }
+
+    function loadState() {
+      try {
+        var stored = localStorage.getItem(getStorageKey());
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+      return null;
+    }
     
     // =====================================================
     // PARSE INVENTORY FROM SETTINGS
@@ -2085,8 +2127,10 @@
         
         summaryContent.innerHTML = html;
       }
+
+      saveState();
     }
-    
+
     function escapeHtml(text) {
       var div = document.createElement('div');
       div.textContent = text;
@@ -2371,26 +2415,32 @@
 
           buildUI();
 
-          // Restore saved state if editing
+          // Restore saved state: try JotForm value first, then localStorage
+          var saved = null;
           if (data.value) {
-            try {
-              var saved = JSON.parse(data.value);
-              if (saved.itemStates) {
-                itemStates = saved.itemStates;
-              }
-              if (saved.taggedAreas) {
-                taggedAreas = saved.taggedAreas;
-              }
-              if (saved.restockStatus) {
-                restockStatus = saved.restockStatus;
-              }
-              if (saved.brokenSeals) {
-                brokenSeals = saved.brokenSeals;
-              }
-              buildUI();
-            } catch (e) {}
+            try { saved = JSON.parse(data.value); } catch (e) {}
           }
-          
+          if (!saved) {
+            saved = loadState();
+          }
+          if (saved) {
+            if (saved.itemStates) {
+              itemStates = saved.itemStates;
+            }
+            if (saved.taggedAreas) {
+              taggedAreas = saved.taggedAreas;
+            }
+            if (saved.restockStatus) {
+              restockStatus = saved.restockStatus;
+            }
+            if (saved.brokenSeals) {
+              brokenSeals = saved.brokenSeals;
+            }
+            buildUI();
+          }
+
+          stateReady = true;
+          saveState();
           resizeWidget();
         });
         
@@ -2406,6 +2456,18 @@
         INVENTORY = parseInventory(DEFAULT_INVENTORY);
         enableTaggedAreas = Object.keys(sealableAreas).length > 0;
         buildUI();
+
+        // Restore from localStorage in standalone mode
+        var saved = loadState();
+        if (saved) {
+          if (saved.itemStates) itemStates = saved.itemStates;
+          if (saved.taggedAreas) taggedAreas = saved.taggedAreas;
+          if (saved.restockStatus) restockStatus = saved.restockStatus;
+          if (saved.brokenSeals) brokenSeals = saved.brokenSeals;
+          buildUI();
+        }
+        stateReady = true;
+        saveState();
       }
     }
     
