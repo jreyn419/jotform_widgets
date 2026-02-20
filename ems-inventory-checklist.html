@@ -1192,6 +1192,8 @@
       } catch (e) {
         // localStorage unavailable or quota exceeded
       }
+      saveSealState();
+      syncToJotForm();
     }
 
     function loadState() {
@@ -1200,6 +1202,49 @@
         if (stored) return JSON.parse(stored);
       } catch (e) {}
       return null;
+    }
+
+    // Dedicated sealed-state persistence — survives across submissions and
+    // is shared by every user on the same browser/device (e.g. shared tablet).
+    function getSealStorageKey() {
+      return getStorageKey() + '_seals';
+    }
+
+    function saveSealState() {
+      if (!stateReady) return;
+      try {
+        var sealData = {
+          taggedAreas: taggedAreas,
+          brokenSeals: brokenSeals,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(getSealStorageKey(), JSON.stringify(sealData));
+      } catch (e) {}
+    }
+
+    function loadSealState() {
+      try {
+        var stored = localStorage.getItem(getSealStorageKey());
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+      return null;
+    }
+
+    // Push current state to JotForm so it survives page refreshes and
+    // draft-saves during the same form-filling session.
+    function syncToJotForm() {
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
+        try {
+          var state = {
+            itemStates: itemStates,
+            taggedAreas: taggedAreas,
+            restockStatus: restockStatus,
+            brokenSeals: brokenSeals,
+            timestamp: Date.now()
+          };
+          JFCustomWidget.sendData({ value: JSON.stringify(state) });
+        } catch (e) {}
+      }
     }
     
     // =====================================================
@@ -2436,20 +2481,42 @@
             if (saved.brokenSeals) {
               brokenSeals = saved.brokenSeals;
             }
-            buildUI();
           }
+
+          // Always layer in the dedicated sealed-state store so that seals
+          // persist across submissions and across users on the same device,
+          // even when the per-submission state above is empty / stale.
+          var sealData = loadSealState();
+          if (sealData && sealData.taggedAreas) {
+            // Use the more recent source for sealed state
+            var savedSealTs = (saved && saved.timestamp) || 0;
+            var dedicatedSealTs = sealData.timestamp || 0;
+            if (dedicatedSealTs >= savedSealTs) {
+              taggedAreas = sealData.taggedAreas;
+              if (sealData.brokenSeals) {
+                brokenSeals = sealData.brokenSeals;
+              }
+            }
+          }
+
+          buildUI();
 
           stateReady = true;
           saveState();
           resizeWidget();
         });
-        
+
         JFCustomWidget.subscribe('submit', function() {
           var submitData = generateSubmitValue();
           JFCustomWidget.sendSubmit({
             valid: true,
             value: JSON.stringify(submitData)
           });
+
+          // Clear per-submission state so the next session starts fresh for
+          // item counts, but keep the dedicated sealed-state key intact so
+          // seals carry over to the next submission / user.
+          try { localStorage.removeItem(getStorageKey()); } catch (e) {}
         });
       } else {
         // Standalone mode - use default inventory
@@ -2464,8 +2531,22 @@
           if (saved.taggedAreas) taggedAreas = saved.taggedAreas;
           if (saved.restockStatus) restockStatus = saved.restockStatus;
           if (saved.brokenSeals) brokenSeals = saved.brokenSeals;
-          buildUI();
         }
+
+        // Layer in dedicated sealed-state store
+        var sealData = loadSealState();
+        if (sealData && sealData.taggedAreas) {
+          var savedSealTs = (saved && saved.timestamp) || 0;
+          var dedicatedSealTs = sealData.timestamp || 0;
+          if (dedicatedSealTs >= savedSealTs) {
+            taggedAreas = sealData.taggedAreas;
+            if (sealData.brokenSeals) {
+              brokenSeals = sealData.brokenSeals;
+            }
+          }
+        }
+
+        buildUI();
         stateReady = true;
         saveState();
       }
