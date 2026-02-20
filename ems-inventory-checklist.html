@@ -855,6 +855,13 @@
       text-align: center;
     }
 
+    .seal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
     .break-seal-btn {
       padding: 12px 24px;
       background: #dc3545;
@@ -873,6 +880,26 @@
 
     .break-seal-btn:active {
       background: #bd2130;
+    }
+
+    .seal-missing-btn {
+      padding: 12px 24px;
+      background: #fd7e14;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .seal-missing-btn:hover {
+      background: #e8590c;
+    }
+
+    .seal-missing-btn:active {
+      background: #d9480f;
     }
 
     .tag-area-btn {
@@ -1131,6 +1158,7 @@
     var categoryMeta = {}; // "area::category" -> { level: 0|1, parent: null|string }
     var collapsedCategories = {}; // "area::category" -> true if collapsed
     var sealableAreas = {}; // areaName -> true if area can be sealed
+    var brokenSeals = []; // [{ area, reason, taggedDate, brokenTimestamp }]
     
     // =====================================================
     // PARSE INVENTORY FROM SETTINGS
@@ -1352,7 +1380,11 @@
             }
           }
 
-          panelHtml += '<button class="break-seal-btn" onclick="breakSeal(\'' + escapeHtml(areaName).replace(/'/g, "\\'") + '\')">Break Seal &amp; Review</button>';
+          var escapedName = escapeHtml(areaName).replace(/'/g, "\\'");
+          panelHtml += '<div class="seal-actions">';
+          panelHtml += '<button class="break-seal-btn" onclick="breakSeal(\'' + escapedName + '\', \'review\')">Break Seal &amp; Review</button>';
+          panelHtml += '<button class="seal-missing-btn" onclick="breakSeal(\'' + escapedName + '\', \'missing\')">Seal is Missing</button>';
+          panelHtml += '</div>';
 
           panel.innerHTML = panelHtml;
           contentDiv.appendChild(panel);
@@ -1723,10 +1755,21 @@
       buildUI();
     }
 
-    function breakSeal(areaName) {
-      if (!confirm('Breaking the seal will reset all items in this area. You will need to re-verify every item. Continue?')) {
+    function breakSeal(areaName, reason) {
+      var message = reason === 'missing'
+        ? 'The seal for this area is missing. All items will be reset and you will need to re-verify every item. Continue?'
+        : 'Breaking the seal will reset all items in this area. You will need to re-verify every item. Continue?';
+      if (!confirm(message)) {
         return;
       }
+      // Log the seal break
+      var tagInfo = taggedAreas[areaName];
+      brokenSeals.push({
+        area: areaName,
+        reason: reason || 'review',
+        taggedDate: tagInfo ? tagInfo.taggedDate : null,
+        brokenTimestamp: Date.now()
+      });
       delete taggedAreas[areaName];
       // Reset all items in this area to 0
       for (var catName in INVENTORY[areaName]) {
@@ -2228,6 +2271,21 @@
       // Generate readable output
       var lines = [];
 
+      if (brokenSeals.length > 0) {
+        lines.push('BROKEN SEALS (' + brokenSeals.length + ')');
+        lines.push('============');
+        for (var b = 0; b < brokenSeals.length; b++) {
+          var bs = brokenSeals[b];
+          var reasonLabel = bs.reason === 'missing' ? 'Seal was missing' : 'Scheduled review';
+          var bLine = '• ' + bs.area + ' - ' + reasonLabel;
+          if (bs.taggedDate) {
+            bLine += ' (was sealed since ' + formatTagDate(bs.taggedDate) + ')';
+          }
+          lines.push(bLine);
+        }
+        lines.push('');
+      }
+
       if (taggedList.length > 0) {
         lines.push('SEALED/TAGGED AREAS (' + taggedList.length + ')');
         lines.push('====================');
@@ -2272,6 +2330,7 @@
         restockedItems: restockedItems,
         unavailableItems: unavailableItems,
         taggedAreas: taggedAreas,
+        brokenSeals: brokenSeals,
         itemStates: itemStates,
         restockStatus: restockStatus,
         timestamp: Date.now()
@@ -2324,6 +2383,9 @@
               }
               if (saved.restockStatus) {
                 restockStatus = saved.restockStatus;
+              }
+              if (saved.brokenSeals) {
+                brokenSeals = saved.brokenSeals;
               }
               buildUI();
             } catch (e) {}
