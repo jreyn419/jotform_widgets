@@ -1194,6 +1194,9 @@
           if (!result[currentArea]) {
             result[currentArea] = {};
           }
+          if (!result[currentArea][subCatName]) {
+            result[currentArea][subCatName] = [];
+          }
           categoryMeta[currentArea + '::' + subCatName] = { level: 1, parent: currentTopCategory };
         } else {
           // Top-level category name
@@ -1201,6 +1204,9 @@
           currentTopCategory = line;
           if (!result[currentArea]) {
             result[currentArea] = {};
+          }
+          if (!result[currentArea][line]) {
+            result[currentArea][line] = [];
           }
           categoryMeta[currentArea + '::' + line] = { level: 0, parent: null };
         }
