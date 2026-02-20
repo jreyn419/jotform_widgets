@@ -1171,10 +1171,19 @@
 
         // Check if it's an item (contains |)
         if (line.indexOf('|') !== -1) {
-          var itemLine = line.charAt(0) === '>' ? line.substring(1).trim() : line;
+          var isSubItem = line.charAt(0) === '>';
+          var itemLine = isSubItem ? line.substring(1).trim() : line;
           var parts = itemLine.split('|');
           var itemName = parts[0].trim();
           var qty = parseInt(parts[1], 10) || 1;
+
+          // If item doesn't have > prefix and we're in a subcategory, revert to parent
+          if (!isSubItem) {
+            var curMeta = categoryMeta[currentArea + '::' + currentCategory];
+            if (curMeta && curMeta.level === 1) {
+              currentCategory = currentTopCategory;
+            }
+          }
 
           if (!result[currentArea]) {
             result[currentArea] = {};
@@ -1190,14 +1199,15 @@
         } else if (line.charAt(0) === '>') {
           // Subcategory (line starts with >)
           var subCatName = line.substring(1).trim();
-          currentCategory = subCatName;
+          var qualifiedName = currentTopCategory + ' > ' + subCatName;
+          currentCategory = qualifiedName;
           if (!result[currentArea]) {
             result[currentArea] = {};
           }
-          if (!result[currentArea][subCatName]) {
-            result[currentArea][subCatName] = [];
+          if (!result[currentArea][qualifiedName]) {
+            result[currentArea][qualifiedName] = [];
           }
-          categoryMeta[currentArea + '::' + subCatName] = { level: 1, parent: currentTopCategory };
+          categoryMeta[currentArea + '::' + qualifiedName] = { level: 1, parent: currentTopCategory, displayName: subCatName };
         } else {
           // Top-level category name
           currentCategory = line;
@@ -1471,7 +1481,8 @@
               })(areaName, subCatName);
 
               var subLabel = document.createElement('span');
-              subLabel.textContent = subCatName;
+              var subDisplayMeta = categoryMeta[areaName + '::' + subCatName];
+              subLabel.textContent = (subDisplayMeta && subDisplayMeta.displayName) || subCatName;
 
               var subStatus = document.createElement('span');
               subStatus.className = 'category-status';
