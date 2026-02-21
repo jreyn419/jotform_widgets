@@ -233,7 +233,7 @@
     .area-group.expanded > .area-header {
       border-radius: 8px 8px 0 0;
       position: sticky;
-      top: 0;
+      top: -10px;
       z-index: 11;
       margin: 0 -10px;
       width: calc(100% + 20px);
@@ -254,8 +254,18 @@
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded > .area-header {
-      top: 45px;
+      top: 35px;
       z-index: 10;
+    }
+
+    .area-group.expanded > .area-group-content > .area-section.expanded .category-header {
+      top: 80px;
+      z-index: 9;
+    }
+
+    .area-group.expanded > .area-group-content > .area-section.expanded .subcategory-header {
+      top: 115px;
+      z-index: 8;
     }
 
     .parent-own-items {
@@ -299,7 +309,7 @@
     
     .area-section.expanded .area-header {
       position: sticky;
-      top: 0;
+      top: -10px;
       z-index: 10;
       border-radius: 0;
       margin: 0 -10px;
@@ -394,7 +404,7 @@
     
     .area-section.expanded .category-header {
       position: sticky;
-      top: 45px;
+      top: 35px;
       z-index: 9;
       margin-left: -10px;
       margin-right: -10px;
@@ -1388,6 +1398,16 @@
       border-bottom: 1px solid #e8e8e8;
       cursor: pointer;
       user-select: none;
+    }
+
+    .area-section.expanded .subcategory-header {
+      position: sticky;
+      top: 70px;
+      z-index: 8;
+      margin-left: -10px;
+      margin-right: -10px;
+      padding-left: 40px;
+      padding-right: 25px;
     }
 
     .subcategory-header .category-collapse-icon {
