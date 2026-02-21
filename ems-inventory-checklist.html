@@ -1537,6 +1537,7 @@
         contentDiv.className = 'area-content';
         
         if (taggedAreas[areaName]) {
+          console.log('[SEAL-DIAG] buildUI: area "' + areaName + '" IS sealed');
           // Render tagged/sealed panel instead of items
           var tagInfo = taggedAreas[areaName];
           var daysSince = daysSinceTagged(tagInfo.taggedTimestamp);
@@ -2633,7 +2634,12 @@
               if (remote && remote.taggedAreas && remote.timestamp > localTs) {
                 taggedAreas = remote.taggedAreas;
                 if (remote.brokenSeals) brokenSeals = remote.brokenSeals;
+                console.log('[SEAL-DIAG] Pre-buildUI taggedAreas keys (' + Object.keys(taggedAreas).length + '): ' + JSON.stringify(Object.keys(taggedAreas)));
                 buildUI();
+                // Verify what buildUI saw
+                var sealedInDom = document.querySelectorAll('.tagged-panel');
+                var sealedHeaders = document.querySelectorAll('.area-header.tagged');
+                console.log('[SEAL-DIAG] Post-buildUI: .tagged-panel count=' + sealedInDom.length + ', .area-header.tagged count=' + sealedHeaders.length);
                 saveSealState();
                 resizeWidget();
                 console.log('[SEAL-DIAG] Remote seal state APPLIED');
