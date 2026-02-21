@@ -360,8 +360,16 @@
     
     .area-content {
       display: none;
-      overflow-y: visible;
+      overflow: visible;
       border-top: 1px solid #eee;
+    }
+
+    .category-items {
+      overflow: visible;
+    }
+
+    .subcategory-items {
+      overflow: visible;
     }
     
     .area-section.expanded .area-content {
@@ -654,6 +662,16 @@
       padding: 10px 15px;
       background: #f5f5f5;
       border-top: 1px solid #ddd;
+    }
+    
+    .restock-footer::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 0;
+      right: 0;
+      height: 20px;
+      pointer-events: none;
     }
 
     .restock-btn {
@@ -2216,7 +2234,7 @@
               itemsContainer.appendChild(buildItemRow(areaName, catName, catItems[i]));
             }
 
-            // Subcategories
+            // Subcategories - append directly to contentDiv for sticky positioning to work
             for (var si = 0; si < subCats.length; si++) {
               var subCatName = subCats[si];
               var subCatItems = categories[subCatName] || [];
@@ -3897,6 +3915,29 @@
         var hasText = this.value.trim().length > 0;
         document.getElementById('confirmBtn').disabled = !hasText;
       });
+
+      // Forward touch events from footer to scroll container
+      var footer = document.querySelector('.restock-footer');
+      var scrollContainer = document.getElementById('areasContainer');
+      if (footer && scrollContainer) {
+        var touchStartY = 0;
+        var scrollStartTop = 0;
+
+        footer.addEventListener('touchstart', function(e) {
+          // Only handle if touch is on footer padding, not the button
+          if (e.target === footer) {
+            touchStartY = e.touches[0].clientY;
+            scrollStartTop = scrollContainer.scrollTop;
+          }
+        }, { passive: true });
+
+        footer.addEventListener('touchmove', function(e) {
+          if (e.target === footer) {
+            var deltaY = touchStartY - e.touches[0].clientY;
+            scrollContainer.scrollTop = scrollStartTop + deltaY;
+          }
+        }, { passive: true });
+      }
       
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
         JFCustomWidget.subscribe('ready', function(data) {
