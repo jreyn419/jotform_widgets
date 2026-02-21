@@ -112,6 +112,14 @@
       top: 45px;
       z-index: 10;
     }
+
+    .parent-own-items {
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
     
     .area-header {
       display: flex;
@@ -1516,20 +1524,6 @@
         }
       }
 
-      // Clean up: remove empty parent areas from INVENTORY
-      // (parent areas that only serve as containers for children have no items)
-      for (var parentName in areaHierarchy) {
-        if (result[parentName]) {
-          var hasItems = false;
-          for (var cat in result[parentName]) {
-            if (result[parentName][cat].length > 0) { hasItems = true; break; }
-          }
-          if (!hasItems) {
-            delete result[parentName];
-          }
-        }
-      }
-
       return result;
     }
     
@@ -1865,16 +1859,102 @@
 
         groupDiv.appendChild(headerDiv);
 
-        // Content: child area sections
+        // Content
         var contentDiv = document.createElement('div');
         contentDiv.className = 'area-group-content';
 
+        if (taggedAreas[parentName]) {
+          // Parent is sealed — show sealed panel for parent, but still show child areas
+          var tagInfo = taggedAreas[parentName];
+          var daysSince = daysSinceTagged(tagInfo.taggedTimestamp);
+          var reviewNeeded = isReviewOverdue(tagInfo.taggedTimestamp);
+
+          var panel = document.createElement('div');
+          panel.className = 'tagged-panel' + (reviewNeeded ? ' review-needed' : '');
+
+          var panelHtml = '';
+          if (reviewNeeded) {
+            panelHtml += '<div class="seal-icon">&#9888;</div>';
+            panelHtml += '<div class="seal-title">PARENT AREA: EXPIRATION REVIEW NEEDED</div>';
+          } else {
+            panelHtml += '<div class="seal-icon">&#x1F512;</div>';
+            panelHtml += '<div class="seal-title">PARENT AREA SEALED</div>';
+          }
+
+          panelHtml += '<div class="seal-date">Tagged: ' + formatTagDate(tagInfo.taggedDate) + '</div>';
+          panelHtml += '<div class="seal-days">Sealed for ' + daysSince + ' day' + (daysSince !== 1 ? 's' : '') + '</div>';
+
+          if (reviewNeeded) {
+            panelHtml += '<div class="seal-expired-warning">Monthly review was due on the ' + sealReviewDay + getOrdinalSuffix(sealReviewDay) + '. Break seal to review expiration dates of contents.</div>';
+          } else if (sealReviewDay > 0) {
+            var nextReview = getNextReviewDate();
+            if (nextReview) {
+              panelHtml += '<div class="seal-warning">Next expiration review: ' + formatTagDate(nextReview.toISOString().split('T')[0]) + '</div>';
+            }
+          }
+
+          var escapedParent = escapeHtml(parentName).replace(/'/g, "\\'");
+          panelHtml += '<div class="seal-actions">';
+          panelHtml += '<button class="break-seal-btn" onclick="breakSeal(\'' + escapedParent + '\', \'review\')">Break Seal &amp; Review</button>';
+          panelHtml += '<button class="seal-missing-btn" onclick="breakSeal(\'' + escapedParent + '\', \'missing\')">Seal is Missing</button>';
+          panelHtml += '</div>';
+
+          panel.innerHTML = panelHtml;
+          contentDiv.appendChild(panel);
+
+          // Initialize parent item states for sealed parent
+          if (INVENTORY[parentName]) {
+            for (var catName in INVENTORY[parentName]) {
+              var items = INVENTORY[parentName][catName];
+              for (var i = 0; i < items.length; i++) {
+                var key = generateKey(parentName, catName, items[i].name);
+                if (!itemStates[key]) {
+                  itemStates[key] = { actual: items[i].required };
+                }
+              }
+            }
+          }
+        } else {
+          // Parent not sealed — render parent's own items if any
+          if (INVENTORY[parentName]) {
+            var parentSection = buildAreaSection(parentName);
+            // Unwrap: insert the area-content children directly so items appear
+            // inline within the group rather than as a nested collapsible
+            var parentContent = parentSection.querySelector('.area-content');
+            if (parentContent) {
+              var wrapper = document.createElement('div');
+              wrapper.className = 'parent-own-items';
+              while (parentContent.firstChild) {
+                wrapper.appendChild(parentContent.firstChild);
+              }
+              contentDiv.appendChild(wrapper);
+            }
+            rendered[parentName] = true;
+          }
+        }
+
+        // Always render child areas (whether parent is sealed or not)
         for (var c = 0; c < children.length; c++) {
           var childName = children[c];
           if (INVENTORY[childName]) {
             contentDiv.appendChild(buildAreaSection(childName));
             rendered[childName] = true;
           }
+        }
+
+        // Parent seal button — only if parent is sealable and not already sealed
+        if (sealableAreas[parentName] && !taggedAreas[parentName]) {
+          var tagBtn = document.createElement('button');
+          tagBtn.className = 'tag-area-btn';
+          tagBtn.id = 'tag_btn_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_');
+          tagBtn.textContent = 'Seal ' + parentName;
+          tagBtn.onclick = (function(name) {
+            return function(e) {
+              e.stopPropagation();
+              tagArea(name);
+            };
+          })(parentName);
+          contentDiv.appendChild(tagBtn);
         }
 
         groupDiv.appendChild(contentDiv);
@@ -2027,6 +2107,7 @@
     // =====================================================
 
     function isAreaAllOk(areaName) {
+      if (!INVENTORY[areaName]) return true;
       for (var catName in INVENTORY[areaName]) {
         var items = INVENTORY[areaName][catName];
         for (var i = 0; i < items.length; i++) {
@@ -2040,15 +2121,29 @@
 
     function isAreaSealable(areaName) {
       if (taggedAreas[areaName]) return false;
-      for (var catName in INVENTORY[areaName]) {
-        var items = INVENTORY[areaName][catName];
-        for (var i = 0; i < items.length; i++) {
-          var key = generateKey(areaName, catName, items[i].name);
-          var actual = (itemStates[key] || { actual: 0 }).actual;
-          if (actual >= items[i].required) continue;
-          var status = restockStatus[key];
-          if (status && (status.restocked || status.outOfStock)) continue;
-          return false;
+
+      // For parent areas: all sealable children must already be sealed
+      if (areaHierarchy[areaName]) {
+        var children = areaHierarchy[areaName];
+        for (var c = 0; c < children.length; c++) {
+          if (sealableAreas[children[c]] && !taggedAreas[children[c]]) {
+            return false;
+          }
+        }
+      }
+
+      // Own items must be OK or handled
+      if (INVENTORY[areaName]) {
+        for (var catName in INVENTORY[areaName]) {
+          var items = INVENTORY[areaName][catName];
+          for (var i = 0; i < items.length; i++) {
+            var key = generateKey(areaName, catName, items[i].name);
+            var actual = (itemStates[key] || { actual: 0 }).actual;
+            if (actual >= items[i].required) continue;
+            var status = restockStatus[key];
+            if (status && (status.restocked || status.outOfStock)) continue;
+            return false;
+          }
         }
       }
       return true;
@@ -2056,7 +2151,21 @@
 
     function sealAllAreas() {
       var sealed = 0;
+      // Seal children first, then parents (parents require children to be sealed)
+      // Pass 1: non-parent areas
       for (var areaName in INVENTORY) {
+        if (areaHierarchy[areaName]) continue; // skip parents for now
+        if (sealableAreas[areaName] && isAreaSealable(areaName)) {
+          var now = new Date();
+          taggedAreas[areaName] = {
+            taggedDate: now.toISOString().split('T')[0],
+            taggedTimestamp: now.getTime()
+          };
+          sealed++;
+        }
+      }
+      // Pass 2: parent areas (now that children may be sealed)
+      for (var areaName in areaHierarchy) {
         if (sealableAreas[areaName] && isAreaSealable(areaName)) {
           var now = new Date();
           taggedAreas[areaName] = {
@@ -2145,15 +2254,73 @@
         brokenTimestamp: Date.now()
       });
       delete taggedAreas[areaName];
+
       // Reset all items in this area to 0
-      for (var catName in INVENTORY[areaName]) {
-        var items = INVENTORY[areaName][catName];
-        for (var i = 0; i < items.length; i++) {
-          var key = generateKey(areaName, catName, items[i].name);
-          itemStates[key] = { actual: 0 };
-          delete restockStatus[key];
+      if (INVENTORY[areaName]) {
+        for (var catName in INVENTORY[areaName]) {
+          var items = INVENTORY[areaName][catName];
+          for (var i = 0; i < items.length; i++) {
+            var key = generateKey(areaName, catName, items[i].name);
+            itemStates[key] = { actual: 0 };
+            delete restockStatus[key];
+          }
         }
       }
+
+      // If this is a child area, also break the parent seal
+      if (areaParent[areaName] && taggedAreas[areaParent[areaName]]) {
+        var parentName = areaParent[areaName];
+        var parentTagInfo = taggedAreas[parentName];
+        brokenSeals.push({
+          area: parentName,
+          reason: 'child_broken',
+          taggedDate: parentTagInfo ? parentTagInfo.taggedDate : null,
+          brokenTimestamp: Date.now()
+        });
+        delete taggedAreas[parentName];
+
+        // Reset parent's own items too
+        if (INVENTORY[parentName]) {
+          for (var catName in INVENTORY[parentName]) {
+            var items = INVENTORY[parentName][catName];
+            for (var i = 0; i < items.length; i++) {
+              var key = generateKey(parentName, catName, items[i].name);
+              itemStates[key] = { actual: 0 };
+              delete restockStatus[key];
+            }
+          }
+        }
+      }
+
+      // If this is a parent area being broken, also break all child seals
+      if (areaHierarchy[areaName]) {
+        var children = areaHierarchy[areaName];
+        for (var c = 0; c < children.length; c++) {
+          var childName = children[c];
+          if (taggedAreas[childName]) {
+            var childTagInfo = taggedAreas[childName];
+            brokenSeals.push({
+              area: childName,
+              reason: 'parent_broken',
+              taggedDate: childTagInfo ? childTagInfo.taggedDate : null,
+              brokenTimestamp: Date.now()
+            });
+            delete taggedAreas[childName];
+
+            if (INVENTORY[childName]) {
+              for (var catName in INVENTORY[childName]) {
+                var items = INVENTORY[childName][catName];
+                for (var i = 0; i < items.length; i++) {
+                  var key = generateKey(childName, catName, items[i].name);
+                  itemStates[key] = { actual: 0 };
+                  delete restockStatus[key];
+                }
+              }
+            }
+          }
+        }
+      }
+
       buildUI();
     }
 
@@ -2332,6 +2499,22 @@
         groupHeader.classList.remove('has-issues', 'all-ok', 'tagged', 'review-needed');
         groupStatusEl.classList.remove('issues', 'ok', 'tagged', 'review-needed');
 
+        // If parent itself is sealed
+        if (taggedAreas[parentName]) {
+          var parentReview = isReviewOverdue(taggedAreas[parentName].taggedTimestamp);
+          if (parentReview) {
+            groupHeader.classList.add('tagged', 'review-needed');
+            groupStatusEl.classList.add('review-needed');
+            groupStatusEl.textContent = 'REVIEW DUE';
+          } else {
+            groupHeader.classList.add('tagged');
+            groupStatusEl.classList.add('tagged');
+            groupStatusEl.textContent = 'SEALED';
+          }
+          continue;
+        }
+
+        // Parent not sealed — aggregate children + parent own items
         var totalChildren = 0;
         var sealedChildren = 0;
         var okChildren = 0;
@@ -2352,28 +2535,48 @@
           }
         }
 
-        if (totalChildren === 0) continue;
+        // Count parent's own items
+        var parentOk = 0, parentTotal = 0;
+        if (INVENTORY[parentName]) {
+          for (var catName in INVENTORY[parentName]) {
+            var items = INVENTORY[parentName][catName];
+            for (var pi = 0; pi < items.length; pi++) {
+              parentTotal++;
+              var key = generateKey(parentName, catName, items[pi].name);
+              var actual = (itemStates[key] || { actual: 0 }).actual;
+              if (actual >= items[pi].required) parentOk++;
+            }
+          }
+        }
 
-        if (sealedChildren === totalChildren) {
-          // All children sealed
+        var allChildrenDone = (sealedChildren + okChildren === totalChildren) && totalChildren > 0;
+        var parentItemsOk = parentOk === parentTotal;
+
+        if (allChildrenDone && parentItemsOk) {
           if (anyReviewNeeded) {
             groupHeader.classList.add('tagged', 'review-needed');
             groupStatusEl.classList.add('review-needed');
             groupStatusEl.textContent = 'REVIEW DUE';
           } else {
-            groupHeader.classList.add('tagged');
-            groupStatusEl.classList.add('tagged');
-            groupStatusEl.textContent = 'ALL SEALED';
+            groupHeader.classList.add('all-ok');
+            groupStatusEl.classList.add('ok');
+            groupStatusEl.textContent = '✓';
           }
-        } else if (sealedChildren + okChildren === totalChildren) {
-          groupHeader.classList.add('all-ok');
-          groupStatusEl.classList.add('ok');
-          groupStatusEl.textContent = okChildren + ' OK, ' + sealedChildren + ' sealed';
         } else {
           groupHeader.classList.add('has-issues');
           groupStatusEl.classList.add('issues');
-          var doneChildren = sealedChildren + okChildren;
-          groupStatusEl.textContent = doneChildren + '/' + totalChildren;
+          var parts = [];
+          if (totalChildren > 0) parts.push((sealedChildren + okChildren) + '/' + totalChildren + ' areas');
+          if (parentTotal > 0) parts.push(parentOk + '/' + parentTotal + ' items');
+          groupStatusEl.textContent = parts.join(', ');
+        }
+
+        // Show/hide parent seal button
+        if (sealableAreas[parentName]) {
+          var tagBtn = document.getElementById('tag_btn_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_'));
+          if (tagBtn) {
+            tagBtn.style.display = isAreaSealable(parentName) ? 'block' : 'none';
+          }
         }
       }
     }
