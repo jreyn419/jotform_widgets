@@ -2165,6 +2165,121 @@
       if (!skipUpdate) {
         updateAllStatuses();
         updateSummary();
+
+        // Auto-advance: if all items in this category are now OK,
+        // collapse it and open the next incomplete category.
+        var areaName = parts[0];
+        var catName = parts[1];
+        if (value >= (item ? item.required : 0)) {
+          autoCategoryAdvance(areaName, catName);
+        }
+      }
+    }
+
+    // Check if all items in a category are OK
+    function isCategoryComplete(areaName, catName) {
+      var items = INVENTORY[areaName] && INVENTORY[areaName][catName];
+      if (!items) return true;
+      for (var i = 0; i < items.length; i++) {
+        var key = generateKey(areaName, catName, items[i].name);
+        var actual = (itemStates[key] || { actual: 0 }).actual;
+        if (actual < items[i].required) return false;
+      }
+      return true;
+    }
+
+    // Collapse current category and open next incomplete one
+    function autoCategoryAdvance(areaName, catName) {
+      if (!isCategoryComplete(areaName, catName)) return;
+
+      // Also check subcategories if this is a parent category
+      var meta = categoryMeta[areaName + '::' + catName] || { level: 0 };
+      if (meta.level === 0) {
+        for (var sub in INVENTORY[areaName]) {
+          var subMeta = categoryMeta[areaName + '::' + sub];
+          if (subMeta && subMeta.level === 1 && subMeta.parent === catName) {
+            if (!isCategoryComplete(areaName, sub)) return;
+          }
+        }
+      }
+
+      // Collapse current category
+      var catKey = areaName + '::' + catName;
+      // If this is a subcategory, collapse the subcategory
+      if (meta.level === 1 && meta.parent) {
+        // Check if sibling subcategories under the same parent are complete
+        var parentCat = meta.parent;
+        var allSubsDone = isCategoryComplete(areaName, parentCat);
+        if (allSubsDone) {
+          for (var sub in INVENTORY[areaName]) {
+            var subMeta = categoryMeta[areaName + '::' + sub];
+            if (subMeta && subMeta.level === 1 && subMeta.parent === parentCat) {
+              if (!isCategoryComplete(areaName, sub)) { allSubsDone = false; break; }
+            }
+          }
+        }
+        if (allSubsDone) {
+          // Collapse the parent category and advance to next top-level
+          catName = parentCat;
+          catKey = areaName + '::' + catName;
+        } else {
+          // Just collapse this subcategory — more subs to do
+          collapsedCategories[catKey] = true;
+          var itemsDiv = document.getElementById('cat_items_' + catKey.replace(/[^a-zA-Z0-9]/g, '_'));
+          if (itemsDiv) itemsDiv.style.display = 'none';
+          var icon = document.getElementById('cat_icon_' + catKey.replace(/[^a-zA-Z0-9]/g, '_'));
+          if (icon) icon.style.transform = 'rotate(0deg)';
+          return;
+        }
+      }
+
+      // Collapse this top-level category
+      collapsedCategories[catKey] = true;
+      var itemsDiv = document.getElementById('cat_items_' + catKey.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (itemsDiv) itemsDiv.style.display = 'none';
+      var icon = document.getElementById('cat_icon_' + catKey.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (icon) icon.style.transform = 'rotate(0deg)';
+
+      // Find next incomplete top-level category in this area
+      var catOrder = [];
+      for (var c in INVENTORY[areaName]) {
+        var cMeta = categoryMeta[areaName + '::' + c] || { level: 0 };
+        if (cMeta.level === 0) catOrder.push(c);
+      }
+      var foundCurrent = false;
+      for (var ci = 0; ci < catOrder.length; ci++) {
+        if (catOrder[ci] === catName) { foundCurrent = true; continue; }
+        if (!foundCurrent) continue;
+
+        var nextCat = catOrder[ci];
+        var nextComplete = isCategoryComplete(areaName, nextCat);
+        // Also check subcategories
+        if (nextComplete) {
+          for (var sub in INVENTORY[areaName]) {
+            var subMeta = categoryMeta[areaName + '::' + sub];
+            if (subMeta && subMeta.level === 1 && subMeta.parent === nextCat) {
+              if (!isCategoryComplete(areaName, sub)) { nextComplete = false; break; }
+            }
+          }
+        }
+        if (!nextComplete) {
+          // Open this category
+          var nextKey = areaName + '::' + nextCat;
+          collapsedCategories[nextKey] = false;
+          var nextItemsDiv = document.getElementById('cat_items_' + nextKey.replace(/[^a-zA-Z0-9]/g, '_'));
+          if (nextItemsDiv) nextItemsDiv.style.display = 'block';
+          var nextIcon = document.getElementById('cat_icon_' + nextKey.replace(/[^a-zA-Z0-9]/g, '_'));
+          if (nextIcon) nextIcon.style.transform = 'rotate(90deg)';
+
+          // Scroll to it
+          var nextHeader = nextItemsDiv ? nextItemsDiv.previousElementSibling : null;
+          if (nextHeader) {
+            setTimeout(function() {
+              nextHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+          }
+          return;
+        }
       }
     }
     
@@ -2203,93 +2318,14 @@
       }
     }
 
-    // Auto-break seals that are past the review day.
-    // Returns true if any seals were broken.
+    // Auto-break is intentionally NOT performed for overdue seals.
+    // Instead, overdue seals display a prominent visual warning in the UI
+    // (via isReviewOverdue), and the user must manually confirm breaking them
+    // using the "Break Seal & Review" button. This function is kept as a
+    // hook in case automatic behavior is desired in the future.
     function autoBreakOverdueSeals() {
-      if (sealReviewDay <= 0) return false;
-      var broke = false;
-      // Collect names first to avoid mutating while iterating
-      var toBreak = [];
-      for (var areaName in taggedAreas) {
-        if (isReviewOverdue(taggedAreas[areaName].taggedTimestamp)) {
-          toBreak.push(areaName);
-        }
-      }
-      for (var i = 0; i < toBreak.length; i++) {
-        var areaName = toBreak[i];
-        var tagInfo = taggedAreas[areaName];
-        brokenSeals.push({
-          area: areaName,
-          reason: 'auto_review',
-          taggedDate: tagInfo ? tagInfo.taggedDate : null,
-          brokenTimestamp: Date.now()
-        });
-        delete taggedAreas[areaName];
-
-        // Reset items
-        if (INVENTORY[areaName]) {
-          for (var catName in INVENTORY[areaName]) {
-            var items = INVENTORY[areaName][catName];
-            for (var j = 0; j < items.length; j++) {
-              var key = generateKey(areaName, catName, items[j].name);
-              itemStates[key] = { actual: 0 };
-              delete restockStatus[key];
-            }
-          }
-        }
-
-        // If this is a parent, break all child seals too
-        if (areaHierarchy[areaName]) {
-          var children = areaHierarchy[areaName];
-          for (var c = 0; c < children.length; c++) {
-            var childName = children[c];
-            if (taggedAreas[childName]) {
-              brokenSeals.push({
-                area: childName,
-                reason: 'parent_auto_review',
-                taggedDate: taggedAreas[childName].taggedDate,
-                brokenTimestamp: Date.now()
-              });
-              delete taggedAreas[childName];
-              if (INVENTORY[childName]) {
-                for (var catName in INVENTORY[childName]) {
-                  var items = INVENTORY[childName][catName];
-                  for (var j = 0; j < items.length; j++) {
-                    var key = generateKey(childName, catName, items[j].name);
-                    itemStates[key] = { actual: 0 };
-                    delete restockStatus[key];
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        // If this is a child, break parent seal too
-        if (areaParent[areaName] && taggedAreas[areaParent[areaName]]) {
-          var parentName = areaParent[areaName];
-          brokenSeals.push({
-            area: parentName,
-            reason: 'child_auto_review',
-            taggedDate: taggedAreas[parentName].taggedDate,
-            brokenTimestamp: Date.now()
-          });
-          delete taggedAreas[parentName];
-          if (INVENTORY[parentName]) {
-            for (var catName in INVENTORY[parentName]) {
-              var items = INVENTORY[parentName][catName];
-              for (var j = 0; j < items.length; j++) {
-                var key = generateKey(parentName, catName, items[j].name);
-                itemStates[key] = { actual: 0 };
-                delete restockStatus[key];
-              }
-            }
-          }
-        }
-
-        broke = true;
-      }
-      return broke;
+      // No-op: overdue seals are handled visually, requiring user confirmation.
+      return false;
     }
 
     function isAreaAllOk(areaName) {
@@ -2425,6 +2461,79 @@
     }
 
     function breakSeal(areaName, reason) {
+      // For parent areas, offer choice to also break child seals
+      if (areaHierarchy[areaName]) {
+        var hasSealableChildren = false;
+        var children = areaHierarchy[areaName];
+        for (var c = 0; c < children.length; c++) {
+          if (sealableAreas[children[c]]) { hasSealableChildren = true; break; }
+        }
+
+        if (hasSealableChildren) {
+          var choice = reason === 'missing'
+            ? confirm('The seal for "' + areaName + '" is missing.\n\nPress OK to break ALL seals (parent + all children).\nPress Cancel to break only the parent seal.')
+            : confirm('Breaking the seal for "' + areaName + '".\n\nPress OK to break ALL seals (parent + all children).\nPress Cancel to break only the parent seal.');
+
+          // First confirm they actually want to break the parent
+          var proceedMsg = reason === 'missing'
+            ? 'This will reset items and require re-verification. Continue?'
+            : 'Breaking the seal will reset items. You will need to re-verify. Continue?';
+          if (!confirm(proceedMsg)) return;
+
+          // Break parent
+          var tagInfo = taggedAreas[areaName];
+          brokenSeals.push({
+            area: areaName,
+            reason: reason || 'review',
+            taggedDate: tagInfo ? tagInfo.taggedDate : null,
+            brokenTimestamp: Date.now()
+          });
+          delete taggedAreas[areaName];
+
+          if (INVENTORY[areaName]) {
+            for (var catName in INVENTORY[areaName]) {
+              var items = INVENTORY[areaName][catName];
+              for (var i = 0; i < items.length; i++) {
+                var key = generateKey(areaName, catName, items[i].name);
+                itemStates[key] = { actual: 0 };
+                delete restockStatus[key];
+              }
+            }
+          }
+
+          // If user chose to break all children too
+          if (choice) {
+            for (var c = 0; c < children.length; c++) {
+              var childName = children[c];
+              if (taggedAreas[childName]) {
+                brokenSeals.push({
+                  area: childName,
+                  reason: 'parent_broken',
+                  taggedDate: taggedAreas[childName].taggedDate,
+                  brokenTimestamp: Date.now()
+                });
+                delete taggedAreas[childName];
+              }
+              // Reset child items regardless (they're part of the parent unit)
+              if (INVENTORY[childName]) {
+                for (var catName in INVENTORY[childName]) {
+                  var items = INVENTORY[childName][catName];
+                  for (var i = 0; i < items.length; i++) {
+                    var key = generateKey(childName, catName, items[i].name);
+                    itemStates[key] = { actual: 0 };
+                    delete restockStatus[key];
+                  }
+                }
+              }
+            }
+          }
+
+          buildUI();
+          return;
+        }
+      }
+
+      // Standard break seal for non-parent areas (or parents without sealable children)
       var message = reason === 'missing'
         ? 'The seal for this area is missing. All items will be reset and you will need to re-verify every item. Continue?'
         : 'Breaking the seal will reset all items in this area. You will need to re-verify every item. Continue?';
@@ -2473,35 +2582,6 @@
               var key = generateKey(parentName, catName, items[i].name);
               itemStates[key] = { actual: 0 };
               delete restockStatus[key];
-            }
-          }
-        }
-      }
-
-      // If this is a parent area being broken, also break all child seals
-      if (areaHierarchy[areaName]) {
-        var children = areaHierarchy[areaName];
-        for (var c = 0; c < children.length; c++) {
-          var childName = children[c];
-          if (taggedAreas[childName]) {
-            var childTagInfo = taggedAreas[childName];
-            brokenSeals.push({
-              area: childName,
-              reason: 'parent_broken',
-              taggedDate: childTagInfo ? childTagInfo.taggedDate : null,
-              brokenTimestamp: Date.now()
-            });
-            delete taggedAreas[childName];
-
-            if (INVENTORY[childName]) {
-              for (var catName in INVENTORY[childName]) {
-                var items = INVENTORY[childName][catName];
-                for (var i = 0; i < items.length; i++) {
-                  var key = generateKey(childName, catName, items[i].name);
-                  itemStates[key] = { actual: 0 };
-                  delete restockStatus[key];
-                }
-              }
             }
           }
         }
@@ -3195,11 +3275,13 @@
 
           // Restore saved state: try JotForm value first, then localStorage
           var saved = null;
+          var isLocalRestore = false;
           if (data.value) {
             try { saved = JSON.parse(data.value); } catch (e) {}
           }
           if (!saved) {
             saved = loadState();
+            if (saved) isLocalRestore = true;
           }
           if (saved) {
             // Decode HTML entities that Jotform may have injected into keys
@@ -3242,9 +3324,11 @@
           // Auto-break any seals past the review day
           autoBreakOverdueSeals();
 
-          // Clear item quantities for unsealed areas — only sealed area
-          // counts should persist across sessions.
-          clearUnsealedItemStates();
+          // Clear item quantities for unsealed areas only on fresh sessions
+          // (not same-device refreshes where the user is mid-checklist).
+          if (!isLocalRestore) {
+            clearUnsealedItemStates();
+          }
 
           buildUI();
 
