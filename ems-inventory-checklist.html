@@ -1232,6 +1232,8 @@
     var areaParent = {}; // childAreaName -> parentAreaName
     var brokenSeals = []; // [{ area, reason, taggedDate, brokenTimestamp }]
     var stateReady = false; // true after initial state load is complete
+    var expandedArea = null; // currently expanded area name (standalone or child)
+    var expandedGroup = null; // currently expanded parent group name
 
     // =====================================================
     // LOCAL PERSISTENCE (survives across form sessions)
@@ -1983,14 +1985,83 @@
 
       updateAllStatuses();
       updateSummary();
+
+      // Restore expanded state after DOM rebuild
+      if (expandedGroup) {
+        var groupDiv = document.getElementById('area_group_' + expandedGroup.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (groupDiv) {
+          if (isGroupComplete(expandedGroup)) {
+            expandedGroup = null;
+            expandedArea = null;
+          } else {
+            groupDiv.classList.add('expanded');
+
+            if (expandedArea) {
+              var childDiv = document.getElementById('area_' + expandedArea.replace(/[^a-zA-Z0-9]/g, '_'));
+              if (childDiv && groupDiv.contains(childDiv)) {
+                if (taggedAreas[expandedArea] || (INVENTORY[expandedArea] && isAreaAllOk(expandedArea))) {
+                  // Current child is done — advance to next incomplete child
+                  var children = areaHierarchy[expandedGroup] || [];
+                  var nextChild = null;
+                  for (var nc = 0; nc < children.length; nc++) {
+                    if (!taggedAreas[children[nc]] && INVENTORY[children[nc]] && !isAreaAllOk(children[nc])) {
+                      nextChild = children[nc]; break;
+                    }
+                  }
+                  if (nextChild) {
+                    expandedArea = nextChild;
+                    var nextDiv = document.getElementById('area_' + nextChild.replace(/[^a-zA-Z0-9]/g, '_'));
+                    if (nextDiv) nextDiv.classList.add('expanded');
+                  } else {
+                    expandedArea = null;
+                  }
+                } else {
+                  childDiv.classList.add('expanded');
+                }
+              }
+            }
+          }
+        }
+      } else if (expandedArea) {
+        var areaDiv = document.getElementById('area_' + expandedArea.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (areaDiv) {
+          // Keep open if area still has work to do (items unchecked, or sealable but not yet sealed)
+          var stillHasWork = !taggedAreas[expandedArea] && (!isAreaAllOk(expandedArea) || (sealableAreas[expandedArea] && isAreaSealable(expandedArea)));
+          if (stillHasWork) {
+            areaDiv.classList.add('expanded');
+          } else {
+            expandedArea = null;
+          }
+        }
+      }
     }
-    
-    // =====================================================
-    // INTERACTIONS
-    // =====================================================
+
+    // Check if a parent group is fully complete (all children sealed/ok, parent items ok/sealed)
+    function isGroupComplete(groupName) {
+      // Parent sealed means everything is done
+      if (taggedAreas[groupName]) return true;
+
+      var children = areaHierarchy[groupName] || [];
+      for (var i = 0; i < children.length; i++) {
+        if (!INVENTORY[children[i]]) continue;
+        if (!taggedAreas[children[i]] && !isAreaAllOk(children[i])) return false;
+      }
+      // Check parent's own items
+      if (INVENTORY[groupName] && !isAreaAllOk(groupName)) return false;
+      // If sealable and everything is ready to seal but not sealed yet, not complete
+      if (sealableAreas[groupName] && isAreaSealable(groupName)) return false;
+      return true;
+    }
     
     function toggleArea(areaDiv, isChild) {
       var wasExpanded = areaDiv.classList.contains('expanded');
+      // Extract area name from the div's id
+      var areaName = null;
+      for (var name in INVENTORY) {
+        if (areaDiv.id === 'area_' + name.replace(/[^a-zA-Z0-9]/g, '_')) {
+          areaName = name; break;
+        }
+      }
       
       if (isChild) {
         // Child areas within a parent group: only collapse sibling children
@@ -2009,14 +2080,24 @@
       // If it wasn't expanded, open it and scroll into view
       if (!wasExpanded) {
         areaDiv.classList.add('expanded');
+        expandedArea = areaName;
         setTimeout(function() {
           areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 50);
+      } else {
+        expandedArea = null;
       }
     }
 
     function toggleAreaGroup(groupDiv) {
       var wasExpanded = groupDiv.classList.contains('expanded');
+      // Extract group name from the div's id
+      var groupName = null;
+      for (var name in areaHierarchy) {
+        if (groupDiv.id === 'area_group_' + name.replace(/[^a-zA-Z0-9]/g, '_')) {
+          groupName = name; break;
+        }
+      }
 
       // Close all top-level groups and standalone areas
       var allGroups = document.querySelectorAll('.areas-container > .area-group');
@@ -2035,9 +2116,10 @@
 
       if (!wasExpanded) {
         groupDiv.classList.add('expanded');
-        setTimeout(function() {
-          groupDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 50);
+        expandedGroup = groupName;
+      } else {
+        expandedGroup = null;
+        expandedArea = null;
       }
     }
     
