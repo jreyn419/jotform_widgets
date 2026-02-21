@@ -1271,7 +1271,7 @@
       if (!formID || !apiKey) { callback(null); return; }
       var url = apiBase + '/form/' + encodeURIComponent(formID)
               + '/submissions?apiKey=' + encodeURIComponent(apiKey)
-              + '&limit=1&orderby=id';
+              + '&limit=1&orderby=id&direction=desc';
       try {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
