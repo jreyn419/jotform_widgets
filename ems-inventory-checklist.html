@@ -1268,39 +1268,65 @@
     // seals persist across devices and browsers.  Requires the form admin to
     // add a "jotformApiKey" widget setting (read-only API key is sufficient).
     function fetchLatestSealState(apiBase, formID, apiKey, qid, callback) {
-      if (!formID || !apiKey) { callback(null); return; }
+      if (!formID || !apiKey) {
+        console.warn('[SEAL-DIAG] fetchLatestSealState ABORTED: formID=' + formID + ', apiKey=' + (apiKey ? 'present(' + apiKey.substring(0,6) + '...)' : 'null'));
+        callback(null); return;
+      }
       var url = apiBase + '/form/' + encodeURIComponent(formID)
               + '/submissions?apiKey=' + encodeURIComponent(apiKey)
               + '&limit=1&orderby=id&direction=desc';
+      console.log('[SEAL-DIAG] Fetching: ' + url.replace(apiKey, apiKey.substring(0,6) + '...'));
       try {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.timeout = 5000;
         xhr.onload = function () {
-          if (xhr.status !== 200) { callback(null); return; }
+          if (xhr.status !== 200) {
+            console.warn('[SEAL-DIAG] API returned status ' + xhr.status + ': ' + xhr.responseText.substring(0, 200));
+            callback(null); return;
+          }
           try {
             var resp = JSON.parse(xhr.responseText);
-            if (!resp.content || resp.content.length === 0) { callback(null); return; }
-            var answers = resp.content[0].answers || {};
+            console.log('[SEAL-DIAG] API response: resultSet count=' + (resp.resultSet ? resp.resultSet.count : 'N/A') + ', content length=' + (resp.content ? resp.content.length : 0));
+            if (!resp.content || resp.content.length === 0) {
+              console.warn('[SEAL-DIAG] No submissions found');
+              callback(null); return;
+            }
+            var submission = resp.content[0];
+            var answers = submission.answers || {};
+            var answerKeys = Object.keys(answers);
+            console.log('[SEAL-DIAG] Latest submission id=' + submission.id + ', created=' + submission.created_at + ', answer keys=' + answerKeys.join(','));
             var raw = null;
 
             // Prefer the exact question id when available.
             if (qid && answers[qid]) {
               raw = answers[qid].answer;
+              console.log('[SEAL-DIAG] Found answer via qid=' + qid + ', type=' + typeof raw + ', length=' + (raw ? raw.length : 0));
+            } else {
+              console.log('[SEAL-DIAG] qid lookup miss: qid=' + qid + ', has answer=' + !!(qid && answers[qid]));
             }
             // Fallback: scan every answer for one that looks like our widget value.
             if (!raw) {
+              var scanned = 0;
               for (var k in answers) {
                 var a = answers[k].answer;
+                scanned++;
                 if (typeof a === 'string' && a.indexOf('taggedAreas') !== -1) {
-                  raw = a; break;
+                  raw = a;
+                  console.log('[SEAL-DIAG] Fallback scan hit on key=' + k + ', length=' + raw.length);
+                  break;
                 }
+              }
+              if (!raw) {
+                console.warn('[SEAL-DIAG] Fallback scan found nothing in ' + scanned + ' answers. Answer types: ' + answerKeys.map(function(k) { return k + ':' + typeof answers[k].answer + '(' + (answers[k].answer ? String(answers[k].answer).substring(0,50) : 'null') + ')'; }).join(' | '));
               }
             }
             if (!raw) { callback(null); return; }
 
             var parsed = JSON.parse(raw);
-            if (parsed && parsed.taggedAreas && Object.keys(parsed.taggedAreas).length > 0) {
+            var taggedKeys = parsed && parsed.taggedAreas ? Object.keys(parsed.taggedAreas) : [];
+            console.log('[SEAL-DIAG] Parsed submission value: taggedAreas keys=' + taggedKeys.join(',') + ', timestamp=' + parsed.timestamp + ', brokenSeals=' + (parsed.brokenSeals ? parsed.brokenSeals.length : 0));
+            if (parsed && parsed.taggedAreas && taggedKeys.length > 0) {
               callback({
                 taggedAreas: parsed.taggedAreas,
                 brokenSeals: parsed.brokenSeals || [],
@@ -1308,13 +1334,16 @@
               });
               return;
             }
-          } catch (e) {}
+            console.warn('[SEAL-DIAG] Parsed OK but taggedAreas empty');
+          } catch (e) {
+            console.error('[SEAL-DIAG] Parse error: ' + e.message);
+          }
           callback(null);
         };
-        xhr.onerror = function () { callback(null); };
-        xhr.ontimeout = function () { callback(null); };
+        xhr.onerror = function () { console.error('[SEAL-DIAG] XHR network error'); callback(null); };
+        xhr.ontimeout = function () { console.error('[SEAL-DIAG] XHR timeout (5s)'); callback(null); };
         xhr.send();
-      } catch (e) { callback(null); }
+      } catch (e) { console.error('[SEAL-DIAG] XHR setup error: ' + e.message); callback(null); }
     }
 
     // =====================================================
@@ -2579,22 +2608,30 @@
           // Requires the form admin to set a "jotformApiKey" widget setting
           // (a read-only JotForm API key is sufficient).
           var apiKey = JFCustomWidget.getWidgetSetting('jotformApiKey');
+          console.log('[SEAL-DIAG] Init: apiKey=' + (apiKey ? 'present(' + apiKey.substring(0,6) + '...)' : 'NOT SET'));
           if (apiKey) {
             var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
             var fp = getFormParams();
             var formID = fp.formID || (data && data.formID) || null;
             var qid = fp.qid || null;
+            console.log('[SEAL-DIAG] Init: formID=' + formID + ', qid=' + qid + ', apiBase=' + apiBase);
             var localTs = 0;
             var localSeal = loadSealState();
             if (localSeal) localTs = localSeal.timestamp || 0;
+            console.log('[SEAL-DIAG] Init: localSeal timestamp=' + localTs + ', localSeal taggedAreas=' + (localSeal && localSeal.taggedAreas ? Object.keys(localSeal.taggedAreas).join(',') : 'none'));
 
             fetchLatestSealState(apiBase, formID, apiKey, qid, function(remote) {
+              console.log('[SEAL-DIAG] Callback: remote=' + (remote ? 'present' : 'null') + ', remote timestamp=' + (remote ? remote.timestamp : 'N/A') + ', localTs=' + localTs);
+              if (remote && remote.taggedAreas) {
+                console.log('[SEAL-DIAG] Callback: remote taggedAreas=' + Object.keys(remote.taggedAreas).join(',') + ', will apply=' + (remote.timestamp > localTs));
+              }
               if (remote && remote.taggedAreas && remote.timestamp > localTs) {
                 taggedAreas = remote.taggedAreas;
                 if (remote.brokenSeals) brokenSeals = remote.brokenSeals;
                 buildUI();
                 saveSealState();
                 resizeWidget();
+                console.log('[SEAL-DIAG] Remote seal state APPLIED');
               }
             });
           }
