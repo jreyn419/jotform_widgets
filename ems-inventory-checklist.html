@@ -2600,6 +2600,12 @@
 
           buildUI();
 
+          // Capture the seal timestamp BEFORE saveState() overwrites it,
+          // so the API fetch comparison uses the real prior value.
+          var preSaveSealTs = 0;
+          var preSaveSeal = loadSealState();
+          if (preSaveSeal) preSaveSealTs = preSaveSeal.timestamp || 0;
+
           stateReady = true;
           saveState();
           resizeWidget();
@@ -2615,10 +2621,9 @@
             var formID = fp.formID || (data && data.formID) || null;
             var qid = fp.qid || null;
             console.log('[SEAL-DIAG] Init: formID=' + formID + ', qid=' + qid + ', apiBase=' + apiBase);
-            var localTs = 0;
-            var localSeal = loadSealState();
-            if (localSeal) localTs = localSeal.timestamp || 0;
-            console.log('[SEAL-DIAG] Init: localSeal timestamp=' + localTs + ', localSeal taggedAreas=' + (localSeal && localSeal.taggedAreas ? Object.keys(localSeal.taggedAreas).join(',') : 'none'));
+            // Use the timestamp from BEFORE saveState() wrote a fresh one
+            var localTs = preSaveSealTs;
+            console.log('[SEAL-DIAG] Init: localSeal timestamp (pre-save)=' + localTs + ', localSeal taggedAreas=' + (preSaveSeal && preSaveSeal.taggedAreas ? Object.keys(preSaveSeal.taggedAreas).join(',') : 'none'));
 
             fetchLatestSealState(apiBase, formID, apiKey, qid, function(remote) {
               console.log('[SEAL-DIAG] Callback: remote=' + (remote ? 'present' : 'null') + ', remote timestamp=' + (remote ? remote.timestamp : 'N/A') + ', localTs=' + localTs);
