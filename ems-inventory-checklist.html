@@ -1324,7 +1324,27 @@
             if (!raw) { callback(null); return; }
 
             var parsed = JSON.parse(raw);
-            var taggedKeys = parsed && parsed.taggedAreas ? Object.keys(parsed.taggedAreas) : [];
+
+            // Jotform may HTML-entity-encode submission values (e.g. -> becomes -&gt;).
+            // Decode so that keys match the original inventory area names.
+            var decodeEntities = function(str) {
+              var txt = document.createElement('textarea');
+              txt.innerHTML = str;
+              return txt.value;
+            };
+            var decodeParsedKeys = function(obj) {
+              if (!obj || typeof obj !== 'object') return obj;
+              var decoded = {};
+              for (var k in obj) {
+                decoded[decodeEntities(k)] = obj[k];
+              }
+              return decoded;
+            };
+            if (parsed.taggedAreas) parsed.taggedAreas = decodeParsedKeys(parsed.taggedAreas);
+            if (parsed.itemStates) parsed.itemStates = decodeParsedKeys(parsed.itemStates);
+            if (parsed.restockStatus) parsed.restockStatus = decodeParsedKeys(parsed.restockStatus);
+
+            var taggedKeys = parsed.taggedAreas ? Object.keys(parsed.taggedAreas) : [];
             console.log('[SEAL-DIAG] Parsed submission value: taggedAreas keys=' + taggedKeys.join(',') + ', timestamp=' + parsed.timestamp + ', brokenSeals=' + (parsed.brokenSeals ? parsed.brokenSeals.length : 0));
             if (parsed && parsed.taggedAreas && taggedKeys.length > 0) {
               callback({
@@ -2569,6 +2589,13 @@
             saved = loadState();
           }
           if (saved) {
+            // Decode HTML entities that Jotform may have injected into keys
+            var _decEnt = function(s) { var t = document.createElement('textarea'); t.innerHTML = s; return t.value; };
+            var _decKeys = function(o) { if (!o || typeof o !== 'object') return o; var d = {}; for (var k in o) d[_decEnt(k)] = o[k]; return d; };
+            if (saved.taggedAreas) saved.taggedAreas = _decKeys(saved.taggedAreas);
+            if (saved.itemStates) saved.itemStates = _decKeys(saved.itemStates);
+            if (saved.restockStatus) saved.restockStatus = _decKeys(saved.restockStatus);
+
             if (saved.itemStates) {
               itemStates = saved.itemStates;
             }
