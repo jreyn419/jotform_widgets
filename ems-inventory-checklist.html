@@ -1246,11 +1246,81 @@
         } catch (e) {}
       }
     }
-    
+
+    // =====================================================
+    // CROSS-DEVICE PERSISTENCE (JotForm Submissions API)
+    // =====================================================
+
+    // Extract formID and qid from the widget iframe URL.
+    function getFormParams() {
+      var params = { formID: null, qid: null };
+      try {
+        var src = window.location.href || '';
+        var fMatch = src.match(/[?&]formID=([^&]+)/);
+        var qMatch = src.match(/[?&]qid=([^&]+)/);
+        if (fMatch) params.formID = fMatch[1];
+        if (qMatch) params.qid = qMatch[1];
+      } catch (e) {}
+      return params;
+    }
+
+    // Fetch the sealed state from the most recent JotForm submission so that
+    // seals persist across devices and browsers.  Requires the form admin to
+    // add a "jotformApiKey" widget setting (read-only API key is sufficient).
+    function fetchLatestSealState(apiBase, formID, apiKey, qid, callback) {
+      if (!formID || !apiKey) { callback(null); return; }
+      var url = apiBase + '/form/' + encodeURIComponent(formID)
+              + '/submissions?apiKey=' + encodeURIComponent(apiKey)
+              + '&limit=1&orderby=id';
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.timeout = 5000;
+        xhr.onload = function () {
+          if (xhr.status !== 200) { callback(null); return; }
+          try {
+            var resp = JSON.parse(xhr.responseText);
+            if (!resp.content || resp.content.length === 0) { callback(null); return; }
+            var answers = resp.content[0].answers || {};
+            var raw = null;
+
+            // Prefer the exact question id when available.
+            if (qid && answers[qid]) {
+              raw = answers[qid].answer;
+            }
+            // Fallback: scan every answer for one that looks like our widget value.
+            if (!raw) {
+              for (var k in answers) {
+                var a = answers[k].answer;
+                if (typeof a === 'string' && a.indexOf('taggedAreas') !== -1) {
+                  raw = a; break;
+                }
+              }
+            }
+            if (!raw) { callback(null); return; }
+
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.taggedAreas && Object.keys(parsed.taggedAreas).length > 0) {
+              callback({
+                taggedAreas: parsed.taggedAreas,
+                brokenSeals: parsed.brokenSeals || [],
+                timestamp: parsed.timestamp || 0
+              });
+              return;
+            }
+          } catch (e) {}
+          callback(null);
+        };
+        xhr.onerror = function () { callback(null); };
+        xhr.ontimeout = function () { callback(null); };
+        xhr.send();
+      } catch (e) { callback(null); }
+    }
+
     // =====================================================
     // PARSE INVENTORY FROM SETTINGS
     // =====================================================
-    
+
     function parseInventory(text) {
       var lines = text.split("\n");
       var result = {};
@@ -2504,6 +2574,30 @@
           stateReady = true;
           saveState();
           resizeWidget();
+
+          // ---- Cross-device: fetch sealed state from most recent submission ----
+          // Requires the form admin to set a "jotformApiKey" widget setting
+          // (a read-only JotForm API key is sufficient).
+          var apiKey = JFCustomWidget.getWidgetSetting('jotformApiKey');
+          if (apiKey) {
+            var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
+            var fp = getFormParams();
+            var formID = fp.formID || (data && data.formID) || null;
+            var qid = fp.qid || null;
+            var localTs = 0;
+            var localSeal = loadSealState();
+            if (localSeal) localTs = localSeal.timestamp || 0;
+
+            fetchLatestSealState(apiBase, formID, apiKey, qid, function(remote) {
+              if (remote && remote.taggedAreas && remote.timestamp > localTs) {
+                taggedAreas = remote.taggedAreas;
+                if (remote.brokenSeals) brokenSeals = remote.brokenSeals;
+                buildUI();
+                saveSealState();
+                resizeWidget();
+              }
+            });
+          }
         });
 
         JFCustomWidget.subscribe('submit', function() {
