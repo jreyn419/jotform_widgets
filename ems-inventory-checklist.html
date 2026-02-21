@@ -441,6 +441,96 @@
       background: #fff5f5;
     }
     
+    .checklist-item.restocked {
+      background: #f3e8ff;
+    }
+    
+    .checklist-item.restocked .item-required {
+      color: #7c3aed;
+      background: #ede9fe;
+    }
+    
+    .restocked-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #7c3aed;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    
+    .restocked-tag .restocked-qty {
+      opacity: 0.9;
+    }
+    
+    .restocked-tag .restocked-remove {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      margin-left: 2px;
+    }
+    
+    .restocked-tag .restocked-remove:hover {
+      background: rgba(255,255,255,0.35);
+    }
+    
+    .checklist-item.out-of-stock-item {
+      background: #fef2f2;
+    }
+    
+    .checklist-item.out-of-stock-item .item-required {
+      color: #991b1b;
+      background: #fecaca;
+    }
+    
+    .out-of-stock-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #6c757d;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    
+    .out-of-stock-tag .out-of-stock-remove {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      margin-left: 2px;
+    }
+    
+    .out-of-stock-tag .out-of-stock-remove:hover {
+      background: rgba(255,255,255,0.35);
+    }
+    
     .item-checkbox {
       width: 22px;
       height: 22px;
@@ -1776,10 +1866,15 @@
       itemDiv.className = 'checklist-item';
       itemDiv.id = 'item_' + key.replace(/[^a-zA-Z0-9]/g, '_');
 
+      var actual = itemStates[key].actual;
+      var status = restockStatus[key] || {};
+      var isRestocked = status.restocked && actual < item.required;
+      var isOutOfStock = status.outOfStock && actual < item.required;
+
       var checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.className = 'item-checkbox';
-      checkbox.checked = itemStates[key].actual >= item.required;
+      checkbox.checked = actual >= item.required || isRestocked || isOutOfStock;
       checkbox.onchange = (function(k, req) {
         return function() { setItemValue(k, this.checked ? req : 0); };
       })(key, item.required);
@@ -1792,44 +1887,116 @@
       reqLabel.className = 'item-required';
       reqLabel.textContent = '×' + item.required;
 
-      var stepperDiv = document.createElement('div');
-      stepperDiv.className = 'qty-stepper';
-
-      var decBtn = document.createElement('button');
-      decBtn.className = 'qty-btn';
-      decBtn.textContent = '-';
-      decBtn.onclick = (function(k) {
-        return function() { adjustItem(k, -1); };
-      })(key);
-
-      var valueInput = document.createElement('input');
-      valueInput.type = 'number';
-      valueInput.className = 'qty-value';
-      valueInput.value = itemStates[key].actual;
-      valueInput.min = '0';
-      valueInput.max = item.required;
-      valueInput.id = 'input_' + key.replace(/[^a-zA-Z0-9]/g, '_');
-      valueInput.onchange = (function(k) {
-        return function() { setItemValue(k, parseInt(this.value) || 0); };
-      })(key);
-
-      var incBtn = document.createElement('button');
-      incBtn.className = 'qty-btn';
-      incBtn.textContent = '+';
-      incBtn.onclick = (function(k) {
-        return function() { adjustItem(k, 1); };
-      })(key);
-
-      stepperDiv.appendChild(decBtn);
-      stepperDiv.appendChild(valueInput);
-      stepperDiv.appendChild(incBtn);
-
       itemDiv.appendChild(checkbox);
       itemDiv.appendChild(infoDiv);
       itemDiv.appendChild(reqLabel);
-      itemDiv.appendChild(stepperDiv);
+
+      if (isRestocked) {
+        // Show restocked tag instead of stepper
+        var shortage = item.required - actual;
+        var restockedTag = document.createElement('div');
+        restockedTag.className = 'restocked-tag';
+        restockedTag.innerHTML = '<span>Restocked</span><span class="restocked-qty">(×' + shortage + ')</span>';
+        
+        var removeBtn = document.createElement('button');
+        removeBtn.className = 'restocked-remove';
+        removeBtn.innerHTML = '×';
+        removeBtn.onclick = (function(k) {
+          return function(e) {
+            e.stopPropagation();
+            removeRestockedFromChecklist(k);
+          };
+        })(key);
+        restockedTag.appendChild(removeBtn);
+        
+        itemDiv.appendChild(restockedTag);
+        itemDiv.classList.add('restocked');
+      } else if (isOutOfStock) {
+        // Show out-of-stock tag instead of stepper
+        var shortage = item.required - actual;
+        var outOfStockTag = document.createElement('div');
+        outOfStockTag.className = 'out-of-stock-tag';
+        outOfStockTag.innerHTML = '<span>Out of Stock</span><span class="restocked-qty">(×' + shortage + ')</span>';
+        
+        var removeBtn = document.createElement('button');
+        removeBtn.className = 'out-of-stock-remove';
+        removeBtn.innerHTML = '×';
+        removeBtn.onclick = (function(k) {
+          return function(e) {
+            e.stopPropagation();
+            removeRestockedFromChecklist(k);
+          };
+        })(key);
+        outOfStockTag.appendChild(removeBtn);
+        
+        itemDiv.appendChild(outOfStockTag);
+        itemDiv.classList.add('out-of-stock-item');
+      } else {
+        // Show normal stepper
+        var stepperDiv = document.createElement('div');
+        stepperDiv.className = 'qty-stepper';
+
+        var decBtn = document.createElement('button');
+        decBtn.className = 'qty-btn';
+        decBtn.textContent = '-';
+        decBtn.onclick = (function(k) {
+          return function() { adjustItem(k, -1); };
+        })(key);
+
+        var valueInput = document.createElement('input');
+        valueInput.type = 'number';
+        valueInput.className = 'qty-value';
+        valueInput.value = actual;
+        valueInput.min = '0';
+        valueInput.max = item.required;
+        valueInput.id = 'input_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+        valueInput.onchange = (function(k) {
+          return function() { setItemValue(k, parseInt(this.value) || 0); };
+        })(key);
+
+        var incBtn = document.createElement('button');
+        incBtn.className = 'qty-btn';
+        incBtn.textContent = '+';
+        incBtn.onclick = (function(k) {
+          return function() { adjustItem(k, 1); };
+        })(key);
+
+        stepperDiv.appendChild(decBtn);
+        stepperDiv.appendChild(valueInput);
+        stepperDiv.appendChild(incBtn);
+        itemDiv.appendChild(stepperDiv);
+
+        // Apply appropriate class based on state
+        if (actual >= item.required) {
+          itemDiv.classList.add('checked');
+        } else if (actual > 0) {
+          itemDiv.classList.add('short');
+        } else {
+          itemDiv.classList.add('missing');
+        }
+      }
 
       return itemDiv;
+    }
+
+    // Remove restocked designation from checklist
+    function removeRestockedFromChecklist(key) {
+      delete restockStatus[key];
+      updateAllStatuses();
+      updateSummary();
+      // Rebuild the affected item row
+      var parts = key.split('::');
+      var areaName = parts[0];
+      var catName = parts[1];
+      var itemName = parts[2];
+      var item = findItem(areaName, catName, itemName);
+      if (item) {
+        var itemDiv = document.getElementById('item_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (itemDiv) {
+          var newRow = buildItemRow(areaName, catName, item);
+          itemDiv.parentNode.replaceChild(newRow, itemDiv);
+        }
+      }
     }
 
     function buildUI() {
@@ -2573,9 +2740,17 @@
 
                 var headerRect = nextHeader.getBoundingClientRect();
                 var parentRect = scrollParent.getBoundingClientRect();
-                var offset = 55; // sticky area header + padding
-                var targetScroll = scrollParent.scrollTop + (headerRect.top - parentRect.top) - offset;
-                scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+                var stickyOffset = 55; // sticky area header + padding
+                
+                // Calculate where the header is relative to the visible area
+                var headerTopInView = headerRect.top - parentRect.top;
+                
+                // Only scroll if the header is not already in a good viewing position
+                // "Good position" = header is between stickyOffset and stickyOffset + 100px from top
+                if (headerTopInView < stickyOffset || headerTopInView > stickyOffset + 100) {
+                  var targetScroll = scrollParent.scrollTop + headerTopInView - stickyOffset;
+                  scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+                }
               });
             });
           }
@@ -3069,7 +3244,9 @@
           for (var i = 0; i < items.length; i++) {
             var key = generateKey(areaName, catName, items[i].name);
             var actual = (itemStates[key] || { actual: 0 }).actual;
-            if (actual >= items[i].required) {
+            var status = restockStatus[key] || {};
+            var isComplete = actual >= items[i].required || ((status.restocked || status.outOfStock) && actual < items[i].required);
+            if (isComplete) {
               catOk++;
               areaOk++;
             }
@@ -3091,7 +3268,9 @@
                   for (var si = 0; si < subItems.length; si++) {
                     var subKey = generateKey(areaName, subCat, subItems[si].name);
                     var subActual = (itemStates[subKey] || { actual: 0 }).actual;
-                    if (subActual >= subItems[si].required) parentOk++;
+                    var subStatus = restockStatus[subKey] || {};
+                    var subComplete = subActual >= subItems[si].required || ((subStatus.restocked || subStatus.outOfStock) && subActual < subItems[si].required);
+                    if (subComplete) parentOk++;
                     parentTotal++;
                   }
                 }
@@ -3294,10 +3473,10 @@
       
       restockCount.textContent = unhandledCount;
       
-      if (totalIssues === 0) {
+      if (totalIssues === 0 || unhandledCount === 0) {
         restockBtn.classList.add('all-ok');
         restockBtn.querySelector('.restock-icon').textContent = '✓';
-        restockBtn.querySelector('span:nth-child(2)').textContent = 'All Stocked';
+        restockBtn.querySelector('span:nth-child(2)').textContent = totalIssues === 0 ? 'All Stocked' : 'All Handled';
       } else {
         restockBtn.classList.remove('all-ok');
         restockBtn.querySelector('.restock-icon').textContent = '!';
@@ -3413,7 +3592,25 @@
     
     function markRestocked(key) {
       restockStatus[key] = { restocked: true, outOfStock: false, reason: '' };
+      updateChecklistItem(key);
+      updateAllStatuses();
       updateSummary();
+    }
+    
+    // Update a single checklist item in the main view
+    function updateChecklistItem(key) {
+      var parts = key.split('::');
+      var areaName = parts[0];
+      var catName = parts[1];
+      var itemName = parts[2];
+      var item = findItem(areaName, catName, itemName);
+      if (item) {
+        var itemDiv = document.getElementById('item_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (itemDiv) {
+          var newRow = buildItemRow(areaName, catName, item);
+          itemDiv.parentNode.replaceChild(newRow, itemDiv);
+        }
+      }
     }
     
     function openOutOfStockDialog(key, name) {
@@ -3471,7 +3668,9 @@
         }
         if (reason) {
           restockStatus[currentOutOfStockKey] = { restocked: false, outOfStock: true, reason: reason };
+          updateChecklistItem(currentOutOfStockKey);
           closeOutOfStockDialog();
+          updateAllStatuses();
           updateSummary();
         }
       }
@@ -3479,11 +3678,14 @@
     
     function undoRestock(key) {
       delete restockStatus[key];
+      updateChecklistItem(key);
+      updateAllStatuses();
       updateSummary();
     }
     
     function restockAllItems() {
-      // Get all shortage keys
+      // Get all shortage keys and mark them restocked
+      var restockedKeys = [];
       for (var areaName in INVENTORY) {
         if (taggedAreas[areaName]) continue; // Skip sealed areas
         for (var catName in INVENTORY[areaName]) {
@@ -3498,11 +3700,17 @@
               // Only mark as restocked if not already marked as out of stock
               if (!status || !status.outOfStock) {
                 restockStatus[key] = { restocked: true, outOfStock: false, reason: '' };
+                restockedKeys.push(key);
               }
             }
           }
         }
       }
+      // Update all affected checklist items
+      for (var k = 0; k < restockedKeys.length; k++) {
+        updateChecklistItem(restockedKeys[k]);
+      }
+      updateAllStatuses();
       updateSummary();
       // After restocking all, check if everything is complete
       if (isEverythingComplete()) {
