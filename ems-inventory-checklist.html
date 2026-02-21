@@ -1961,6 +1961,7 @@
             catCheckbox.onclick = (function(area, cat, subs) {
               return function(e) {
                 e.stopPropagation();
+                var isChecked = this.checked;
                 // Batch: set all items for parent category + subcategories
                 var allCats = [cat].concat(subs);
                 for (var c = 0; c < allCats.length; c++) {
@@ -1968,13 +1969,24 @@
                   if (!catItems) continue;
                   for (var i = 0; i < catItems.length; i++) {
                     var key = generateKey(area, allCats[c], catItems[i].name);
-                    setItemValue(key, this.checked ? catItems[i].required : 0, true);
+                    setItemValue(key, isChecked ? catItems[i].required : 0, true);
                   }
                 }
+
+                // Explicitly sync all subcategory checkboxes
+                for (var s = 0; s < subs.length; s++) {
+                  var subStatusId = 'cat_status_' + generateKey(area, subs[s], '').replace(/[^a-zA-Z0-9]/g, '_');
+                  var subStatusEl = document.getElementById(subStatusId);
+                  if (subStatusEl && subStatusEl.parentElement) {
+                    var subCb = subStatusEl.parentElement.querySelector('.category-checkbox');
+                    if (subCb) subCb.checked = isChecked;
+                  }
+                }
+
                 updateAllStatuses();
                 updateSummary();
 
-                if (this.checked) {
+                if (isChecked) {
                   autoCategoryAdvance(area, cat);
                 } else {
                   // Reopen so user can see unchecked items
