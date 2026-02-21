@@ -264,7 +264,7 @@
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded .subcategory-header {
-      top: 112px;
+      top: 127px;
       z-index: 8;
     }
 
@@ -1420,7 +1420,7 @@
 
     .area-section.expanded .subcategory-header {
       position: sticky;
-      top: 67px;
+      top: 82px;
       z-index: 8;
       margin-left: -10px;
       margin-right: -10px;
@@ -2782,7 +2782,7 @@
 
                 var headerRect = nextHeader.getBoundingClientRect();
                 var parentRect = scrollParent.getBoundingClientRect();
-                var stickyOffset = 55; // sticky area header + padding
+                var stickyOffset = 36; // area header height (sticky at -10px, so 45px - 10px + 1px border)
                 
                 // Calculate where the header is relative to the visible area
                 var headerTopInView = headerRect.top - parentRect.top;
