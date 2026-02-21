@@ -2106,6 +2106,110 @@
     // TAGGED AREA FUNCTIONS
     // =====================================================
 
+    // Clear item quantities for unsealed areas so they don't persist
+    function clearUnsealedItemStates() {
+      for (var areaName in INVENTORY) {
+        if (taggedAreas[areaName]) continue; // keep sealed area states
+        for (var catName in INVENTORY[areaName]) {
+          var items = INVENTORY[areaName][catName];
+          for (var i = 0; i < items.length; i++) {
+            var key = generateKey(areaName, catName, items[i].name);
+            delete itemStates[key];
+            delete restockStatus[key];
+          }
+        }
+      }
+    }
+
+    // Auto-break seals that are past the review day.
+    // Returns true if any seals were broken.
+    function autoBreakOverdueSeals() {
+      if (sealReviewDay <= 0) return false;
+      var broke = false;
+      // Collect names first to avoid mutating while iterating
+      var toBreak = [];
+      for (var areaName in taggedAreas) {
+        if (isReviewOverdue(taggedAreas[areaName].taggedTimestamp)) {
+          toBreak.push(areaName);
+        }
+      }
+      for (var i = 0; i < toBreak.length; i++) {
+        var areaName = toBreak[i];
+        var tagInfo = taggedAreas[areaName];
+        brokenSeals.push({
+          area: areaName,
+          reason: 'auto_review',
+          taggedDate: tagInfo ? tagInfo.taggedDate : null,
+          brokenTimestamp: Date.now()
+        });
+        delete taggedAreas[areaName];
+
+        // Reset items
+        if (INVENTORY[areaName]) {
+          for (var catName in INVENTORY[areaName]) {
+            var items = INVENTORY[areaName][catName];
+            for (var j = 0; j < items.length; j++) {
+              var key = generateKey(areaName, catName, items[j].name);
+              itemStates[key] = { actual: 0 };
+              delete restockStatus[key];
+            }
+          }
+        }
+
+        // If this is a parent, break all child seals too
+        if (areaHierarchy[areaName]) {
+          var children = areaHierarchy[areaName];
+          for (var c = 0; c < children.length; c++) {
+            var childName = children[c];
+            if (taggedAreas[childName]) {
+              brokenSeals.push({
+                area: childName,
+                reason: 'parent_auto_review',
+                taggedDate: taggedAreas[childName].taggedDate,
+                brokenTimestamp: Date.now()
+              });
+              delete taggedAreas[childName];
+              if (INVENTORY[childName]) {
+                for (var catName in INVENTORY[childName]) {
+                  var items = INVENTORY[childName][catName];
+                  for (var j = 0; j < items.length; j++) {
+                    var key = generateKey(childName, catName, items[j].name);
+                    itemStates[key] = { actual: 0 };
+                    delete restockStatus[key];
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // If this is a child, break parent seal too
+        if (areaParent[areaName] && taggedAreas[areaParent[areaName]]) {
+          var parentName = areaParent[areaName];
+          brokenSeals.push({
+            area: parentName,
+            reason: 'child_auto_review',
+            taggedDate: taggedAreas[parentName].taggedDate,
+            brokenTimestamp: Date.now()
+          });
+          delete taggedAreas[parentName];
+          if (INVENTORY[parentName]) {
+            for (var catName in INVENTORY[parentName]) {
+              var items = INVENTORY[parentName][catName];
+              for (var j = 0; j < items.length; j++) {
+                var key = generateKey(parentName, catName, items[j].name);
+                itemStates[key] = { actual: 0 };
+                delete restockStatus[key];
+              }
+            }
+          }
+        }
+
+        broke = true;
+      }
+      return broke;
+    }
+
     function isAreaAllOk(areaName) {
       if (!INVENTORY[areaName]) return true;
       for (var catName in INVENTORY[areaName]) {
@@ -3053,6 +3157,13 @@
             }
           }
 
+          // Auto-break any seals past the review day
+          autoBreakOverdueSeals();
+
+          // Clear item quantities for unsealed areas — only sealed area
+          // counts should persist across sessions.
+          clearUnsealedItemStates();
+
           buildUI();
 
           // Capture the seal timestamp BEFORE saveState() overwrites it,
@@ -3081,6 +3192,8 @@
               if (remote && remote.taggedAreas && remote.timestamp > localTs) {
                 taggedAreas = remote.taggedAreas;
                 if (remote.brokenSeals) brokenSeals = remote.brokenSeals;
+                autoBreakOverdueSeals();
+                clearUnsealedItemStates();
                 buildUI();
                 saveSealState();
                 resizeWidget();
@@ -3128,6 +3241,9 @@
             }
           }
         }
+
+        autoBreakOverdueSeals();
+        clearUnsealedItemStates();
 
         buildUI();
         stateReady = true;
