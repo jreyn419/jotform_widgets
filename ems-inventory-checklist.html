@@ -237,10 +237,11 @@
     }
     
     .category-checkbox {
-      width: 16px;
-      height: 16px;
+      width: 22px;
+      height: 22px;
       cursor: pointer;
       accent-color: #28a745;
+      flex-shrink: 0;
     }
     
     .category-status {
@@ -293,8 +294,29 @@
     }
     
     .item-required {
-      font-size: 11px;
-      color: #888;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      flex-shrink: 0;
+      background: #f0f0f0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    
+    .checklist-item.checked .item-required {
+      color: #28a745;
+      background: #e6f4ea;
+    }
+    
+    .checklist-item.short .item-required {
+      color: #b8860b;
+      background: #fff3cd;
+    }
+    
+    .checklist-item.missing .item-required {
+      color: #dc3545;
+      background: #fde8ea;
     }
     
     .qty-stepper {
@@ -1558,8 +1580,11 @@
 
       var infoDiv = document.createElement('div');
       infoDiv.className = 'item-info';
-      infoDiv.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>' +
-        '<div class="item-required">Need: ' + item.required + '</div>';
+      infoDiv.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>';
+
+      var reqLabel = document.createElement('span');
+      reqLabel.className = 'item-required';
+      reqLabel.textContent = '×' + item.required;
 
       var stepperDiv = document.createElement('div');
       stepperDiv.className = 'qty-stepper';
@@ -1595,6 +1620,7 @@
 
       itemDiv.appendChild(checkbox);
       itemDiv.appendChild(infoDiv);
+      itemDiv.appendChild(reqLabel);
       itemDiv.appendChild(stepperDiv);
 
       return itemDiv;
@@ -2132,6 +2158,11 @@
       }
       updateAllStatuses();
       updateSummary();
+
+      // Trigger auto-advance if we just checked everything
+      if (checked) {
+        autoCategoryAdvance(areaName, catName);
+      }
     }
     
     function setItemValue(key, value, skipUpdate) {
@@ -2271,11 +2302,18 @@
           var nextIcon = document.getElementById('cat_icon_' + nextKey.replace(/[^a-zA-Z0-9]/g, '_'));
           if (nextIcon) nextIcon.style.transform = 'rotate(90deg)';
 
-          // Scroll to it
+          // Scroll to it, accounting for sticky area header
           var nextHeader = nextItemsDiv ? nextItemsDiv.previousElementSibling : null;
           if (nextHeader) {
             setTimeout(function() {
-              nextHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              var container = document.getElementById('areasContainer');
+              if (container) {
+                var headerRect = nextHeader.getBoundingClientRect();
+                var containerRect = container.getBoundingClientRect();
+                var offset = 55; // sticky area header height + padding
+                var targetScroll = container.scrollTop + (headerRect.top - containerRect.top) - offset;
+                container.scrollTo({ top: targetScroll, behavior: 'smooth' });
+              }
             }, 100);
           }
           return;
