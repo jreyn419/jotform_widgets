@@ -3377,6 +3377,11 @@
       }
 
       saveState();
+
+      // Auto-show completion when everything is done and no restock needed
+      if (stateReady && shortages.length === 0 && isEverythingComplete()) {
+        showCompletionPopup();
+      }
     }
 
     function escapeHtml(text) {
