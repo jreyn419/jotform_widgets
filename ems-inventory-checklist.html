@@ -1988,6 +1988,7 @@
 
                 if (isChecked) {
                   autoCategoryAdvance(area, cat);
+                  checkForCompletion();
                 } else {
                   // Reopen so user can see unchecked items
                   var catKey = area + '::' + cat;
@@ -2400,6 +2401,7 @@
       if (checked) {
         // Trigger auto-advance if we just checked everything
         autoCategoryAdvance(areaName, catName);
+        checkForCompletion();
       } else {
         // Reopen the category so the user can see what was unchecked
         var catKey = areaName + '::' + catName;
@@ -2450,6 +2452,8 @@
         if (value >= (item ? item.required : 0)) {
           autoCategoryAdvance(areaName, catName);
         }
+
+        checkForCompletion();
       }
     }
 
@@ -3377,11 +3381,16 @@
       }
 
       saveState();
+    }
 
-      // Auto-show completion when everything is done and no restock needed
-      if (stateReady && shortages.length === 0 && isEverythingComplete()) {
+    // Check if all items are fully stocked and show completion popup
+    function checkForCompletion() {
+      if (!stateReady) return;
+      if (!isEverythingComplete()) return;
+      // Small delay so the last category collapse/scroll finishes first
+      setTimeout(function() {
         showCompletionPopup();
-      }
+      }, 300);
     }
 
     function escapeHtml(text) {
