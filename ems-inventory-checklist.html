@@ -50,6 +50,68 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       overflow: visible;
     }
+
+    /* Parent area group — contains child area-sections */
+    .area-group {
+      background: #eef2f5;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      overflow: visible;
+    }
+
+    .area-group > .area-header {
+      background: #dee4ea;
+      font-size: 15px;
+      border-radius: 8px;
+    }
+
+    .area-group > .area-header:hover {
+      background: #d0d8e0;
+    }
+
+    .area-group > .area-header.has-issues {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+    }
+
+    .area-group > .area-header.all-ok {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+    }
+
+    .area-group > .area-header.tagged {
+      background: #d1ecf1;
+      border-left: 4px solid #17a2b8;
+    }
+
+    .area-group.expanded > .area-header {
+      border-radius: 8px 8px 0 0;
+      position: sticky;
+      top: 0;
+      z-index: 11;
+      margin: 0 -10px;
+      width: calc(100% + 20px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .area-group > .area-group-content {
+      display: none;
+      padding: 8px;
+    }
+
+    .area-group.expanded > .area-group-content {
+      display: block;
+    }
+
+    .area-group > .area-group-content > .area-section {
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    .area-group.expanded > .area-group-content > .area-section.expanded > .area-header {
+      top: 45px;
+      z-index: 10;
+    }
     
     .area-header {
       display: flex;
@@ -1158,6 +1220,8 @@
     var categoryMeta = {}; // "area::category" -> { level: 0|1, parent: null|string }
     var collapsedCategories = {}; // "area::category" -> true if collapsed
     var sealableAreas = {}; // areaName -> true if area can be sealed
+    var areaHierarchy = {}; // parentAreaName -> [childAreaName, ...]
+    var areaParent = {}; // childAreaName -> parentAreaName
     var brokenSeals = []; // [{ area, reason, taggedDate, brokenTimestamp }]
     var stateReady = false; // true after initial state load is complete
 
@@ -1268,57 +1332,33 @@
     // seals persist across devices and browsers.  Requires the form admin to
     // add a "jotformApiKey" widget setting (read-only API key is sufficient).
     function fetchLatestSealState(apiBase, formID, apiKey, qid, callback) {
-      if (!formID || !apiKey) {
-        console.warn('[SEAL-DIAG] fetchLatestSealState ABORTED: formID=' + formID + ', apiKey=' + (apiKey ? 'present(' + apiKey.substring(0,6) + '...)' : 'null'));
-        callback(null); return;
-      }
+      if (!formID || !apiKey) { callback(null); return; }
       var url = apiBase + '/form/' + encodeURIComponent(formID)
               + '/submissions?apiKey=' + encodeURIComponent(apiKey)
               + '&limit=1&orderby=id&direction=desc';
-      console.log('[SEAL-DIAG] Fetching: ' + url.replace(apiKey, apiKey.substring(0,6) + '...'));
       try {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.timeout = 5000;
         xhr.onload = function () {
-          if (xhr.status !== 200) {
-            console.warn('[SEAL-DIAG] API returned status ' + xhr.status + ': ' + xhr.responseText.substring(0, 200));
-            callback(null); return;
-          }
+          if (xhr.status !== 200) { callback(null); return; }
           try {
             var resp = JSON.parse(xhr.responseText);
-            console.log('[SEAL-DIAG] API response: resultSet count=' + (resp.resultSet ? resp.resultSet.count : 'N/A') + ', content length=' + (resp.content ? resp.content.length : 0));
-            if (!resp.content || resp.content.length === 0) {
-              console.warn('[SEAL-DIAG] No submissions found');
-              callback(null); return;
-            }
-            var submission = resp.content[0];
-            var answers = submission.answers || {};
-            var answerKeys = Object.keys(answers);
-            console.log('[SEAL-DIAG] Latest submission id=' + submission.id + ', created=' + submission.created_at + ', answer keys=' + answerKeys.join(','));
+            if (!resp.content || resp.content.length === 0) { callback(null); return; }
+            var answers = resp.content[0].answers || {};
             var raw = null;
 
             // Prefer the exact question id when available.
             if (qid && answers[qid]) {
               raw = answers[qid].answer;
-              console.log('[SEAL-DIAG] Found answer via qid=' + qid + ', type=' + typeof raw + ', length=' + (raw ? raw.length : 0));
-            } else {
-              console.log('[SEAL-DIAG] qid lookup miss: qid=' + qid + ', has answer=' + !!(qid && answers[qid]));
             }
             // Fallback: scan every answer for one that looks like our widget value.
             if (!raw) {
-              var scanned = 0;
               for (var k in answers) {
                 var a = answers[k].answer;
-                scanned++;
                 if (typeof a === 'string' && a.indexOf('taggedAreas') !== -1) {
-                  raw = a;
-                  console.log('[SEAL-DIAG] Fallback scan hit on key=' + k + ', length=' + raw.length);
-                  break;
+                  raw = a; break;
                 }
-              }
-              if (!raw) {
-                console.warn('[SEAL-DIAG] Fallback scan found nothing in ' + scanned + ' answers. Answer types: ' + answerKeys.map(function(k) { return k + ':' + typeof answers[k].answer + '(' + (answers[k].answer ? String(answers[k].answer).substring(0,50) : 'null') + ')'; }).join(' | '));
               }
             }
             if (!raw) { callback(null); return; }
@@ -1345,7 +1385,6 @@
             if (parsed.restockStatus) parsed.restockStatus = decodeParsedKeys(parsed.restockStatus);
 
             var taggedKeys = parsed.taggedAreas ? Object.keys(parsed.taggedAreas) : [];
-            console.log('[SEAL-DIAG] Parsed submission value: taggedAreas keys=' + taggedKeys.join(',') + ', timestamp=' + parsed.timestamp + ', brokenSeals=' + (parsed.brokenSeals ? parsed.brokenSeals.length : 0));
             if (parsed && parsed.taggedAreas && taggedKeys.length > 0) {
               callback({
                 taggedAreas: parsed.taggedAreas,
@@ -1354,16 +1393,13 @@
               });
               return;
             }
-            console.warn('[SEAL-DIAG] Parsed OK but taggedAreas empty');
-          } catch (e) {
-            console.error('[SEAL-DIAG] Parse error: ' + e.message);
-          }
+          } catch (e) {}
           callback(null);
         };
-        xhr.onerror = function () { console.error('[SEAL-DIAG] XHR network error'); callback(null); };
-        xhr.ontimeout = function () { console.error('[SEAL-DIAG] XHR timeout (5s)'); callback(null); };
+        xhr.onerror = function () { callback(null); };
+        xhr.ontimeout = function () { callback(null); };
         xhr.send();
-      } catch (e) { console.error('[SEAL-DIAG] XHR setup error: ' + e.message); callback(null); }
+      } catch (e) { callback(null); }
     }
 
     // =====================================================
@@ -1376,18 +1412,42 @@
       var currentArea = "Items";
       var currentCategory = "General";
       var currentTopCategory = "General";
+      var lastTopLevelArea = null; // Most recent non-nested Area Name
       categoryMeta = {};
       sealableAreas = {};
+      areaHierarchy = {};
+      areaParent = {};
 
       for (var i = 0; i < lines.length; i++) {
         var line = lines[i].trim();
         if (!line) continue;
 
-        // Check if it's an area (starts with "Area Name:" or similar pattern)
+        // Check for nested area: "> Area Name: X" — child of most recent top-level area
+        var nestedAreaMatch = line.match(/^>\s*Area Name:\s*(.+)/i);
+        if (nestedAreaMatch) {
+          currentArea = nestedAreaMatch[1].trim();
+          currentCategory = "General";
+          currentTopCategory = "General";
+          if (!result[currentArea]) {
+            result[currentArea] = {};
+          }
+          // Register as child of most recent top-level area
+          if (lastTopLevelArea) {
+            if (!areaHierarchy[lastTopLevelArea]) {
+              areaHierarchy[lastTopLevelArea] = [];
+            }
+            areaHierarchy[lastTopLevelArea].push(currentArea);
+            areaParent[currentArea] = lastTopLevelArea;
+          }
+          continue;
+        }
+
+        // Check if it's a top-level area (starts with "Area Name:")
         if (line.toLowerCase().indexOf('area name:') === 0) {
           currentArea = line.substring(10).trim();
           currentCategory = "General";
           currentTopCategory = "General";
+          lastTopLevelArea = currentArea;
           if (!result[currentArea]) {
             result[currentArea] = {};
           }
@@ -1453,6 +1513,20 @@
             result[currentArea][line] = [];
           }
           categoryMeta[currentArea + '::' + line] = { level: 0, parent: null };
+        }
+      }
+
+      // Clean up: remove empty parent areas from INVENTORY
+      // (parent areas that only serve as containers for children have no items)
+      for (var parentName in areaHierarchy) {
+        if (result[parentName]) {
+          var hasItems = false;
+          for (var cat in result[parentName]) {
+            if (result[parentName][cat].length > 0) { hasItems = true; break; }
+          }
+          if (!hasItems) {
+            delete result[parentName];
+          }
         }
       }
 
@@ -1533,31 +1607,35 @@
     function buildUI() {
       var container = document.getElementById('areasContainer');
       container.innerHTML = '';
-      
-      for (var areaName in INVENTORY) {
+
+      // Determine rendering order: parent groups first (with children inside),
+      // then standalone areas (not a child of any parent).
+      var rendered = {}; // track which areas have been rendered
+
+      // Helper: build a single area section (used for both standalone and child areas)
+      function buildAreaSection(areaName) {
         var areaDiv = document.createElement('div');
         areaDiv.className = 'area-section';
         areaDiv.id = 'area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
-        
+
         // Area header
         var headerDiv = document.createElement('div');
         headerDiv.className = 'area-header';
         headerDiv.innerHTML = '<span class="collapse-icon">▶</span>' +
           '<span class="area-title">' + escapeHtml(areaName) + '</span>' +
           '<span class="area-status" id="status_' + areaDiv.id + '">0/0</span>';
-        
-        headerDiv.onclick = (function(div) {
-          return function() { toggleArea(div); };
-        })(areaDiv);
-        
+
+        headerDiv.onclick = (function(div, isChild) {
+          return function() { toggleArea(div, isChild); };
+        })(areaDiv, !!areaParent[areaName]);
+
         areaDiv.appendChild(headerDiv);
-        
+
         // Area content
         var contentDiv = document.createElement('div');
         contentDiv.className = 'area-content';
-        
+
         if (taggedAreas[areaName]) {
-          console.log('[SEAL-DIAG] buildUI: area "' + areaName + '" IS sealed');
           // Render tagged/sealed panel instead of items
           var tagInfo = taggedAreas[areaName];
           var daysSince = daysSinceTagged(tagInfo.taggedTimestamp);
@@ -1763,11 +1841,66 @@
             contentDiv.appendChild(tagBtn);
           }
         }
-        
+
         areaDiv.appendChild(contentDiv);
-        container.appendChild(areaDiv);
+        return areaDiv;
       }
-      
+
+      // Build a parent area group containing its child areas
+      function buildParentGroup(parentName, children) {
+        var groupDiv = document.createElement('div');
+        groupDiv.className = 'area-group';
+        groupDiv.id = 'area_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_');
+
+        // Parent header
+        var headerDiv = document.createElement('div');
+        headerDiv.className = 'area-header';
+        headerDiv.innerHTML = '<span class="collapse-icon">▶</span>' +
+          '<span class="area-title">' + escapeHtml(parentName) + '</span>' +
+          '<span class="area-status" id="status_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_') + '">0/0</span>';
+
+        headerDiv.onclick = (function(div) {
+          return function() { toggleAreaGroup(div); };
+        })(groupDiv);
+
+        groupDiv.appendChild(headerDiv);
+
+        // Content: child area sections
+        var contentDiv = document.createElement('div');
+        contentDiv.className = 'area-group-content';
+
+        for (var c = 0; c < children.length; c++) {
+          var childName = children[c];
+          if (INVENTORY[childName]) {
+            contentDiv.appendChild(buildAreaSection(childName));
+            rendered[childName] = true;
+          }
+        }
+
+        groupDiv.appendChild(contentDiv);
+        return groupDiv;
+      }
+
+      // Render parent groups first (in order they appeared in config)
+      // We need to preserve insertion order, so iterate areaHierarchy keys
+      // which were added in parse order.
+      for (var parentName in areaHierarchy) {
+        var children = areaHierarchy[parentName];
+        if (children.length > 0) {
+          container.appendChild(buildParentGroup(parentName, children));
+          rendered[parentName] = true;
+          for (var ci = 0; ci < children.length; ci++) {
+            rendered[children[ci]] = true;
+          }
+        }
+      }
+
+      // Render standalone areas (not part of any group)
+      for (var areaName in INVENTORY) {
+        if (rendered[areaName]) continue;
+        container.appendChild(buildAreaSection(areaName));
+      }
+
       updateAllStatuses();
       updateSummary();
     }
@@ -1776,13 +1909,21 @@
     // INTERACTIONS
     // =====================================================
     
-    function toggleArea(areaDiv) {
+    function toggleArea(areaDiv, isChild) {
       var wasExpanded = areaDiv.classList.contains('expanded');
       
-      // Close all areas first
-      var allAreas = document.querySelectorAll('.area-section');
-      for (var i = 0; i < allAreas.length; i++) {
-        allAreas[i].classList.remove('expanded');
+      if (isChild) {
+        // Child areas within a parent group: only collapse sibling children
+        var siblings = areaDiv.parentElement.querySelectorAll('.area-section');
+        for (var i = 0; i < siblings.length; i++) {
+          siblings[i].classList.remove('expanded');
+        }
+      } else {
+        // Standalone areas: close all other standalone areas
+        var allAreas = document.querySelectorAll('.areas-container > .area-section');
+        for (var i = 0; i < allAreas.length; i++) {
+          allAreas[i].classList.remove('expanded');
+        }
       }
       
       // If it wasn't expanded, open it and scroll into view
@@ -1790,6 +1931,32 @@
         areaDiv.classList.add('expanded');
         setTimeout(function() {
           areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+      }
+    }
+
+    function toggleAreaGroup(groupDiv) {
+      var wasExpanded = groupDiv.classList.contains('expanded');
+
+      // Close all top-level groups and standalone areas
+      var allGroups = document.querySelectorAll('.areas-container > .area-group');
+      for (var i = 0; i < allGroups.length; i++) {
+        allGroups[i].classList.remove('expanded');
+        // Also collapse any expanded children inside
+        var childAreas = allGroups[i].querySelectorAll('.area-section.expanded');
+        for (var j = 0; j < childAreas.length; j++) {
+          childAreas[j].classList.remove('expanded');
+        }
+      }
+      var allStandalone = document.querySelectorAll('.areas-container > .area-section');
+      for (var i = 0; i < allStandalone.length; i++) {
+        allStandalone[i].classList.remove('expanded');
+      }
+
+      if (!wasExpanded) {
+        groupDiv.classList.add('expanded');
+        setTimeout(function() {
+          groupDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 50);
       }
     }
@@ -2150,6 +2317,63 @@
             var sealable = (areaOk === areaTotal && areaTotal > 0) || isAreaSealable(areaName);
             tagBtn.style.display = sealable ? 'block' : 'none';
           }
+        }
+      }
+
+      // Update parent group statuses
+      for (var parentName in areaHierarchy) {
+        var children = areaHierarchy[parentName];
+        var groupStatusEl = document.getElementById('status_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_'));
+        var groupDiv = document.getElementById('area_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (!groupStatusEl || !groupDiv) continue;
+
+        var groupHeader = groupDiv.querySelector(':scope > .area-header');
+        if (!groupHeader) continue;
+        groupHeader.classList.remove('has-issues', 'all-ok', 'tagged', 'review-needed');
+        groupStatusEl.classList.remove('issues', 'ok', 'tagged', 'review-needed');
+
+        var totalChildren = 0;
+        var sealedChildren = 0;
+        var okChildren = 0;
+        var anyReviewNeeded = false;
+
+        for (var ci = 0; ci < children.length; ci++) {
+          var childName = children[ci];
+          if (!INVENTORY[childName]) continue;
+          totalChildren++;
+
+          if (taggedAreas[childName]) {
+            sealedChildren++;
+            if (isReviewOverdue(taggedAreas[childName].taggedTimestamp)) {
+              anyReviewNeeded = true;
+            }
+          } else if (isAreaAllOk(childName)) {
+            okChildren++;
+          }
+        }
+
+        if (totalChildren === 0) continue;
+
+        if (sealedChildren === totalChildren) {
+          // All children sealed
+          if (anyReviewNeeded) {
+            groupHeader.classList.add('tagged', 'review-needed');
+            groupStatusEl.classList.add('review-needed');
+            groupStatusEl.textContent = 'REVIEW DUE';
+          } else {
+            groupHeader.classList.add('tagged');
+            groupStatusEl.classList.add('tagged');
+            groupStatusEl.textContent = 'ALL SEALED';
+          }
+        } else if (sealedChildren + okChildren === totalChildren) {
+          groupHeader.classList.add('all-ok');
+          groupStatusEl.classList.add('ok');
+          groupStatusEl.textContent = okChildren + ' OK, ' + sealedChildren + ' sealed';
+        } else {
+          groupHeader.classList.add('has-issues');
+          groupStatusEl.classList.add('issues');
+          var doneChildren = sealedChildren + okChildren;
+          groupStatusEl.textContent = doneChildren + '/' + totalChildren;
         }
       }
     }
@@ -2642,34 +2866,21 @@
           // Requires the form admin to set a "jotformApiKey" widget setting
           // (a read-only JotForm API key is sufficient).
           var apiKey = JFCustomWidget.getWidgetSetting('jotformApiKey');
-          console.log('[SEAL-DIAG] Init: apiKey=' + (apiKey ? 'present(' + apiKey.substring(0,6) + '...)' : 'NOT SET'));
           if (apiKey) {
             var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
             var fp = getFormParams();
             var formID = fp.formID || (data && data.formID) || null;
             var qid = fp.qid || null;
-            console.log('[SEAL-DIAG] Init: formID=' + formID + ', qid=' + qid + ', apiBase=' + apiBase);
             // Use the timestamp from BEFORE saveState() wrote a fresh one
             var localTs = preSaveSealTs;
-            console.log('[SEAL-DIAG] Init: localSeal timestamp (pre-save)=' + localTs + ', localSeal taggedAreas=' + (preSaveSeal && preSaveSeal.taggedAreas ? Object.keys(preSaveSeal.taggedAreas).join(',') : 'none'));
 
             fetchLatestSealState(apiBase, formID, apiKey, qid, function(remote) {
-              console.log('[SEAL-DIAG] Callback: remote=' + (remote ? 'present' : 'null') + ', remote timestamp=' + (remote ? remote.timestamp : 'N/A') + ', localTs=' + localTs);
-              if (remote && remote.taggedAreas) {
-                console.log('[SEAL-DIAG] Callback: remote taggedAreas=' + Object.keys(remote.taggedAreas).join(',') + ', will apply=' + (remote.timestamp > localTs));
-              }
               if (remote && remote.taggedAreas && remote.timestamp > localTs) {
                 taggedAreas = remote.taggedAreas;
                 if (remote.brokenSeals) brokenSeals = remote.brokenSeals;
-                console.log('[SEAL-DIAG] Pre-buildUI taggedAreas keys (' + Object.keys(taggedAreas).length + '): ' + JSON.stringify(Object.keys(taggedAreas)));
                 buildUI();
-                // Verify what buildUI saw
-                var sealedInDom = document.querySelectorAll('.tagged-panel');
-                var sealedHeaders = document.querySelectorAll('.area-header.tagged');
-                console.log('[SEAL-DIAG] Post-buildUI: .tagged-panel count=' + sealedInDom.length + ', .area-header.tagged count=' + sealedHeaders.length);
                 saveSealState();
                 resizeWidget();
-                console.log('[SEAL-DIAG] Remote seal state APPLIED');
               }
             });
           }
