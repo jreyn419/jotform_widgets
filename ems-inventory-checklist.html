@@ -24,6 +24,151 @@
       max-height: 100vh;
       background: #f5f5f5;
     }
+
+    .widget-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 4px 10px;
+      background: #f5f5f5;
+      flex-shrink: 0;
+    }
+
+    .settings-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      font-size: 18px;
+      color: #999;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .settings-btn:hover {
+      color: #555;
+      background: #e9ecef;
+    }
+
+    /* Reset Dialog */
+    .reset-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .reset-overlay.open {
+      display: flex;
+    }
+
+    .reset-dialog {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 340px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+
+    .reset-dialog-header {
+      padding: 16px 20px 12px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #333;
+      border-bottom: 1px solid #eee;
+    }
+
+    .reset-dialog-body {
+      padding: 16px 20px;
+    }
+
+    .reset-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .reset-option:hover {
+      background: #f8f9fa;
+    }
+
+    .reset-option.selected {
+      border-color: #dc3545;
+      background: #fff5f5;
+    }
+
+    .reset-option input[type="radio"] {
+      margin-top: 2px;
+      accent-color: #dc3545;
+      flex-shrink: 0;
+    }
+
+    .reset-option-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .reset-option-desc {
+      font-size: 12px;
+      color: #777;
+      margin-top: 2px;
+    }
+
+    .reset-dialog-footer {
+      display: flex;
+      gap: 8px;
+      padding: 12px 20px 16px;
+      justify-content: flex-end;
+    }
+
+    .reset-cancel-btn {
+      padding: 8px 16px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #555;
+    }
+
+    .reset-cancel-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .reset-confirm-btn {
+      padding: 8px 16px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .reset-confirm-btn.enabled {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .reset-confirm-btn.enabled:hover {
+      background: #c82333;
+    }
     
 
     .main-content {
@@ -224,6 +369,27 @@
       font-weight: 600;
       color: #555;
       border-bottom: 1px solid #e0e0e0;
+      transition: background 0.2s;
+    }
+
+    .category-header.category-complete {
+      background: #e6f4ea;
+      color: #1a7431;
+    }
+
+    .category-header.category-complete .category-status {
+      color: #28a745;
+      font-weight: 600;
+    }
+
+    .subcategory-header.category-complete {
+      background: #edf7f0;
+      color: #1a7431;
+    }
+
+    .subcategory-header.category-complete .category-status {
+      color: #28a745;
+      font-weight: 600;
     }
     
     .area-section.expanded .category-header {
@@ -1153,7 +1319,10 @@
 <body>
   <div class="widget-container">
 
-    
+    <div class="widget-header">
+      <button class="settings-btn" onclick="openResetDialog()" title="Settings">&#9881;</button>
+    </div>
+
     <div class="main-content">
       <div class="areas-container" id="areasContainer">
         <!-- Areas will be generated here -->
@@ -1224,6 +1393,33 @@
       <div class="completion-title">Done!</div>
       <div class="completion-message" id="completionMessage"></div>
     </div>
+
+    <!-- Reset Dialog -->
+    <div class="reset-overlay" id="resetOverlay" onclick="closeResetDialog()">
+      <div class="reset-dialog" onclick="event.stopPropagation()">
+        <div class="reset-dialog-header">Reset Checklist</div>
+        <div class="reset-dialog-body">
+          <label class="reset-option" onclick="selectResetOption('unsealed')">
+            <input type="radio" name="resetOption" value="unsealed">
+            <div>
+              <div class="reset-option-label">Reset unsealed areas only</div>
+              <div class="reset-option-desc">Clears all item counts and restock decisions for areas that are not currently sealed.</div>
+            </div>
+          </label>
+          <label class="reset-option" onclick="selectResetOption('all')">
+            <input type="radio" name="resetOption" value="all">
+            <div>
+              <div class="reset-option-label">Reset everything</div>
+              <div class="reset-option-desc">Breaks all seals and resets every item to zero. This cannot be undone.</div>
+            </div>
+          </label>
+        </div>
+        <div class="reset-dialog-footer">
+          <button class="reset-cancel-btn" onclick="closeResetDialog()">Cancel</button>
+          <button class="reset-confirm-btn" id="resetConfirmBtn" onclick="confirmReset()">Reset</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
@@ -1292,10 +1488,20 @@
       syncToJotForm();
     }
 
+    var STATE_EXPIRY_MS = 8 * 60 * 60 * 1000; // 8 hours
+
     function loadState() {
       try {
         var stored = localStorage.getItem(getStorageKey());
-        if (stored) return JSON.parse(stored);
+        if (stored) {
+          var parsed = JSON.parse(stored);
+          // Expire stale state from abandoned sessions
+          if (parsed.timestamp && (Date.now() - parsed.timestamp) > STATE_EXPIRY_MS) {
+            localStorage.removeItem(getStorageKey());
+            return null;
+          }
+          return parsed;
+        }
       } catch (e) {}
       return null;
     }
@@ -2159,9 +2365,17 @@
       updateAllStatuses();
       updateSummary();
 
-      // Trigger auto-advance if we just checked everything
       if (checked) {
+        // Trigger auto-advance if we just checked everything
         autoCategoryAdvance(areaName, catName);
+      } else {
+        // Reopen the category so the user can see what was unchecked
+        var catKey = areaName + '::' + catName;
+        collapsedCategories[catKey] = false;
+        var itemsDiv = document.getElementById('cat_items_' + catKey.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (itemsDiv) itemsDiv.style.display = 'block';
+        var icon = document.getElementById('cat_icon_' + catKey.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (icon) icon.style.transform = 'rotate(90deg)';
       }
     }
     
@@ -2474,6 +2688,81 @@
       document.getElementById('completionOverlay').classList.remove('open');
     }
 
+    // =====================================================
+    // RESET DIALOG
+    // =====================================================
+
+    var selectedResetOption = null;
+
+    function openResetDialog() {
+      selectedResetOption = null;
+      var options = document.querySelectorAll('.reset-option');
+      for (var i = 0; i < options.length; i++) {
+        options[i].classList.remove('selected');
+        var radio = options[i].querySelector('input[type="radio"]');
+        if (radio) radio.checked = false;
+      }
+      document.getElementById('resetConfirmBtn').classList.remove('enabled');
+      document.getElementById('resetOverlay').classList.add('open');
+    }
+
+    function closeResetDialog() {
+      document.getElementById('resetOverlay').classList.remove('open');
+      selectedResetOption = null;
+    }
+
+    function selectResetOption(option) {
+      selectedResetOption = option;
+      var options = document.querySelectorAll('.reset-option');
+      for (var i = 0; i < options.length; i++) {
+        options[i].classList.toggle('selected', options[i].querySelector('input').value === option);
+      }
+      document.getElementById('resetConfirmBtn').classList.add('enabled');
+    }
+
+    function confirmReset() {
+      if (!selectedResetOption) return;
+
+      if (selectedResetOption === 'all') {
+        if (!confirm('This will break ALL seals and reset every item to zero. Are you sure?')) return;
+        // Break all seals
+        for (var areaName in taggedAreas) {
+          brokenSeals.push({
+            area: areaName,
+            reason: 'manual_reset',
+            taggedDate: taggedAreas[areaName].taggedDate,
+            brokenTimestamp: Date.now()
+          });
+        }
+        taggedAreas = {};
+        itemStates = {};
+        restockStatus = {};
+        collapsedCategories = {};
+        try { localStorage.removeItem(getStorageKey()); } catch (e) {}
+        try { localStorage.removeItem(getSealStorageKey()); } catch (e) {}
+      } else {
+        // Reset only unsealed areas
+        for (var areaName in INVENTORY) {
+          if (taggedAreas[areaName]) continue;
+          for (var catName in INVENTORY[areaName]) {
+            var items = INVENTORY[areaName][catName];
+            for (var i = 0; i < items.length; i++) {
+              var key = generateKey(areaName, catName, items[i].name);
+              delete itemStates[key];
+              delete restockStatus[key];
+            }
+          }
+        }
+        collapsedCategories = {};
+      }
+
+      closeResetDialog();
+      expandedArea = null;
+      expandedGroup = null;
+      buildUI();
+      if (stateReady) saveState();
+    }
+
     function toggleCategoryCollapse(areaName, catName) {
       var key = areaName + '::' + catName;
       collapsedCategories[key] = !collapsedCategories[key];
@@ -2759,8 +3048,26 @@
                 }
               }
               catStatusEl.textContent = '(' + parentOk + '/' + parentTotal + ')';
+
+              // Update parent category checkbox
+              var catCb = catStatusEl.parentElement ? catStatusEl.parentElement.querySelector('.category-checkbox') : null;
+              if (catCb) catCb.checked = (parentOk === parentTotal && parentTotal > 0);
+
+              // Green tint for completed categories
+              if (catStatusEl.parentElement) {
+                catStatusEl.parentElement.classList.toggle('category-complete', parentOk === parentTotal && parentTotal > 0);
+              }
             } else {
               catStatusEl.textContent = '(' + catOk + '/' + items.length + ')';
+
+              // Update subcategory checkbox
+              var catCb = catStatusEl.parentElement ? catStatusEl.parentElement.querySelector('.category-checkbox') : null;
+              if (catCb) catCb.checked = (catOk === items.length && items.length > 0);
+
+              // Green tint for completed subcategories
+              if (catStatusEl.parentElement) {
+                catStatusEl.parentElement.classList.toggle('category-complete', catOk === items.length && items.length > 0);
+              }
             }
           }
         }
