@@ -1290,7 +1290,7 @@
     .tag-area-btn {
       display: none;
       width: calc(100% - 30px);
-      margin: 12px 15px;
+      margin: 12px auto;
       padding: 12px;
       background: #17a2b8;
       color: white;
@@ -1300,6 +1300,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: background 0.15s;
+      margin-bottom: 15px;
     }
 
     .tag-area-btn:hover {
@@ -2559,7 +2560,23 @@
         areaDiv.classList.add('expanded');
         expandedArea = areaName;
         setTimeout(function() {
-          areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (isChild) {
+            // For child areas inside a group, we need to scroll so the child
+            // area header appears just below the parent group's sticky header.
+            // scrollIntoView would put it at top:0, hidden behind the group header.
+            var scrollParent = document.getElementById('areasContainer');
+            if (scrollParent) {
+              var areaRect = areaDiv.getBoundingClientRect();
+              var scrollRect = scrollParent.getBoundingClientRect();
+              // Group header sticks at top:0 with height ~45px
+              var groupHeaderHeight = 45;
+              var areaTopInView = areaRect.top - scrollRect.top;
+              var targetScroll = scrollParent.scrollTop + areaTopInView - groupHeaderHeight;
+              scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+            }
+          } else {
+            areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
         }, 50);
       } else {
         expandedArea = null;
@@ -2767,35 +2784,58 @@
           // Scroll to it, accounting for sticky area header
           var nextHeader = nextItemsDiv ? nextItemsDiv.previousElementSibling : null;
           if (nextHeader) {
-            // Use rAF to ensure reflow after collapse before measuring
+            // Use triple rAF to ensure reflow completes after collapsing
+            // (especially important when collapsing categories with subcategories)
             requestAnimationFrame(function() {
               requestAnimationFrame(function() {
-                // Find the actual scroll container
-                var scrollParent = null;
-                var el = nextHeader.parentElement;
-                while (el) {
-                  var style = window.getComputedStyle(el);
-                  if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
-                    scrollParent = el;
-                    break;
+                requestAnimationFrame(function() {
+                  // Find the actual scroll container
+                  var scrollParent = null;
+                  var el = nextHeader.parentElement;
+                  while (el) {
+                    var style = window.getComputedStyle(el);
+                    if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                      scrollParent = el;
+                      break;
+                    }
+                    el = el.parentElement;
                   }
-                  el = el.parentElement;
-                }
-                if (!scrollParent) scrollParent = document.documentElement;
+                  if (!scrollParent) scrollParent = document.documentElement;
 
-                var headerRect = nextHeader.getBoundingClientRect();
-                var parentRect = scrollParent.getBoundingClientRect();
-                // Area header sticks at top:0 with height ~45px
-                var stickyOffset = 45;
-                
-                // Calculate where the header is relative to the scroll container
-                var headerTopInView = headerRect.top - parentRect.top;
-                
-                // Only scroll if the header is not already in a good viewing position
-                if (headerTopInView < stickyOffset - 2 || headerTopInView > stickyOffset + 60) {
-                  var targetScroll = scrollParent.scrollTop + headerTopInView - stickyOffset;
-                  scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
-                }
+                  // Measure the sticky header stack: find the bottom edge of
+                  // the lowest sticky area-header in the top region of the viewport.
+                  // Headers stick at various top values (0, 45px, etc.) so we
+                  // check if a header's top is within the top half of the viewport.
+                  var stickyOffset = 0;
+                  var scrollRect = scrollParent.getBoundingClientRect();
+                  var halfHeight = scrollRect.height / 2;
+                  var stickyHeaders = scrollParent.querySelectorAll('.area-header');
+                  for (var sh = 0; sh < stickyHeaders.length; sh++) {
+                    var shStyle = window.getComputedStyle(stickyHeaders[sh]);
+                    if (shStyle.position === 'sticky') {
+                      var shRect = stickyHeaders[sh].getBoundingClientRect();
+                      var relTop = shRect.top - scrollRect.top;
+                      // Header is in the sticky zone if its top is in the
+                      // upper portion of the scroll container
+                      if (relTop >= -1 && relTop < halfHeight) {
+                        var bottom = relTop + shRect.height;
+                        if (bottom > stickyOffset) stickyOffset = bottom;
+                      }
+                    }
+                  }
+                  // Fallback minimum
+                  if (stickyOffset < 45) stickyOffset = 45;
+
+                  var headerRect = nextHeader.getBoundingClientRect();
+                  var headerTopInView = headerRect.top - scrollRect.top;
+
+                  // Always scroll to position the next category header just below
+                  // the sticky header stack, unless it's already exactly there
+                  if (Math.abs(headerTopInView - stickyOffset) > 2) {
+                    var targetScroll = scrollParent.scrollTop + headerTopInView - stickyOffset;
+                    scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+                  }
+                });
               });
             });
           }
