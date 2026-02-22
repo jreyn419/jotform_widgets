@@ -277,12 +277,12 @@
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded > .area-header {
-      top: 45px;
+      /* top value set dynamically by updateStickyOffsets() */
       z-index: 10;
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded .category-header {
-      top: 90px;
+      /* top value set dynamically by updateStickyOffsets() */
       z-index: 9;
     }
 
@@ -303,7 +303,7 @@
        (no expand/collapse on the parent-own-items wrapper), so always sticky */
     .area-group.expanded .parent-own-items .category-header {
       position: sticky;
-      top: 45px;
+      /* top value set dynamically by updateStickyOffsets() */
       z-index: 9;
     }
 
@@ -1585,7 +1585,7 @@
           <button class="reset-confirm-btn" id="resetConfirmBtn" onclick="confirmReset()">Reset</button>
         </div>
         <div style="padding: 8px 20px 12px; border-top: 1px solid #eee; margin-top: 4px; text-align: center;">
-          <span style="font-size: 11px; color: #bbb;">v1.0.3</span>
+          <span style="font-size: 11px; color: #bbb;">v1.0.4</span>
         </div>
       </div>
     </div>
@@ -2571,7 +2571,7 @@
     // Dynamically measure sticky header heights and set subcategory top values.
     // Called after any area is expanded so the DOM is ready for measurement.
     function updateStickyOffsets() {
-      // Find all expanded area-sections and set subcategory sticky tops
+      // Find all expanded area-sections and set sticky tops
       var expandedSections = document.querySelectorAll('.area-section.expanded');
       for (var i = 0; i < expandedSections.length; i++) {
         var section = expandedSections[i];
@@ -2579,7 +2579,7 @@
         var categoryHeaders = section.querySelectorAll('.category-header');
         var subcategoryHeaders = section.querySelectorAll('.subcategory-header');
 
-        if (!areaHeader || subcategoryHeaders.length === 0) continue;
+        if (!areaHeader) continue;
 
         // Measure the area header height
         var areaH = areaHeader.getBoundingClientRect().height;
@@ -2590,6 +2590,17 @@
         if (groupDiv) {
           var groupHeader = groupDiv.querySelector(':scope > .area-header');
           if (groupHeader) groupHeaderH = groupHeader.getBoundingClientRect().height;
+          // Set child area header top to sit below group header
+          areaHeader.style.top = groupHeaderH + 'px';
+        }
+
+        // Set category header tops (matters for group child areas where
+        // the category must clear both the group header and child area header)
+        if (groupHeaderH > 0 && categoryHeaders.length > 0) {
+          var catTop = groupHeaderH + areaH;
+          for (var c = 0; c < categoryHeaders.length; c++) {
+            categoryHeaders[c].style.top = catTop + 'px';
+          }
         }
 
         // Measure a category header height (they're all the same size)
@@ -2598,14 +2609,19 @@
           catH = categoryHeaders[0].getBoundingClientRect().height;
         }
 
-        var subTop = groupHeaderH + areaH + catH;
+        // Set subcategory header tops
+        if (subcategoryHeaders.length > 0) {
+          var subTop = groupHeaderH + areaH + catH;
+          // For standalone areas (no group), areaH is the only prefix
+          if (!groupDiv) subTop = areaH + catH;
 
-        for (var j = 0; j < subcategoryHeaders.length; j++) {
-          subcategoryHeaders[j].style.top = subTop + 'px';
+          for (var j = 0; j < subcategoryHeaders.length; j++) {
+            subcategoryHeaders[j].style.top = subTop + 'px';
+          }
         }
       }
 
-      // Also handle parent-own-items subcategory headers (no child area-header)
+      // Also handle parent-own-items (no child area-header, just group header)
       var parentOwnItems = document.querySelectorAll('.area-group.expanded .parent-own-items');
       for (var i = 0; i < parentOwnItems.length; i++) {
         var wrapper = parentOwnItems[i];
@@ -2617,6 +2633,14 @@
 
         var catHeaders = wrapper.querySelectorAll('.category-header');
         var subHeaders = wrapper.querySelectorAll('.subcategory-header');
+
+        // Category headers in parent-own-items sit below just the group header
+        if (catHeaders.length > 0) {
+          for (var c = 0; c < catHeaders.length; c++) {
+            catHeaders[c].style.top = groupHeaderH + 'px';
+          }
+        }
+
         var catH = catHeaders.length > 0 ? catHeaders[0].getBoundingClientRect().height : 0;
 
         var subTop = groupHeaderH + catH;
