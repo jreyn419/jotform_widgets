@@ -190,10 +190,14 @@
     /* Area sections */
     .area-section {
       background: white;
-      border-radius: 0;
+      border-radius: 8px;
       margin: 0 10px 10px 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       overflow: visible;
+    }
+
+    .area-section.expanded {
+      border-radius: 0;
     }
 
     .areas-container > .area-section:first-child,
@@ -204,16 +208,20 @@
     /* Parent area group — contains child area-sections */
     .area-group {
       background: #dce2e8;
-      border-radius: 0;
+      border-radius: 8px;
       margin: 0 10px 10px 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.15);
       overflow: visible;
     }
 
+    .area-group.expanded {
+      border-radius: 0;
+    }
+
     .area-group > .area-header {
       background: #dee4ea;
       font-size: 15px;
-      border-radius: 0;
+      
     }
 
     .area-group > .area-header:hover {
@@ -239,6 +247,7 @@
       position: sticky;
       top: 0;
       z-index: 11;
+      border-radius: 0;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
@@ -304,6 +313,10 @@
       border-bottom: 1px solid #eee;
       gap: 10px;
       flex-shrink: 0;
+      border-radius: 8px;
+    }
+
+    .area-section.expanded .area-header {
       border-radius: 0;
     }
     
