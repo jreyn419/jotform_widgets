@@ -182,7 +182,7 @@
     .areas-container {
       flex: 1;
       overflow-y: auto;
-      padding: 10px;
+      padding: 10px 0;
       min-height: 0;
       position: relative;
     }
@@ -190,17 +190,17 @@
     /* Area sections */
     .area-section {
       background: white;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      border-radius: 0;
+      margin: 0 10px 10px 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       overflow: visible;
     }
 
     /* Parent area group — contains child area-sections */
     .area-group {
-      background: #eef2f5;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      background: #dce2e8;
+      border-radius: 0;
+      margin: 0 10px 10px 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.15);
       overflow: visible;
     }
@@ -208,7 +208,7 @@
     .area-group > .area-header {
       background: #dee4ea;
       font-size: 15px;
-      border-radius: 8px;
+      border-radius: 0;
     }
 
     .area-group > .area-header:hover {
@@ -231,12 +231,9 @@
     }
 
     .area-group.expanded > .area-header {
-      border-radius: 8px 8px 0 0;
       position: sticky;
-      top: -10px;
+      top: 0;
       z-index: 11;
-      margin: 0 -10px;
-      width: calc(100% + 20px);
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
@@ -251,26 +248,28 @@
 
     .area-group > .area-group-content > .area-section {
       box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      margin-left: 0;
+      margin-right: 0;
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded > .area-header {
-      top: 35px;
+      top: 45px;
       z-index: 10;
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded .category-header {
-      top: 80px;
+      top: 90px;
       z-index: 9;
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded .subcategory-header {
-      top: 127px;
+      top: 129px;
       z-index: 8;
     }
 
     .parent-own-items {
       background: white;
-      border-radius: 8px;
+      border-radius: 0;
       margin-bottom: 8px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.08);
       overflow: hidden;
@@ -286,11 +285,7 @@
       border-bottom: 1px solid #eee;
       gap: 10px;
       flex-shrink: 0;
-      border-radius: 8px 8px 0 0;
-    }
-    
-    .area-section:not(.expanded) .area-header {
-      border-radius: 8px;
+      border-radius: 0;
     }
     
     .area-header:hover {
@@ -309,11 +304,9 @@
     
     .area-section.expanded .area-header {
       position: sticky;
-      top: -10px;
+      top: 0;
       z-index: 10;
       border-radius: 0;
-      margin: 0 -10px;
-      width: calc(100% + 20px);
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
@@ -412,12 +405,8 @@
     
     .area-section.expanded .category-header {
       position: sticky;
-      top: 35px;
+      top: 45px;
       z-index: 9;
-      margin-left: -10px;
-      margin-right: -10px;
-      padding-left: 25px;
-      padding-right: 25px;
     }
     
     .category-checkbox {
@@ -1420,13 +1409,8 @@
 
     .area-section.expanded .subcategory-header {
       position: sticky;
-      top: 82px;
+      top: 84px;
       z-index: 8;
-      margin-left: -10px;
-      margin-right: -10px;
-      padding-left: 40px;
-      padding-right: 25px;
-      background: #f5f5f5;
     }
 
     .subcategory-header .category-collapse-icon {
@@ -2782,14 +2766,14 @@
 
                 var headerRect = nextHeader.getBoundingClientRect();
                 var parentRect = scrollParent.getBoundingClientRect();
-                var stickyOffset = 36; // area header height (sticky at -10px, so 45px - 10px + 1px border)
+                // Area header sticks at top:0 with height ~45px
+                var stickyOffset = 45;
                 
-                // Calculate where the header is relative to the visible area
+                // Calculate where the header is relative to the scroll container
                 var headerTopInView = headerRect.top - parentRect.top;
                 
                 // Only scroll if the header is not already in a good viewing position
-                // "Good position" = header is between stickyOffset and stickyOffset + 100px from top
-                if (headerTopInView < stickyOffset || headerTopInView > stickyOffset + 100) {
+                if (headerTopInView < stickyOffset - 2 || headerTopInView > stickyOffset + 60) {
                   var targetScroll = scrollParent.scrollTop + headerTopInView - stickyOffset;
                   scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
                 }
@@ -3358,12 +3342,11 @@
           }
         }
 
-        // Show/hide tag button (show if area is marked sealable and fully OK or sealable via restock)
+        // Show/hide tag button (show if area is marked sealable and all conditions met)
         if (sealableAreas[areaName]) {
           var tagBtn = document.getElementById('tag_btn_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
           if (tagBtn) {
-            var sealable = (areaOk === areaTotal && areaTotal > 0) || isAreaSealable(areaName);
-            tagBtn.style.display = sealable ? 'block' : 'none';
+            tagBtn.style.display = isAreaSealable(areaName) ? 'block' : 'none';
           }
         }
       }
