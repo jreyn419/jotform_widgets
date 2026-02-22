@@ -108,6 +108,11 @@
       background: #fff5f5;
     }
 
+    .reset-option.selected.restore {
+      border-color: #0066cc;
+      background: #e7f3ff;
+    }
+
     .reset-option input[type="radio"] {
       margin-top: 2px;
       accent-color: #dc3545;
@@ -264,6 +269,11 @@
       box-shadow: 0 1px 2px rgba(0,0,0,0.08);
       margin-left: 0;
       margin-right: 0;
+    }
+
+    /* Ensure seal buttons inside child areas have breathing room */
+    .area-group > .area-group-content > .area-section > .area-content {
+      padding-bottom: 4px;
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded > .area-header {
@@ -1562,6 +1572,13 @@
               <div class="reset-option-desc">Breaks all seals and resets every item to zero. This cannot be undone.</div>
             </div>
           </label>
+          <label class="reset-option" id="resetJotformOption" onclick="selectResetOption('jotform')" style="display:none">
+            <input type="radio" name="resetOption" value="jotform">
+            <div>
+              <div class="reset-option-label">Restore from last submission</div>
+              <div class="reset-option-desc">Fetches sealed area data from the most recent Jotform submission. Resets item counts but restores seals from the server.</div>
+            </div>
+          </label>
         </div>
         <div class="reset-dialog-footer">
           <button class="reset-cancel-btn" onclick="closeResetDialog()">Cancel</button>
@@ -2317,7 +2334,8 @@
           }
 
           // Add "Seal This Area" button if this area is marked sealable
-          if (sealableAreas[areaName]) {
+          // Skip for parent areas with children — they get a seal button in buildParentGroup instead
+          if (sealableAreas[areaName] && !areaHierarchy[areaName]) {
             var tagBtn = document.createElement('button');
             tagBtn.className = 'tag-area-btn';
             tagBtn.id = 'tag_btn_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
@@ -3023,11 +3041,20 @@
       selectedResetOption = null;
       var options = document.querySelectorAll('.reset-option');
       for (var i = 0; i < options.length; i++) {
-        options[i].classList.remove('selected');
+        options[i].classList.remove('selected', 'restore');
         var radio = options[i].querySelector('input[type="radio"]');
         if (radio) radio.checked = false;
       }
       document.getElementById('resetConfirmBtn').classList.remove('enabled');
+      // Show the "Restore from last submission" option only if a Jotform API key is configured
+      var jfOption = document.getElementById('resetJotformOption');
+      if (jfOption) {
+        var hasApiKey = false;
+        try {
+          hasApiKey = typeof JFCustomWidget !== 'undefined' && !!JFCustomWidget.getWidgetSetting('jotformApiKey');
+        } catch (e) {}
+        jfOption.style.display = hasApiKey ? '' : 'none';
+      }
       document.getElementById('resetOverlay').classList.add('open');
     }
 
@@ -3056,13 +3083,75 @@
       selectedResetOption = option;
       var options = document.querySelectorAll('.reset-option');
       for (var i = 0; i < options.length; i++) {
-        options[i].classList.toggle('selected', options[i].querySelector('input').value === option);
+        var radio = options[i].querySelector('input');
+        var isThis = radio && radio.value === option;
+        options[i].classList.toggle('selected', isThis);
+        options[i].classList.toggle('restore', isThis && option === 'jotform');
       }
-      document.getElementById('resetConfirmBtn').classList.add('enabled');
+      var confirmBtn = document.getElementById('resetConfirmBtn');
+      confirmBtn.classList.add('enabled');
+      // Change button text/color for restore vs destructive reset
+      if (option === 'jotform') {
+        confirmBtn.textContent = 'Restore';
+        confirmBtn.style.background = '#0066cc';
+      } else {
+        confirmBtn.textContent = 'Reset';
+        confirmBtn.style.background = '';
+      }
     }
 
     function confirmReset() {
       if (!selectedResetOption) return;
+
+      if (selectedResetOption === 'jotform') {
+        // Restore sealed state from most recent Jotform submission
+        var apiKey, apiBase, formID, qid;
+        try {
+          apiKey = JFCustomWidget.getWidgetSetting('jotformApiKey');
+          apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
+          var fp = getFormParams();
+          formID = fp.formID || null;
+          qid = fp.qid || null;
+        } catch (e) {
+          alert('Unable to access Jotform widget settings.');
+          return;
+        }
+        if (!apiKey || !formID) {
+          alert('Jotform API key or form ID not available.');
+          return;
+        }
+
+        // Clear all local state first
+        itemStates = {};
+        restockStatus = {};
+        brokenSeals = [];
+        collapsedCategories = {};
+        taggedAreas = {};
+        expandedArea = null;
+        expandedGroup = null;
+        try { localStorage.removeItem(getStorageKey()); } catch (e) {}
+        try { localStorage.removeItem(getSealStorageKey()); } catch (e) {}
+
+        closeResetDialog();
+
+        // Fetch from server, forcing timestamp comparison to accept any remote data
+        fetchLatestSealState(apiBase, formID, apiKey, qid, function(remote) {
+          if (remote && remote.taggedAreas) {
+            taggedAreas = remote.taggedAreas;
+            if (remote.brokenSeals) brokenSeals = remote.brokenSeals;
+          }
+          // Rebuild regardless — either with restored seals or with a clean slate
+          autoBreakOverdueSeals();
+          clearUnsealedItemStates();
+          buildUI();
+          if (stateReady) {
+            saveState();
+            saveSealState();
+          }
+          resizeWidget();
+        });
+        return;
+      }
 
       if (selectedResetOption === 'all') {
         if (!confirm('This will break ALL seals and reset every item to zero. Are you sure?')) return;
