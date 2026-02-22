@@ -182,7 +182,7 @@
     .areas-container {
       flex: 1;
       overflow-y: auto;
-      padding: 10px 0;
+      padding: 0;
       min-height: 0;
       position: relative;
     }
@@ -194,6 +194,11 @@
       margin: 0 10px 10px 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       overflow: visible;
+    }
+
+    .areas-container > .area-section:first-child,
+    .areas-container > .area-group:first-child {
+      margin-top: 10px;
     }
 
     /* Parent area group — contains child area-sections */
@@ -263,7 +268,7 @@
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded .subcategory-header {
-      top: 129px;
+      top: 130px;
       z-index: 8;
     }
 
@@ -272,7 +277,21 @@
       border-radius: 0;
       margin-bottom: 8px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-      overflow: hidden;
+      overflow: visible;
+    }
+
+    /* Category/subcategory headers inside parent-own-items are always visible
+       (no expand/collapse on the parent-own-items wrapper), so always sticky */
+    .area-group.expanded .parent-own-items .category-header {
+      position: sticky;
+      top: 45px;
+      z-index: 9;
+    }
+
+    .area-group.expanded .parent-own-items .subcategory-header {
+      position: sticky;
+      top: 85px;
+      z-index: 8;
     }
     
     .area-header {
@@ -1409,7 +1428,7 @@
 
     .area-section.expanded .subcategory-header {
       position: sticky;
-      top: 84px;
+      top: 85px;
       z-index: 8;
     }
 
@@ -1546,7 +1565,7 @@
     
     var INVENTORY = {};
     
-    var DEFAULT_INVENTORY = "";
+    var DEFAULT_INVENTORY = "Area Name: Driver Compartment\nSealable: yes\nSafety Equipment\nFire Extinguisher|1\nReflective Vest|2\nTraffic Cones|3\nNavigation\nGPS Unit|1\nMap Book|1\n\nArea Name: Patient Compartment\nSealable: yes\nMonitoring\n>Cardiac\n>Cardiac Monitor|1\n>12-Lead ECG Cables|1\n>Defib Pads (Adult)|2\n>Respiratory\n>Pulse Oximeter|1\n>Capnography Tubing|2\nAirway Supplies\nBVM (Adult)|1\nBVM (Pediatric)|1\nOPA Set|1\nNPA Set|1\nKing Airway Kit|1\nET Tube Kit|1\nSuction Unit|1\nIV Supplies\nIV Start Kit|4\nNormal Saline 1000ml|2\nLactated Ringers|1\nIV Tubing|4\nMedications\nEpinephrine 1:10000|2\nAtropine|2\nAmiodarone|2\nNarcan|4\n\nArea Name: Upper CCT Cabinet\nSealable: yes\nCritical Care\nVentilator|1\nVent Circuit|2\nInfusion Pump|2\nPump Tubing|4\nPressure Bag|2\n\nArea Name: Bench Storage\n> Area Name: Left Bench\nSealable: yes\nBandaging\nGauze 4x4|20\nKerlix Rolls|6\nACE Wraps|4\nTriangular Bandage|4\nSplinting\nSAM Splint|2\nBoard Splint|2\nTraction Splint|1\n\n> Area Name: Right Bench\nSealable: yes\nCleaning\nHand Sanitizer|2\nDisinfectant Wipes|3\nBiohazard Bags|10\nLinens\nBlankets|4\nSheets|4\nPillowcase|4";
     
     // =====================================================
     // STATE
