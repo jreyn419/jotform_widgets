@@ -287,7 +287,7 @@
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded .subcategory-header {
-      top: 130px;
+      /* top value set dynamically by updateStickyOffsets() */
       z-index: 8;
     }
 
@@ -309,7 +309,7 @@
 
     .area-group.expanded .parent-own-items .subcategory-header {
       position: sticky;
-      top: 85px;
+      /* top value set dynamically by updateStickyOffsets() */
       z-index: 8;
     }
     
@@ -1452,7 +1452,7 @@
 
     .area-section.expanded .subcategory-header {
       position: sticky;
-      top: 85px;
+      /* top value set dynamically by updateStickyOffsets() */
       z-index: 8;
     }
 
@@ -1585,7 +1585,7 @@
           <button class="reset-confirm-btn" id="resetConfirmBtn" onclick="confirmReset()">Reset</button>
         </div>
         <div style="padding: 8px 20px 12px; border-top: 1px solid #eee; margin-top: 4px; text-align: center;">
-          <span style="font-size: 11px; color: #bbb;">v1.0.1</span>
+          <span style="font-size: 11px; color: #bbb;">v1.0.3</span>
         </div>
       </div>
     </div>
@@ -2547,6 +2547,8 @@
           }
         }
       }
+
+      updateStickyOffsets();
     }
 
     // Check if a parent group is fully complete (all children sealed/ok, parent items ok/sealed)
@@ -2566,6 +2568,64 @@
       return true;
     }
     
+    // Dynamically measure sticky header heights and set subcategory top values.
+    // Called after any area is expanded so the DOM is ready for measurement.
+    function updateStickyOffsets() {
+      // Find all expanded area-sections and set subcategory sticky tops
+      var expandedSections = document.querySelectorAll('.area-section.expanded');
+      for (var i = 0; i < expandedSections.length; i++) {
+        var section = expandedSections[i];
+        var areaHeader = section.querySelector(':scope > .area-header');
+        var categoryHeaders = section.querySelectorAll('.category-header');
+        var subcategoryHeaders = section.querySelectorAll('.subcategory-header');
+
+        if (!areaHeader || subcategoryHeaders.length === 0) continue;
+
+        // Measure the area header height
+        var areaH = areaHeader.getBoundingClientRect().height;
+
+        // Check if this section is inside a group (has a parent group header too)
+        var groupDiv = section.closest('.area-group.expanded');
+        var groupHeaderH = 0;
+        if (groupDiv) {
+          var groupHeader = groupDiv.querySelector(':scope > .area-header');
+          if (groupHeader) groupHeaderH = groupHeader.getBoundingClientRect().height;
+        }
+
+        // Measure a category header height (they're all the same size)
+        var catH = 0;
+        if (categoryHeaders.length > 0) {
+          catH = categoryHeaders[0].getBoundingClientRect().height;
+        }
+
+        var subTop = groupHeaderH + areaH + catH;
+
+        for (var j = 0; j < subcategoryHeaders.length; j++) {
+          subcategoryHeaders[j].style.top = subTop + 'px';
+        }
+      }
+
+      // Also handle parent-own-items subcategory headers (no child area-header)
+      var parentOwnItems = document.querySelectorAll('.area-group.expanded .parent-own-items');
+      for (var i = 0; i < parentOwnItems.length; i++) {
+        var wrapper = parentOwnItems[i];
+        var groupDiv = wrapper.closest('.area-group.expanded');
+        if (!groupDiv) continue;
+
+        var groupHeader = groupDiv.querySelector(':scope > .area-header');
+        var groupHeaderH = groupHeader ? groupHeader.getBoundingClientRect().height : 0;
+
+        var catHeaders = wrapper.querySelectorAll('.category-header');
+        var subHeaders = wrapper.querySelectorAll('.subcategory-header');
+        var catH = catHeaders.length > 0 ? catHeaders[0].getBoundingClientRect().height : 0;
+
+        var subTop = groupHeaderH + catH;
+        for (var j = 0; j < subHeaders.length; j++) {
+          subHeaders[j].style.top = subTop + 'px';
+        }
+      }
+    }
+
     function toggleArea(areaDiv, isChild) {
       var wasExpanded = areaDiv.classList.contains('expanded');
       // Extract area name from the div's id
@@ -2594,6 +2654,7 @@
       if (!wasExpanded) {
         areaDiv.classList.add('expanded');
         expandedArea = areaName;
+        updateStickyOffsets();
         setTimeout(function() {
           if (isChild) {
             // For child areas inside a group, we need to scroll so the child
@@ -2646,6 +2707,7 @@
       if (!wasExpanded) {
         groupDiv.classList.add('expanded');
         expandedGroup = groupName;
+        updateStickyOffsets();
       } else {
         expandedGroup = null;
         expandedArea = null;
@@ -3102,7 +3164,7 @@
           return;
         }
         if (!apiKey || !formID) {
-          alert('Restore failed. API key: ' + (apiKey ? 'OK' : 'MISSING') + ', Form ID: ' + (formID ? formID : 'MISSING') + ', Cached: ' + (cachedFormID ? cachedFormID : 'NONE'));
+          alert('Unable to restore: Jotform API key or form ID not available.');
           return;
         }
 
