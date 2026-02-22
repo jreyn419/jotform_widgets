@@ -182,7 +182,7 @@
     .areas-container {
       flex: 1;
       overflow-y: auto;
-      padding: 0;
+      padding: 10px;
       min-height: 0;
       position: relative;
     }
@@ -191,37 +191,24 @@
     .area-section {
       background: white;
       border-radius: 8px;
-      margin: 0 10px 10px 10px;
+      margin-bottom: 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       overflow: visible;
     }
 
-    .area-section.expanded {
-      border-radius: 0;
-    }
-
-    .areas-container > .area-section:first-child,
-    .areas-container > .area-group:first-child {
-      margin-top: 10px;
-    }
-
     /* Parent area group — contains child area-sections */
     .area-group {
-      background: #dce2e8;
+      background: #eef2f5;
       border-radius: 8px;
-      margin: 0 10px 10px 10px;
+      margin-bottom: 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.15);
       overflow: visible;
-    }
-
-    .area-group.expanded {
-      border-radius: 0;
     }
 
     .area-group > .area-header {
       background: #dee4ea;
       font-size: 15px;
-      
+      border-radius: 8px;
     }
 
     .area-group > .area-header:hover {
@@ -244,10 +231,12 @@
     }
 
     .area-group.expanded > .area-header {
+      border-radius: 8px 8px 0 0;
       position: sticky;
-      top: 0;
+      top: -10px;
       z-index: 11;
-      border-radius: 0;
+      margin: 0 -10px;
+      width: calc(100% + 20px);
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
@@ -262,45 +251,29 @@
 
     .area-group > .area-group-content > .area-section {
       box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-      margin-left: 0;
-      margin-right: 0;
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded > .area-header {
-      top: 45px;
+      top: 35px;
       z-index: 10;
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded .category-header {
-      top: 90px;
+      top: 80px;
       z-index: 9;
     }
 
     .area-group.expanded > .area-group-content > .area-section.expanded .subcategory-header {
-      top: 130px;
+      top: 127px;
       z-index: 8;
     }
 
     .parent-own-items {
       background: white;
-      border-radius: 0;
+      border-radius: 8px;
       margin-bottom: 8px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-      overflow: visible;
-    }
-
-    /* Category/subcategory headers inside parent-own-items are always visible
-       (no expand/collapse on the parent-own-items wrapper), so always sticky */
-    .area-group.expanded .parent-own-items .category-header {
-      position: sticky;
-      top: 45px;
-      z-index: 9;
-    }
-
-    .area-group.expanded .parent-own-items .subcategory-header {
-      position: sticky;
-      top: 85px;
-      z-index: 8;
+      overflow: hidden;
     }
     
     .area-header {
@@ -313,11 +286,11 @@
       border-bottom: 1px solid #eee;
       gap: 10px;
       flex-shrink: 0;
-      border-radius: 8px;
+      border-radius: 8px 8px 0 0;
     }
-
-    .area-section.expanded .area-header {
-      border-radius: 0;
+    
+    .area-section:not(.expanded) .area-header {
+      border-radius: 8px;
     }
     
     .area-header:hover {
@@ -336,9 +309,11 @@
     
     .area-section.expanded .area-header {
       position: sticky;
-      top: 0;
+      top: -10px;
       z-index: 10;
       border-radius: 0;
+      margin: 0 -10px;
+      width: calc(100% + 20px);
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
@@ -437,8 +412,12 @@
     
     .area-section.expanded .category-header {
       position: sticky;
-      top: 45px;
+      top: 35px;
       z-index: 9;
+      margin-left: -10px;
+      margin-right: -10px;
+      padding-left: 25px;
+      padding-right: 25px;
     }
     
     .category-checkbox {
@@ -1303,7 +1282,7 @@
     .tag-area-btn {
       display: none;
       width: calc(100% - 30px);
-      margin: 12px auto;
+      margin: 12px 15px;
       padding: 12px;
       background: #17a2b8;
       color: white;
@@ -1313,7 +1292,6 @@
       font-weight: 600;
       cursor: pointer;
       transition: background 0.15s;
-      margin-bottom: 15px;
     }
 
     .tag-area-btn:hover {
@@ -1441,9 +1419,15 @@
     }
 
     .area-section.expanded .subcategory-header {
-      position: sticky;
-      top: 85px;
+      position: sticky !important;
+      position: -webkit-sticky !important;
+      top: 82px !important;
       z-index: 8;
+      margin-left: -10px;
+      margin-right: -10px;
+      padding-left: 40px;
+      padding-right: 25px;
+      background: #f5f5f5;
     }
 
     .subcategory-header .category-collapse-icon {
@@ -1579,7 +1563,7 @@
     
     var INVENTORY = {};
     
-    var DEFAULT_INVENTORY = "Area Name: Driver Compartment\nSealable: yes\nSafety Equipment\nFire Extinguisher|1\nReflective Vest|2\nTraffic Cones|3\nNavigation\nGPS Unit|1\nMap Book|1\n\nArea Name: Patient Compartment\nSealable: yes\nMonitoring\n>Cardiac\n>Cardiac Monitor|1\n>12-Lead ECG Cables|1\n>Defib Pads (Adult)|2\n>Respiratory\n>Pulse Oximeter|1\n>Capnography Tubing|2\nAirway Supplies\nBVM (Adult)|1\nBVM (Pediatric)|1\nOPA Set|1\nNPA Set|1\nKing Airway Kit|1\nET Tube Kit|1\nSuction Unit|1\nIV Supplies\nIV Start Kit|4\nNormal Saline 1000ml|2\nLactated Ringers|1\nIV Tubing|4\nMedications\nEpinephrine 1:10000|2\nAtropine|2\nAmiodarone|2\nNarcan|4\n\nArea Name: Upper CCT Cabinet\nSealable: yes\nCritical Care\nVentilator|1\nVent Circuit|2\nInfusion Pump|2\nPump Tubing|4\nPressure Bag|2\n\nArea Name: Bench Storage\n> Area Name: Left Bench\nSealable: yes\nBandaging\nGauze 4x4|20\nKerlix Rolls|6\nACE Wraps|4\nTriangular Bandage|4\nSplinting\nSAM Splint|2\nBoard Splint|2\nTraction Splint|1\n\n> Area Name: Right Bench\nSealable: yes\nCleaning\nHand Sanitizer|2\nDisinfectant Wipes|3\nBiohazard Bags|10\nLinens\nBlankets|4\nSheets|4\nPillowcase|4";
+    var DEFAULT_INVENTORY = "";
     
     // =====================================================
     // STATE
@@ -2251,7 +2235,7 @@
               itemsContainer.appendChild(buildItemRow(areaName, catName, catItems[i]));
             }
 
-            // Subcategories - append directly to contentDiv for sticky positioning to work
+            // Subcategories
             for (var si = 0; si < subCats.length; si++) {
               var subCatName = subCats[si];
               var subCatItems = categories[subCatName] || [];
@@ -2573,23 +2557,7 @@
         areaDiv.classList.add('expanded');
         expandedArea = areaName;
         setTimeout(function() {
-          if (isChild) {
-            // For child areas inside a group, we need to scroll so the child
-            // area header appears just below the parent group's sticky header.
-            // scrollIntoView would put it at top:0, hidden behind the group header.
-            var scrollParent = document.getElementById('areasContainer');
-            if (scrollParent) {
-              var areaRect = areaDiv.getBoundingClientRect();
-              var scrollRect = scrollParent.getBoundingClientRect();
-              // Group header sticks at top:0 with height ~45px
-              var groupHeaderHeight = 45;
-              var areaTopInView = areaRect.top - scrollRect.top;
-              var targetScroll = scrollParent.scrollTop + areaTopInView - groupHeaderHeight;
-              scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
-            }
-          } else {
-            areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
+          areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 50);
       } else {
         expandedArea = null;
@@ -2797,58 +2765,35 @@
           // Scroll to it, accounting for sticky area header
           var nextHeader = nextItemsDiv ? nextItemsDiv.previousElementSibling : null;
           if (nextHeader) {
-            // Use triple rAF to ensure reflow completes after collapsing
-            // (especially important when collapsing categories with subcategories)
+            // Use rAF to ensure reflow after collapse before measuring
             requestAnimationFrame(function() {
               requestAnimationFrame(function() {
-                requestAnimationFrame(function() {
-                  // Find the actual scroll container
-                  var scrollParent = null;
-                  var el = nextHeader.parentElement;
-                  while (el) {
-                    var style = window.getComputedStyle(el);
-                    if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
-                      scrollParent = el;
-                      break;
-                    }
-                    el = el.parentElement;
+                // Find the actual scroll container
+                var scrollParent = null;
+                var el = nextHeader.parentElement;
+                while (el) {
+                  var style = window.getComputedStyle(el);
+                  if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                    scrollParent = el;
+                    break;
                   }
-                  if (!scrollParent) scrollParent = document.documentElement;
+                  el = el.parentElement;
+                }
+                if (!scrollParent) scrollParent = document.documentElement;
 
-                  // Measure the sticky header stack: find the bottom edge of
-                  // the lowest sticky area-header in the top region of the viewport.
-                  // Headers stick at various top values (0, 45px, etc.) so we
-                  // check if a header's top is within the top half of the viewport.
-                  var stickyOffset = 0;
-                  var scrollRect = scrollParent.getBoundingClientRect();
-                  var halfHeight = scrollRect.height / 2;
-                  var stickyHeaders = scrollParent.querySelectorAll('.area-header');
-                  for (var sh = 0; sh < stickyHeaders.length; sh++) {
-                    var shStyle = window.getComputedStyle(stickyHeaders[sh]);
-                    if (shStyle.position === 'sticky') {
-                      var shRect = stickyHeaders[sh].getBoundingClientRect();
-                      var relTop = shRect.top - scrollRect.top;
-                      // Header is in the sticky zone if its top is in the
-                      // upper portion of the scroll container
-                      if (relTop >= -1 && relTop < halfHeight) {
-                        var bottom = relTop + shRect.height;
-                        if (bottom > stickyOffset) stickyOffset = bottom;
-                      }
-                    }
-                  }
-                  // Fallback minimum
-                  if (stickyOffset < 45) stickyOffset = 45;
-
-                  var headerRect = nextHeader.getBoundingClientRect();
-                  var headerTopInView = headerRect.top - scrollRect.top;
-
-                  // Always scroll to position the next category header just below
-                  // the sticky header stack, unless it's already exactly there
-                  if (Math.abs(headerTopInView - stickyOffset) > 2) {
-                    var targetScroll = scrollParent.scrollTop + headerTopInView - stickyOffset;
-                    scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
-                  }
-                });
+                var headerRect = nextHeader.getBoundingClientRect();
+                var parentRect = scrollParent.getBoundingClientRect();
+                var stickyOffset = 36; // area header height (sticky at -10px, so 45px - 10px + 1px border)
+                
+                // Calculate where the header is relative to the visible area
+                var headerTopInView = headerRect.top - parentRect.top;
+                
+                // Only scroll if the header is not already in a good viewing position
+                // "Good position" = header is between stickyOffset and stickyOffset + 100px from top
+                if (headerTopInView < stickyOffset || headerTopInView > stickyOffset + 100) {
+                  var targetScroll = scrollParent.scrollTop + headerTopInView - stickyOffset;
+                  scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+                }
               });
             });
           }
@@ -3414,11 +3359,12 @@
           }
         }
 
-        // Show/hide tag button (show if area is marked sealable and all conditions met)
+        // Show/hide tag button (show if area is marked sealable and fully OK or sealable via restock)
         if (sealableAreas[areaName]) {
           var tagBtn = document.getElementById('tag_btn_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
           if (tagBtn) {
-            tagBtn.style.display = isAreaSealable(areaName) ? 'block' : 'none';
+            var sealable = (areaOk === areaTotal && areaTotal > 0) || isAreaSealable(areaName);
+            tagBtn.style.display = sealable ? 'block' : 'none';
           }
         }
       }
