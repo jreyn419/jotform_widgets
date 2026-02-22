@@ -1621,6 +1621,7 @@
     var stateReady = false; // true after initial state load is complete
     var expandedArea = null; // currently expanded area name (standalone or child)
     var expandedGroup = null; // currently expanded parent group name
+    var cachedFormID = null; // formID from JotForm ready event
 
     // =====================================================
     // LOCAL PERSISTENCE (survives across form sessions)
@@ -3110,7 +3111,7 @@
           apiKey = JFCustomWidget.getWidgetSetting('jotformApiKey');
           apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
           var fp = getFormParams();
-          formID = fp.formID || null;
+          formID = fp.formID || cachedFormID || null;
           qid = fp.qid || null;
         } catch (e) {
           alert('Unable to access Jotform widget settings.');
@@ -4106,6 +4107,10 @@
         JFCustomWidget.subscribe('ready', function(data) {
           console.log('[Widget] Ready', data);
           
+          // Cache formID for later use (e.g. reset-to-server)
+          var fp = getFormParams();
+          cachedFormID = fp.formID || (data && data.formID) || null;
+
           // Load inventory from widget settings
           var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
           INVENTORY = parseInventory(inventoryText);
