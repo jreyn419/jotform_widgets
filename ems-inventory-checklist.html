@@ -447,7 +447,7 @@
     
     .area-section.expanded .category-header {
       position: sticky;
-      top: 45px;
+      /* top value set dynamically by updateStickyOffsets() */
       z-index: 9;
     }
     
@@ -825,6 +825,7 @@
       background: white;
       border-top: 1px solid #eee;
       box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+      z-index: 5;
     }
     
     .restock-all-btn {
@@ -852,13 +853,6 @@
     }
     
 
-    .modal-body {
-      flex: 1;
-      overflow-y: auto;
-      min-height: 0;
-    }
-    
-
     .summary-empty {
       padding: 20px;
       text-align: center;
@@ -872,7 +866,7 @@
     }
     
     .shortage-group {
-      border-bottom: 1px solid #eee;
+      border-bottom: none;
     }
     
     .shortage-group:last-child {
@@ -881,19 +875,47 @@
     
     .shortage-group-header {
       padding: 12px 15px;
-      background: #f8f9fa;
-      font-size: 13px;
+      background: #333;
+      color: white;
+      font-size: 14px;
       font-weight: 600;
-      color: #333;
+      border-bottom: 1px solid #222;
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+
+    .shortage-cat-header {
+      padding: 8px 15px;
+      background: #f0f0f0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
       border-bottom: 1px solid #e0e0e0;
+      position: sticky;
+      /* top set dynamically by updateModalStickyOffsets() */
+      z-index: 2;
+    }
+
+    .shortage-subcat-header {
+      padding: 6px 15px 6px 30px;
+      background: #f5f5f5;
+      font-size: 11px;
+      font-weight: 600;
+      color: #666;
+      border-bottom: 1px solid #e8e8e8;
+      position: sticky;
+      /* top set dynamically by updateModalStickyOffsets() */
+      z-index: 1;
     }
     
     .shortage-item {
       display: flex;
-      flex-direction: column;
-      padding: 12px 15px;
+      align-items: center;
+      padding: 10px 15px;
       border-bottom: 1px solid #f0f0f0;
-      gap: 8px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     
     .shortage-item:last-child {
@@ -909,10 +931,33 @@
       background: #f8d7da;
     }
     
+    .shortage-item-qty {
+      font-size: 13px;
+      font-weight: 600;
+      flex-shrink: 0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      background: #fde8ea;
+      color: #dc3545;
+    }
+
+    .shortage-item-qty.partial {
+      background: #fff3cd;
+      color: #b8860b;
+    }
+
+    .shortage-item-qty.handled {
+      background: #e6f4ea;
+      color: #28a745;
+    }
+    
     .shortage-item-name {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 500;
       color: #333;
+      flex: 1;
+      min-width: 0;
     }
     
     .shortage-item-row {
@@ -923,14 +968,7 @@
     }
     
     .shortage-item-need {
-      display: inline-flex;
-      align-items: center;
-      background: #dc3545;
-      color: white;
-      font-size: 14px;
-      font-weight: 700;
-      padding: 8px 14px;
-      border-radius: 6px;
+      display: none;
     }
     
     .shortage-item-need.partial {
@@ -956,7 +994,6 @@
       align-items: center;
       gap: 5px;
       transition: all 0.15s;
-      min-width: 110px;
       justify-content: center;
     }
     
@@ -1471,6 +1508,118 @@
       padding-left: 30px;
     }
 
+    /* Changelog Overlay */
+    .changelog-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .changelog-overlay.open {
+      display: flex;
+    }
+
+    .changelog-dialog {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+
+    .changelog-header {
+      padding: 16px 20px 12px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .changelog-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: #999;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 2px;
+    }
+
+    .changelog-close:hover {
+      color: #333;
+    }
+
+    .changelog-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .changelog-version {
+      border-bottom: 1px solid #eee;
+    }
+
+    .changelog-version:last-child {
+      border-bottom: none;
+    }
+
+    .changelog-version-header {
+      padding: 10px 20px;
+      background: #f8f9fa;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .changelog-version-number {
+      font-size: 14px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .changelog-version-date {
+      font-size: 11px;
+      color: #999;
+    }
+
+    .changelog-changes {
+      padding: 6px 20px 12px 36px;
+      margin: 0;
+      list-style: disc;
+    }
+
+    .changelog-changes li {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.5;
+      margin-bottom: 2px;
+    }
+
+    .version-link {
+      font-size: 11px;
+      color: #aaa;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .version-link:hover {
+      color: #555;
+      text-decoration: underline;
+    }
+
 </style>
 </head>
 <body>
@@ -1585,8 +1734,19 @@
           <button class="reset-confirm-btn" id="resetConfirmBtn" onclick="confirmReset()">Reset</button>
         </div>
         <div style="padding: 8px 20px 12px; border-top: 1px solid #eee; margin-top: 4px; text-align: center;">
-          <span style="font-size: 11px; color: #bbb;">v1.0.4</span>
+          <a class="version-link" onclick="openChangelog()" id="versionDisplay"></a>
         </div>
+      </div>
+    </div>
+
+    <!-- Changelog Dialog -->
+    <div class="changelog-overlay" id="changelogOverlay" onclick="closeChangelog()">
+      <div class="changelog-dialog" onclick="event.stopPropagation()">
+        <div class="changelog-header">
+          <span>Version History</span>
+          <button class="changelog-close" onclick="closeChangelog()">&times;</button>
+        </div>
+        <div class="changelog-body" id="changelogBody"></div>
       </div>
     </div>
   </div>
@@ -1601,6 +1761,53 @@
     
     var DEFAULT_INVENTORY = "Area Name: Driver Compartment\nSealable: yes\nSafety Equipment\nFire Extinguisher|1\nReflective Vest|2\nTraffic Cones|3\nNavigation\nGPS Unit|1\nMap Book|1\n\nArea Name: Patient Compartment\nSealable: yes\nMonitoring\n>Cardiac\n>Cardiac Monitor|1\n>12-Lead ECG Cables|1\n>Defib Pads (Adult)|2\n>Respiratory\n>Pulse Oximeter|1\n>Capnography Tubing|2\nAirway Supplies\nBVM (Adult)|1\nBVM (Pediatric)|1\nOPA Set|1\nNPA Set|1\nKing Airway Kit|1\nET Tube Kit|1\nSuction Unit|1\nIV Supplies\nIV Start Kit|4\nNormal Saline 1000ml|2\nLactated Ringers|1\nIV Tubing|4\nMedications\nEpinephrine 1:10000|2\nAtropine|2\nAmiodarone|2\nNarcan|4\n\nArea Name: Upper CCT Cabinet\nSealable: yes\nCritical Care\nVentilator|1\nVent Circuit|2\nInfusion Pump|2\nPump Tubing|4\nPressure Bag|2\n\nArea Name: Bench Storage\n> Area Name: Left Bench\nSealable: yes\nBandaging\nGauze 4x4|20\nKerlix Rolls|6\nACE Wraps|4\nTriangular Bandage|4\nSplinting\nSAM Splint|2\nBoard Splint|2\nTraction Splint|1\n\n> Area Name: Right Bench\nSealable: yes\nCleaning\nHand Sanitizer|2\nDisinfectant Wipes|3\nBiohazard Bags|10\nLinens\nBlankets|4\nSheets|4\nPillowcase|4";
     
+    // =====================================================
+    // VERSION & CHANGELOG
+    // =====================================================
+
+    var VERSION = '1.2.0';
+    var CHANGELOG = [
+      { version: '1.2.0', date: '2026-02-22', changes: [
+        'Added version changelog dialog (click version number to view)',
+      ]},
+      { version: '1.1.3', date: '2026-02-22', changes: [
+        'Fixed sticky category/subcategory headers in restock modal (were not sticking due to measurement while modal hidden)',
+        'Removed duplicate modal-body CSS rule',
+      ]},
+      { version: '1.1.2', date: '2026-02-22', changes: [
+        'Fixed Mark All Restocked button falling behind sticky headers (z-index)',
+        'Restored full text on Restocked and Out of Stock buttons',
+      ]},
+      { version: '1.1.1', date: '2026-02-22', changes: [
+        'Clearer area separation in restock modal (dark headers)',
+        'Quantity badge styled like checklist, placed left of item name',
+        'Category headers sticky in restock modal',
+      ]},
+      { version: '1.1.0', date: '2026-02-22', changes: [
+        'Redesigned restock modal with checklist-like hierarchy (area > category > subcategory)',
+        'Parent/child area path shown in restock area headers',
+        'Larger quantity needed badge',
+      ]},
+      { version: '1.0.4', date: '2026-02-22', changes: [
+        'Fixed subcategory header gap in standalone areas (dynamic sticky offsets for all contexts)',
+        'Removed hardcoded CSS top values for category headers',
+      ]},
+      { version: '1.0.3', date: '2026-02-22', changes: [
+        'Fixed sticky header positioning for group child areas and subcategories (dynamic measurement)',
+      ]},
+      { version: '1.0.2', date: '2026-02-22', changes: [
+        'Added "Restore from last submission" reset option',
+        'Fixed formID caching from ready handler data',
+      ]},
+      { version: '1.0.1', date: '2026-02-22', changes: [
+        'Fixed duplicate seal buttons for parent areas',
+        'Fixed child seal button bottom padding',
+      ]},
+      { version: '1.0.0', date: '2026-02-22', changes: [
+        'Initial release with full inventory checklist, sealing, restock workflow',
+      ]},
+    ];
+
     // =====================================================
     // STATE
     // =====================================================
@@ -2594,9 +2801,8 @@
           areaHeader.style.top = groupHeaderH + 'px';
         }
 
-        // Set category header tops (matters for group child areas where
-        // the category must clear both the group header and child area header)
-        if (groupHeaderH > 0 && categoryHeaders.length > 0) {
+        // Set category header tops for ALL contexts (standalone and group)
+        if (categoryHeaders.length > 0) {
           var catTop = groupHeaderH + areaH;
           for (var c = 0; c < categoryHeaders.length; c++) {
             categoryHeaders[c].style.top = catTop + 'px';
@@ -3123,6 +3329,46 @@
     // =====================================================
 
     var selectedResetOption = null;
+
+    // =====================================================
+    // CHANGELOG DIALOG
+    // =====================================================
+
+    function openChangelog() {
+      var body = document.getElementById('changelogBody');
+      var html = '';
+      for (var i = 0; i < CHANGELOG.length; i++) {
+        var entry = CHANGELOG[i];
+        html += '<div class="changelog-version">';
+        html += '<div class="changelog-version-header">';
+        html += '<span class="changelog-version-number">v' + escapeHtml(entry.version) + '</span>';
+        if (entry.date) {
+          html += '<span class="changelog-version-date">' + escapeHtml(entry.date) + '</span>';
+        }
+        html += '</div>';
+        html += '<ul class="changelog-changes">';
+        for (var j = 0; j < entry.changes.length; j++) {
+          html += '<li>' + escapeHtml(entry.changes[j]) + '</li>';
+        }
+        html += '</ul>';
+        html += '</div>';
+      }
+      body.innerHTML = html;
+      document.getElementById('changelogOverlay').classList.add('open');
+    }
+
+    function closeChangelog() {
+      document.getElementById('changelogOverlay').classList.remove('open');
+    }
+
+    function initVersionDisplay() {
+      var el = document.getElementById('versionDisplay');
+      if (el) el.textContent = 'v' + VERSION;
+    }
+
+    // =====================================================
+    // RESET DIALOG
+    // =====================================================
 
     function openResetDialog() {
       selectedResetOption = null;
@@ -3697,6 +3943,40 @@
     }
     
     function updateSummary() {
+      // Helper to build a single shortage item's HTML
+      function buildShortageItemHtml(item) {
+        var status = restockStatus[item.key] || {};
+        var itemClass = '';
+        if (status.restocked) itemClass = 'restocked';
+        else if (status.outOfStock) itemClass = 'out-of-stock';
+
+        var qtyClass = 'shortage-item-qty';
+        var qtyText = '\u00d7' + item.shortage;
+        if (status.restocked || status.outOfStock) {
+          qtyClass += ' handled';
+        } else if (item.isPartial) {
+          qtyClass += ' partial';
+        }
+        
+        var h = '<div class="shortage-item ' + itemClass + '" data-key="' + escapeHtml(item.key) + '">';
+        h += '<span class="' + qtyClass + '">' + qtyText + '</span>';
+        h += '<div class="shortage-item-name">' + escapeHtml(item.name) + '</div>';
+        
+        if (status.restocked) {
+          h += '<button class="action-btn undo" onclick="undoRestock(\'' + escapeHtml(item.key) + '\')">Undo</button>';
+        } else if (status.outOfStock) {
+          h += '<button class="action-btn undo" onclick="undoRestock(\'' + escapeHtml(item.key) + '\')">Undo</button>';
+        } else {
+          h += '<div class="shortage-item-actions">';
+          h += '<button class="action-btn restock" onclick="markRestocked(\'' + escapeHtml(item.key) + '\')">✓ Restocked</button>';
+          h += '<button class="action-btn out-of-stock" onclick="openOutOfStockDialog(\'' + escapeHtml(item.key) + '\', \'' + escapeHtml(item.name) + '\')">Out of Stock</button>';
+          h += '</div>';
+        }
+        
+        h += '</div>';
+        return h;
+      }
+
       var shortages = [];
       var okCount = 0, shortCount = 0, missingCount = 0;
 
@@ -3780,62 +4060,136 @@
       } else {
         modalFooter.style.display = 'block';
         
-        // Group by area
+        // Build hierarchy: area -> category -> items
+        // Respect the same structure as the main checklist
         var byArea = {};
+        var areaOrder = [];
         for (var j = 0; j < shortages.length; j++) {
           var s = shortages[j];
-          if (!byArea[s.area]) byArea[s.area] = [];
-          byArea[s.area].push(s);
+          if (!byArea[s.area]) {
+            byArea[s.area] = {};
+            areaOrder.push(s.area);
+          }
+          if (!byArea[s.area][s.category]) {
+            byArea[s.area][s.category] = [];
+          }
+          byArea[s.area][s.category].push(s);
         }
         
         var html = '';
-        for (var area in byArea) {
+        for (var ai = 0; ai < areaOrder.length; ai++) {
+          var area = areaOrder[ai];
+          var cats = byArea[area];
+
+          // Check if this area is a child of a parent group
+          var parentName = areaParent[area] || null;
+          var areaLabel = parentName
+            ? escapeHtml(parentName) + ' &rsaquo; ' + escapeHtml(area)
+            : escapeHtml(area);
+
           html += '<div class="shortage-group">';
-          html += '<div class="shortage-group-header">' + escapeHtml(area) + '</div>';
+          html += '<div class="shortage-group-header">' + areaLabel + '</div>';
           
-          for (var k = 0; k < byArea[area].length; k++) {
-            var item = byArea[area][k];
-            var status = restockStatus[item.key] || {};
-            var itemClass = '';
-            if (status.restocked) itemClass = 'restocked';
-            else if (status.outOfStock) itemClass = 'out-of-stock';
-            
-            html += '<div class="shortage-item ' + itemClass + '" data-key="' + escapeHtml(item.key) + '">';
-            html += '<div class="shortage-item-name">' + escapeHtml(item.name) + '</div>';
-            
-            if (status.restocked) {
-              html += '<div class="shortage-item-status restocked">';
-              html += '<span>✓ Restocked</span>';
-              html += '<button class="action-btn undo" onclick="undoRestock(\'' + escapeHtml(item.key) + '\')">Undo</button>';
-              html += '</div>';
-            } else if (status.outOfStock) {
-              html += '<div class="shortage-item-status unavailable">';
-              html += '<span>✗ Out of Stock</span>';
-              if (status.reason) {
-                html += '<span class="status-reason">- ' + escapeHtml(status.reason) + '</span>';
-              }
-              html += '<button class="action-btn undo" onclick="undoRestock(\'' + escapeHtml(item.key) + '\')">Undo</button>';
-              html += '</div>';
-            } else {
-              html += '<div class="shortage-item-row">';
-              html += '<span class="shortage-item-need' + (item.isPartial ? ' partial' : '') + '">Need ' + item.shortage + '</span>';
-              html += '<div class="shortage-item-actions">';
-              html += '<button class="action-btn restock" onclick="markRestocked(\'' + escapeHtml(item.key) + '\')">✓ Restocked</button>';
-              html += '<button class="action-btn out-of-stock" onclick="openOutOfStockDialog(\'' + escapeHtml(item.key) + '\', \'' + escapeHtml(item.name) + '\')">Out of Stock</button>';
-              html += '</div>';
-              html += '</div>';
+          // Group categories in display order: top-level, then subcategories under their parent
+          var catOrder = [];
+          var catChildren = {};
+          for (var catName in cats) {
+            var metaKey = area + '::' + catName;
+            var meta = categoryMeta[metaKey] || { level: 0, parent: null };
+            if (meta.level === 0) {
+              catOrder.push(catName);
+              if (!catChildren[catName]) catChildren[catName] = [];
+            } else if (meta.parent) {
+              if (!catChildren[meta.parent]) catChildren[meta.parent] = [];
+              catChildren[meta.parent].push(catName);
             }
-            
-            html += '</div>';
+          }
+
+          // Also include parent categories that have no direct shortages but have sub-shortages
+          for (var catName in cats) {
+            var metaKey = area + '::' + catName;
+            var meta = categoryMeta[metaKey] || { level: 0, parent: null };
+            if (meta.level === 1 && meta.parent) {
+              if (catOrder.indexOf(meta.parent) === -1) {
+                catOrder.push(meta.parent);
+              }
+              if (!catChildren[meta.parent]) catChildren[meta.parent] = [];
+              if (catChildren[meta.parent].indexOf(catName) === -1) {
+                catChildren[meta.parent].push(catName);
+              }
+            }
+          }
+
+          for (var ci = 0; ci < catOrder.length; ci++) {
+            var topCat = catOrder[ci];
+            var topCatItems = cats[topCat] || [];
+            var subCats = catChildren[topCat] || [];
+            var hasSubCats = subCats.length > 0;
+            var hasDirectItems = topCatItems.length > 0;
+
+            // Show category header if there are direct items or subcategories
+            if (hasDirectItems || hasSubCats) {
+              html += '<div class="shortage-cat-header">' + escapeHtml(topCat) + '</div>';
+            }
+
+            // Direct items under this top-level category
+            for (var k = 0; k < topCatItems.length; k++) {
+              html += buildShortageItemHtml(topCatItems[k]);
+            }
+
+            // Subcategories
+            for (var si = 0; si < subCats.length; si++) {
+              var subCatName = subCats[si];
+              var subCatItems = cats[subCatName] || [];
+              if (subCatItems.length === 0) continue;
+
+              var subMeta = categoryMeta[area + '::' + subCatName];
+              var subDisplayName = (subMeta && subMeta.displayName) || subCatName;
+              html += '<div class="shortage-subcat-header">' + escapeHtml(subDisplayName) + '</div>';
+
+              for (var k = 0; k < subCatItems.length; k++) {
+                html += buildShortageItemHtml(subCatItems[k]);
+              }
+            }
           }
           
           html += '</div>';
         }
         
         summaryContent.innerHTML = html;
+
+        // Dynamically set sticky tops for modal headers
+        updateModalStickyOffsets();
       }
 
       saveState();
+    }
+
+    // Dynamically set sticky tops for modal area/category/subcategory headers
+    function updateModalStickyOffsets() {
+      var modalBody = document.getElementById('summaryContent');
+      if (!modalBody) return;
+      var areaHeaders = modalBody.querySelectorAll('.shortage-group-header');
+      var catHeaders = modalBody.querySelectorAll('.shortage-cat-header');
+      var subHeaders = modalBody.querySelectorAll('.shortage-subcat-header');
+      
+      var areaH = 0;
+      if (areaHeaders.length > 0) {
+        areaH = areaHeaders[0].getBoundingClientRect().height;
+      }
+      var catH = 0;
+      if (catHeaders.length > 0) {
+        for (var i = 0; i < catHeaders.length; i++) {
+          catHeaders[i].style.top = areaH + 'px';
+        }
+        catH = catHeaders[0].getBoundingClientRect().height;
+      }
+      if (subHeaders.length > 0) {
+        var subTop = areaH + catH;
+        for (var i = 0; i < subHeaders.length; i++) {
+          subHeaders[i].style.top = subTop + 'px';
+        }
+      }
     }
 
     // Check if all items are fully stocked and show completion popup
@@ -3860,6 +4214,10 @@
         return;
       }
       document.getElementById('modalOverlay').classList.add('open');
+      // Sticky offsets need measurement after the modal is visible
+      requestAnimationFrame(function() {
+        updateModalStickyOffsets();
+      });
     }
     
     function closeRestockModal() {
@@ -4144,6 +4502,8 @@
     // =====================================================
     
     function init() {
+      initVersionDisplay();
+
       // Add input handler for other reason textarea
       document.getElementById('outOfStockReason').addEventListener('input', function() {
         var hasText = this.value.trim().length > 0;
