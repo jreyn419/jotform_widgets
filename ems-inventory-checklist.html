@@ -1584,8 +1584,8 @@
           <button class="reset-cancel-btn" onclick="closeResetDialog()">Cancel</button>
           <button class="reset-confirm-btn" id="resetConfirmBtn" onclick="confirmReset()">Reset</button>
         </div>
-        <div style="padding: 0 20px 16px; border-top: 1px solid #eee; margin-top: 4px; padding-top: 12px;">
-          <button onclick="clearLocalStorage()" style="width:100%; padding:10px 16px; background:#f0f0f0; border:1px solid #ccc; border-radius:6px; font-size:13px; font-weight:600; color:#555; cursor:pointer; transition: background 0.15s;">Clear Local Storage</button>
+        <div style="padding: 8px 20px 12px; border-top: 1px solid #eee; margin-top: 4px; text-align: center;">
+          <span style="font-size: 11px; color: #bbb;">v1.0.1</span>
         </div>
       </div>
     </div>
@@ -3064,22 +3064,6 @@
       selectedResetOption = null;
     }
 
-    function clearLocalStorage() {
-      if (!confirm('This will clear all locally stored checklist data (item counts, seals, restock decisions) from this browser. Continue?')) return;
-      try { localStorage.removeItem(getStorageKey()); } catch (e) {}
-      try { localStorage.removeItem(getSealStorageKey()); } catch (e) {}
-      itemStates = {};
-      taggedAreas = {};
-      restockStatus = {};
-      brokenSeals = [];
-      collapsedCategories = {};
-      expandedArea = null;
-      expandedGroup = null;
-      closeResetDialog();
-      buildUI();
-      if (stateReady) saveState();
-    }
-
     function selectResetOption(option) {
       selectedResetOption = option;
       var options = document.querySelectorAll('.reset-option');
@@ -3118,7 +3102,7 @@
           return;
         }
         if (!apiKey || !formID) {
-          alert('Jotform API key or form ID not available.');
+          alert('Restore failed. API key: ' + (apiKey ? 'OK' : 'MISSING') + ', Form ID: ' + (formID ? formID : 'MISSING') + ', Cached: ' + (cachedFormID ? cachedFormID : 'NONE'));
           return;
         }
 
