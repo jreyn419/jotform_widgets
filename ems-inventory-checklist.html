@@ -1567,6 +1567,9 @@
           <button class="reset-cancel-btn" onclick="closeResetDialog()">Cancel</button>
           <button class="reset-confirm-btn" id="resetConfirmBtn" onclick="confirmReset()">Reset</button>
         </div>
+        <div style="padding: 0 20px 16px; border-top: 1px solid #eee; margin-top: 4px; padding-top: 12px;">
+          <button onclick="clearLocalStorage()" style="width:100%; padding:10px 16px; background:#f0f0f0; border:1px solid #ccc; border-radius:6px; font-size:13px; font-weight:600; color:#555; cursor:pointer; transition: background 0.15s;">Clear Local Storage</button>
+        </div>
       </div>
     </div>
   </div>
@@ -3031,6 +3034,22 @@
     function closeResetDialog() {
       document.getElementById('resetOverlay').classList.remove('open');
       selectedResetOption = null;
+    }
+
+    function clearLocalStorage() {
+      if (!confirm('This will clear all locally stored checklist data (item counts, seals, restock decisions) from this browser. Continue?')) return;
+      try { localStorage.removeItem(getStorageKey()); } catch (e) {}
+      try { localStorage.removeItem(getSealStorageKey()); } catch (e) {}
+      itemStates = {};
+      taggedAreas = {};
+      restockStatus = {};
+      brokenSeals = [];
+      collapsedCategories = {};
+      expandedArea = null;
+      expandedGroup = null;
+      closeResetDialog();
+      buildUI();
+      if (stateReady) saveState();
     }
 
     function selectResetOption(option) {
