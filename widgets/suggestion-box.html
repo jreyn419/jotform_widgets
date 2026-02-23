@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suggestion Box</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+    }
+
+    .widget-container {
+      padding: 10px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    .suggestion-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #333;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .suggestion-textarea:focus {
+      outline: none;
+      border-color: #0066cc;
+      box-shadow: 0 0 0 2px rgba(0,102,204,0.15);
+    }
+
+    .textarea-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+
+    .char-counter {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .char-counter.over-limit {
+      color: #dc3545;
+      font-weight: 600;
+    }
+
+    .submit-btn {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px 16px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background: #0055aa;
+    }
+
+    .submit-btn:disabled {
+      background: #b0c4de;
+      cursor: not-allowed;
+    }
+
+    /* Success state */
+    .success-view {
+      padding: 32px 16px;
+      text-align: center;
+    }
+
+    .success-icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .success-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .success-message {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    .reset-link {
+      font-size: 13px;
+      color: #0066cc;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      text-decoration: underline;
+    }
+
+    .reset-link:hover {
+      color: #0055aa;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget-container">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title" id="widgetTitle">Suggestion Box</h2>
+      </div>
+
+      <!-- Input view -->
+      <div class="card-body" id="inputView">
+        <textarea
+          id="suggestionText"
+          class="suggestion-textarea"
+          placeholder="Share your suggestion..."
+        ></textarea>
+        <div class="textarea-footer" id="charCounterWrap" style="display:none;">
+          <span class="char-counter" id="charCounter"></span>
+        </div>
+        <button class="submit-btn" id="submitBtn" disabled>Submit</button>
+      </div>
+
+      <!-- Success view -->
+      <div id="successView" style="display:none;">
+        <div class="success-view">
+          <div class="success-icon">&#10004;</div>
+          <div class="success-title">Thank you!</div>
+          <div class="success-message">Your suggestion has been submitted.</div>
+          <button class="reset-link" id="resetBtn">Submit another</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+  <script>
+    // =====================================================
+    // CONFIG — overridden by widget settings when available
+    // =====================================================
+
+    var CONFIG = {
+      title: 'Suggestion Box',
+      placeholder: 'Share your suggestion...',
+      charLimit: 500  // 0 = unlimited
+    };
+
+    // =====================================================
+    // DOM REFS
+    // =====================================================
+
+    var titleEl = document.getElementById('widgetTitle');
+    var inputView = document.getElementById('inputView');
+    var successView = document.getElementById('successView');
+    var textarea = document.getElementById('suggestionText');
+    var submitBtn = document.getElementById('submitBtn');
+    var resetBtn = document.getElementById('resetBtn');
+    var charCounterWrap = document.getElementById('charCounterWrap');
+    var charCounter = document.getElementById('charCounter');
+
+    // =====================================================
+    // CHAR COUNTER & VALIDATION
+    // =====================================================
+
+    function updateCharCounter() {
+      var len = textarea.value.length;
+
+      if (CONFIG.charLimit > 0) {
+        charCounterWrap.style.display = '';
+        charCounter.textContent = len + ' / ' + CONFIG.charLimit;
+        if (len > CONFIG.charLimit) {
+          charCounter.classList.add('over-limit');
+        } else {
+          charCounter.classList.remove('over-limit');
+        }
+      } else {
+        charCounterWrap.style.display = 'none';
+      }
+
+      updateSubmitButton();
+      resizeWidget();
+    }
+
+    function updateSubmitButton() {
+      var len = textarea.value.trim().length;
+      var overLimit = CONFIG.charLimit > 0 && textarea.value.length > CONFIG.charLimit;
+      submitBtn.disabled = len === 0 || overLimit;
+    }
+
+    // =====================================================
+    // SUBMIT / RESET
+    // =====================================================
+
+    function handleSubmit() {
+      var text = textarea.value.trim();
+      if (!text) return;
+      if (CONFIG.charLimit > 0 && text.length > CONFIG.charLimit) return;
+
+      // Store the value for JotForm
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
+        JFCustomWidget.sendData({ value: text });
+      }
+
+      showSuccess();
+    }
+
+    function showSuccess() {
+      inputView.style.display = 'none';
+      successView.style.display = '';
+      resizeWidget();
+    }
+
+    function resetForm() {
+      textarea.value = '';
+      inputView.style.display = '';
+      successView.style.display = 'none';
+      updateCharCounter();
+      textarea.focus();
+      resizeWidget();
+    }
+
+    // =====================================================
+    // APPLY SETTINGS
+    // =====================================================
+
+    function applySettings() {
+      titleEl.textContent = CONFIG.title;
+      textarea.setAttribute('placeholder', CONFIG.placeholder);
+      updateCharCounter();
+    }
+
+    // =====================================================
+    // UTILS
+    // =====================================================
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function resizeWidget() {
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.requestFrameResize) {
+        JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight });
+      }
+    }
+
+    // =====================================================
+    // EVENT LISTENERS
+    // =====================================================
+
+    textarea.addEventListener('input', updateCharCounter);
+    submitBtn.addEventListener('click', handleSubmit);
+    resetBtn.addEventListener('click', resetForm);
+
+    // =====================================================
+    // INIT
+    // =====================================================
+
+    function init() {
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
+        JFCustomWidget.subscribe('ready', function(data) {
+          var title = JFCustomWidget.getWidgetSetting('title');
+          var placeholder = JFCustomWidget.getWidgetSetting('placeholder');
+          var charLimit = JFCustomWidget.getWidgetSetting('charLimit');
+
+          if (title) CONFIG.title = title;
+          if (placeholder) CONFIG.placeholder = placeholder;
+          if (charLimit !== undefined && charLimit !== null && charLimit !== '') {
+            CONFIG.charLimit = Math.max(0, parseInt(charLimit, 10) || 0);
+          }
+
+          applySettings();
+
+          // Restore value if editing a submission
+          if (data && data.value) {
+            textarea.value = data.value;
+            updateCharCounter();
+          }
+
+          resizeWidget();
+        });
+
+        JFCustomWidget.subscribe('submit', function() {
+          var text = textarea.value.trim();
+          JFCustomWidget.sendSubmit({ value: text, valid: text.length > 0 });
+        });
+      } else {
+        // Standalone mode
+        applySettings();
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
