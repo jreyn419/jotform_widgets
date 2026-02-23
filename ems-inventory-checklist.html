@@ -872,7 +872,12 @@
     .shortage-group:last-child {
       border-bottom: none;
     }
-    
+
+    .shortage-cat-section {
+      /* Scoping container for each top-level category so that sticky
+         subcategory headers unstick when scrolling past their category */
+    }
+
     .shortage-group-header {
       padding: 12px 15px;
       background: #333;
@@ -4127,6 +4132,11 @@
             var hasSubCats = subCats.length > 0;
             var hasDirectItems = topCatItems.length > 0;
 
+            // Wrap each top-level category in its own container so sticky
+            // subcategory headers are scoped to this category section and
+            // don't stay stuck when scrolling into the next category.
+            html += '<div class="shortage-cat-section">';
+
             // Show category header if there are direct items or subcategories
             if (hasDirectItems || hasSubCats) {
               html += '<div class="shortage-cat-header">' + escapeHtml(topCat) + '</div>';
@@ -4151,6 +4161,8 @@
                 html += buildShortageItemHtml(subCatItems[k]);
               }
             }
+
+            html += '</div>'; // close shortage-cat-section
           }
           
           html += '</div>';
