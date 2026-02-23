@@ -1934,6 +1934,23 @@
       }
     }
 
+    // Parse a submission value that may be either:
+    //  (a) pure JSON (old format / draft saves via syncToJotForm), or
+    //  (b) human-readable report with JSON appended after __SYNC__ marker.
+    // Returns the parsed data object, or null on failure.
+    function extractSyncData(raw) {
+      if (!raw || typeof raw !== 'string') return null;
+      // Try pure JSON first (old format / draft saves)
+      try { return JSON.parse(raw); } catch (e) {}
+      // Try extracting JSON after the sync marker
+      var marker = '\n__SYNC__\n';
+      var idx = raw.indexOf(marker);
+      if (idx !== -1) {
+        try { return JSON.parse(raw.substring(idx + marker.length)); } catch (e) {}
+      }
+      return null;
+    }
+
     // =====================================================
     // CROSS-DEVICE PERSISTENCE (JotForm Submissions API)
     // =====================================================
@@ -1986,7 +2003,8 @@
             }
             if (!raw) { callback(null); return; }
 
-            var parsed = JSON.parse(raw);
+            var parsed = extractSyncData(raw);
+            if (!parsed) { callback(null); return; }
 
             // Jotform may HTML-entity-encode submission values (e.g. -> becomes -&gt;).
             // Decode so that keys match the original inventory area names.
@@ -4437,16 +4455,29 @@
         });
       }
 
-      // Generate readable output
+      // Generate human-readable report
+      var now = new Date();
+      var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+      var hours = now.getHours();
+      var ampm = hours >= 12 ? 'PM' : 'AM';
+      var h = hours % 12 || 12;
+      var min = now.getMinutes() < 10 ? '0' + now.getMinutes() : '' + now.getMinutes();
+      var dateHeader = months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear() + ' at ' + h + ':' + min + ' ' + ampm;
+
       var lines = [];
+      lines.push('INVENTORY CHECK REPORT');
+      lines.push(dateHeader);
+      lines.push('========================');
+      lines.push('');
 
       if (brokenSeals.length > 0) {
         lines.push('BROKEN SEALS (' + brokenSeals.length + ')');
-        lines.push('============');
+        lines.push('------------');
         for (var b = 0; b < brokenSeals.length; b++) {
           var bs = brokenSeals[b];
           var reasonLabel = bs.reason === 'missing' ? 'Seal was missing' : 'Scheduled review';
-          var bLine = '• ' + bs.area + ' - ' + reasonLabel;
+          var bLine = '- ' + bs.area + ' — ' + reasonLabel;
           if (bs.taggedDate) {
             bLine += ' (was sealed since ' + formatTagDate(bs.taggedDate) + ')';
           }
@@ -4457,10 +4488,10 @@
 
       if (taggedList.length > 0) {
         lines.push('SEALED/TAGGED AREAS (' + taggedList.length + ')');
-        lines.push('====================');
+        lines.push('------------');
         for (var t = 0; t < taggedList.length; t++) {
           var ta = taggedList[t];
-          var tagLine = '• ' + ta.area + ' - Tagged: ' + formatTagDate(ta.taggedDate) + ' (' + ta.daysSinceTagged + ' days)';
+          var tagLine = '- ' + ta.area + ' — Tagged: ' + formatTagDate(ta.taggedDate) + ' (' + ta.daysSinceTagged + ' days)';
           if (ta.reviewNeeded) {
             tagLine += ' [REVIEW OVERDUE]';
           }
@@ -4471,38 +4502,44 @@
 
       if (restockedItems.length > 0) {
         lines.push('RESTOCKED ITEMS (' + restockedItems.length + ')');
-        lines.push('================');
+        lines.push('------------');
         for (var i = 0; i < restockedItems.length; i++) {
           var r = restockedItems[i];
-          lines.push('• ' + r.name + ' (x' + r.quantityRestocked + ') - ' + r.area);
+          lines.push('- ' + r.name + ' (x' + r.quantityRestocked + ') — ' + r.area);
         }
         lines.push('');
       }
 
       if (unavailableItems.length > 0) {
         lines.push('UNAVAILABLE ITEMS (' + unavailableItems.length + ')');
-        lines.push('==================');
+        lines.push('------------');
         for (var j = 0; j < unavailableItems.length; j++) {
           var u = unavailableItems[j];
-          lines.push('• ' + u.name + ' (need ' + u.quantityNeeded + ') - ' + u.area);
+          lines.push('- ' + u.name + ' (need ' + u.quantityNeeded + ') — ' + u.area);
           lines.push('  Reason: ' + u.reason);
         }
         lines.push('');
       }
 
-      if (lines.length === 0) {
+      if (restockedItems.length === 0 && unavailableItems.length === 0 &&
+          brokenSeals.length === 0 && taggedList.length === 0) {
         lines.push('No restock actions recorded.');
+        lines.push('');
       }
 
-      return {
-        report: lines.join('\n'),
-        restockedItems: restockedItems,
-        unavailableItems: unavailableItems,
+      // Machine-readable sync data (consumed by cross-device seal sync
+      // and form-edit restoration — do not remove)
+      var syncData = {
         taggedAreas: taggedAreas,
         brokenSeals: brokenSeals,
         itemStates: itemStates,
         restockStatus: restockStatus,
         timestamp: Date.now()
+      };
+
+      return {
+        report: lines.join('\n'),
+        syncData: syncData
       };
     }
     
@@ -4573,7 +4610,7 @@
           var saved = null;
           var isLocalRestore = false;
           if (data.value) {
-            try { saved = JSON.parse(data.value); } catch (e) {}
+            saved = extractSyncData(data.value);
           }
           if (!saved) {
             saved = loadState();
@@ -4666,9 +4703,10 @@
 
         JFCustomWidget.subscribe('submit', function() {
           var submitData = generateSubmitValue();
+          var value = submitData.report + '\n__SYNC__\n' + JSON.stringify(submitData.syncData);
           JFCustomWidget.sendSubmit({
             valid: true,
-            value: JSON.stringify(submitData)
+            value: value
           });
 
           // Clear per-submission state so the next session starts fresh for
