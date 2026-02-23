@@ -1770,8 +1770,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.4.2';
+    var VERSION = '1.4.3';
     var CHANGELOG = [
+      { version: '1.4.3', date: '2026-02-23', changes: [
+        'sendData now sends formatted report again (JotForm uses sendData value as final submission)',
+        'Report uses <br> line breaks since JotForm strips plain newlines in submission display',
+      ]},
       { version: '1.4.2', date: '2026-02-23', changes: [
         'Reverted sendData (draft saves) to raw JSON — fixes missing restocked items in submissions',
         'Only sendSubmit (final submission) generates the human-readable report',
@@ -1947,14 +1951,9 @@
     function syncToJotForm() {
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
         try {
-          var state = {
-            itemStates: itemStates,
-            taggedAreas: taggedAreas,
-            restockStatus: restockStatus,
-            brokenSeals: brokenSeals,
-            timestamp: Date.now()
-          };
-          JFCustomWidget.sendData({ value: JSON.stringify(state) });
+          var submitData = generateSubmitValue();
+          var value = submitData.report + '\n\n___SYNC_DATA___\n' + JSON.stringify(submitData.syncData);
+          JFCustomWidget.sendData({ value: value });
         } catch (e) {}
       }
     }
@@ -4503,7 +4502,9 @@
         });
       }
 
-      // Generate human-readable HTML report
+      // Generate plain-text report for JotForm submission display.
+      // JotForm collapses whitespace/newlines in submission values, so we
+      // use <br> tags for line breaks — JotForm renders these in its viewer.
       var now = new Date();
       var months = ['January', 'February', 'March', 'April', 'May', 'June',
                     'July', 'August', 'September', 'October', 'November', 'December'];
@@ -4610,7 +4611,7 @@
         lines.push('');
       }
 
-      var report = lines.join('\n');
+      var report = lines.join('<br>\n');
 
       // Machine-readable sync data (consumed by cross-device seal sync
       // and form-edit restoration — do not remove)
