@@ -1770,8 +1770,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.3.0';
+    var VERSION = '1.3.1';
     var CHANGELOG = [
+      { version: '1.3.1', date: '2026-02-23', changes: [
+        'Fixed draft saves (sendData) sending raw JSON instead of formatted HTML report',
+        'Submissions now always contain the human-readable report regardless of save path',
+      ]},
       { version: '1.3.0', date: '2026-02-23', changes: [
         'Submission data is now a formatted HTML report instead of raw JSON',
         'Report groups restocked and unavailable items by area',
@@ -1929,14 +1933,9 @@
     function syncToJotForm() {
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
         try {
-          var state = {
-            itemStates: itemStates,
-            taggedAreas: taggedAreas,
-            restockStatus: restockStatus,
-            brokenSeals: brokenSeals,
-            timestamp: Date.now()
-          };
-          JFCustomWidget.sendData({ value: JSON.stringify(state) });
+          var submitData = generateSubmitValue();
+          var value = submitData.report + '<!--__SYNC__:' + JSON.stringify(submitData.syncData) + '-->';
+          JFCustomWidget.sendData({ value: value });
         } catch (e) {}
       }
     }
