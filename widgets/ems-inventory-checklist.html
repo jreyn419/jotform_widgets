@@ -1770,8 +1770,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.4.0';
+    var VERSION = '1.4.1';
     var CHANGELOG = [
+      { version: '1.4.1', date: '2026-02-23', changes: [
+        'Fixed sync data appearing in submissions (HTML comment delimiter was entity-encoded by JotForm)',
+        'Sync data now uses plain-text ___SYNC_DATA___ delimiter that is visually separated from report',
+        'extractSyncData now handles entity-encoded legacy formats for backward compatibility',
+      ]},
       { version: '1.4.0', date: '2026-02-23', changes: [
         'Submission report is now plain text instead of HTML (JotForm entity-encodes HTML, making it unreadable)',
         'Report uses Unicode box-drawing characters and emoji section headers for readability',
@@ -1938,7 +1943,7 @@
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
         try {
           var submitData = generateSubmitValue();
-          var value = submitData.report + '<!--__SYNC__:' + JSON.stringify(submitData.syncData) + '-->';
+          var value = submitData.report + '\n\n___SYNC_DATA___\n' + JSON.stringify(submitData.syncData);
           JFCustomWidget.sendData({ value: value });
         } catch (e) {}
       }
@@ -1946,23 +1951,36 @@
 
     // Parse a submission value that may be:
     //  (a) pure JSON (old format / draft saves via syncToJotForm),
-    //  (b) plain text with __SYNC__ marker (transitional format), or
+    //  (b) plain-text report with ___SYNC_DATA___ delimiter (current format), or
+    //  (c) HTML with <!--__SYNC__:--> comment (legacy), or
+    //  (d) plain text with __SYNC__ marker (transitional format).
     //  (c) HTML report with sync data in an HTML comment.
     // Returns the parsed data object, or null on failure.
     function extractSyncData(raw) {
       if (!raw || typeof raw !== 'string') return null;
       // Try pure JSON first (old format / draft saves)
       try { return JSON.parse(raw); } catch (e) {}
-      // Check for HTML comment format: <!--__SYNC__:{...}-->
-      var commentStart = '<!--__SYNC__:';
-      var ci = raw.indexOf(commentStart);
-      if (ci !== -1) {
-        var ce = raw.indexOf('-->', ci);
-        if (ce !== -1) {
-          try { return JSON.parse(raw.substring(ci + commentStart.length, ce)); } catch (e) {}
+      // Current format: plain-text delimiter (immune to entity encoding)
+      var syncMarker = '\n\n___SYNC_DATA___\n';
+      var si = raw.indexOf(syncMarker);
+      if (si !== -1) {
+        try { return JSON.parse(raw.substring(si + syncMarker.length)); } catch (e) {}
+      }
+      // Legacy: HTML comment format (may appear raw or entity-encoded)
+      var commentVariants = ['<!--__SYNC__:', '&lt;!--__SYNC__:'];
+      var endVariants = ['-->', '--&gt;'];
+      for (var v = 0; v < commentVariants.length; v++) {
+        var ci = raw.indexOf(commentVariants[v]);
+        if (ci !== -1) {
+          for (var ev = 0; ev < endVariants.length; ev++) {
+            var ce = raw.indexOf(endVariants[ev], ci);
+            if (ce !== -1) {
+              try { return JSON.parse(raw.substring(ci + commentVariants[v].length, ce)); } catch (e) {}
+            }
+          }
         }
       }
-      // Check for plain text marker (transitional)
+      // Legacy: plain text marker (transitional)
       var marker = '\n__SYNC__\n';
       var idx = raw.indexOf(marker);
       if (idx !== -1) {
@@ -4760,7 +4778,7 @@
 
         JFCustomWidget.subscribe('submit', function() {
           var submitData = generateSubmitValue();
-          var value = submitData.report + '<!--__SYNC__:' + JSON.stringify(submitData.syncData) + '-->';
+          var value = submitData.report + '\n\n___SYNC_DATA___\n' + JSON.stringify(submitData.syncData);
           JFCustomWidget.sendSubmit({
             valid: true,
             value: value
