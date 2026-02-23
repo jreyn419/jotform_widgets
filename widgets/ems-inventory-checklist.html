@@ -1770,8 +1770,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.4.1';
+    var VERSION = '1.4.2';
     var CHANGELOG = [
+      { version: '1.4.2', date: '2026-02-23', changes: [
+        'Reverted sendData (draft saves) to raw JSON — fixes missing restocked items in submissions',
+        'Only sendSubmit (final submission) generates the human-readable report',
+        'Added "End of Report" marker before sync data block',
+      ]},
       { version: '1.4.1', date: '2026-02-23', changes: [
         'Fixed sync data appearing in submissions (HTML comment delimiter was entity-encoded by JotForm)',
         'Sync data now uses plain-text ___SYNC_DATA___ delimiter that is visually separated from report',
@@ -1942,9 +1947,14 @@
     function syncToJotForm() {
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
         try {
-          var submitData = generateSubmitValue();
-          var value = submitData.report + '\n\n___SYNC_DATA___\n' + JSON.stringify(submitData.syncData);
-          JFCustomWidget.sendData({ value: value });
+          var state = {
+            itemStates: itemStates,
+            taggedAreas: taggedAreas,
+            restockStatus: restockStatus,
+            brokenSeals: brokenSeals,
+            timestamp: Date.now()
+          };
+          JFCustomWidget.sendData({ value: JSON.stringify(state) });
         } catch (e) {}
       }
     }
@@ -4778,7 +4788,7 @@
 
         JFCustomWidget.subscribe('submit', function() {
           var submitData = generateSubmitValue();
-          var value = submitData.report + '\n\n___SYNC_DATA___\n' + JSON.stringify(submitData.syncData);
+          var value = submitData.report + '\n\n--- End of Report ---\n\n___SYNC_DATA___\n' + JSON.stringify(submitData.syncData);
           JFCustomWidget.sendSubmit({
             valid: true,
             value: value
