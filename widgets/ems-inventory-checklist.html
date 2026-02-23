@@ -1934,15 +1934,25 @@
       }
     }
 
-    // Parse a submission value that may be either:
-    //  (a) pure JSON (old format / draft saves via syncToJotForm), or
-    //  (b) human-readable report with JSON appended after __SYNC__ marker.
+    // Parse a submission value that may be:
+    //  (a) pure JSON (old format / draft saves via syncToJotForm),
+    //  (b) plain text with __SYNC__ marker (transitional format), or
+    //  (c) HTML report with sync data in an HTML comment.
     // Returns the parsed data object, or null on failure.
     function extractSyncData(raw) {
       if (!raw || typeof raw !== 'string') return null;
       // Try pure JSON first (old format / draft saves)
       try { return JSON.parse(raw); } catch (e) {}
-      // Try extracting JSON after the sync marker
+      // Check for HTML comment format: <!--__SYNC__:{...}-->
+      var commentStart = '<!--__SYNC__:';
+      var ci = raw.indexOf(commentStart);
+      if (ci !== -1) {
+        var ce = raw.indexOf('-->', ci);
+        if (ce !== -1) {
+          try { return JSON.parse(raw.substring(ci + commentStart.length, ce)); } catch (e) {}
+        }
+      }
+      // Check for plain text marker (transitional)
       var marker = '\n__SYNC__\n';
       var idx = raw.indexOf(marker);
       if (idx !== -1) {
@@ -4455,7 +4465,7 @@
         });
       }
 
-      // Generate human-readable report
+      // Generate human-readable HTML report
       var now = new Date();
       var months = ['January', 'February', 'March', 'April', 'May', 'June',
                     'July', 'August', 'September', 'October', 'November', 'December'];
@@ -4465,67 +4475,103 @@
       var min = now.getMinutes() < 10 ? '0' + now.getMinutes() : '' + now.getMinutes();
       var dateHeader = months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear() + ' at ' + h + ':' + min + ' ' + ampm;
 
-      var lines = [];
-      lines.push('INVENTORY CHECK REPORT');
-      lines.push(dateHeader);
-      lines.push('========================');
-      lines.push('');
+      // Helper: group an array of items by their .area property
+      var groupByArea = function(items) {
+        var groups = {};
+        var order = [];
+        for (var i = 0; i < items.length; i++) {
+          var area = items[i].area;
+          if (!groups[area]) { groups[area] = []; order.push(area); }
+          groups[area].push(items[i]);
+        }
+        return { groups: groups, order: order };
+      };
 
+      // Build summary line
+      var summaryParts = [];
+      if (restockedItems.length > 0) summaryParts.push(restockedItems.length + ' restocked');
+      if (unavailableItems.length > 0) summaryParts.push(unavailableItems.length + ' unavailable');
+      if (brokenSeals.length > 0) summaryParts.push(brokenSeals.length + ' broken seal' + (brokenSeals.length > 1 ? 's' : ''));
+      if (taggedList.length > 0) summaryParts.push(taggedList.length + ' sealed area' + (taggedList.length > 1 ? 's' : ''));
+
+      var html = '';
+      html += '<div style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Arial, sans-serif; line-height: 1.6; color: #333;">';
+      html += '<h2 style="margin: 0 0 2px 0; font-size: 18px;">Inventory Check Report</h2>';
+      html += '<span style="color: #888; font-size: 14px;">' + escapeHtml(dateHeader) + '</span>';
+      html += '<hr style="border: none; border-top: 2px solid #ddd; margin: 12px 0;">';
+
+      if (summaryParts.length > 0) {
+        html += '<p style="margin: 0 0 16px 0; font-size: 14px; color: #555;"><b>Summary:</b> ' + escapeHtml(summaryParts.join(', ')) + '</p>';
+      } else {
+        html += '<p style="margin: 0 0 16px 0; font-size: 14px; color: #555;">All items accounted for. No restock actions needed.</p>';
+      }
+
+      // --- Broken Seals ---
       if (brokenSeals.length > 0) {
-        lines.push('BROKEN SEALS (' + brokenSeals.length + ')');
-        lines.push('------------');
+        html += '<h3 style="margin: 20px 0 8px 0; font-size: 15px; color: #dc3545; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px;">Broken Seals (' + brokenSeals.length + ')</h3>';
+        html += '<ul style="margin: 0; padding-left: 20px;">';
         for (var b = 0; b < brokenSeals.length; b++) {
           var bs = brokenSeals[b];
           var reasonLabel = bs.reason === 'missing' ? 'Seal was missing' : 'Scheduled review';
-          var bLine = '- ' + bs.area + ' — ' + reasonLabel;
+          html += '<li style="margin-bottom: 4px;"><b>' + escapeHtml(bs.area) + '</b> &mdash; ' + escapeHtml(reasonLabel);
           if (bs.taggedDate) {
-            bLine += ' (was sealed since ' + formatTagDate(bs.taggedDate) + ')';
+            html += ' <span style="color: #888;">(sealed since ' + escapeHtml(formatTagDate(bs.taggedDate)) + ')</span>';
           }
-          lines.push(bLine);
+          html += '</li>';
         }
-        lines.push('');
+        html += '</ul>';
       }
 
+      // --- Sealed / Tagged Areas ---
       if (taggedList.length > 0) {
-        lines.push('SEALED/TAGGED AREAS (' + taggedList.length + ')');
-        lines.push('------------');
+        html += '<h3 style="margin: 20px 0 8px 0; font-size: 15px; color: #0066cc; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px;">Sealed / Tagged Areas (' + taggedList.length + ')</h3>';
+        html += '<ul style="margin: 0; padding-left: 20px;">';
         for (var t = 0; t < taggedList.length; t++) {
           var ta = taggedList[t];
-          var tagLine = '- ' + ta.area + ' — Tagged: ' + formatTagDate(ta.taggedDate) + ' (' + ta.daysSinceTagged + ' days)';
+          html += '<li style="margin-bottom: 4px;"><b>' + escapeHtml(ta.area) + '</b> &mdash; Tagged: ' + escapeHtml(formatTagDate(ta.taggedDate)) + ' (' + ta.daysSinceTagged + ' days)';
           if (ta.reviewNeeded) {
-            tagLine += ' [REVIEW OVERDUE]';
+            html += ' <span style="color: #dc3545; font-weight: bold;">[REVIEW OVERDUE]</span>';
           }
-          lines.push(tagLine);
+          html += '</li>';
         }
-        lines.push('');
+        html += '</ul>';
       }
 
+      // --- Restocked Items (grouped by area) ---
       if (restockedItems.length > 0) {
-        lines.push('RESTOCKED ITEMS (' + restockedItems.length + ')');
-        lines.push('------------');
-        for (var i = 0; i < restockedItems.length; i++) {
-          var r = restockedItems[i];
-          lines.push('- ' + r.name + ' (x' + r.quantityRestocked + ') — ' + r.area);
+        var rGrouped = groupByArea(restockedItems);
+        html += '<h3 style="margin: 20px 0 8px 0; font-size: 15px; color: #28a745; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px;">Restocked Items (' + restockedItems.length + ')</h3>';
+        for (var ri = 0; ri < rGrouped.order.length; ri++) {
+          var rArea = rGrouped.order[ri];
+          var rItems = rGrouped.groups[rArea];
+          html += '<p style="margin: 8px 0 2px 0; font-weight: bold; font-size: 13px; color: #555;">' + escapeHtml(rArea) + '</p>';
+          html += '<ul style="margin: 0 0 4px 0; padding-left: 20px;">';
+          for (var rj = 0; rj < rItems.length; rj++) {
+            html += '<li style="margin-bottom: 2px;">' + escapeHtml(rItems[rj].name) + ' <span style="color: #888;">(x' + rItems[rj].quantityRestocked + ')</span></li>';
+          }
+          html += '</ul>';
         }
-        lines.push('');
       }
 
+      // --- Unavailable Items (grouped by area) ---
       if (unavailableItems.length > 0) {
-        lines.push('UNAVAILABLE ITEMS (' + unavailableItems.length + ')');
-        lines.push('------------');
-        for (var j = 0; j < unavailableItems.length; j++) {
-          var u = unavailableItems[j];
-          lines.push('- ' + u.name + ' (need ' + u.quantityNeeded + ') — ' + u.area);
-          lines.push('  Reason: ' + u.reason);
+        var uGrouped = groupByArea(unavailableItems);
+        html += '<h3 style="margin: 20px 0 8px 0; font-size: 15px; color: #dc3545; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px;">Unavailable Items (' + unavailableItems.length + ')</h3>';
+        for (var ui = 0; ui < uGrouped.order.length; ui++) {
+          var uArea = uGrouped.order[ui];
+          var uItems = uGrouped.groups[uArea];
+          html += '<p style="margin: 8px 0 2px 0; font-weight: bold; font-size: 13px; color: #555;">' + escapeHtml(uArea) + '</p>';
+          html += '<ul style="margin: 0 0 4px 0; padding-left: 20px;">';
+          for (var uj = 0; uj < uItems.length; uj++) {
+            html += '<li style="margin-bottom: 2px;">' + escapeHtml(uItems[uj].name) + ' <span style="color: #888;">(need ' + uItems[uj].quantityNeeded + ')</span>';
+            html += '<br><span style="font-size: 12px; color: #999; padding-left: 4px;">Reason: ' + escapeHtml(uItems[uj].reason) + '</span>';
+            html += '</li>';
+          }
+          html += '</ul>';
         }
-        lines.push('');
       }
 
-      if (restockedItems.length === 0 && unavailableItems.length === 0 &&
-          brokenSeals.length === 0 && taggedList.length === 0) {
-        lines.push('No restock actions recorded.');
-        lines.push('');
-      }
+      html += '</div>';
 
       // Machine-readable sync data (consumed by cross-device seal sync
       // and form-edit restoration — do not remove)
@@ -4538,7 +4584,7 @@
       };
 
       return {
-        report: lines.join('\n'),
+        report: html,
         syncData: syncData
       };
     }
@@ -4703,7 +4749,7 @@
 
         JFCustomWidget.subscribe('submit', function() {
           var submitData = generateSubmitValue();
-          var value = submitData.report + '\n__SYNC__\n' + JSON.stringify(submitData.syncData);
+          var value = submitData.report + '<!--__SYNC__:' + JSON.stringify(submitData.syncData) + '-->';
           JFCustomWidget.sendSubmit({
             valid: true,
             value: value
