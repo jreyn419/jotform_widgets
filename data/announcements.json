@@ -1,0 +1,32 @@
+{
+  "announcements": [
+    {
+      "date": "2025-02-20",
+      "tag": "urgent",
+      "title": "Narcan Restocking Delay",
+      "body": "National distributor backorder on Narcan 4mg nasal spray. Expected restock by March 1. Contact supply if you need emergency allocation.",
+      "pinned": true
+    },
+    {
+      "date": "2025-02-18",
+      "tag": "update",
+      "title": "Inventory Checklist v2.3",
+      "body": "Subcategory headers now stick properly during scroll. Fixed completion popup not appearing after restocking items.",
+      "pinned": false
+    },
+    {
+      "date": "2025-02-15",
+      "tag": "notice",
+      "title": "Monthly Expiration Review Complete",
+      "body": "All rigs cleared for February. Three items flagged for March replacement — see posted list in supply room.",
+      "pinned": false
+    },
+    {
+      "date": "2025-02-10",
+      "tag": "info",
+      "title": "New Rig 7 Added to System",
+      "body": "Rig 7 inventory configuration is now live. Same layout as Rig 3. Report any missing items to dispatch.",
+      "pinned": false
+    }
+  ]
+}

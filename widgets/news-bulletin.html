@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News &amp; Announcements</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+    }
+
+    .widget-container {
+      padding: 10px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ---- Review Counter ---- */
+    .review-counter {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .review-counter .rc-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .review-counter .rc-icon.upcoming {
+      background: #e7f3ff;
+      color: #0066cc;
+    }
+
+    .review-counter .rc-icon.soon {
+      background: #fff3cd;
+      color: #b8860b;
+    }
+
+    .review-counter .rc-icon.overdue {
+      background: #fde8ea;
+      color: #dc3545;
+    }
+
+    .review-counter .rc-icon.today {
+      background: #fde8ea;
+      color: #dc3545;
+    }
+
+    .review-counter .rc-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .review-counter .rc-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #888;
+      margin-bottom: 2px;
+    }
+
+    .review-counter .rc-date {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .review-counter .rc-days {
+      font-size: 13px;
+      font-weight: 500;
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+
+    .rc-days.upcoming {
+      background: #e7f3ff;
+      color: #0066cc;
+    }
+
+    .rc-days.soon {
+      background: #fff3cd;
+      color: #b8860b;
+    }
+
+    .rc-days.overdue {
+      background: #fde8ea;
+      color: #dc3545;
+    }
+
+    .rc-days.today {
+      background: #fde8ea;
+      color: #dc3545;
+      font-weight: 700;
+    }
+
+    /* ---- Announcements ---- */
+    .announcements-section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .announcements-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .announcements-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .announcements-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: #e9ecef;
+      color: #666;
+    }
+
+    .announcements-badge.has-new {
+      background: #0066cc;
+      color: white;
+    }
+
+    .announcements-list {
+      /* no extra styles needed */
+    }
+
+    .announcement-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .announcement-item:last-child {
+      border-bottom: none;
+    }
+
+    .announcement-item.pinned {
+      background: #fffbeb;
+      border-left: 3px solid #f59e0b;
+    }
+
+    .announcement-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .announcement-date {
+      font-size: 11px;
+      color: #999;
+    }
+
+    .announcement-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .announcement-tag.update {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .announcement-tag.notice {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .announcement-tag.urgent {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .announcement-tag.info {
+      background: #e9ecef;
+      color: #555;
+    }
+
+    .announcement-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 2px;
+    }
+
+    .announcement-body {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.45;
+    }
+
+    .announcements-empty {
+      padding: 24px 16px;
+      text-align: center;
+      color: #999;
+      font-size: 13px;
+    }
+
+    .announcements-error {
+      padding: 16px;
+      text-align: center;
+      color: #dc3545;
+      font-size: 13px;
+    }
+
+    .show-more-btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background: none;
+      border: none;
+      border-top: 1px solid #f0f0f0;
+      font-size: 13px;
+      font-weight: 500;
+      color: #0066cc;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .show-more-btn:hover {
+      background: #f8f9fa;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget-container">
+    <div class="review-counter" id="reviewCounter"></div>
+    <div class="announcements-section">
+      <div class="announcements-header">
+        <span class="announcements-title">Announcements</span>
+        <span class="announcements-badge" id="announcementsBadge">0</span>
+      </div>
+      <div class="announcements-list" id="announcementsList">
+        <div class="announcements-empty">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+  <script>
+    // =====================================================
+    // CONFIG — overridden by widget settings when available
+    // =====================================================
+
+    var CONFIG = {
+      newsUrl: '',            // URL to announcements JSON file
+      reviewDay: 15,          // Day of month for expiration review (1-31)
+      reviewLabel: 'Equipment Expiration Review',
+      maxVisible: 5,          // How many announcements to show before "Show more"
+      cacheTTL: 5 * 60 * 1000 // 5 min cache for fetched data
+    };
+
+    // Default/fallback announcements when URL is not configured or unreachable
+    var DEFAULT_ANNOUNCEMENTS = [
+      {
+        date: '2025-01-01',
+        tag: 'info',
+        title: 'Widget Ready',
+        body: 'Configure the "newsUrl" widget setting to point to your announcements JSON file.',
+        pinned: false
+      }
+    ];
+
+    // =====================================================
+    // REVIEW COUNTER
+    // =====================================================
+
+    function buildReviewCounter() {
+      var container = document.getElementById('reviewCounter');
+      var reviewDay = CONFIG.reviewDay;
+
+      if (!reviewDay || reviewDay < 1 || reviewDay > 31) {
+        container.style.display = 'none';
+        return;
+      }
+
+      var now = new Date();
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      // Find next review date
+      var nextReview;
+      var thisMonthReview = new Date(now.getFullYear(), now.getMonth(), reviewDay);
+
+      if (today.getTime() < thisMonthReview.getTime()) {
+        nextReview = thisMonthReview;
+      } else if (today.getTime() === thisMonthReview.getTime()) {
+        nextReview = thisMonthReview; // today IS review day
+      } else {
+        nextReview = new Date(now.getFullYear(), now.getMonth() + 1, reviewDay);
+      }
+
+      var diffMs = nextReview.getTime() - today.getTime();
+      var diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+      // Determine urgency
+      var urgency;
+      if (diffDays < 0) {
+        urgency = 'overdue';
+      } else if (diffDays === 0) {
+        urgency = 'today';
+      } else if (diffDays <= 5) {
+        urgency = 'soon';
+      } else {
+        urgency = 'upcoming';
+      }
+
+      var iconMap = {
+        upcoming: '&#128197;',  // calendar
+        soon: '&#9888;',        // warning
+        today: '&#10071;',      // exclamation
+        overdue: '&#10071;'
+      };
+
+      var daysText;
+      if (diffDays === 0) {
+        daysText = 'Today';
+      } else if (diffDays === 1) {
+        daysText = '1 day';
+      } else if (diffDays < 0) {
+        daysText = Math.abs(diffDays) + ' days overdue';
+      } else {
+        daysText = diffDays + ' days';
+      }
+
+      var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      var dateStr = months[nextReview.getMonth()] + ' ' + nextReview.getDate() + ', ' + nextReview.getFullYear();
+
+      container.innerHTML =
+        '<div class="rc-icon ' + urgency + '">' + iconMap[urgency] + '</div>' +
+        '<div class="rc-info">' +
+          '<div class="rc-label">' + escapeHtml(CONFIG.reviewLabel) + '</div>' +
+          '<div class="rc-date">' + dateStr + '</div>' +
+        '</div>' +
+        '<div class="rc-days ' + urgency + '">' + daysText + '</div>';
+    }
+
+    // =====================================================
+    // ANNOUNCEMENTS
+    // =====================================================
+
+    var allAnnouncements = [];
+    var visibleCount = 0;
+
+    function renderAnnouncements(items) {
+      allAnnouncements = items || [];
+      visibleCount = CONFIG.maxVisible;
+
+      // Sort: pinned first, then by date descending
+      allAnnouncements.sort(function(a, b) {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return (b.date || '').localeCompare(a.date || '');
+      });
+
+      updateAnnouncementsBadge();
+      renderVisible();
+    }
+
+    function renderVisible() {
+      var list = document.getElementById('announcementsList');
+
+      if (allAnnouncements.length === 0) {
+        list.innerHTML = '<div class="announcements-empty">No announcements.</div>';
+        return;
+      }
+
+      var showing = allAnnouncements.slice(0, visibleCount);
+      var html = '';
+
+      for (var i = 0; i < showing.length; i++) {
+        var a = showing[i];
+        var itemClass = 'announcement-item' + (a.pinned ? ' pinned' : '');
+
+        html += '<div class="' + itemClass + '">';
+        html += '<div class="announcement-meta">';
+
+        if (a.date) {
+          html += '<span class="announcement-date">' + formatDate(a.date) + '</span>';
+        }
+        if (a.tag) {
+          var tagClass = 'announcement-tag ' + escapeHtml(a.tag);
+          html += '<span class="' + tagClass + '">' + escapeHtml(a.tag) + '</span>';
+        }
+
+        html += '</div>';
+
+        if (a.title) {
+          html += '<div class="announcement-title">' + escapeHtml(a.title) + '</div>';
+        }
+        if (a.body) {
+          html += '<div class="announcement-body">' + escapeHtml(a.body) + '</div>';
+        }
+
+        html += '</div>';
+      }
+
+      if (allAnnouncements.length > visibleCount) {
+        var remaining = allAnnouncements.length - visibleCount;
+        html += '<button class="show-more-btn" onclick="showMore()">Show ' + remaining + ' more</button>';
+      }
+
+      list.innerHTML = html;
+      resizeWidget();
+    }
+
+    function showMore() {
+      visibleCount = allAnnouncements.length;
+      renderVisible();
+    }
+
+    function updateAnnouncementsBadge() {
+      var badge = document.getElementById('announcementsBadge');
+      var count = allAnnouncements.length;
+      badge.textContent = count;
+
+      // Count items from last 7 days as "new"
+      var now = new Date();
+      var weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      var newCount = 0;
+      for (var i = 0; i < allAnnouncements.length; i++) {
+        if (allAnnouncements[i].date) {
+          var d = new Date(allAnnouncements[i].date + 'T00:00:00');
+          if (d >= weekAgo) newCount++;
+        }
+      }
+
+      badge.classList.toggle('has-new', newCount > 0);
+      if (newCount > 0) {
+        badge.textContent = newCount + ' new';
+      }
+    }
+
+    // =====================================================
+    // FETCH ANNOUNCEMENTS
+    // =====================================================
+
+    function fetchAnnouncements(url) {
+      if (!url) {
+        renderAnnouncements(DEFAULT_ANNOUNCEMENTS);
+        return;
+      }
+
+      // Check cache
+      try {
+        var cacheKey = 'news_bulletin_cache';
+        var cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          var parsed = JSON.parse(cached);
+          if (parsed.url === url && parsed.timestamp && (Date.now() - parsed.timestamp) < CONFIG.cacheTTL) {
+            renderAnnouncements(parsed.data);
+            // Still fetch in background to update cache
+            fetchRemote(url, cacheKey, true);
+            return;
+          }
+        }
+      } catch (e) {}
+
+      fetchRemote(url, 'news_bulletin_cache', false);
+    }
+
+    function fetchRemote(url, cacheKey, silent) {
+      try {
+        var xhr = new XMLHttpRequest();
+        // Bust browser cache with a timestamp param
+        var bustUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now();
+        xhr.open('GET', bustUrl, true);
+        xhr.timeout = 8000;
+
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              // Support both array and { announcements: [...] } format
+              var items = Array.isArray(data) ? data : (data.announcements || []);
+
+              // Cache it
+              try {
+                localStorage.setItem(cacheKey, JSON.stringify({
+                  url: url,
+                  data: items,
+                  timestamp: Date.now()
+                }));
+              } catch (e) {}
+
+              renderAnnouncements(items);
+            } catch (e) {
+              if (!silent) showError('Invalid JSON format.');
+            }
+          } else {
+            if (!silent) showError('Failed to load (' + xhr.status + ').');
+          }
+        };
+
+        xhr.onerror = function() {
+          if (!silent) {
+            // Try fallback to cache even if expired
+            try {
+              var cached = localStorage.getItem(cacheKey);
+              if (cached) {
+                var parsed = JSON.parse(cached);
+                if (parsed.data) {
+                  renderAnnouncements(parsed.data);
+                  return;
+                }
+              }
+            } catch (e) {}
+            showError('Could not reach announcements URL.');
+          }
+        };
+
+        xhr.ontimeout = function() {
+          if (!silent) showError('Request timed out.');
+        };
+
+        xhr.send();
+      } catch (e) {
+        if (!silent) showError('Fetch error.');
+      }
+    }
+
+    function showError(msg) {
+      var list = document.getElementById('announcementsList');
+      list.innerHTML = '<div class="announcements-error">' + escapeHtml(msg) + '</div>';
+      resizeWidget();
+    }
+
+    // =====================================================
+    // UTILS
+    // =====================================================
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatDate(dateStr) {
+      var parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return months[parseInt(parts[1], 10) - 1] + ' ' + parseInt(parts[2], 10) + ', ' + parts[0];
+    }
+
+    function resizeWidget() {
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.requestFrameResize) {
+        JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight });
+      }
+    }
+
+    // =====================================================
+    // INIT
+    // =====================================================
+
+    function init() {
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
+        JFCustomWidget.subscribe('ready', function(data) {
+          // Load settings
+          var newsUrl = JFCustomWidget.getWidgetSetting('newsUrl') || '';
+          var reviewDay = JFCustomWidget.getWidgetSetting('reviewDay');
+          var reviewLabel = JFCustomWidget.getWidgetSetting('reviewLabel');
+          var maxVisible = JFCustomWidget.getWidgetSetting('maxVisible');
+
+          if (newsUrl) CONFIG.newsUrl = newsUrl;
+          if (reviewDay !== undefined && reviewDay !== null && reviewDay !== '') {
+            CONFIG.reviewDay = Math.max(0, Math.min(31, parseInt(reviewDay, 10) || 15));
+          }
+          if (reviewLabel) CONFIG.reviewLabel = reviewLabel;
+          if (maxVisible) CONFIG.maxVisible = Math.max(1, parseInt(maxVisible, 10) || 5);
+
+          buildReviewCounter();
+          fetchAnnouncements(CONFIG.newsUrl);
+          resizeWidget();
+        });
+      } else {
+        // Standalone mode
+        buildReviewCounter();
+        fetchAnnouncements(CONFIG.newsUrl);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
