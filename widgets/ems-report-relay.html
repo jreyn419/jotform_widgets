@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMS Report Relay</title>
+<script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    background: #fafafa;
+    color: #333;
+  }
+  #status {
+    padding: 6px 10px;
+    font-size: 11px;
+    color: #888;
+    font-style: italic;
+  }
+  #status.connected {
+    color: #2a7d2a;
+    font-style: normal;
+  }
+  #report {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #333;
+    resize: none;
+    overflow: hidden;
+  }
+</style>
+</head>
+<body>
+<div id="status">Waiting for checklist data…</div>
+<div id="report"></div>
+
+<script>
+(function() {
+  var VERSION = '1.0.0';
+  var report = '';
+  var cachedFormID = null;
+
+  // Parse formID from URL params or ready callback
+  function getFormID() {
+    try {
+      var match = window.location.href.match(/[?&]formID=([^&]+)/);
+      if (match) return match[1];
+    } catch (e) {}
+    return null;
+  }
+
+  function getRelayKey() {
+    var formID = cachedFormID || getFormID() || 'unknown';
+    return 'ems_report_relay_' + formID;
+  }
+
+  function readReport() {
+    try {
+      var raw = localStorage.getItem(getRelayKey());
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      return data.report || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function updateDisplay(text) {
+    var el = document.getElementById('report');
+    var statusEl = document.getElementById('status');
+    if (text) {
+      el.textContent = text;
+      statusEl.textContent = 'Report received (v' + VERSION + ')';
+      statusEl.className = 'connected';
+      report = text;
+    } else {
+      el.textContent = '';
+      statusEl.textContent = 'Waiting for checklist data…';
+      statusEl.className = '';
+    }
+    // Auto-resize iframe
+    resizeWidget();
+  }
+
+  function resizeWidget() {
+    try {
+      var height = document.body.scrollHeight + 10;
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.requestFrameResize) {
+        JFCustomWidget.requestFrameResize({ height: height });
+      }
+    } catch (e) {}
+  }
+
+  // Listen for storage events from the checklist widget (same origin)
+  window.addEventListener('storage', function(e) {
+    if (e.key === getRelayKey() && e.newValue) {
+      try {
+        var data = JSON.parse(e.newValue);
+        if (data.report) {
+          updateDisplay(data.report);
+        }
+      } catch (err) {}
+    }
+  });
+
+  // Poll as fallback — storage event doesn't fire for writes from
+  // the same page/tab, and iframe behavior can be inconsistent.
+  var pollInterval = setInterval(function() {
+    var text = readReport();
+    if (text && text !== report) {
+      updateDisplay(text);
+    }
+  }, 1500);
+
+  // JotForm widget lifecycle
+  if (typeof JFCustomWidget !== 'undefined') {
+    JFCustomWidget.subscribe('ready', function(data) {
+      cachedFormID = (data && data.formID) || getFormID();
+      console.log('[ReportRelay] Ready, formID=' + cachedFormID + ', key=' + getRelayKey());
+
+      // Check for existing report immediately
+      var text = readReport();
+      if (text) {
+        updateDisplay(text);
+      }
+
+      // On submit: send the latest report as this widget's value
+      JFCustomWidget.subscribe('submit', function() {
+        // Read one final time to get the freshest report
+        var finalReport = readReport() || report || '';
+        console.log('[ReportRelay] Submitting report (' + finalReport.length + ' chars)');
+        JFCustomWidget.sendSubmit({
+          valid: true,
+          value: finalReport
+        });
+      });
+    });
+  } else {
+    // Standalone / testing mode
+    var text = readReport();
+    if (text) updateDisplay(text);
+  }
+})();
+</script>
+</body>
+</html>

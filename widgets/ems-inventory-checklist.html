@@ -1770,8 +1770,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.5.6';
+    var VERSION = '1.6.0';
     var CHANGELOG = [
+      { version: '1.6.0', date: '2026-02-23', changes: [
+        'Report relay via localStorage instead of cross-origin DOM/API methods',
+        'Writes report to localStorage key scoped by formID for report-relay widget pickup',
+        'Removed all setFieldsValueById/storeToField/DOM access attempts',
+      ]},
       { version: '1.5.6', date: '2026-02-23', changes: [
         'Uses JFCustomWidget.setFieldsValueById to write report to hidden field (cross-origin safe)',
       ]},
@@ -1992,43 +1997,29 @@
           JFCustomWidget.sendData({ value: JSON.stringify(state) });
         } catch (e) {}
       }
-      // Push the human-readable report to the hidden field
-      pushReportToHiddenField();
+      // Push the human-readable report to localStorage for the relay widget
+      pushReportToRelay();
     }
 
-    // Push the human-readable report to a hidden field on the parent form
-    // using JotForm's cross-origin bridge methods.
-    function pushReportToHiddenField() {
+    // Push the human-readable report to localStorage so the report-relay
+    // widget (same origin, same form) can pick it up and submit it as its
+    // own field value.  Key is scoped to formID for uniqueness.
+    function getReportRelayKey() {
+      var fp = getFormParams();
+      var formID = fp.formID || cachedFormID || 'unknown';
+      return 'ems_report_relay_' + formID;
+    }
+
+    function pushReportToRelay() {
       try {
-        if (typeof JFCustomWidget === 'undefined') return;
-        var reportFieldID = JFCustomWidget.getWidgetSetting('reportFieldID');
-        if (!reportFieldID) {
-          console.warn('[Widget] reportFieldID widget setting not found');
-          return;
-        }
         var submitData = generateSubmitValue();
-        var report = submitData.report;
-        var fid = String(reportFieldID);
-
-        // Try setFieldsValueById with object format: {fieldId: value}
-        try {
-          var obj = {};
-          obj[fid] = report;
-          JFCustomWidget.setFieldsValueById(obj);
-          console.log('[Widget] setFieldsValueById({' + fid + ': report}) called');
-        } catch (e) {
-          console.error('[Widget] setFieldsValueById obj format error:', e.message);
-        }
-
-        // Try storeToField with (id, value)
-        try {
-          JFCustomWidget.storeToField(fid, report);
-          console.log('[Widget] storeToField(' + fid + ', report) called');
-        } catch (e) {
-          console.error('[Widget] storeToField error:', e.message);
-        }
+        var payload = JSON.stringify({
+          report: submitData.report,
+          timestamp: Date.now()
+        });
+        localStorage.setItem(getReportRelayKey(), payload);
       } catch (e) {
-        console.error('[Widget] pushReportToHiddenField error:', e.message);
+        console.error('[Widget] pushReportToRelay error:', e.message);
       }
     }
 
@@ -4863,8 +4854,8 @@
         });
 
         JFCustomWidget.subscribe('submit', function() {
-          // Push final report to hidden field before submit
-          pushReportToHiddenField();
+          // Push final report to localStorage for the relay widget
+          pushReportToRelay();
           // Widget value carries only sync data for cross-device restoration
           var syncData = {
             taggedAreas: taggedAreas,
