@@ -1770,8 +1770,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.8.0';
+    var VERSION = '1.9.0';
     var CHANGELOG = [
+      { version: '1.9.0', date: '2026-02-24', changes: [
+        'After all shortages resolved, auto-navigates to first unsealed sealable area instead of completion popup',
+        'Restock modal closes and expands the relevant area with seal button visible',
+        'Completion popup only shown after all sealable areas are sealed',
+      ]},
       { version: '1.8.0', date: '2026-02-24', changes: [
         'sendData (draft saves) and sendSubmit now prepend plain-text report before sync JSON',
         'JotForm Tables displays the readable report instead of raw JSON',
@@ -3442,6 +3447,79 @@
       }
     }
 
+    // Find the first sealable area that is not yet sealed but is ready to seal
+    function findFirstUnsealedSealableArea() {
+      // Check standalone and child areas in DOM order
+      for (var areaName in INVENTORY) {
+        if (sealableAreas[areaName] && !taggedAreas[areaName] && isAreaSealable(areaName)) {
+          return areaName;
+        }
+      }
+      return null;
+    }
+
+    // Navigate to an area: expand its parent group if needed, then expand the area itself
+    function navigateToSealableArea(areaName) {
+      var parentName = areaParent[areaName] || null;
+
+      // If it's a parent-level sealable area (has children), expand the group
+      if (areaHierarchy[areaName]) {
+        var groupDiv = document.getElementById('area_group_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (groupDiv) {
+          toggleAreaGroup(groupDiv);
+          // Scroll group into view
+          setTimeout(function() {
+            groupDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 50);
+        }
+        return;
+      }
+
+      // If it's a child area, expand the parent group first, then the child
+      if (parentName) {
+        var groupDiv = document.getElementById('area_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (groupDiv && !groupDiv.classList.contains('expanded')) {
+          toggleAreaGroup(groupDiv);
+        }
+        // Small delay to let group expand, then toggle child
+        setTimeout(function() {
+          var areaDiv = document.getElementById('area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
+          if (areaDiv) {
+            toggleArea(areaDiv, true);
+          }
+        }, 100);
+        return;
+      }
+
+      // Standalone area
+      var areaDiv = document.getElementById('area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (areaDiv) {
+        toggleArea(areaDiv, false);
+      }
+    }
+
+    // After all shortages are resolved, check if there are unsealed sealable
+    // areas.  If so, close the restock modal and navigate to the first one
+    // instead of showing the completion popup.
+    function handleRestockComplete() {
+      if (!isEverythingComplete()) return false;
+
+      var nextSealable = findFirstUnsealedSealableArea();
+      if (nextSealable) {
+        closeRestockModal();
+        // Navigate after a brief delay so the modal close animation finishes
+        setTimeout(function() {
+          navigateToSealableArea(nextSealable);
+        }, 150);
+        return true;
+      }
+
+      // No unsealed areas — original behavior
+      closeRestockModal();
+      showCompletionPopup();
+      return true;
+    }
+
     function isEverythingComplete() {
       for (var areaName in INVENTORY) {
         if (taggedAreas[areaName]) continue;
@@ -4386,11 +4464,8 @@
       updateChecklistItem(key);
       updateAllStatuses();
       updateSummary();
-      // Check if everything is now complete
-      if (isEverythingComplete()) {
-        closeRestockModal();
-        showCompletionPopup();
-      }
+      // Check if everything is now complete (may navigate to sealable area)
+      handleRestockComplete();
     }
     
     // Update a single checklist item in the main view
@@ -4468,11 +4543,8 @@
           closeOutOfStockDialog();
           updateAllStatuses();
           updateSummary();
-          // Check if everything is now complete
-          if (isEverythingComplete()) {
-            closeRestockModal();
-            showCompletionPopup();
-          }
+          // Check if everything is now complete (may navigate to sealable area)
+          handleRestockComplete();
         }
       }
     }
@@ -4513,11 +4585,8 @@
       }
       updateAllStatuses();
       updateSummary();
-      // After restocking all, check if everything is complete
-      if (isEverythingComplete()) {
-        closeRestockModal();
-        showCompletionPopup();
-      }
+      // After restocking all, check if everything is complete (may navigate to sealable area)
+      handleRestockComplete();
     }
 
     // =====================================================
