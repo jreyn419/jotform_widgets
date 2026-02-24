@@ -1770,8 +1770,14 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.10.0';
+    var VERSION = '1.11.0';
     var CHANGELOG = [
+      { version: '1.11.0', date: '2026-02-24', changes: [
+        'Seal auto-advance respects parent/child hierarchy: children sealed before parent',
+        'Navigating to child seal buttons expands parent group without toggling it closed',
+        'After all children sealed, advances to parent seal button then continues to other areas',
+        'Cleared expanded state before buildUI in tagArea to prevent conflicting auto-advance',
+      ]},
       { version: '1.10.0', date: '2026-02-24', changes: [
         'After sealing an area, auto-advances to the next unsealed sealable area with scroll to seal button',
         'Completion popup shown only after the last sealable area is sealed',
@@ -3455,11 +3461,51 @@
     }
 
     // Find the first sealable area that is not yet sealed but is ready to seal
+    // Find the next sealable area that is unsealed and ready to seal.
+    // For parent groups, children must be sealed before the parent:
+    //   1. Standalone sealable areas (in config order)
+    //   2. For parent groups: unsealed sealable children first, then the parent
     function findFirstUnsealedSealableArea() {
-      // Check standalone and child areas in DOM order
+      // Build an ordered list: iterate INVENTORY in config order, but when
+      // we encounter a parent group, insert its sealable children before
+      // the parent itself.
+      var ordered = [];
+      var visited = {};
+
       for (var areaName in INVENTORY) {
-        if (sealableAreas[areaName] && !taggedAreas[areaName] && isAreaSealable(areaName)) {
-          return areaName;
+        if (visited[areaName]) continue;
+
+        // If this area is a child, it will be handled when we process its parent
+        if (areaParent[areaName]) continue;
+
+        // If this is a parent area with children, enqueue children first
+        if (areaHierarchy[areaName]) {
+          var children = areaHierarchy[areaName];
+          for (var c = 0; c < children.length; c++) {
+            if (sealableAreas[children[c]]) {
+              ordered.push(children[c]);
+              visited[children[c]] = true;
+            }
+          }
+          // Then the parent itself
+          if (sealableAreas[areaName]) {
+            ordered.push(areaName);
+            visited[areaName] = true;
+          }
+        } else {
+          // Standalone area
+          if (sealableAreas[areaName]) {
+            ordered.push(areaName);
+            visited[areaName] = true;
+          }
+        }
+      }
+
+      // Return the first area that is unsealed and ready to seal
+      for (var i = 0; i < ordered.length; i++) {
+        var name = ordered[i];
+        if (!taggedAreas[name] && isAreaSealable(name)) {
+          return name;
         }
       }
       return null;
@@ -3481,29 +3527,50 @@
         }
       }
 
+      // Ensure a parent group is expanded (without toggling it closed if already open)
+      function ensureGroupExpanded(groupName) {
+        var groupDiv = document.getElementById('area_group_' + groupName.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (!groupDiv) return;
+        if (!groupDiv.classList.contains('expanded')) {
+          toggleAreaGroup(groupDiv);
+        }
+      }
+
       // If it's a parent-level sealable area (has children), expand the group
+      // and scroll to the parent seal button at the bottom
       if (areaHierarchy[areaName]) {
+        ensureGroupExpanded(areaName);
+        // Collapse any expanded child areas so the parent seal button is nearer
         var groupDiv = document.getElementById('area_group_' + safeName);
         if (groupDiv) {
-          toggleAreaGroup(groupDiv);
-          setTimeout(function() { scrollToSealButton(areaName); }, 150);
+          var expandedChildren = groupDiv.querySelectorAll('.area-section.expanded');
+          for (var i = 0; i < expandedChildren.length; i++) {
+            expandedChildren[i].classList.remove('expanded');
+          }
+          expandedArea = null;
         }
+        setTimeout(function() { scrollToSealButton(areaName); }, 200);
         return;
       }
 
-      // If it's a child area, expand the parent group first, then the child
+      // If it's a child area, expand the parent group then the child
       if (parentName) {
+        ensureGroupExpanded(parentName);
+        // Collapse any currently expanded sibling children
         var groupDiv = document.getElementById('area_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_'));
-        if (groupDiv && !groupDiv.classList.contains('expanded')) {
-          toggleAreaGroup(groupDiv);
-        }
-        setTimeout(function() {
-          var areaDiv = document.getElementById('area_' + safeName);
-          if (areaDiv) {
-            toggleArea(areaDiv, true);
-            setTimeout(function() { scrollToSealButton(areaName); }, 150);
+        if (groupDiv) {
+          var expandedChildren = groupDiv.querySelectorAll('.area-section.expanded');
+          for (var i = 0; i < expandedChildren.length; i++) {
+            expandedChildren[i].classList.remove('expanded');
           }
-        }, 100);
+        }
+        var areaDiv = document.getElementById('area_' + safeName);
+        if (areaDiv) {
+          areaDiv.classList.add('expanded');
+          expandedArea = areaName;
+          updateStickyOffsets();
+          setTimeout(function() { scrollToSealButton(areaName); }, 200);
+        }
         return;
       }
 
@@ -3511,7 +3578,7 @@
       var areaDiv = document.getElementById('area_' + safeName);
       if (areaDiv) {
         toggleArea(areaDiv, false);
-        setTimeout(function() { scrollToSealButton(areaName); }, 150);
+        setTimeout(function() { scrollToSealButton(areaName); }, 200);
       }
     }
 
@@ -3524,7 +3591,6 @@
       var nextSealable = findFirstUnsealedSealableArea();
       if (nextSealable) {
         closeRestockModal();
-        // Navigate after a brief delay so the modal close animation finishes
         setTimeout(function() {
           navigateToSealableArea(nextSealable);
         }, 150);
@@ -3776,6 +3842,11 @@
         taggedDate: now.toISOString().split('T')[0],
         taggedTimestamp: now.getTime()
       };
+
+      // Clear expanded state so buildUI doesn't try its own auto-advance;
+      // we handle navigation explicitly below.
+      expandedArea = null;
+      expandedGroup = null;
       buildUI();
 
       // Auto-advance: if everything is restocked, navigate to the next
