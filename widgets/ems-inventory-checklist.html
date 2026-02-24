@@ -1770,8 +1770,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.4.3';
+    var VERSION = '1.5.0';
     var CHANGELOG = [
+      { version: '1.5.0', date: '2026-02-23', changes: [
+        'Report now written to a separate hidden field (configured via reportFieldID widget setting)',
+        'Widget submission value reverted to pure JSON sync data for cross-device restoration',
+        'Report pushed to hidden field on every state change and at submit time',
+      ]},
       { version: '1.4.3', date: '2026-02-23', changes: [
         'sendData now sends formatted report again (JotForm uses sendData value as final submission)',
         'Report uses <br> line breaks since JotForm strips plain newlines in submission display',
@@ -1951,14 +1956,43 @@
     function syncToJotForm() {
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
         try {
-          var submitData = generateSubmitValue();
-          var value = submitData.report + '\n\n___SYNC_DATA___\n' + JSON.stringify(submitData.syncData);
-          JFCustomWidget.sendData({ value: value });
+          var state = {
+            itemStates: itemStates,
+            taggedAreas: taggedAreas,
+            restockStatus: restockStatus,
+            brokenSeals: brokenSeals,
+            timestamp: Date.now()
+          };
+          JFCustomWidget.sendData({ value: JSON.stringify(state) });
         } catch (e) {}
+      }
+      // Push the human-readable report to the hidden field
+      pushReportToHiddenField();
+    }
+
+    // Push the human-readable report to a separate hidden field on the
+    // parent JotForm.  The hidden field's question ID is read from the
+    // widget setting "reportFieldID".  JotForm widgets are same-origin
+    // with the parent form, so direct DOM access works.
+    function pushReportToHiddenField() {
+      try {
+        if (typeof JFCustomWidget === 'undefined') return;
+        var reportFieldID = JFCustomWidget.getWidgetSetting('reportFieldID');
+        if (!reportFieldID) return;
+        var submitData = generateSubmitValue();
+        var parentDoc = window.parent.document;
+        // JotForm hidden fields use input[name="qN"] or input[id="input_N"]
+        var field = parentDoc.querySelector('input[name="q' + reportFieldID + '"]')
+                 || parentDoc.querySelector('#input_' + reportFieldID)
+                 || parentDoc.querySelector('input[id="input_' + reportFieldID + '"]');
+        if (field) {
+          field.value = submitData.report;
+        }
+      } catch (e) {
+        // Cross-origin or DOM access blocked — silently fail
       }
     }
 
-    // Parse a submission value that may be:
     //  (a) pure JSON (old format / draft saves via syncToJotForm),
     //  (b) plain-text report with ___SYNC_DATA___ delimiter (current format), or
     //  (c) HTML with <!--__SYNC__:--> comment (legacy), or
@@ -4611,7 +4645,7 @@
         lines.push('');
       }
 
-      var report = lines.join('<br>\n');
+      var report = lines.join('\n');
 
       // Machine-readable sync data (consumed by cross-device seal sync
       // and form-edit restoration — do not remove)
@@ -4788,11 +4822,19 @@
         });
 
         JFCustomWidget.subscribe('submit', function() {
-          var submitData = generateSubmitValue();
-          var value = submitData.report + '\n\n--- End of Report ---\n\n___SYNC_DATA___\n' + JSON.stringify(submitData.syncData);
+          // Push final report to hidden field
+          pushReportToHiddenField();
+          // Widget value carries only sync data for cross-device restoration
+          var syncData = {
+            taggedAreas: taggedAreas,
+            brokenSeals: brokenSeals,
+            itemStates: itemStates,
+            restockStatus: restockStatus,
+            timestamp: Date.now()
+          };
           JFCustomWidget.sendSubmit({
             valid: true,
-            value: value
+            value: JSON.stringify(syncData)
           });
 
           // Clear per-submission state so the next session starts fresh for
