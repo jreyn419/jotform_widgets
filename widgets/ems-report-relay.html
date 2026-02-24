@@ -44,7 +44,7 @@
 
 <script>
 (function() {
-  var VERSION = '1.2.0';
+  var VERSION = '1.2.1';
   var report = '';
   var htmlReport = '';
   var cachedFormID = null;
@@ -148,12 +148,29 @@
 
       // Restore from submitted value if editing a submission
       if (data && data.value) {
+        var restoredText = data.value;
+
+        // Handle legacy JSON-wrapped values from pre-1.2.0 submissions
+        try {
+          var parsed = JSON.parse(data.value);
+          if (parsed && parsed.report) {
+            restoredText = parsed.report;
+          }
+        } catch (e) {
+          // Not JSON — it's already plain text (1.2.0+ format)
+        }
+
+        report = restoredText;
         var el = document.getElementById('report');
-        // Submission value is now plain text
-        el.textContent = data.value;
-        report = data.value;
+        el.textContent = restoredText;
         document.getElementById('status').textContent = 'Report loaded from submission';
         document.getElementById('status').className = 'connected';
+
+        // Tell Tables our display value so it appears in the cell
+        try {
+          JFCustomWidget.sendData({ value: restoredText });
+        } catch (e) {}
+
         resizeWidget();
       } else {
         // Check for existing report from current session
