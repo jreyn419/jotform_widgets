@@ -1770,8 +1770,18 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.5.0';
+    var VERSION = '1.5.2';
     var CHANGELOG = [
+      { version: '1.5.2', date: '2026-02-23', changes: [
+        'Switched to Submissions API for writing report to field 38 (cross-origin prevents DOM access)',
+        'Report written via API POST after form submission with 2s delay',
+        'Added JFCustomWidget method discovery logging',
+      ]},
+      { version: '1.5.1', date: '2026-02-23', changes: [
+        'Added debug logging for hidden field discovery',
+        'Broadened hidden field selector patterns',
+        'Hardcoded fallback to qid 38 for testing',
+      ]},
       { version: '1.5.0', date: '2026-02-23', changes: [
         'Report now written to a separate hidden field (configured via reportFieldID widget setting)',
         'Widget submission value reverted to pure JSON sync data for cross-device restoration',
@@ -1967,31 +1977,66 @@
         } catch (e) {}
       }
       // Push the human-readable report to the hidden field
-      pushReportToHiddenField();
+      // (handled at submit time via pushReportToSubmission)
     }
 
-    // Push the human-readable report to a separate hidden field on the
-    // parent JotForm.  The hidden field's question ID is read from the
-    // widget setting "reportFieldID".  JotForm widgets are same-origin
-    // with the parent form, so direct DOM access works.
-    function pushReportToHiddenField() {
+    // Push the human-readable report to field 38 via the JotForm
+    // Submissions API.  Called after form submit — fetches the latest
+    // submission and updates field 38 with the formatted report.
+    function pushReportToSubmission() {
       try {
         if (typeof JFCustomWidget === 'undefined') return;
-        var reportFieldID = JFCustomWidget.getWidgetSetting('reportFieldID');
-        if (!reportFieldID) return;
-        var submitData = generateSubmitValue();
-        var parentDoc = window.parent.document;
-        // JotForm hidden fields use input[name="qN"] or input[id="input_N"]
-        var field = parentDoc.querySelector('input[name="q' + reportFieldID + '"]')
-                 || parentDoc.querySelector('#input_' + reportFieldID)
-                 || parentDoc.querySelector('input[id="input_' + reportFieldID + '"]');
-        if (field) {
-          field.value = submitData.report;
+        var apiKey = JFCustomWidget.getWidgetSetting('jotformApiKey');
+        var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
+        var fp = getFormParams();
+        var formID = fp.formID || cachedFormID;
+        if (!apiKey || !formID) {
+          console.warn('[Widget] Cannot push report: missing apiKey or formID');
+          return;
         }
+        var reportFieldID = '38';
+        var submitData = generateSubmitValue();
+        var report = submitData.report;
+
+        // Fetch the most recent submission ID, then update field 38
+        var url = apiBase + '/form/' + encodeURIComponent(formID)
+                + '/submissions?apiKey=' + encodeURIComponent(apiKey)
+                + '&limit=1&orderby=id&direction=desc';
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.onload = function() {
+          try {
+            var resp = JSON.parse(xhr.responseText);
+            if (!resp.content || resp.content.length === 0) {
+              console.warn('[Widget] No submissions found to update');
+              return;
+            }
+            var subID = resp.content[0].id;
+            var putUrl = apiBase + '/submission/' + encodeURIComponent(subID)
+                       + '?apiKey=' + encodeURIComponent(apiKey);
+            var putXhr = new XMLHttpRequest();
+            putXhr.open('POST', putUrl);
+            putXhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            putXhr.onload = function() {
+              console.log('[Widget] Report written to submission ' + subID + ' field ' + reportFieldID, putXhr.status);
+            };
+            putXhr.onerror = function() {
+              console.error('[Widget] Failed to write report to submission', putXhr.status);
+            };
+            putXhr.send('submission[' + reportFieldID + ']=' + encodeURIComponent(report));
+          } catch (e) {
+            console.error('[Widget] Error parsing submission response:', e.message);
+          }
+        };
+        xhr.onerror = function() {
+          console.error('[Widget] Failed to fetch latest submission');
+        };
+        xhr.send();
       } catch (e) {
-        // Cross-origin or DOM access blocked — silently fail
+        console.error('[Widget] pushReportToSubmission error:', e.message);
       }
     }
+
 
     //  (a) pure JSON (old format / draft saves via syncToJotForm),
     //  (b) plain-text report with ___SYNC_DATA___ delimiter (current format), or
@@ -4708,6 +4753,7 @@
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.subscribe) {
         JFCustomWidget.subscribe('ready', function(data) {
           console.log('[Widget] Ready', data);
+          console.log('[Widget] JFCustomWidget methods:', Object.keys(JFCustomWidget));
           
           // Cache formID for later use (e.g. reset-to-server)
           var fp = getFormParams();
@@ -4822,8 +4868,6 @@
         });
 
         JFCustomWidget.subscribe('submit', function() {
-          // Push final report to hidden field
-          pushReportToHiddenField();
           // Widget value carries only sync data for cross-device restoration
           var syncData = {
             taggedAreas: taggedAreas,
@@ -4836,6 +4880,10 @@
             valid: true,
             value: JSON.stringify(syncData)
           });
+
+          // Push the report to field 38 via the API after a short delay
+          // to ensure the submission record exists first.
+          setTimeout(function() { pushReportToSubmission(); }, 2000);
 
           // Clear per-submission state so the next session starts fresh for
           // item counts, but keep the dedicated sealed-state key intact so
