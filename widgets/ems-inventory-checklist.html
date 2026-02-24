@@ -1770,8 +1770,18 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.5.3';
+    var VERSION = '1.5.5';
     var CHANGELOG = [
+      { version: '1.5.5', date: '2026-02-23', changes: [
+        'Switched back to direct parent DOM access for hidden field (testing with corrected API key)',
+        'Report pushed on every state change and at submit time',
+        'Comprehensive debug logging for field discovery',
+      ]},
+      { version: '1.5.4', date: '2026-02-23', changes: [
+        'Fixed report writing to previous submission instead of current one',
+        'Widget now captures last submission ID at init and polls for a new one after submit',
+        'Polls up to 15 times (30s) until new submission appears before writing report',
+      ]},
       { version: '1.5.3', date: '2026-02-23', changes: [
         'Report field ID now read from reportFieldID widget setting instead of hardcoded',
       ]},
@@ -1980,67 +1990,67 @@
         } catch (e) {}
       }
       // Push the human-readable report to the hidden field
-      // (handled at submit time via pushReportToSubmission)
+      pushReportToHiddenField();
     }
 
-    // Push the human-readable report to field 38 via the JotForm
-    // Submissions API.  Called after form submit — fetches the latest
-    // submission and updates field 38 with the formatted report.
-    function pushReportToSubmission() {
+    // Push the human-readable report to a hidden field on the parent form.
+    // Uses direct DOM access (same-origin) with comprehensive logging.
+    function pushReportToHiddenField() {
       try {
         if (typeof JFCustomWidget === 'undefined') return;
-        var apiKey = JFCustomWidget.getWidgetSetting('jotformApiKey');
-        var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
-        var fp = getFormParams();
-        var formID = fp.formID || cachedFormID;
-        if (!apiKey || !formID) {
-          console.warn('[Widget] Cannot push report: missing apiKey or formID');
-          return;
-        }
         var reportFieldID = JFCustomWidget.getWidgetSetting('reportFieldID');
         if (!reportFieldID) {
-          console.warn('[Widget] Cannot push report: missing reportFieldID widget setting');
+          console.warn('[Widget] reportFieldID widget setting not found');
           return;
         }
+        console.log('[Widget] Attempting to write report to field', reportFieldID);
         var submitData = generateSubmitValue();
-        var report = submitData.report;
-
-        // Fetch the most recent submission ID, then update field 38
-        var url = apiBase + '/form/' + encodeURIComponent(formID)
-                + '/submissions?apiKey=' + encodeURIComponent(apiKey)
-                + '&limit=1&orderby=id&direction=desc';
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url);
-        xhr.onload = function() {
-          try {
-            var resp = JSON.parse(xhr.responseText);
-            if (!resp.content || resp.content.length === 0) {
-              console.warn('[Widget] No submissions found to update');
-              return;
-            }
-            var subID = resp.content[0].id;
-            var putUrl = apiBase + '/submission/' + encodeURIComponent(subID)
-                       + '?apiKey=' + encodeURIComponent(apiKey);
-            var putXhr = new XMLHttpRequest();
-            putXhr.open('POST', putUrl);
-            putXhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            putXhr.onload = function() {
-              console.log('[Widget] Report written to submission ' + subID + ' field ' + reportFieldID, putXhr.status);
-            };
-            putXhr.onerror = function() {
-              console.error('[Widget] Failed to write report to submission', putXhr.status);
-            };
-            putXhr.send('submission[' + reportFieldID + ']=' + encodeURIComponent(report));
-          } catch (e) {
-            console.error('[Widget] Error parsing submission response:', e.message);
+        var parentDoc;
+        try {
+          parentDoc = window.parent.document;
+          console.log('[Widget] Parent document accessed successfully');
+        } catch (e) {
+          console.error('[Widget] Cross-origin blocked:', e.message);
+          return;
+        }
+        // Try multiple selector patterns JotForm uses
+        var selectors = [
+          'input#input_' + reportFieldID,
+          '#input_' + reportFieldID,
+          'input[name="q' + reportFieldID + '"]',
+          'input[name="q' + reportFieldID + '_hidden"]',
+          '#id_' + reportFieldID + ' input',
+          'li#id_' + reportFieldID + ' input[type="hidden"]',
+          'textarea#input_' + reportFieldID
+        ];
+        var field = null;
+        for (var i = 0; i < selectors.length; i++) {
+          field = parentDoc.querySelector(selectors[i]);
+          if (field) {
+            console.log('[Widget] Found field with selector:', selectors[i], 'tag:', field.tagName, 'type:', field.type);
+            break;
           }
-        };
-        xhr.onerror = function() {
-          console.error('[Widget] Failed to fetch latest submission');
-        };
-        xhr.send();
+        }
+        if (field) {
+          field.value = submitData.report;
+          var evt = new Event('change', { bubbles: true });
+          field.dispatchEvent(evt);
+          console.log('[Widget] Report written to field ' + reportFieldID + ' (' + submitData.report.length + ' chars)');
+        } else {
+          console.warn('[Widget] Field ' + reportFieldID + ' not found with any selector');
+          // Dump all form fields for debugging
+          var allFields = parentDoc.querySelectorAll('input, textarea, select');
+          var found = [];
+          for (var j = 0; j < allFields.length; j++) {
+            var f = allFields[j];
+            if (f.name || f.id) {
+              found.push(f.tagName + ' name="' + (f.name || '') + '" id="' + (f.id || '') + '" type="' + (f.type || '') + '"');
+            }
+          }
+          console.log('[Widget] All form fields in parent:', found);
+        }
       } catch (e) {
-        console.error('[Widget] pushReportToSubmission error:', e.message);
+        console.error('[Widget] pushReportToHiddenField error:', e.message);
       }
     }
 
@@ -4875,6 +4885,8 @@
         });
 
         JFCustomWidget.subscribe('submit', function() {
+          // Push final report to hidden field before submit
+          pushReportToHiddenField();
           // Widget value carries only sync data for cross-device restoration
           var syncData = {
             taggedAreas: taggedAreas,
@@ -4887,10 +4899,6 @@
             valid: true,
             value: JSON.stringify(syncData)
           });
-
-          // Push the report to field 38 via the API after a short delay
-          // to ensure the submission record exists first.
-          setTimeout(function() { pushReportToSubmission(); }, 2000);
 
           // Clear per-submission state so the next session starts fresh for
           // item counts, but keep the dedicated sealed-state key intact so
