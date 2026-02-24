@@ -1770,8 +1770,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.5.5';
+    var VERSION = '1.5.6';
     var CHANGELOG = [
+      { version: '1.5.6', date: '2026-02-23', changes: [
+        'Uses JFCustomWidget.setFieldsValueById to write report to hidden field (cross-origin safe)',
+      ]},
       { version: '1.5.5', date: '2026-02-23', changes: [
         'Switched back to direct parent DOM access for hidden field (testing with corrected API key)',
         'Report pushed on every state change and at submit time',
@@ -1993,8 +1996,8 @@
       pushReportToHiddenField();
     }
 
-    // Push the human-readable report to a hidden field on the parent form.
-    // Uses direct DOM access (same-origin) with comprehensive logging.
+    // Push the human-readable report to a hidden field on the parent form
+    // using JotForm's cross-origin bridge method.
     function pushReportToHiddenField() {
       try {
         if (typeof JFCustomWidget === 'undefined') return;
@@ -2003,52 +2006,9 @@
           console.warn('[Widget] reportFieldID widget setting not found');
           return;
         }
-        console.log('[Widget] Attempting to write report to field', reportFieldID);
         var submitData = generateSubmitValue();
-        var parentDoc;
-        try {
-          parentDoc = window.parent.document;
-          console.log('[Widget] Parent document accessed successfully');
-        } catch (e) {
-          console.error('[Widget] Cross-origin blocked:', e.message);
-          return;
-        }
-        // Try multiple selector patterns JotForm uses
-        var selectors = [
-          'input#input_' + reportFieldID,
-          '#input_' + reportFieldID,
-          'input[name="q' + reportFieldID + '"]',
-          'input[name="q' + reportFieldID + '_hidden"]',
-          '#id_' + reportFieldID + ' input',
-          'li#id_' + reportFieldID + ' input[type="hidden"]',
-          'textarea#input_' + reportFieldID
-        ];
-        var field = null;
-        for (var i = 0; i < selectors.length; i++) {
-          field = parentDoc.querySelector(selectors[i]);
-          if (field) {
-            console.log('[Widget] Found field with selector:', selectors[i], 'tag:', field.tagName, 'type:', field.type);
-            break;
-          }
-        }
-        if (field) {
-          field.value = submitData.report;
-          var evt = new Event('change', { bubbles: true });
-          field.dispatchEvent(evt);
-          console.log('[Widget] Report written to field ' + reportFieldID + ' (' + submitData.report.length + ' chars)');
-        } else {
-          console.warn('[Widget] Field ' + reportFieldID + ' not found with any selector');
-          // Dump all form fields for debugging
-          var allFields = parentDoc.querySelectorAll('input, textarea, select');
-          var found = [];
-          for (var j = 0; j < allFields.length; j++) {
-            var f = allFields[j];
-            if (f.name || f.id) {
-              found.push(f.tagName + ' name="' + (f.name || '') + '" id="' + (f.id || '') + '" type="' + (f.type || '') + '"');
-            }
-          }
-          console.log('[Widget] All form fields in parent:', found);
-        }
+        JFCustomWidget.setFieldsValueById(reportFieldID, submitData.report);
+        console.log('[Widget] Report pushed to field ' + reportFieldID + ' (' + submitData.report.length + ' chars)');
       } catch (e) {
         console.error('[Widget] pushReportToHiddenField error:', e.message);
       }
