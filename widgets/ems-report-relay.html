@@ -41,10 +41,11 @@
 <body>
 <div id="status">Waiting for checklist data…</div>
 <div id="report"></div>
+<textarea id="widgetValue" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true"></textarea>
 
 <script>
 (function() {
-  var VERSION = '1.2.3';
+  var VERSION = '1.1.8';
   var report = '';
   var htmlReport = '';
   var cachedFormID = null;
@@ -91,13 +92,23 @@
       statusEl.textContent = 'Report received (v' + VERSION + ')';
       statusEl.className = 'connected';
 
-      // Push plain text via sendData so JotForm Tables displays
-      // the report inline without needing the widget iframe to render.
+      // Push report via sendData and also update the hidden textarea
+      // with change/blur events so JotForm's form engine captures the value.
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
         try {
-          JFCustomWidget.sendData({ value: report });
+          JFCustomWidget.sendData({ valid: true, value: report });
         } catch (e) {}
       }
+      // Update hidden textarea and fire DOM events
+      try {
+        var ta = document.getElementById('widgetValue');
+        if (ta) {
+          ta.value = report;
+          ta.dispatchEvent(new Event('change', { bubbles: true }));
+          ta.dispatchEvent(new Event('blur', { bubbles: true }));
+          ta.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      } catch (e) {}
     } else {
       el.textContent = '';
       statusEl.textContent = 'Waiting for checklist data…';
@@ -146,31 +157,26 @@
       cachedFormID = (data && data.formID) || getFormID();
       console.log('[ReportRelay] Ready, formID=' + cachedFormID + ', key=' + getRelayKey());
 
+      // Register as data-producing widget immediately
+      try { JFCustomWidget.sendData({ valid: true, value: '' }); } catch (e) {}
+
       // Restore from submitted value if editing a submission
       if (data && data.value) {
-        var restoredText = data.value;
-
-        // Handle JSON-wrapped submission values: { report: "...", timestamp: ... }
-        try {
-          var parsed = JSON.parse(data.value);
-          if (parsed && parsed.report) {
-            restoredText = parsed.report;
-          }
-        } catch (e) {
-          // Not JSON — treat as plain text
-        }
-
-        report = restoredText;
         var el = document.getElementById('report');
-        el.textContent = restoredText;
+        el.innerHTML = data.value;
+        htmlReport = data.value;
+        report = data.value;
         document.getElementById('status').textContent = 'Report loaded from submission';
         document.getElementById('status').className = 'connected';
-
-        // Tell Tables our display value so it appears in the cell
+        try { JFCustomWidget.sendData({ valid: true, value: report }); } catch (e) {}
         try {
-          JFCustomWidget.sendData({ value: restoredText });
+          var ta = document.getElementById('widgetValue');
+          if (ta) {
+            ta.value = report;
+            ta.dispatchEvent(new Event('change', { bubbles: true }));
+            ta.dispatchEvent(new Event('blur', { bubbles: true }));
+          }
         } catch (e) {}
-
         resizeWidget();
       } else {
         // Check for existing report from current session
@@ -182,6 +188,16 @@
         var finalData = readReport();
         var finalText = (finalData && finalData.text) || report || '';
         console.log('[ReportRelay] Submitting report (' + finalText.length + ' chars)');
+        // Final push before submit
+        try { JFCustomWidget.sendData({ valid: true, value: finalText }); } catch (e) {}
+        try {
+          var ta = document.getElementById('widgetValue');
+          if (ta) {
+            ta.value = finalText;
+            ta.dispatchEvent(new Event('change', { bubbles: true }));
+            ta.dispatchEvent(new Event('blur', { bubbles: true }));
+          }
+        } catch (e) {}
         JFCustomWidget.sendSubmit({
           valid: true,
           value: finalText
