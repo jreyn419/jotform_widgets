@@ -44,7 +44,7 @@
 
 <script>
 (function() {
-  var VERSION = '1.1.0';
+  var VERSION = '1.1.1';
   var report = '';
   var htmlReport = '';
   var cachedFormID = null;
@@ -90,6 +90,14 @@
       report = data.text || '';
       statusEl.textContent = 'Report received (v' + VERSION + ')';
       statusEl.className = 'connected';
+
+      // Push plain-text report via sendData so JotForm Tables displays
+      // it as text instead of rendering the widget iframe.
+      if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
+        try {
+          JFCustomWidget.sendData({ value: report });
+        } catch (e) {}
+      }
     } else {
       el.textContent = '';
       statusEl.textContent = 'Waiting for checklist data…';
