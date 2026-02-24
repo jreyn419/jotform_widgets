@@ -1773,9 +1773,9 @@
     var VERSION = '1.8.0';
     var CHANGELOG = [
       { version: '1.8.0', date: '2026-02-24', changes: [
-        'Submission value now includes plain-text report before sync JSON (report___SYNC_DATA___JSON)',
-        'Report text is visible directly in JotForm Tables without opening the widget',
-        'State restoration still works via extractSyncData delimiter parsing',
+        'sendData (draft saves) and sendSubmit now prepend plain-text report before sync JSON',
+        'JotForm Tables displays the readable report instead of raw JSON',
+        'State restoration unchanged -- extractSyncData parses the delimiter format',
       ]},
       { version: '1.6.0', date: '2026-02-23', changes: [
         'Report relay via localStorage instead of cross-origin DOM/API methods',
@@ -1999,7 +1999,13 @@
             brokenSeals: brokenSeals,
             timestamp: Date.now()
           };
-          JFCustomWidget.sendData({ value: JSON.stringify(state) });
+          // Prepend plain-text report so it's visible in JotForm Tables.
+          // extractSyncData() parses the delimiter to restore state.
+          var submitReport = generateSubmitValue();
+          var combinedValue = submitReport.report
+            + '\n\n___SYNC_DATA___\n'
+            + JSON.stringify(state);
+          JFCustomWidget.sendData({ value: combinedValue });
         } catch (e) {}
       }
       // Push the human-readable report to localStorage for the relay widget
