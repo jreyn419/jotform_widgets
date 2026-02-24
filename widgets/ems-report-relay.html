@@ -41,11 +41,10 @@
 <body>
 <div id="status">Waiting for checklist data…</div>
 <div id="report"></div>
-<textarea id="widgetValue" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true"></textarea>
 
 <script>
 (function() {
-  var VERSION = '1.1.8';
+  var VERSION = '1.1.9';
   var report = '';
   var htmlReport = '';
   var cachedFormID = null;
@@ -92,23 +91,13 @@
       statusEl.textContent = 'Report received (v' + VERSION + ')';
       statusEl.className = 'connected';
 
-      // Push report via sendData and also update the hidden textarea
-      // with change/blur events so JotForm's form engine captures the value.
+      // Push plain-text report via sendData so JotForm Tables displays
+      // it as text instead of rendering the widget iframe.
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
         try {
-          JFCustomWidget.sendData({ valid: true, value: report });
+          JFCustomWidget.sendData({ value: report });
         } catch (e) {}
       }
-      // Update hidden textarea and fire DOM events
-      try {
-        var ta = document.getElementById('widgetValue');
-        if (ta) {
-          ta.value = report;
-          ta.dispatchEvent(new Event('change', { bubbles: true }));
-          ta.dispatchEvent(new Event('blur', { bubbles: true }));
-          ta.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-      } catch (e) {}
     } else {
       el.textContent = '';
       statusEl.textContent = 'Waiting for checklist data…';
@@ -157,7 +146,7 @@
       cachedFormID = (data && data.formID) || getFormID();
       console.log('[ReportRelay] Ready, formID=' + cachedFormID + ', key=' + getRelayKey());
 
-      // Register as data-producing widget immediately
+      // Immediately register with a sendData call
       try { JFCustomWidget.sendData({ valid: true, value: '' }); } catch (e) {}
 
       // Restore from submitted value if editing a submission
@@ -169,14 +158,6 @@
         document.getElementById('status').textContent = 'Report loaded from submission';
         document.getElementById('status').className = 'connected';
         try { JFCustomWidget.sendData({ valid: true, value: report }); } catch (e) {}
-        try {
-          var ta = document.getElementById('widgetValue');
-          if (ta) {
-            ta.value = report;
-            ta.dispatchEvent(new Event('change', { bubbles: true }));
-            ta.dispatchEvent(new Event('blur', { bubbles: true }));
-          }
-        } catch (e) {}
         resizeWidget();
       } else {
         // Check for existing report from current session
@@ -184,20 +165,20 @@
         if (reportData) updateDisplay(reportData);
       }
 
+      // Continuously push current value to JotForm every second,
+      // mimicking how the checklist widget calls sendData on every
+      // state change.  This ensures JotForm always has the latest value.
+      setInterval(function() {
+        try {
+          JFCustomWidget.sendData({ valid: true, value: report || '' });
+        } catch (e) {}
+      }, 1000);
+
       JFCustomWidget.subscribe('submit', function() {
         var finalData = readReport();
         var finalText = (finalData && finalData.text) || report || '';
         console.log('[ReportRelay] Submitting report (' + finalText.length + ' chars)');
-        // Final push before submit
         try { JFCustomWidget.sendData({ valid: true, value: finalText }); } catch (e) {}
-        try {
-          var ta = document.getElementById('widgetValue');
-          if (ta) {
-            ta.value = finalText;
-            ta.dispatchEvent(new Event('change', { bubbles: true }));
-            ta.dispatchEvent(new Event('blur', { bubbles: true }));
-          }
-        } catch (e) {}
         JFCustomWidget.sendSubmit({
           valid: true,
           value: finalText
