@@ -44,7 +44,7 @@
 
 <script>
 (function() {
-  var VERSION = '1.1.5';
+  var VERSION = '1.1.4';
   var report = '';
   var htmlReport = '';
   var cachedFormID = null;
@@ -148,14 +148,12 @@
 
       // Restore from submitted value if editing a submission
       if (data && data.value) {
+        // The stored value is the HTML report from a previous submission
         var el = document.getElementById('report');
         el.innerHTML = data.value;
         htmlReport = data.value;
-        report = data.value;
         document.getElementById('status').textContent = 'Report loaded from submission';
         document.getElementById('status').className = 'connected';
-        // Push to JotForm field value so Tables displays it directly
-        try { JFCustomWidget.sendData({ value: report }); } catch (e) {}
         resizeWidget();
       } else {
         // Check for existing report from current session
@@ -167,11 +165,11 @@
         var finalData = readReport();
         var finalText = (finalData && finalData.text) || report || '';
         console.log('[ReportRelay] Submitting report (' + finalText.length + ' chars)');
-        // Ensure field value is current before submit
-        try { JFCustomWidget.sendData({ value: finalText }); } catch (e) {}
+        // DEBUG: hardcoded value to test if JotForm captures widget submission
+        JFCustomWidget.sendData({ value: 'TEST123' });
         JFCustomWidget.sendSubmit({
           valid: true,
-          value: finalText
+          value: 'TEST123'
         });
       });
     });
