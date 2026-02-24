@@ -1770,8 +1770,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.11.2';
+    var VERSION = '1.11.3';
     var CHANGELOG = [
+      { version: '1.11.3', date: '2026-02-24', changes: [
+        'Fixed: post-seal auto-scroll now accounts for sticky group header height',
+        'Fixed: restock modal subcategory headers sticking too high by deferring offset measurement to next animation frame',
+      ]},
       { version: '1.11.2', date: '2026-02-24', changes: [
         'Fixed: after sealing a child area during normal flow, next child now scrolls into view',
       ]},
@@ -3884,10 +3888,26 @@
         }
       } else if (expandedArea) {
         // buildUI's own auto-advance opened the next area; scroll it into view
+        // accounting for any sticky group header above it.
         setTimeout(function() {
           var areaDiv = document.getElementById('area_' + expandedArea.replace(/[^a-zA-Z0-9]/g, '_'));
           if (areaDiv) {
-            areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            var scrollParent = document.getElementById('areasContainer');
+            if (scrollParent) {
+              var areaRect = areaDiv.getBoundingClientRect();
+              var scrollRect = scrollParent.getBoundingClientRect();
+              // Measure the sticky group header height if this area is inside a group
+              var groupHeaderHeight = 0;
+              var parentGroup = areaDiv.closest('.area-group');
+              if (parentGroup) {
+                var groupHeader = parentGroup.querySelector('.area-header');
+                if (groupHeader) groupHeaderHeight = groupHeader.getBoundingClientRect().height;
+              }
+              var targetScroll = scrollParent.scrollTop + (areaRect.top - scrollRect.top) - groupHeaderHeight;
+              scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+            } else {
+              areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
           }
         }, 150);
       }
@@ -4524,8 +4544,11 @@
         
         summaryContent.innerHTML = html;
 
-        // Dynamically set sticky tops for modal headers
-        updateModalStickyOffsets();
+        // Defer sticky offset measurement to next frame so the browser has
+        // laid out the new DOM and getBoundingClientRect returns accurate sizes.
+        requestAnimationFrame(function() {
+          updateModalStickyOffsets();
+        });
       }
 
       saveState();
