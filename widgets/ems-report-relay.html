@@ -31,8 +31,6 @@
     font-family: 'Courier New', Courier, monospace;
     font-size: 11px;
     line-height: 1.4;
-    white-space: pre-wrap;
-    word-wrap: break-word;
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -46,8 +44,9 @@
 
 <script>
 (function() {
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
   var report = '';
+  var htmlReport = '';
   var cachedFormID = null;
 
   // Parse formID from URL params or ready callback
@@ -69,26 +68,33 @@
       var raw = localStorage.getItem(getRelayKey());
       if (!raw) return null;
       var data = JSON.parse(raw);
-      return data.report || null;
+      return {
+        text: data.report || null,
+        html: data.htmlReport || null
+      };
     } catch (e) {
       return null;
     }
   }
 
-  function updateDisplay(text) {
+  function updateDisplay(data) {
     var el = document.getElementById('report');
     var statusEl = document.getElementById('status');
-    if (text) {
-      el.textContent = text;
+    if (data && (data.html || data.text)) {
+      if (data.html) {
+        el.innerHTML = data.html;
+        htmlReport = data.html;
+      } else {
+        el.textContent = data.text;
+      }
+      report = data.text || '';
       statusEl.textContent = 'Report received (v' + VERSION + ')';
       statusEl.className = 'connected';
-      report = text;
     } else {
       el.textContent = '';
       statusEl.textContent = 'Waiting for checklist data…';
       statusEl.className = '';
     }
-    // Auto-resize iframe
     resizeWidget();
   }
 
@@ -106,20 +112,24 @@
     if (e.key === getRelayKey() && e.newValue) {
       try {
         var data = JSON.parse(e.newValue);
-        if (data.report) {
-          updateDisplay(data.report);
-        }
+        updateDisplay({ text: data.report, html: data.htmlReport });
       } catch (err) {}
     }
   });
 
   // Poll as fallback — storage event doesn't fire for writes from
   // the same page/tab, and iframe behavior can be inconsistent.
+  var lastTimestamp = 0;
   var pollInterval = setInterval(function() {
-    var text = readReport();
-    if (text && text !== report) {
-      updateDisplay(text);
-    }
+    try {
+      var raw = localStorage.getItem(getRelayKey());
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (data.timestamp && data.timestamp > lastTimestamp) {
+        lastTimestamp = data.timestamp;
+        updateDisplay({ text: data.report, html: data.htmlReport });
+      }
+    } catch (e) {}
   }, 1500);
 
   // JotForm widget lifecycle
@@ -128,27 +138,37 @@
       cachedFormID = (data && data.formID) || getFormID();
       console.log('[ReportRelay] Ready, formID=' + cachedFormID + ', key=' + getRelayKey());
 
-      // Check for existing report immediately
-      var text = readReport();
-      if (text) {
-        updateDisplay(text);
+      // Restore from submitted value if editing a submission
+      if (data && data.value) {
+        // The stored value is the HTML report from a previous submission
+        var el = document.getElementById('report');
+        el.innerHTML = data.value;
+        htmlReport = data.value;
+        document.getElementById('status').textContent = 'Report loaded from submission';
+        document.getElementById('status').className = 'connected';
+        resizeWidget();
+      } else {
+        // Check for existing report from current session
+        var reportData = readReport();
+        if (reportData) updateDisplay(reportData);
       }
 
-      // On submit: send the latest report as this widget's value
+      // On submit: send the HTML report as this widget's value
       JFCustomWidget.subscribe('submit', function() {
         // Read one final time to get the freshest report
-        var finalReport = readReport() || report || '';
-        console.log('[ReportRelay] Submitting report (' + finalReport.length + ' chars)');
+        var finalData = readReport();
+        var finalValue = (finalData && finalData.html) || htmlReport || report || '';
+        console.log('[ReportRelay] Submitting report (' + finalValue.length + ' chars)');
         JFCustomWidget.sendSubmit({
           valid: true,
-          value: finalReport
+          value: finalValue
         });
       });
     });
   } else {
     // Standalone / testing mode
-    var text = readReport();
-    if (text) updateDisplay(text);
+    var reportData = readReport();
+    if (reportData) updateDisplay(reportData);
   }
 })();
 </script>
