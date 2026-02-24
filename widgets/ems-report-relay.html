@@ -44,7 +44,7 @@
 
 <script>
 (function() {
-  var VERSION = '1.1.1';
+  var VERSION = '1.1.4';
   var report = '';
   var htmlReport = '';
   var cachedFormID = null;
@@ -161,15 +161,13 @@
         if (reportData) updateDisplay(reportData);
       }
 
-      // On submit: send the HTML report as this widget's value
       JFCustomWidget.subscribe('submit', function() {
-        // Read one final time to get the freshest report
         var finalData = readReport();
-        var finalValue = (finalData && finalData.html) || htmlReport || report || '';
-        console.log('[ReportRelay] Submitting report (' + finalValue.length + ' chars)');
+        var finalText = (finalData && finalData.text) || report || '';
+        console.log('[ReportRelay] Submitting report (' + finalText.length + ' chars)');
         JFCustomWidget.sendSubmit({
           valid: true,
-          value: finalValue
+          value: finalText
         });
       });
     });
