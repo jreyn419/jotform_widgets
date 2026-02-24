@@ -44,7 +44,7 @@
 
 <script>
 (function() {
-  var VERSION = '1.2.1';
+  var VERSION = '1.2.3';
   var report = '';
   var htmlReport = '';
   var cachedFormID = null;
@@ -150,14 +150,14 @@
       if (data && data.value) {
         var restoredText = data.value;
 
-        // Handle legacy JSON-wrapped values from pre-1.2.0 submissions
+        // Handle JSON-wrapped submission values: { report: "...", timestamp: ... }
         try {
           var parsed = JSON.parse(data.value);
           if (parsed && parsed.report) {
             restoredText = parsed.report;
           }
         } catch (e) {
-          // Not JSON — it's already plain text (1.2.0+ format)
+          // Not JSON — treat as plain text
         }
 
         report = restoredText;
