@@ -1770,8 +1770,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.7.0';
+    var VERSION = '1.8.0';
     var CHANGELOG = [
+      { version: '1.8.0', date: '2026-02-24', changes: [
+        'Submission value now includes plain-text report before sync JSON (report___SYNC_DATA___JSON)',
+        'Report text is visible directly in JotForm Tables without opening the widget',
+        'State restoration still works via extractSyncData delimiter parsing',
+      ]},
       { version: '1.6.0', date: '2026-02-23', changes: [
         'Report relay via localStorage instead of cross-origin DOM/API methods',
         'Writes report to localStorage key scoped by formID for report-relay widget pickup',
@@ -4929,7 +4934,10 @@
         JFCustomWidget.subscribe('submit', function() {
           // Push final report to localStorage for the relay widget
           pushReportToRelay();
-          // Widget value carries only sync data for cross-device restoration
+          // Build combined value: plain-text report (visible in Tables)
+          // followed by sync JSON (for state restoration).
+          // extractSyncData() already parses this delimiter format.
+          var submitReport = generateSubmitValue();
           var syncData = {
             taggedAreas: taggedAreas,
             brokenSeals: brokenSeals,
@@ -4937,9 +4945,12 @@
             restockStatus: restockStatus,
             timestamp: Date.now()
           };
+          var combinedValue = submitReport.report
+            + '\n\n___SYNC_DATA___\n'
+            + JSON.stringify(syncData);
           JFCustomWidget.sendSubmit({
             valid: true,
-            value: JSON.stringify(syncData)
+            value: combinedValue
           });
 
           // Clear per-submission state so the next session starts fresh for
