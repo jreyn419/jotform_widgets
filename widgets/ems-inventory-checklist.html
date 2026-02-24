@@ -1770,8 +1770,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.5.2';
+    var VERSION = '1.5.3';
     var CHANGELOG = [
+      { version: '1.5.3', date: '2026-02-23', changes: [
+        'Report field ID now read from reportFieldID widget setting instead of hardcoded',
+      ]},
       { version: '1.5.2', date: '2026-02-23', changes: [
         'Switched to Submissions API for writing report to field 38 (cross-origin prevents DOM access)',
         'Report written via API POST after form submission with 2s delay',
@@ -1994,7 +1997,11 @@
           console.warn('[Widget] Cannot push report: missing apiKey or formID');
           return;
         }
-        var reportFieldID = '38';
+        var reportFieldID = JFCustomWidget.getWidgetSetting('reportFieldID');
+        if (!reportFieldID) {
+          console.warn('[Widget] Cannot push report: missing reportFieldID widget setting');
+          return;
+        }
         var submitData = generateSubmitValue();
         var report = submitData.report;
 
