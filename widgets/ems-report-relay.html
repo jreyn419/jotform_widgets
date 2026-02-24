@@ -44,7 +44,7 @@
 
 <script>
 (function() {
-  var VERSION = '1.1.6';
+  var VERSION = '1.1.7';
   var report = '';
   var htmlReport = '';
   var cachedFormID = null;
@@ -91,12 +91,11 @@
       statusEl.textContent = 'Report received (v' + VERSION + ')';
       statusEl.className = 'connected';
 
-      // Push report via sendData wrapped in JSON — JotForm Tables
-      // displays JSON values as inline text rather than rendering the
-      // widget iframe (matching how the checklist widget behaves).
+      // Push report via sendData so JotForm captures the field value.
+      // Include valid:true so JotForm registers this as a data-producing field.
       if (typeof JFCustomWidget !== 'undefined' && JFCustomWidget.sendData) {
         try {
-          JFCustomWidget.sendData({ value: JSON.stringify({ report: report, timestamp: Date.now() }) });
+          JFCustomWidget.sendData({ valid: true, value: report });
         } catch (e) {}
       }
     } else {
@@ -147,14 +146,19 @@
       cachedFormID = (data && data.formID) || getFormID();
       console.log('[ReportRelay] Ready, formID=' + cachedFormID + ', key=' + getRelayKey());
 
+      // Immediately register as a data-producing widget so JotForm
+      // knows this field has a value, even before report data arrives.
+      try { JFCustomWidget.sendData({ valid: true, value: '' }); } catch (e) {}
+
       // Restore from submitted value if editing a submission
       if (data && data.value) {
-        // The stored value is the HTML report from a previous submission
         var el = document.getElementById('report');
         el.innerHTML = data.value;
         htmlReport = data.value;
+        report = data.value;
         document.getElementById('status').textContent = 'Report loaded from submission';
         document.getElementById('status').className = 'connected';
+        try { JFCustomWidget.sendData({ valid: true, value: report }); } catch (e) {}
         resizeWidget();
       } else {
         // Check for existing report from current session
@@ -166,10 +170,11 @@
         var finalData = readReport();
         var finalText = (finalData && finalData.text) || report || '';
         console.log('[ReportRelay] Submitting report (' + finalText.length + ' chars)');
-        var jsonValue = JSON.stringify({ report: finalText, timestamp: Date.now() });
+        // Final sendData push right before submit
+        try { JFCustomWidget.sendData({ valid: true, value: finalText }); } catch (e) {}
         JFCustomWidget.sendSubmit({
           valid: true,
-          value: jsonValue
+          value: finalText
         });
       });
     });
