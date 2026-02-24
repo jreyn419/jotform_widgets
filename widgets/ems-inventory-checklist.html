@@ -1997,7 +1997,7 @@
     }
 
     // Push the human-readable report to a hidden field on the parent form
-    // using JotForm's cross-origin bridge method.
+    // using JotForm's cross-origin bridge methods.
     function pushReportToHiddenField() {
       try {
         if (typeof JFCustomWidget === 'undefined') return;
@@ -2007,8 +2007,26 @@
           return;
         }
         var submitData = generateSubmitValue();
-        JFCustomWidget.setFieldsValueById(reportFieldID, submitData.report);
-        console.log('[Widget] Report pushed to field ' + reportFieldID + ' (' + submitData.report.length + ' chars)');
+        var report = submitData.report;
+        var fid = String(reportFieldID);
+
+        // Try setFieldsValueById with object format: {fieldId: value}
+        try {
+          var obj = {};
+          obj[fid] = report;
+          JFCustomWidget.setFieldsValueById(obj);
+          console.log('[Widget] setFieldsValueById({' + fid + ': report}) called');
+        } catch (e) {
+          console.error('[Widget] setFieldsValueById obj format error:', e.message);
+        }
+
+        // Try storeToField with (id, value)
+        try {
+          JFCustomWidget.storeToField(fid, report);
+          console.log('[Widget] storeToField(' + fid + ', report) called');
+        } catch (e) {
+          console.error('[Widget] storeToField error:', e.message);
+        }
       } catch (e) {
         console.error('[Widget] pushReportToHiddenField error:', e.message);
       }
