@@ -1770,8 +1770,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.11.0';
+    var VERSION = '1.11.1';
     var CHANGELOG = [
+      { version: '1.11.1', date: '2026-02-24', changes: [
+        'Fixed: completion popup shown without checking for unsealed sealable areas after break-and-recheck flow',
+        'Fixed: sealing a child area during normal checklist flow collapsed parent group instead of advancing to next child',
+        'checkForCompletion, openRestockModal, and sealAllAreas now route through seal-navigation logic',
+      ]},
       { version: '1.11.0', date: '2026-02-24', changes: [
         'Seal auto-advance respects parent/child hierarchy: children sealed before parent',
         'Navigating to child seal buttons expands parent group without toggling it closed',
@@ -3455,8 +3460,17 @@
       }
       if (sealed > 0) {
         closeRestockModal();
+        expandedArea = null;
+        expandedGroup = null;
         buildUI();
-        showCompletionPopup();
+        var nextSealable = findFirstUnsealedSealableArea();
+        if (nextSealable) {
+          setTimeout(function() {
+            navigateToSealableArea(nextSealable);
+          }, 150);
+        } else {
+          showCompletionPopup();
+        }
       }
     }
 
@@ -3843,15 +3857,20 @@
         taggedTimestamp: now.getTime()
       };
 
-      // Clear expanded state so buildUI doesn't try its own auto-advance;
-      // we handle navigation explicitly below.
-      expandedArea = null;
-      expandedGroup = null;
+      // If everything is complete, we handle navigation ourselves after
+      // buildUI, so clear expanded state to prevent buildUI's own
+      // auto-advance from interfering. Otherwise let buildUI handle it
+      // normally (e.g. advancing to next incomplete child).
+      var willAutoAdvance = isEverythingComplete();
+      if (willAutoAdvance) {
+        expandedArea = null;
+        expandedGroup = null;
+      }
+
       buildUI();
 
-      // Auto-advance: if everything is restocked, navigate to the next
-      // unsealed sealable area or show the completion popup.
-      if (isEverythingComplete()) {
+      // Auto-advance to next sealable area or show completion
+      if (willAutoAdvance) {
         var nextSealable = findFirstUnsealedSealableArea();
         if (nextSealable) {
           setTimeout(function() {
@@ -4529,9 +4548,20 @@
     }
 
     // Check if all items are fully stocked and show completion popup
+    // (or navigate to next sealable area if sealing is needed)
     function checkForCompletion() {
       if (!stateReady) return;
       if (!isEverythingComplete()) return;
+
+      var nextSealable = findFirstUnsealedSealableArea();
+      if (nextSealable) {
+        // Navigate to the sealable area instead of showing completion
+        setTimeout(function() {
+          navigateToSealableArea(nextSealable);
+        }, 300);
+        return;
+      }
+
       // Small delay so the last category collapse/scroll finishes first
       setTimeout(function() {
         showCompletionPopup();
@@ -4546,7 +4576,12 @@
     
     function openRestockModal() {
       if (isEverythingComplete()) {
-        showCompletionPopup();
+        var nextSealable = findFirstUnsealedSealableArea();
+        if (nextSealable) {
+          navigateToSealableArea(nextSealable);
+        } else {
+          showCompletionPopup();
+        }
         return;
       }
       document.getElementById('modalOverlay').classList.add('open');
