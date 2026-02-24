@@ -1770,8 +1770,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.9.0';
+    var VERSION = '1.9.1';
     var CHANGELOG = [
+      { version: '1.9.1', date: '2026-02-24', changes: [
+        'Post-restock navigation scrolls the Seal This Area button into view instead of the area top',
+      ]},
       { version: '1.9.0', date: '2026-02-24', changes: [
         'After all shortages resolved, auto-navigates to first unsealed sealable area instead of completion popup',
         'Restock modal closes and expands the relevant area with seal button visible',
@@ -3458,19 +3461,28 @@
       return null;
     }
 
-    // Navigate to an area: expand its parent group if needed, then expand the area itself
+    // Navigate to an area: expand its parent group if needed, then expand the area
+    // and scroll so the seal button is visible.
     function navigateToSealableArea(areaName) {
       var parentName = areaParent[areaName] || null;
+      var safeName = areaName.replace(/[^a-zA-Z0-9]/g, '_');
+
+      function scrollToSealButton(aName) {
+        var btnId = areaHierarchy[aName]
+          ? 'tag_btn_group_' + aName.replace(/[^a-zA-Z0-9]/g, '_')
+          : 'tag_btn_' + aName.replace(/[^a-zA-Z0-9]/g, '_');
+        var btn = document.getElementById(btnId);
+        if (btn) {
+          btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
 
       // If it's a parent-level sealable area (has children), expand the group
       if (areaHierarchy[areaName]) {
-        var groupDiv = document.getElementById('area_group_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
+        var groupDiv = document.getElementById('area_group_' + safeName);
         if (groupDiv) {
           toggleAreaGroup(groupDiv);
-          // Scroll group into view
-          setTimeout(function() {
-            groupDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 50);
+          setTimeout(function() { scrollToSealButton(areaName); }, 150);
         }
         return;
       }
@@ -3481,20 +3493,21 @@
         if (groupDiv && !groupDiv.classList.contains('expanded')) {
           toggleAreaGroup(groupDiv);
         }
-        // Small delay to let group expand, then toggle child
         setTimeout(function() {
-          var areaDiv = document.getElementById('area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
+          var areaDiv = document.getElementById('area_' + safeName);
           if (areaDiv) {
             toggleArea(areaDiv, true);
+            setTimeout(function() { scrollToSealButton(areaName); }, 150);
           }
         }, 100);
         return;
       }
 
       // Standalone area
-      var areaDiv = document.getElementById('area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
+      var areaDiv = document.getElementById('area_' + safeName);
       if (areaDiv) {
         toggleArea(areaDiv, false);
+        setTimeout(function() { scrollToSealButton(areaName); }, 150);
       }
     }
 
