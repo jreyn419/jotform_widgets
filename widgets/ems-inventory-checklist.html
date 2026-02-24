@@ -1770,8 +1770,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.9.1';
+    var VERSION = '1.10.0';
     var CHANGELOG = [
+      { version: '1.10.0', date: '2026-02-24', changes: [
+        'After sealing an area, auto-advances to the next unsealed sealable area with scroll to seal button',
+        'Completion popup shown only after the last sealable area is sealed',
+      ]},
       { version: '1.9.1', date: '2026-02-24', changes: [
         'Post-restock navigation scrolls the Seal This Area button into view instead of the area top',
       ]},
@@ -3773,6 +3777,19 @@
         taggedTimestamp: now.getTime()
       };
       buildUI();
+
+      // Auto-advance: if everything is restocked, navigate to the next
+      // unsealed sealable area or show the completion popup.
+      if (isEverythingComplete()) {
+        var nextSealable = findFirstUnsealedSealableArea();
+        if (nextSealable) {
+          setTimeout(function() {
+            navigateToSealableArea(nextSealable);
+          }, 150);
+        } else {
+          showCompletionPopup();
+        }
+      }
     }
 
     function breakSeal(areaName, reason) {
