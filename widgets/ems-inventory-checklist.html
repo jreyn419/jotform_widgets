@@ -1770,8 +1770,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.11.4';
+    var VERSION = '1.12.0';
     var CHANGELOG = [
+      { version: '1.12.0', date: '2026-03-05', changes: [
+        'Inventory settings now accept a relative path to a .md file (e.g. data/checklists/driver_side.md) hosted in the same GitHub Pages repo',
+        'Widget detects .md paths automatically and fetches the file content before parsing; falls back to DEFAULT_INVENTORY on fetch failure',
+      ]},
       { version: '1.11.4', date: '2026-02-24', changes: [
         'Fixed: restock modal subcategory sticky headers on mobile — skips measurement when modal hidden, retries on zero-height, double-rAF for layout settling',
       ]},
@@ -2317,6 +2321,49 @@
       return result;
     }
     
+    // =====================================================
+    // MARKDOWN FILE FETCH
+    // =====================================================
+
+    // Detects if the inventoryItems setting is a relative path to a .md file
+    // rather than inline checklist data.
+    function isMarkdownPath(text) {
+      if (!text) return false;
+      var trimmed = text.trim();
+      return /^[\w][\w\-\.\/]*\.md$/.test(trimmed);
+    }
+
+    // Derives the base URL from the widget's own location so relative paths
+    // like "data/checklists/driver_side.md" resolve correctly on GitHub Pages.
+    function getWidgetBaseUrl() {
+      var href = window.location.href.split('?')[0]; // strip query params
+      return href.substring(0, href.lastIndexOf('/') + 1);
+    }
+
+    // Fetches a markdown checklist file, then calls back with the text content.
+    // On failure, calls back with null so the caller can fall back to defaults.
+    function fetchMarkdownInventory(mdPath, callback) {
+      var url = getWidgetBaseUrl() + mdPath.trim();
+      console.log('[Widget] Fetching checklist from: ' + url);
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          console.log('[Widget] Checklist fetched (' + xhr.responseText.length + ' chars)');
+          callback(xhr.responseText);
+        } else {
+          console.warn('[Widget] Checklist fetch failed: HTTP ' + xhr.status + ' for ' + url);
+          callback(null);
+        }
+      };
+      xhr.onerror = function() {
+        console.warn('[Widget] Checklist fetch network error for ' + url);
+        callback(null);
+      };
+      xhr.send();
+    }
+
     // =====================================================
     // BUILD UI
     // =====================================================
@@ -5089,18 +5136,19 @@
           var fp = getFormParams();
           cachedFormID = fp.formID || (data && data.formID) || null;
 
-          // Load inventory from widget settings
+          // Load inventory from widget settings — supports inline text
+          // or a relative path to a .md file on the same GitHub Pages origin.
           var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
-          INVENTORY = parseInventory(inventoryText);
 
-          // Derive tagged area support from per-area Sealable: config
-          enableTaggedAreas = Object.keys(sealableAreas).length > 0;
-          var reviewDay = JFCustomWidget.getWidgetSetting('sealReviewDay');
-          if (reviewDay !== undefined && reviewDay !== null && reviewDay !== '') {
-            sealReviewDay = Math.max(1, Math.min(31, parseInt(reviewDay, 10) || 0));
-          }
+          function continueAfterInventoryLoad() {
+            // Derive tagged area support from per-area Sealable: config
+            enableTaggedAreas = Object.keys(sealableAreas).length > 0;
+            var reviewDay = JFCustomWidget.getWidgetSetting('sealReviewDay');
+            if (reviewDay !== undefined && reviewDay !== null && reviewDay !== '') {
+              sealReviewDay = Math.max(1, Math.min(31, parseInt(reviewDay, 10) || 0));
+            }
 
-          buildUI();
+            buildUI();
 
           // Restore saved state: try JotForm value first, then localStorage
           var saved = null;
@@ -5195,6 +5243,24 @@
               }
             });
           }
+          } // end continueAfterInventoryLoad
+
+          // Branch: if the setting is a .md file path, fetch it async;
+          // otherwise parse inline text synchronously.
+          if (isMarkdownPath(inventoryText)) {
+            fetchMarkdownInventory(inventoryText, function(mdContent) {
+              if (mdContent) {
+                INVENTORY = parseInventory(mdContent);
+              } else {
+                console.warn('[Widget] Markdown fetch failed, falling back to DEFAULT_INVENTORY');
+                INVENTORY = parseInventory(DEFAULT_INVENTORY);
+              }
+              continueAfterInventoryLoad();
+            });
+          } else {
+            INVENTORY = parseInventory(inventoryText);
+            continueAfterInventoryLoad();
+          }
         });
 
         JFCustomWidget.subscribe('submit', function() {
@@ -5226,38 +5292,51 @@
         });
       } else {
         // Standalone mode - use default inventory
-        INVENTORY = parseInventory(DEFAULT_INVENTORY);
-        enableTaggedAreas = Object.keys(sealableAreas).length > 0;
-        buildUI();
+        // (DEFAULT_INVENTORY could also be overridden to a .md path for testing)
+        var standaloneText = DEFAULT_INVENTORY;
 
-        // Restore from localStorage in standalone mode
-        var saved = loadState();
-        if (saved) {
-          if (saved.itemStates) itemStates = saved.itemStates;
-          if (saved.taggedAreas) taggedAreas = saved.taggedAreas;
-          if (saved.restockStatus) restockStatus = saved.restockStatus;
-          if (saved.brokenSeals) brokenSeals = saved.brokenSeals;
-        }
+        function continueStandalone(inventoryContent) {
+          INVENTORY = parseInventory(inventoryContent);
+          enableTaggedAreas = Object.keys(sealableAreas).length > 0;
+          buildUI();
 
-        // Layer in dedicated sealed-state store
-        var sealData = loadSealState();
-        if (sealData && sealData.taggedAreas) {
-          var savedSealTs = (saved && saved.timestamp) || 0;
-          var dedicatedSealTs = sealData.timestamp || 0;
-          if (dedicatedSealTs >= savedSealTs) {
-            taggedAreas = sealData.taggedAreas;
-            if (sealData.brokenSeals) {
-              brokenSeals = sealData.brokenSeals;
+          // Restore from localStorage in standalone mode
+          var saved = loadState();
+          if (saved) {
+            if (saved.itemStates) itemStates = saved.itemStates;
+            if (saved.taggedAreas) taggedAreas = saved.taggedAreas;
+            if (saved.restockStatus) restockStatus = saved.restockStatus;
+            if (saved.brokenSeals) brokenSeals = saved.brokenSeals;
+          }
+
+          // Layer in dedicated sealed-state store
+          var sealData = loadSealState();
+          if (sealData && sealData.taggedAreas) {
+            var savedSealTs = (saved && saved.timestamp) || 0;
+            var dedicatedSealTs = sealData.timestamp || 0;
+            if (dedicatedSealTs >= savedSealTs) {
+              taggedAreas = sealData.taggedAreas;
+              if (sealData.brokenSeals) {
+                brokenSeals = sealData.brokenSeals;
+              }
             }
           }
+
+          autoBreakOverdueSeals();
+          clearUnsealedItemStates();
+
+          buildUI();
+          stateReady = true;
+          saveState();
         }
 
-        autoBreakOverdueSeals();
-        clearUnsealedItemStates();
-
-        buildUI();
-        stateReady = true;
-        saveState();
+        if (isMarkdownPath(standaloneText)) {
+          fetchMarkdownInventory(standaloneText, function(mdContent) {
+            continueStandalone(mdContent || DEFAULT_INVENTORY);
+          });
+        } else {
+          continueStandalone(standaloneText);
+        }
       }
     }
     
