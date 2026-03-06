@@ -5147,6 +5147,9 @@
           var _decodeEl = document.createElement('textarea');
           _decodeEl.innerHTML = _rawInventory;
           var inventoryText = _decodeEl.value;
+          console.log('[Widget] inventoryItems raw:', JSON.stringify(_rawInventory).substring(0, 120));
+          console.log('[Widget] inventoryItems decoded:', JSON.stringify(inventoryText).substring(0, 120));
+          console.log('[Widget] isMarkdownPath:', isMarkdownPath(inventoryText));
 
           function continueAfterInventoryLoad() {
             // Derive tagged area support from per-area Sealable: config
