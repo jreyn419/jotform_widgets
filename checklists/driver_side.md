@@ -104,6 +104,7 @@ Pillow | 3
 Pillow case (disposable) | 3
 Blanket | 6
 Emergency Blanket | 2
+Oxygen Cylinder, Type D | 3
 
 Area Name: Top of Bench
 Yellow Table | 1
@@ -186,7 +187,6 @@ Baby Cap (if not included in OB kit) | 2
 
 Area Name: External Backboard Cabinet
 Left
-Stair Chair | 1
 Pediatric Board (orange) | 1
 Infant Board (green) | 1
 >MCI Bag
