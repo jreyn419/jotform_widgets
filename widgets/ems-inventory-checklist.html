@@ -1770,8 +1770,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.12.0';
+    var VERSION = '1.12.1';
     var CHANGELOG = [
+      { version: '1.12.1', date: '2026-03-05', changes: [
+        'Fixed: markdown file path detection failed because JotForm HTML-entity-encodes widget setting values (e.g. / becomes &#x2F;); now decodes before path check',
+      ]},
       { version: '1.12.0', date: '2026-03-05', changes: [
         'Inventory settings now accept a relative path to a .md file (e.g. data/checklists/driver_side.md) hosted in the same GitHub Pages repo',
         'Widget detects .md paths automatically and fetches the file content before parsing; falls back to DEFAULT_INVENTORY on fetch failure',
@@ -5138,7 +5141,12 @@
 
           // Load inventory from widget settings — supports inline text
           // or a relative path to a .md file on the same GitHub Pages origin.
-          var inventoryText = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
+          // Decode HTML entities first: JotForm encodes setting values
+          // (e.g. / becomes &#x2F;) which would break path detection.
+          var _rawInventory = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
+          var _decodeEl = document.createElement('textarea');
+          _decodeEl.innerHTML = _rawInventory;
+          var inventoryText = _decodeEl.value;
 
           function continueAfterInventoryLoad() {
             // Derive tagged area support from per-area Sealable: config
