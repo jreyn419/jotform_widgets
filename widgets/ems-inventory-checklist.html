@@ -1770,8 +1770,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.12.1';
+    var VERSION = '1.12.2';
     var CHANGELOG = [
+      { version: '1.12.2', date: '2026-03-05', changes: [
+        'Fixed: markdown path now supports full URLs (e.g. https://user.github.io/repo/data/file.md) in addition to relative paths',
+      ]},
       { version: '1.12.1', date: '2026-03-05', changes: [
         'Fixed: markdown file path detection failed because JotForm HTML-entity-encodes widget setting values (e.g. / becomes &#x2F;); now decodes before path check',
       ]},
@@ -2333,7 +2336,9 @@
     function isMarkdownPath(text) {
       if (!text) return false;
       var trimmed = text.trim();
-      return /^[\w][\w\-\.\/]*\.md$/.test(trimmed);
+      // Matches a full URL ending in .md (e.g. https://user.github.io/repo/data/file.md)
+      // or a relative path ending in .md (e.g. data/checklists/file.md)
+      return /\.md$/.test(trimmed) && trimmed.indexOf('|') === -1;
     }
 
     // Derives the base URL from the widget's own location so relative paths
@@ -2346,7 +2351,9 @@
     // Fetches a markdown checklist file, then calls back with the text content.
     // On failure, calls back with null so the caller can fall back to defaults.
     function fetchMarkdownInventory(mdPath, callback) {
-      var url = getWidgetBaseUrl() + mdPath.trim();
+      var trimmed = mdPath.trim();
+      // If it's already a full URL, use it directly; otherwise resolve relative to widget
+      var url = /^https?:\/\//i.test(trimmed) ? trimmed : getWidgetBaseUrl() + trimmed;
       console.log('[Widget] Fetching checklist from: ' + url);
 
       var xhr = new XMLHttpRequest();
