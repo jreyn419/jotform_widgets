@@ -68,6 +68,7 @@ Left-Side Zippered Pocket
 >16 Fr. | 2
 >18 Fr. | 2
 DuCanto Suction Tip | 1
+60 mL Syringe, Catheter Tip | 1
 
 Right-Side Zippered Pocket
 >NPAs
