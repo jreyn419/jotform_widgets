@@ -36,7 +36,7 @@ Ibuprofen Oral Suspension | 4
 Aspirin Bottle 81 mg/tablet | 2
 Diphenhydramine PO 25mg/10mL | 4
 Diphenhydramine 50mg/mL | 2
-Sodium Bicarbonate Vial 50mEq/50mL | 1
+Sodium Bicarbonate Preload 50mEq/50mL | 1
 Labetalol 100mg/20mL | 4
 Magnesium Sulfate 5g/10mL | 1
 Epinephrine 1mg/1mL | 5
