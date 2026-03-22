@@ -1,0 +1,206 @@
+{
+  "Alameda County EMS": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Central California EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Coastal Valleys EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Contra Costa EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "El Dorado County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Imperial County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Inland Counties Emergency Medical Agency (ICEMA)": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Kern County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Los Angeles County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Marin County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Merced County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Monterey County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Mountain Counties EMS Agency (MCEMSA)": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Napa County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "North Coast EMS": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Northern California EMS Inc.": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Orange County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Riverside County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Sacramento County EMS Agency": {
+    "tracked": true,
+    "last_hash": "f284ba5173c104e42f17a1f162650b3becc136dfc1d2eadc787578c84e76b8ff",
+    "last_checked": "2026-03-22 13:28",
+    "page_url": "https://dhs.saccounty.gov/PUB/EMS/Documents/PoliciesProceduresProtocols/2000/PP-2030%20Advanced%20Life%20Support%20Inventories.pdf#search=inventory"
+  },
+  "San Benito County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "San Diego County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "San Francisco EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "San Joaquin EMS Agency": {
+    "tracked": true,
+    "last_hash": "abaaadc0c5f9d9b3d2c1788451d0d8c7627f27d0138f8110c2e711c6d7a9b25e",
+    "last_checked": "2026-03-22 13:28",
+    "page_url": "https://www.sjgov.org/docs/default-source/emergency-medical-services-documents/policies/section-4000-providers-and-facilities/4101---ems-response-vehicle-medication-and-equipment-effective-july-1-2025.pdf?sfvrsn=e7fdb179_7"
+  },
+  "San Luis Obispo County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "San Mateo County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Santa Barbara County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Santa Clara County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Santa Cruz County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Sierra-Sacramento Valley EMS Agency": {
+    "tracked": true,
+    "last_hash": "524dd034a4a0baad8ba7cc977155f2bed8e592700500e2b9ff3f1b117c407e19",
+    "last_checked": "2026-03-22 13:28",
+    "page_url": "https://www.ssvems.com/wp-content/uploads/2025/09/701.pdf"
+  },
+  "Solano County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Stanislaus County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Tuolumne County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Ventura County EMS Agency": {
+    "tracked": false,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": ""
+  },
+  "Yolo County EMS Agency": {
+    "tracked": true,
+    "last_hash": "",
+    "last_checked": "",
+    "page_url": "https://www.yolocounty.gov/government/general-government-departments/health-human-services/providers-partners/yolo-emergency-medical-services-agency-yemsa/yemsa-policies-protocols/-folder-2482/-npage-2"
+  }
+}
