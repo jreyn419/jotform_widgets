@@ -15,19 +15,22 @@ import re
 import shutil
 import tempfile
 import webbrowser
+import subprocess
 import json
 import hashlib
 import ssl
 import http.cookiejar
 import urllib.request
 import urllib.error
+from urllib.parse import urlparse
 from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, simpledialog
 from collections import defaultdict
 from copy import deepcopy
+import html as html_module
 
-VERSION = "2.3.0"
+VERSION = "2.5.0"
 
 # == LEMSA directory ==========================================================
 
@@ -315,7 +318,7 @@ class App(tk.Tk):
         self.dirty = False
         self.dirty_master = False
         self.lemsa_config_path = os.path.join(self.base_dir, "data", "lemsa_config.json")
-        self.lemsa_config = {}  # {lemsa_name: {tracked: bool, page_url (LEMSA policies page): str, last_hash: str, last_checked: str}}
+        self.lemsa_config = {}  # {lemsa_name: {tracked: bool, page_url (LEMSA document): str, last_hash: str, last_checked: str}}
 
         self._build_ui()
         self._load_lemsa_config()
@@ -348,6 +351,10 @@ class App(tk.Tk):
         self._notebook = ttk.Notebook(self)
         self._notebook.pack(fill=tk.BOTH, expand=True, padx=4, pady=(0, 4))
 
+        self._lemsa_tab = ttk.Frame(self._notebook)
+        self._notebook.add(self._lemsa_tab, text="LEMSA Equipment")
+        self._build_lemsa_tab()
+
         self._master_tab = ttk.Frame(self._notebook)
         self._notebook.add(self._master_tab, text="Master List")
         self._build_master_tab()
@@ -355,10 +362,6 @@ class App(tk.Tk):
         self._rig_tab = ttk.Frame(self._notebook)
         self._notebook.add(self._rig_tab, text="Rig Files")
         self._build_rig_tab()
-
-        self._lemsa_tab = ttk.Frame(self._notebook)
-        self._notebook.add(self._lemsa_tab, text="LEMSA Monitor")
-        self._build_lemsa_tab()
 
         self._status_var = tk.StringVar(value="Ready")
         ttk.Label(self, textvariable=self._status_var, relief=tk.SUNKEN,
@@ -443,6 +446,19 @@ class App(tk.Tk):
         ttk.Button(sf, text="\u2715", width=3,
                    command=lambda: self._l_search_var.set("")).pack(side=tk.LEFT)
 
+        ff = ttk.Frame(left); ff.pack(fill=tk.X, pady=(0, 2), padx=4)
+        self._l_show_tracked_only = tk.BooleanVar(value=False)
+        ttk.Checkbutton(ff, text="Show tracked only", variable=self._l_show_tracked_only,
+                         command=self._rebuild_lemsa_list).pack(side=tk.LEFT)
+        ttk.Button(ff, text="Check Tracked for Updates",
+                   command=self._check_lemsa_updates).pack(side=tk.LEFT, padx=(8, 0))
+
+        df = ttk.Frame(left); df.pack(fill=tk.X, pady=(0, 2), padx=4)
+        ttk.Label(df, text="Save PDFs to:").pack(side=tk.LEFT)
+        self._l_dl_dir_var = tk.StringVar(value=self.lemsa_config.get("_download_dir", ""))
+        ttk.Entry(df, textvariable=self._l_dl_dir_var, width=30).pack(side=tk.LEFT, padx=4)
+        ttk.Button(df, text="Browse…", command=self._browse_lemsa_dl_dir).pack(side=tk.LEFT)
+
         tf = ttk.Frame(left); tf.pack(fill=tk.BOTH, expand=True)
         self._l_tree = ttk.Treeview(tf, selectmode="browse", show="tree")
         vsb = ttk.Scrollbar(tf, orient=tk.VERTICAL, command=self._l_tree.yview)
@@ -450,9 +466,6 @@ class App(tk.Tk):
         self._l_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True); vsb.pack(side=tk.RIGHT, fill=tk.Y)
         self._l_tree.bind("<<TreeviewSelect>>", self._on_lemsa_select)
         self._l_tree.tag_configure("tracked", foreground="#006600")
-
-        bf = ttk.Frame(left); bf.pack(fill=tk.X, pady=4, padx=4)
-        ttk.Button(bf, text="Check Tracked for Updates", command=self._check_lemsa_updates).pack(side=tk.LEFT)
 
         # Right: detail
         right = ttk.Frame(paned, padding=8); paned.add(right, weight=1)
@@ -472,6 +485,9 @@ class App(tk.Tk):
                 self.lemsa_config = {}
         else:
             self.lemsa_config = {}
+        # Populate download dir from saved config
+        if hasattr(self, '_l_dl_dir_var'):
+            self._l_dl_dir_var.set(self.lemsa_config.get("_download_dir", ""))
 
     def _save_lemsa_config(self):
         os.makedirs(os.path.dirname(self.lemsa_config_path), exist_ok=True)
@@ -481,7 +497,8 @@ class App(tk.Tk):
     def _get_lemsa_conf(self, name):
         if name not in self.lemsa_config:
             self.lemsa_config[name] = {
-                "tracked": False, "page_url": "", "last_hash": "", "last_checked": ""
+                "tracked": False, "page_url": "", "link_text": "",
+                "last_hash": "", "last_checked": "", "resolved_url": ""
             }
         conf = self.lemsa_config[name]
         # Migrate old config key
@@ -491,11 +508,36 @@ class App(tk.Tk):
             conf.pop("equip_url")
         return conf
 
+    def _browse_lemsa_dl_dir(self):
+        d = filedialog.askdirectory(initialdir=self._l_dl_dir_var.get() or self.base_dir)
+        if d:
+            self._l_dl_dir_var.set(d)
+            self.lemsa_config["_download_dir"] = d
+            self._save_lemsa_config()
+
+    def _get_lemsa_dl_dir(self):
+        """Return the download dir, or None if not set."""
+        d = self._l_dl_dir_var.get().strip()
+        return d if d and os.path.isdir(d) else None
+
+    def _save_lemsa_pdf(self, name, doc_data):
+        """Save PDF to the download directory. Returns the file path or None."""
+        dl_dir = self._get_lemsa_dl_dir()
+        if not dl_dir:
+            return None
+        # Sanitize LEMSA name for filename
+        safe_name = re.sub(r'[^\w\s\-]', '', name).strip().replace(' ', '_')
+        filepath = os.path.join(dl_dir, f"{safe_name}.pdf")
+        with open(filepath, "wb") as f:
+            f.write(doc_data)
+        return filepath
+
     # -- LEMSA list ----------------------------------------------------------
 
     def _rebuild_lemsa_list(self):
         self._l_tree.delete(*self._l_tree.get_children())
         q = self._l_search_var.get().strip().lower()
+        tracked_only = self._l_show_tracked_only.get()
         for i, lemsa in enumerate(LEMSA_DATA):
             name = lemsa["name"]
             counties = ", ".join(lemsa["counties"])
@@ -504,10 +546,14 @@ class App(tk.Tk):
                 continue
             conf = self._get_lemsa_conf(name)
             tracked = conf.get("tracked", False)
+            if tracked_only and not tracked:
+                continue
             prefix = "\u2713 " if tracked else "  "
             status = ""
-            if tracked and conf.get("last_checked"):
+            if conf.get("last_checked"):
                 status = f"  [{conf['last_checked']}]"
+            if conf.get("last_hash"):
+                status += "  \u2714"  # checkmark = has baseline
             tags = ("tracked",) if tracked else ()
             self._l_tree.insert("", tk.END, iid=f"lemsa_{i}",
                                  text=f"{prefix}{name}{status}", tags=tags)
@@ -544,138 +590,311 @@ class App(tk.Tk):
         ttk.Checkbutton(f, text="Track this LEMSA", variable=tracked_var).grid(
             row=3, column=0, columnspan=2, sticky=tk.W, pady=4)
 
-        # Equipment list URL
-        ttk.Label(f, text="Policies Page URL:").grid(row=4, column=0, sticky=tk.W, pady=4)
+        # Protocols page URL
+        ttk.Label(f, text="Protocols Page URL:").grid(row=4, column=0, sticky=tk.W, pady=4)
         page_var = tk.StringVar(value=conf.get("page_url", ""))
         ttk.Entry(f, textvariable=page_var, width=50).grid(row=4, column=1, sticky=tk.W, padx=4, pady=4)
 
+        # Link text to find on the page
+        ttk.Label(f, text="Link Text:").grid(row=5, column=0, sticky=tk.W, pady=4)
+        link_text_var = tk.StringVar(value=conf.get("link_text", ""))
+        ttk.Entry(f, textvariable=link_text_var, width=50).grid(row=5, column=1, sticky=tk.W, padx=4, pady=4)
+        ttk.Label(f, text="Text of the clickable link on the page (not the PDF title)",
+                  foreground="gray", font=("TkDefaultFont", 9)).grid(
+            row=6, column=1, sticky=tk.W, padx=4)
+
         # Status info
-        ttk.Separator(f, orient=tk.HORIZONTAL).grid(row=5, column=0, columnspan=2, sticky=tk.EW, pady=8)
+        ttk.Separator(f, orient=tk.HORIZONTAL).grid(row=7, column=0, columnspan=2, sticky=tk.EW, pady=8)
         ttk.Label(f, text="Status:", font=("TkDefaultFont", 10, "bold")).grid(
-            row=6, column=0, columnspan=2, sticky=tk.W)
+            row=8, column=0, columnspan=2, sticky=tk.W)
 
         last_checked = conf.get("last_checked", "Never")
         last_hash = conf.get("last_hash", "")
+        doc_url = conf.get("resolved_url", "")
         status_text = f"Last checked: {last_checked}"
         if last_hash:
             status_text += f"\nDocument hash: {last_hash[:16]}..."
+        if doc_url:
+            status_text += f"\nResolved URL: {doc_url}"
         ttk.Label(f, text=status_text, wraplength=400).grid(
-            row=7, column=0, columnspan=2, sticky=tk.W, pady=4)
+            row=9, column=0, columnspan=2, sticky=tk.W, pady=4)
 
         def save():
             conf["tracked"] = tracked_var.get()
             conf["page_url"] = page_var.get().strip()
+            conf["link_text"] = link_text_var.get().strip()
             self._save_lemsa_config()
             self._rebuild_lemsa_list()
             self._status_var.set(f"LEMSA config updated: {name}")
 
         ttk.Button(f, text="Save Settings", command=save).grid(
-            row=8, column=0, columnspan=2, pady=12, sticky=tk.W)
+            row=10, column=0, columnspan=2, pady=12, sticky=tk.W)
 
         # Check this one
         def check_one():
             url = page_var.get().strip()
-            if not url:
-                messagebox.showinfo("No URL", "Enter a policies page URL first.")
+            lt = link_text_var.get().strip()
+            if not url or not lt:
+                self._status_var.set("Enter both a protocols page URL and link text first.")
                 return
-            self._check_single_lemsa(name, url, conf)
+            # Auto-save all settings before checking
+            conf["tracked"] = tracked_var.get()
+            conf["page_url"] = url
+            conf["link_text"] = lt
+            self._save_lemsa_config()
+            self._check_single_lemsa(name, conf)
 
         ttk.Button(f, text="Check Now", command=check_one).grid(
-            row=9, column=0, columnspan=2, sticky=tk.W)
+            row=11, column=0, columnspan=2, sticky=tk.W)
 
     def _fetch_url(self, url):
-        """Fetch URL content, falling back to unverified SSL if certificate check fails."""
+        """Fetch URL content. Tries urllib first, falls back to curl."""
         headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,application/pdf,*/*;q=0.8",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                          "AppleWebKit/537.36 (KHTML, like Gecko) "
+                          "Chrome/131.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                      "application/pdf,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
+            "Referer": url,
         }
-        req = urllib.request.Request(url, headers=headers)
-        try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
+
+        # Attempt 1: urllib with cookies
+        def _try_urllib(ssl_context=None):
+            cj = http.cookiejar.CookieJar()
+            handlers = [urllib.request.HTTPCookieProcessor(cj)]
+            if ssl_context:
+                handlers.append(urllib.request.HTTPSHandler(context=ssl_context))
+            opener = urllib.request.build_opener(*handlers)
+            req = urllib.request.Request(url, headers=headers)
+            with opener.open(req, timeout=15) as resp:
                 return resp.read()
+
+        try:
+            return _try_urllib()
         except urllib.error.URLError as e:
             if "CERTIFICATE_VERIFY_FAILED" in str(e):
                 ctx = ssl.create_default_context()
                 ctx.check_hostname = False
                 ctx.verify_mode = ssl.CERT_NONE
-                with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
-                    return resp.read()
-            raise
+                try:
+                    return _try_urllib(ssl_context=ctx)
+                except Exception:
+                    pass  # fall through to curl
+            elif not isinstance(e, urllib.error.HTTPError):
+                pass  # fall through to curl for other URL errors
+            # For HTTP errors (403 etc), also fall through to curl
 
-    def _check_single_lemsa(self, name, url, conf):
+        # Attempt 2: curl (available on macOS, handles SSL/cookies natively)
+        try:
+            result = subprocess.run(
+                ["curl", "-sL", "--max-time", "15",
+                 "-H", f"User-Agent: {headers['User-Agent']}",
+                 "-H", f"Accept: {headers['Accept']}",
+                 "-H", f"Referer: {url}",
+                 url],
+                capture_output=True, timeout=20)
+            if result.returncode == 0 and result.stdout:
+                return result.stdout
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+
+        raise Exception(f"Could not fetch {url} (urllib and curl both failed)")
+
+    def _extract_links(self, html):
+        """Extract (href, clean_text) pairs from HTML, decoding HTML entities."""
+        pattern = r'<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>([\s\S]*?)</a>'
+        matches = re.findall(pattern, html, re.IGNORECASE)
+        candidates = []
+        for href, inner in matches:
+            href = html_module.unescape(href)
+            clean_inner = re.sub(r"<[^>]+>", "", inner).strip()
+            clean_inner = re.sub(r"\s+", " ", clean_inner)
+            clean_inner = html_module.unescape(clean_inner)
+            if clean_inner:
+                candidates.append((href, clean_inner))
+        return candidates
+
+    def _fetch_rendered_html(self, url):
+        """Use fetch_page.js (Node + Puppeteer) to get fully rendered DOM."""
+        script = os.path.join(self.base_dir, "fetch_page.js")
+        if not os.path.isfile(script):
+            raise Exception(
+                f"fetch_page.js not found at {script}\n"
+                "Place it next to ems_inventory_editor.py")
+
+        try:
+            result = subprocess.run(
+                ["node", script, url],
+                capture_output=True, timeout=45)
+        except FileNotFoundError:
+            raise Exception(
+                "Node.js not found. Install it from https://nodejs.org")
+        except subprocess.TimeoutExpired:
+            raise Exception("Page render timed out (45s)")
+
+        if result.returncode != 0:
+            err = result.stderr.decode("utf-8", errors="ignore").strip()
+            if "Cannot find module" in err and "puppeteer" in err.lower():
+                raise Exception(
+                    "Puppeteer not installed. Run:\n"
+                    "  npm install puppeteer")
+            raise Exception(f"fetch_page.js failed: {err[:200]}")
+
+        return result.stdout.decode("utf-8", errors="ignore")
+
+    def _resolve_doc_url(self, page_url, link_text):
+        """Fetch a page, find the <a> whose text contains link_text, return its absolute href."""
+        target = link_text.strip().lower()
+
+        def _make_absolute(href):
+            if href.startswith("http"):
+                return href
+            elif href.startswith("/"):
+                parsed = urlparse(page_url)
+                return f"{parsed.scheme}://{parsed.netloc}{href}"
+            else:
+                base = page_url.rsplit("/", 1)[0]
+                return f"{base}/{href}"
+
+        def _find_match(candidates):
+            # Exact match first
+            for href, text in candidates:
+                if text.lower() == target:
+                    return _make_absolute(href)
+            # Substring match
+            for href, text in candidates:
+                if target in text.lower():
+                    return _make_absolute(href)
+            return None
+
+        # Attempt 1: regular fetch
+        html_bytes = self._fetch_url(page_url)
+        html = html_bytes.decode("utf-8", errors="ignore")
+        candidates = self._extract_links(html)
+
+        result = _find_match(candidates)
+        if result:
+            return result
+
+        # No match from regular fetch — try rendered DOM (page may be JS-rendered)
+        try:
+            self._status_var.set("Link not found, trying rendered page...")
+            self.update_idletasks()
+            rendered_html = self._fetch_rendered_html(page_url)
+            candidates = self._extract_links(rendered_html)
+
+            result = _find_match(candidates)
+            if result:
+                return result
+        except Exception as render_err:
+            # If rendering fails, report with whatever we have
+            pass
+
+        # No match — show available links
+        doc_links = [text for _, text in candidates
+                     if any(kw in text.lower() for kw in
+                            ("inventory", "equipment", "supply", "protocol",
+                             "policy", "list", "manual", "field", "ambulance"))]
+        if not doc_links:
+            doc_links = [text for _, text in candidates if len(text) > 3]
+
+        hint = "\n".join(f"  • {t}" for t in doc_links[:20])
+        if not hint:
+            hint = "(no links found)"
+        raise Exception(
+            f"Could not find link containing '{link_text}' on the page.\n\n"
+            f"Links found on page:\n{hint}")
+
+    def _check_single_lemsa(self, name, conf):
         self._status_var.set(f"Checking {name}...")
         self.update_idletasks()
+        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        conf["last_checked"] = now
         try:
-            data = self._fetch_url(url)
-            new_hash = hashlib.sha256(data).hexdigest()
+            page_url = conf.get("page_url", "")
+            link_text = conf.get("link_text", "")
+            if not page_url or not link_text:
+                raise Exception("Missing page URL or link text")
+
+            # Step 1: Find the document URL on the page
+            doc_url = self._resolve_doc_url(page_url, link_text)
+            conf["resolved_url"] = doc_url
+
+            # Step 2: Fetch the actual document and hash it
+            doc_data = self._fetch_url(doc_url)
+            new_hash = hashlib.sha256(doc_data).hexdigest()
             old_hash = conf.get("last_hash", "")
-            now = datetime.now().strftime("%Y-%m-%d %H:%M")
-            conf["last_checked"] = now
 
             if not old_hash:
                 conf["last_hash"] = new_hash
+                saved = self._save_lemsa_pdf(name, doc_data)
                 self._save_lemsa_config()
-                self._status_var.set(f"{name}: baseline captured ({len(data)} bytes)")
+                msg = f"{name}: baseline captured ({len(doc_data)} bytes)"
+                if saved:
+                    msg += f" — saved to {os.path.basename(saved)}"
+                self._status_var.set(msg)
             elif new_hash != old_hash:
                 conf["last_hash"] = new_hash
+                saved = self._save_lemsa_pdf(name, doc_data)
                 self._save_lemsa_config()
-                messagebox.showinfo("Document Changed",
-                    f"{name}\n\nThe policies page has changed since last check.\n"
-                    f"Old hash: {old_hash[:16]}...\nNew hash: {new_hash[:16]}...\n\n"
-                    "Review the document for updated requirements.")
-                self._status_var.set(f"{name}: CHANGED")
+                msg = f"{name}: DOCUMENT CHANGED — review for updated requirements"
+                if saved:
+                    msg += f" — saved to {os.path.basename(saved)}"
+                self._status_var.set(msg)
             else:
                 self._save_lemsa_config()
                 self._status_var.set(f"{name}: no changes detected")
 
             self._rebuild_lemsa_list()
-            # Refresh the detail panel
             for lemsa in LEMSA_DATA:
                 if lemsa["name"] == name:
                     self._show_lemsa_editor(lemsa)
                     break
 
         except Exception as e:
+            self._save_lemsa_config()  # save the timestamp even on failure
+            self._rebuild_lemsa_list()
             self._status_var.set(f"{name}: error — {e}")
-            messagebox.showerror("Fetch Error", f"Could not fetch document for {name}:\n{e}")
 
     def _check_lemsa_updates(self):
         tracked = [(l, self._get_lemsa_conf(l["name"]))
                     for l in LEMSA_DATA if self._get_lemsa_conf(l["name"]).get("tracked")]
         if not tracked:
-            messagebox.showinfo("No Tracked LEMSAs", "Select LEMSAs to track in the detail panel first.")
+            self._status_var.set("No tracked LEMSAs. Select LEMSAs to track in the detail panel first.")
             return
 
-        # Filter to those with URLs
-        with_urls = [(l, c) for l, c in tracked if c.get("page_url")]
-        without_urls = [(l, c) for l, c in tracked if not c.get("page_url")]
+        ready = [(l, c) for l, c in tracked if c.get("page_url") and c.get("link_text")]
+        not_ready = [(l, c) for l, c in tracked
+                     if not c.get("page_url") or not c.get("link_text")]
 
-        if without_urls:
-            names = ", ".join(l["name"] for l, c in without_urls)
-            messagebox.showwarning("Missing URLs",
-                f"These tracked LEMSAs have no policies page URL set:\n{names}\n\n"
-                "They will be skipped. Add URLs in the detail panel.")
+        if not_ready:
+            names = ", ".join(l["name"] for l, c in not_ready)
+            self._status_var.set(f"Skipping incomplete: {names}")
 
-        if not with_urls:
+        if not ready:
             return
 
-        results = {"changed": [], "unchanged": [], "errors": []}
-        for i, (lemsa, conf) in enumerate(with_urls):
+        results = {"changed": [], "baselined": [], "unchanged": [], "errors": []}
+        for i, (lemsa, conf) in enumerate(ready):
             name = lemsa["name"]
-            self._status_var.set(f"Checking {i+1}/{len(with_urls)}: {name}...")
+            self._status_var.set(f"Checking {i+1}/{len(ready)}: {name}...")
             self.update_idletasks()
+            conf["last_checked"] = datetime.now().strftime("%Y-%m-%d %H:%M")
             try:
-                data = self._fetch_url(conf["page_url"])
-                new_hash = hashlib.sha256(data).hexdigest()
+                doc_url = self._resolve_doc_url(conf["page_url"], conf["link_text"])
+                conf["resolved_url"] = doc_url
+                doc_data = self._fetch_url(doc_url)
+                new_hash = hashlib.sha256(doc_data).hexdigest()
                 old_hash = conf.get("last_hash", "")
-                conf["last_checked"] = datetime.now().strftime("%Y-%m-%d %H:%M")
 
                 if not old_hash:
                     conf["last_hash"] = new_hash
-                    results["unchanged"].append(name + " (baseline)")
+                    self._save_lemsa_pdf(name, doc_data)
+                    results["baselined"].append(name)
                 elif new_hash != old_hash:
                     conf["last_hash"] = new_hash
+                    self._save_lemsa_pdf(name, doc_data)
                     results["changed"].append(name)
                 else:
                     results["unchanged"].append(name)
@@ -685,23 +904,17 @@ class App(tk.Tk):
         self._save_lemsa_config()
         self._rebuild_lemsa_list()
 
-        # Summary
-        msg_parts = []
+        # Summary in status bar
+        parts = []
         if results["changed"]:
-            msg_parts.append(f"CHANGED ({len(results['changed'])}):\n" +
-                             "\n".join(f"  \u2022 {n}" for n in results["changed"]))
+            parts.append(f"CHANGED: {', '.join(results['changed'])}")
+        if results["baselined"]:
+            parts.append(f"Baselined: {', '.join(results['baselined'])}")
         if results["unchanged"]:
-            msg_parts.append(f"Unchanged ({len(results['unchanged'])}): " +
-                             ", ".join(results["unchanged"]))
+            parts.append(f"Unchanged: {', '.join(results['unchanged'])}")
         if results["errors"]:
-            msg_parts.append(f"Errors ({len(results['errors'])}):\n" +
-                             "\n".join(f"  \u2022 {e}" for e in results["errors"]))
-
-        title = "Update Check Complete"
-        if results["changed"]:
-            title = "Updates Detected!"
-        messagebox.showinfo(title, "\n\n".join(msg_parts))
-        self._status_var.set(f"Checked {len(with_urls)} LEMSAs — {len(results['changed'])} changed")
+            parts.append(f"Errors: {', '.join(results['errors'])}")
+        self._status_var.set(" | ".join(parts))
 
     # -- Dir / rig / file management -----------------------------------------
 
@@ -722,7 +935,7 @@ class App(tk.Tk):
                 n = sum(len(c.items) for c in self.master_list.categories)
                 self._status_var.set(f"Master list loaded: {n} items in {len(self.master_list.categories)} categories")
             except Exception as e:
-                messagebox.showerror("Master List Error", str(e))
+                self._status_var.set(f"Master list error: {e}")
                 self.master_list = None
         else:
             self.master_list = None
@@ -759,7 +972,7 @@ class App(tk.Tk):
         path = os.path.join(self.checklists_dir, self.current_rig, fname)
         try: self.current_file = InventoryFile.from_file(path)
         except Exception as e:
-            messagebox.showerror("Parse Error", str(e)); self.current_file = None
+            self._status_var.set(f"Parse error: {e}"); self.current_file = None
         self._rebuild_rig_tree(); self._clear_rig_editor()
         if self.current_file:
             total = sum(len(c.items) for a in self.current_file.areas for c in a.categories)
@@ -779,9 +992,9 @@ class App(tk.Tk):
         src = os.path.join(self.checklists_dir, self.current_rig)
         dst = os.path.join(self.checklists_dir, new)
         if os.path.exists(dst):
-            messagebox.showerror("Exists", f"Rig '{new}' already exists."); return
+            self._status_var.set(f"Rig '{new}' already exists."); return
         try: shutil.copytree(src, dst)
-        except Exception as e: messagebox.showerror("Error", str(e)); return
+        except Exception as e: self._status_var.set(f"Duplicate error: {e}"); return
         self._refresh_rigs(); self._rig_var.set(new); self._on_rig_selected()
         self._status_var.set(f"Duplicated {self.current_rig} \u2192 {new}")
 
@@ -904,7 +1117,7 @@ class App(tk.Tk):
         def apply():
             new_prefix = name_var.get().strip()
             if not new_prefix:
-                messagebox.showwarning("Validation", "Group name cannot be empty.")
+                self._status_var.set("Group name cannot be empty.")
                 return
             if new_prefix == old_prefix:
                 return
@@ -932,14 +1145,13 @@ class App(tk.Tk):
             row=2, column=0, columnspan=2, pady=12, sticky=tk.W)
 
         def delete_group():
-            if messagebox.askyesno("Delete Group",
-                    f"Delete '{prefix}' and all {len(members)} items in it?"):
-                for it in list(members):
-                    cat.items.remove(it)
-                self.dirty_master = True
-                self._update_save_state()
-                self._rebuild_master_tree()
-                self._clear_master_editor()
+            for it in list(members):
+                cat.items.remove(it)
+            self.dirty_master = True
+            self._update_save_state()
+            self._rebuild_master_tree()
+            self._clear_master_editor()
+            self._status_var.set(f"Deleted group '{prefix}' ({len(members)} items)")
 
         ttk.Button(f, text="Delete Group", command=delete_group).grid(
             row=3, column=0, columnspan=2, sticky=tk.W)
@@ -995,9 +1207,9 @@ class App(tk.Tk):
 
         def apply():
             new_suffix = name_var.get().strip()
-            if not new_suffix: messagebox.showwarning("Validation", "Name cannot be empty."); return
+            if not new_suffix: self._status_var.set("Item name cannot be empty."); return
             try: new_qty = int(qty_var.get())
-            except: messagebox.showwarning("Validation", "Quantity must be a number."); return
+            except: self._status_var.set("Quantity must be a number."); return
 
             # Reconstruct full name with prefix if item belongs to a group
             new_name = f"{prefix}, {new_suffix}" if prefix else new_suffix
@@ -1026,10 +1238,10 @@ class App(tk.Tk):
         ttk.Button(f, text="Apply Changes", command=apply).grid(row=6, column=0, columnspan=2, pady=12, sticky=tk.W)
 
         def delete():
-            if messagebox.askyesno("Delete", f"Remove '{item.name}' from master list?"):
-                cat.items.remove(item)
-                self.dirty_master = True; self._update_save_state()
-                self._rebuild_master_tree(); self._clear_master_editor()
+            cat.items.remove(item)
+            self.dirty_master = True; self._update_save_state()
+            self._rebuild_master_tree(); self._clear_master_editor()
+            self._status_var.set(f"Deleted '{item.name}' from master list")
 
         ttk.Button(f, text="Delete from Master", command=delete).grid(row=7, column=0, columnspan=2, sticky=tk.W)
 
@@ -1107,7 +1319,6 @@ class App(tk.Tk):
         self._update_save_state(); self._rebuild_master_tree(); self._clear_master_editor()
 
     def _del_master_cat(self, cat):
-        if cat.items and not messagebox.askyesno("Delete", f"Delete '{cat.name}' and {len(cat.items)} items?"): return
         self.master_list.categories.remove(cat); self.dirty_master = True
         self._update_save_state(); self._rebuild_master_tree(); self._clear_master_editor()
 
@@ -1237,9 +1448,9 @@ class App(tk.Tk):
 
         ttk.Separator(f, orient=tk.HORIZONTAL).grid(row=8, column=0, columnspan=2, sticky=tk.EW, pady=8)
         def delete():
-            if messagebox.askyesno("Delete", f"Delete area '{area.name}'?"):
-                self.current_file.areas.remove(area); self.dirty = True; self._update_save_state()
-                self._rebuild_rig_tree(); self._clear_rig_editor()
+            self.current_file.areas.remove(area); self.dirty = True; self._update_save_state()
+            self._rebuild_rig_tree(); self._clear_rig_editor()
+            self._status_var.set(f"Deleted area '{area.name}'")
         ttk.Button(f, text="Delete Area", command=delete).grid(row=9, column=0, columnspan=2, sticky=tk.W)
 
     def _show_rig_cat_editor(self, area, cat):
@@ -1267,9 +1478,9 @@ class App(tk.Tk):
 
         ttk.Separator(f, orient=tk.HORIZONTAL).grid(row=7, column=0, columnspan=2, sticky=tk.EW, pady=8)
         def delete():
-            if messagebox.askyesno("Delete", f"Delete '{cat.name}'?"):
-                area.categories.remove(cat); self.dirty = True; self._update_save_state()
-                self._rebuild_rig_tree(); self._clear_rig_editor()
+            area.categories.remove(cat); self.dirty = True; self._update_save_state()
+            self._rebuild_rig_tree(); self._clear_rig_editor()
+            self._status_var.set(f"Deleted category '{cat.name}'")
         ttk.Button(f, text="Delete Category", command=delete).grid(row=8, column=0, columnspan=2, sticky=tk.W)
 
     def _on_rig_right_click(self, event):
@@ -1326,15 +1537,13 @@ class App(tk.Tk):
 
     def _simulate(self):
         if not self.current_file:
-            messagebox.showinfo("Simulate", "No file selected.")
+            self._status_var.set("No file selected to simulate.")
             return
 
         # Locate the widget HTML
         widget_path = os.path.join(self.base_dir, "widgets", "ems-inventory-checklist.html")
         if not os.path.isfile(widget_path):
-            messagebox.showerror("Simulate",
-                f"Widget not found at:\n{widget_path}\n\n"
-                "Expected at widgets/ems-inventory-checklist.html relative to the editor.")
+            self._status_var.set(f"Widget not found at {widget_path}")
             return
 
         # Get current in-memory markdown (includes unsaved edits)
@@ -1354,9 +1563,7 @@ class App(tk.Tk):
         match = re.search(pattern, html)
 
         if not match:
-            messagebox.showerror("Simulate",
-                "Could not find DEFAULT_INVENTORY in the widget HTML.\n"
-                "The widget file format may have changed.")
+            self._status_var.set("Could not find DEFAULT_INVENTORY in widget HTML.")
             return
 
         new_html = html[:match.start()] + replacement + html[match.end():]
@@ -1395,7 +1602,7 @@ class App(tk.Tk):
             for rf in self.rig_files:
                 try: rf.save()
                 except Exception as e: errors.append(f"{rf.filename}: {e}")
-        if errors: messagebox.showerror("Save Errors", "\n".join(errors))
+        if errors: self._status_var.set(f"Save errors: {'; '.join(errors)}")
         else:
             parts = []
             if self.dirty_master: parts.append("master list")
