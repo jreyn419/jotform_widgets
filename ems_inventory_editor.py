@@ -17,7 +17,9 @@ import tempfile
 import webbrowser
 import subprocess
 import json
+import threading
 import hashlib
+import base64
 import ssl
 import http.cookiejar
 import urllib.request
@@ -467,6 +469,13 @@ class App(tk.Tk):
         self._l_tree.bind("<<TreeviewSelect>>", self._on_lemsa_select)
         self._l_tree.tag_configure("tracked", foreground="#006600")
 
+        pf = ttk.Frame(left); pf.pack(fill=tk.X, padx=4, pady=(2, 4))
+        self._l_progress = ttk.Progressbar(pf, mode="determinate", length=200)
+        self._l_progress.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self._l_progress_label = ttk.Label(pf, text="")
+        self._l_progress_label.pack(side=tk.LEFT, padx=(8, 0))
+        self._l_checking = False  # guard against concurrent checks
+
         # Right: detail
         right = ttk.Frame(paned, padding=8); paned.add(right, weight=1)
         self._l_detail_title = ttk.Label(right, text="Select a LEMSA",
@@ -695,11 +704,33 @@ class App(tk.Tk):
                  url],
                 capture_output=True, timeout=20)
             if result.returncode == 0 and result.stdout:
-                return result.stdout
+                # Check for HTML error pages in what should be a PDF
+                snippet = result.stdout[:200].lower()
+                if b"access denied" not in snippet and b"403" not in snippet:
+                    return result.stdout
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
 
-        raise Exception(f"Could not fetch {url} (urllib and curl both failed)")
+        # Attempt 3: Puppeteer browser download (handles CDN/WAF blocks)
+        try:
+            return self._fetch_via_browser(url)
+        except Exception:
+            pass
+
+        raise Exception(f"Could not fetch {url} (urllib, curl, and browser all failed)")
+
+    def _fetch_via_browser(self, url):
+        """Download a file via Puppeteer (real browser), returns raw bytes."""
+        script = os.path.join(self.base_dir, "fetch_page.js")
+        if not os.path.isfile(script):
+            raise Exception("fetch_page.js not found")
+        result = subprocess.run(
+            ["node", script, "--download", url],
+            capture_output=True, timeout=45)
+        if result.returncode != 0 or not result.stdout:
+            err = result.stderr.decode("utf-8", errors="ignore").strip()
+            raise Exception(f"Browser download failed: {err[:200]}")
+        return base64.b64decode(result.stdout)
 
     def _extract_links(self, html):
         """Extract (href, clean_text) pairs from HTML, decoding HTML entities."""
@@ -807,57 +838,80 @@ class App(tk.Tk):
             f"Links found on page:\n{hint}")
 
     def _check_single_lemsa(self, name, conf):
+        if self._l_checking:
+            return
+        self._l_checking = True
+        self._l_progress["maximum"] = 3
+        self._l_progress["value"] = 0
+        self._l_progress_label.config(text=name)
         self._status_var.set(f"Checking {name}...")
-        self.update_idletasks()
-        now = datetime.now().strftime("%Y-%m-%d %H:%M")
-        conf["last_checked"] = now
-        try:
-            page_url = conf.get("page_url", "")
-            link_text = conf.get("link_text", "")
-            if not page_url or not link_text:
-                raise Exception("Missing page URL or link text")
 
-            # Step 1: Find the document URL on the page
-            doc_url = self._resolve_doc_url(page_url, link_text)
-            conf["resolved_url"] = doc_url
+        def _worker():
+            now = datetime.now().strftime("%Y-%m-%d %H:%M")
+            conf["last_checked"] = now
+            try:
+                page_url = conf.get("page_url", "")
+                link_text = conf.get("link_text", "")
+                if not page_url or not link_text:
+                    raise Exception("Missing page URL or link text")
 
-            # Step 2: Fetch the actual document and hash it
-            doc_data = self._fetch_url(doc_url)
-            new_hash = hashlib.sha256(doc_data).hexdigest()
-            old_hash = conf.get("last_hash", "")
+                self.after(0, lambda: self._l_progress_label.config(text=f"{name}: resolving link..."))
+                doc_url = self._resolve_doc_url(page_url, link_text)
+                conf["resolved_url"] = doc_url
+                self.after(0, lambda: [self._l_progress.configure(value=1),
+                                        self._l_progress_label.config(text=f"{name}: downloading...")])
 
-            if not old_hash:
-                conf["last_hash"] = new_hash
-                saved = self._save_lemsa_pdf(name, doc_data)
+                doc_data = self._fetch_url(doc_url)
+                self.after(0, lambda: [self._l_progress.configure(value=2),
+                                        self._l_progress_label.config(text=f"{name}: comparing...")])
+
+                new_hash = hashlib.sha256(doc_data).hexdigest()
+                old_hash = conf.get("last_hash", "")
+
+                if not old_hash:
+                    conf["last_hash"] = new_hash
+                    saved = self._save_lemsa_pdf(name, doc_data)
+                    self._save_lemsa_config()
+                    msg = f"{name}: baseline captured ({len(doc_data)} bytes)"
+                    if saved:
+                        msg += f" — saved to {os.path.basename(saved)}"
+                elif new_hash != old_hash:
+                    conf["last_hash"] = new_hash
+                    saved = self._save_lemsa_pdf(name, doc_data)
+                    self._save_lemsa_config()
+                    msg = f"{name}: DOCUMENT CHANGED — review for updated requirements"
+                    if saved:
+                        msg += f" — saved to {os.path.basename(saved)}"
+                else:
+                    self._save_lemsa_config()
+                    msg = f"{name}: no changes detected"
+
+                def _finish():
+                    self._l_progress["value"] = 3
+                    self._l_progress_label.config(text="Done")
+                    self._status_var.set(msg)
+                    self._rebuild_lemsa_list()
+                    for lemsa in LEMSA_DATA:
+                        if lemsa["name"] == name:
+                            self._show_lemsa_editor(lemsa)
+                            break
+                    self._l_checking = False
+                self.after(0, _finish)
+
+            except Exception as e:
                 self._save_lemsa_config()
-                msg = f"{name}: baseline captured ({len(doc_data)} bytes)"
-                if saved:
-                    msg += f" — saved to {os.path.basename(saved)}"
-                self._status_var.set(msg)
-            elif new_hash != old_hash:
-                conf["last_hash"] = new_hash
-                saved = self._save_lemsa_pdf(name, doc_data)
-                self._save_lemsa_config()
-                msg = f"{name}: DOCUMENT CHANGED — review for updated requirements"
-                if saved:
-                    msg += f" — saved to {os.path.basename(saved)}"
-                self._status_var.set(msg)
-            else:
-                self._save_lemsa_config()
-                self._status_var.set(f"{name}: no changes detected")
+                def _err():
+                    self._l_progress_label.config(text="Error")
+                    self._status_var.set(f"{name}: error — {e}")
+                    self._rebuild_lemsa_list()
+                    self._l_checking = False
+                self.after(0, _err)
 
-            self._rebuild_lemsa_list()
-            for lemsa in LEMSA_DATA:
-                if lemsa["name"] == name:
-                    self._show_lemsa_editor(lemsa)
-                    break
-
-        except Exception as e:
-            self._save_lemsa_config()  # save the timestamp even on failure
-            self._rebuild_lemsa_list()
-            self._status_var.set(f"{name}: error — {e}")
+        threading.Thread(target=_worker, daemon=True).start()
 
     def _check_lemsa_updates(self):
+        if self._l_checking:
+            return
         tracked = [(l, self._get_lemsa_conf(l["name"]))
                     for l in LEMSA_DATA if self._get_lemsa_conf(l["name"]).get("tracked")]
         if not tracked:
@@ -875,46 +929,60 @@ class App(tk.Tk):
         if not ready:
             return
 
-        results = {"changed": [], "baselined": [], "unchanged": [], "errors": []}
-        for i, (lemsa, conf) in enumerate(ready):
-            name = lemsa["name"]
-            self._status_var.set(f"Checking {i+1}/{len(ready)}: {name}...")
-            self.update_idletasks()
-            conf["last_checked"] = datetime.now().strftime("%Y-%m-%d %H:%M")
-            try:
-                doc_url = self._resolve_doc_url(conf["page_url"], conf["link_text"])
-                conf["resolved_url"] = doc_url
-                doc_data = self._fetch_url(doc_url)
-                new_hash = hashlib.sha256(doc_data).hexdigest()
-                old_hash = conf.get("last_hash", "")
+        self._l_checking = True
+        total = len(ready)
+        self._l_progress["maximum"] = total
+        self._l_progress["value"] = 0
+        self._l_progress_label.config(text=f"0/{total}")
 
-                if not old_hash:
-                    conf["last_hash"] = new_hash
-                    self._save_lemsa_pdf(name, doc_data)
-                    results["baselined"].append(name)
-                elif new_hash != old_hash:
-                    conf["last_hash"] = new_hash
-                    self._save_lemsa_pdf(name, doc_data)
-                    results["changed"].append(name)
-                else:
-                    results["unchanged"].append(name)
-            except Exception as e:
-                results["errors"].append(f"{name}: {e}")
+        def _worker():
+            results = {"changed": [], "baselined": [], "unchanged": [], "errors": []}
+            for i, (lemsa, conf) in enumerate(ready):
+                name = lemsa["name"]
+                self.after(0, lambda n=name, idx=i: [
+                    self._l_progress.configure(value=idx),
+                    self._l_progress_label.config(text=f"{idx}/{total}: {n}"),
+                    self._status_var.set(f"Checking {idx+1}/{total}: {n}...")])
+                conf["last_checked"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+                try:
+                    doc_url = self._resolve_doc_url(conf["page_url"], conf["link_text"])
+                    conf["resolved_url"] = doc_url
+                    doc_data = self._fetch_url(doc_url)
+                    new_hash = hashlib.sha256(doc_data).hexdigest()
+                    old_hash = conf.get("last_hash", "")
 
-        self._save_lemsa_config()
-        self._rebuild_lemsa_list()
+                    if not old_hash:
+                        conf["last_hash"] = new_hash
+                        self._save_lemsa_pdf(name, doc_data)
+                        results["baselined"].append(name)
+                    elif new_hash != old_hash:
+                        conf["last_hash"] = new_hash
+                        self._save_lemsa_pdf(name, doc_data)
+                        results["changed"].append(name)
+                    else:
+                        results["unchanged"].append(name)
+                except Exception as e:
+                    results["errors"].append(f"{name}: {e}")
 
-        # Summary in status bar
-        parts = []
-        if results["changed"]:
-            parts.append(f"CHANGED: {', '.join(results['changed'])}")
-        if results["baselined"]:
-            parts.append(f"Baselined: {', '.join(results['baselined'])}")
-        if results["unchanged"]:
-            parts.append(f"Unchanged: {', '.join(results['unchanged'])}")
-        if results["errors"]:
-            parts.append(f"Errors: {', '.join(results['errors'])}")
-        self._status_var.set(" | ".join(parts))
+            def _finish():
+                self._save_lemsa_config()
+                self._rebuild_lemsa_list()
+                self._l_progress["value"] = total
+                parts = []
+                if results["changed"]:
+                    parts.append(f"CHANGED: {', '.join(results['changed'])}")
+                if results["baselined"]:
+                    parts.append(f"Baselined: {', '.join(results['baselined'])}")
+                if results["unchanged"]:
+                    parts.append(f"Unchanged: {', '.join(results['unchanged'])}")
+                if results["errors"]:
+                    parts.append(f"Errors: {', '.join(results['errors'])}")
+                self._status_var.set(" | ".join(parts))
+                self._l_progress_label.config(text="Done")
+                self._l_checking = False
+            self.after(0, _finish)
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     # -- Dir / rig / file management -----------------------------------------
 
