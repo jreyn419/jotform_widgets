@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-EMS Inventory Markdown Editor v3.0.0 (PyQt6)
-A GUI tool for managing EMS inventory checklist markdown files
+EMS Inventory JSON Editor v4.0.0 (PyQt6)
+A GUI tool for managing EMS inventory checklist JSON files
 with a master list as the canonical item registry.
 
 Place this file in the root of your GitHub Pages repo (parent of
-data/checklists/{rig}/*.md) and run it.
+data/checklists/{rig}/*.json) and run it.
 
 Requirements: pip3 install PyQt6 pdfplumber
 """
@@ -324,7 +324,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "3.19.3"
+VERSION = "4.0.0"
 # == LEMSA directory ==========================================================
 
 LEMSA_DATA = [
@@ -373,11 +373,11 @@ class Item:
         self.qty = qty
 
 class Category:
-    __slots__ = ("name", "items", "is_subcat")
-    def __init__(self, name, is_subcat=False):
+    __slots__ = ("name", "items", "subcategories")
+    def __init__(self, name):
         self.name = name
         self.items = []
-        self.is_subcat = is_subcat
+        self.subcategories = []
 
 class Area:
     __slots__ = ("name", "sealable", "child_of", "categories")
@@ -400,99 +400,75 @@ class InventoryFile:
     def from_file(cls, path):
         inv = cls(path)
         with open(path, "r", encoding="utf-8") as f:
-            inv.areas = cls._parse(f.read())
+            data = json.load(f)
+        inv.areas = cls._parse_json(data)
         return inv
 
     @staticmethod
-    def _parse(text):
-        lines = text.split("\n")
+    def _parse_json(data):
+        """Parse JSON array into list of Area objects."""
         areas = []
-        current_area = None
-        current_cat = None
-        current_subcat = None
-
-        for raw_line in lines:
-            line = raw_line.strip()
-            if not line:
+        for area_obj in data:
+            area_name = area_obj.get("area", "")
+            if not area_name:
                 continue
-            area_match = re.match(r"^>?\s*Area Name:\s*(.+)", line, re.IGNORECASE)
-            if area_match:
-                current_area = Area(area_match.group(1).strip())
-                current_cat = None
-                current_subcat = None
-                areas.append(current_area)
-                continue
-            if line.lower().startswith("sealable:") and current_area and current_cat is None:
-                current_area.sealable = line.split(":", 1)[1].strip().lower() in ("yes", "true", "1")
-                continue
-            if line.lower().startswith("childof:") and current_area and current_cat is None:
-                current_area.child_of = line.split(":", 1)[1].strip()
-                continue
-            if line.startswith(">"):
-                clean = line.lstrip(">").strip()
-                if "|" in clean:
-                    parts = clean.split("|", 1)
-                    iname = parts[0].strip()
-                    try: qty = int(parts[1].strip())
-                    except: qty = 1
-                    if current_area is None:
-                        current_area = Area("Items"); areas.append(current_area)
-                    target = current_subcat if current_subcat else current_cat
-                    if target is None:
-                        target = Category("General")
-                        current_area.categories.append(target)
-                        current_cat = target
-                    target.items.append(Item(iname, qty))
-                else:
-                    if current_area is None:
-                        current_area = Area("Items"); areas.append(current_area)
-                    current_subcat = Category(clean, is_subcat=True)
-                    current_area.categories.append(current_subcat)
-                continue
-            if "|" in line:
-                current_subcat = None
-                parts = line.split("|", 1)
-                iname = parts[0].strip()
-                try: qty = int(parts[1].strip())
-                except: qty = 1
-                if current_area is None:
-                    current_area = Area("Items"); areas.append(current_area)
-                if current_cat is None:
-                    current_cat = Category("General")
-                    current_area.categories.append(current_cat)
-                current_cat.items.append(Item(iname, qty))
-                continue
-            current_subcat = None
-            if current_area is None:
-                current_area = Area("Items"); areas.append(current_area)
-            current_cat = Category(line)
-            current_area.categories.append(current_cat)
+            area = Area(area_name)
+            area.sealable = bool(area_obj.get("sealable", False))
+            area.child_of = area_obj.get("childOf") or None
+            for cat_obj in area_obj.get("categories", []):
+                cat = Category(cat_obj.get("name", "General"))
+                for item_obj in cat_obj.get("items", []):
+                    cat.items.append(Item(item_obj.get("name", ""), item_obj.get("qty", 1)))
+                for sub_obj in cat_obj.get("subcategories", []):
+                    subcat = Category(sub_obj.get("name", "General"))
+                    for item_obj in sub_obj.get("items", []):
+                        subcat.items.append(Item(item_obj.get("name", ""), item_obj.get("qty", 1)))
+                    cat.subcategories.append(subcat)
+                area.categories.append(cat)
+            areas.append(area)
         return areas
 
-    def to_markdown(self):
-        blocks = []
+    def to_json_data(self):
+        """Return JSON-serializable list of area dicts."""
+        result = []
         for area in self.areas:
-            lines = [f"Area Name: {area.name}"]
-            if area.sealable: lines.append("sealable: yes")
-            if area.child_of: lines.append(f"childOf: {area.child_of}")
+            area_obj = {"area": area.name}
+            if area.sealable:
+                area_obj["sealable"] = True
+            if area.child_of:
+                area_obj["childOf"] = area.child_of
+            cats = []
             for cat in area.categories:
-                if cat.is_subcat:
-                    lines.append(f">{cat.name}")
-                    for item in cat.items:
-                        lines.append(f">{item.name}|{item.qty}")
-                else:
-                    lines.append(cat.name)
-                    for item in cat.items:
-                        lines.append(f"{item.name}|{item.qty}")
-            blocks.append("\n".join(lines))
-        return "\n\n".join(blocks) + "\n"
+                cat_obj = {"name": cat.name}
+                if cat.items:
+                    cat_obj["items"] = [{"name": it.name, "qty": it.qty} for it in cat.items]
+                if cat.subcategories:
+                    cat_obj["subcategories"] = []
+                    for sub in cat.subcategories:
+                        sub_obj = {"name": sub.name}
+                        if sub.items:
+                            sub_obj["items"] = [{"name": it.name, "qty": it.qty} for it in sub.items]
+                        cat_obj["subcategories"].append(sub_obj)
+                cats.append(cat_obj)
+            area_obj["categories"] = cats
+            result.append(area_obj)
+        return result
 
     def save(self):
         with open(self.path, "w", encoding="utf-8") as f:
-            f.write(self.to_markdown())
+            json.dump(self.to_json_data(), f, indent=2, ensure_ascii=False)
+            f.write("\n")
 
     def all_item_names(self):
-        return {item.name for area in self.areas for cat in area.categories for item in cat.items}
+        names = set()
+        for area in self.areas:
+            for cat in area.categories:
+                for item in cat.items:
+                    names.add(item.name)
+                for sub in cat.subcategories:
+                    for item in sub.items:
+                        names.add(item.name)
+        return names
 
     def rename_item_everywhere(self, old_name, new_name):
         count = 0
@@ -502,6 +478,11 @@ class InventoryFile:
                     if item.name == old_name:
                         item.name = new_name
                         count += 1
+                for sub in cat.subcategories:
+                    for item in sub.items:
+                        if item.name == old_name:
+                            item.name = new_name
+                            count += 1
         return count
 
     def item_locations(self, item_name):
@@ -512,6 +493,12 @@ class InventoryFile:
                     if item.name == item_name:
                         locs.append({"area": area.name, "category": cat.name,
                                      "qty": item.qty, "item_ref": item})
+                for sub in cat.subcategories:
+                    for item in sub.items:
+                        if item.name == item_name:
+                            locs.append({"area": area.name,
+                                         "category": f"{cat.name} > {sub.name}",
+                                         "qty": item.qty, "item_ref": item})
         return locs
 
 
@@ -538,40 +525,32 @@ class MasterList:
     def from_file(cls, path):
         ml = cls(path)
         with open(path, "r", encoding="utf-8") as f:
-            text = f.read()
-        current_cat = None
-        for line in text.split("\n"):
-            s = line.strip()
-            if not s or (s.startswith("#") and not s.startswith("##")):
-                continue
-            if s.startswith("## "):
-                current_cat = MasterCategory(s[3:].strip())
-                ml.categories.append(current_cat)
-                continue
-            if "|" in s:
-                parts = s.split("|", 1)
-                name = parts[0].strip()
-                try: qty = int(parts[1].strip())
-                except: qty = 1
-                if current_cat is None:
-                    current_cat = MasterCategory("Uncategorized")
-                    ml.categories.append(current_cat)
-                current_cat.items.append(MasterItem(name, qty))
+            data = json.load(f)
+        for cat_obj in data.get("categories", []):
+            cat = MasterCategory(cat_obj.get("name", "Uncategorized"))
+            for item_obj in cat_obj.get("items", []):
+                cat.items.append(MasterItem(
+                    item_obj.get("name", ""),
+                    item_obj.get("emsa_min", 1)
+                ))
+            ml.categories.append(cat)
         return ml
 
-    def to_markdown(self):
-        lines = ["# EMS Inventory Master List", "#",
-                 "# Format: Item Name | EMSA Min Qty", "# Categories are ## headers", ""]
-        for cat in self.categories:
-            lines.append(f"## {cat.name}")
-            for item in cat.items:
-                lines.append(f"{item.name} | {item.emsa_min}")
-            lines.append("")
-        return "\n".join(lines)
+    def to_json_data(self):
+        return {
+            "categories": [
+                {
+                    "name": cat.name,
+                    "items": [{"name": it.name, "emsa_min": it.emsa_min} for it in cat.items]
+                }
+                for cat in self.categories
+            ]
+        }
 
     def save(self):
         with open(self.path, "w", encoding="utf-8") as f:
-            f.write(self.to_markdown())
+            json.dump(self.to_json_data(), f, indent=2, ensure_ascii=False)
+            f.write("\n")
 
     def all_item_names(self):
         return {item.name for cat in self.categories for item in cat.items}
@@ -774,7 +753,7 @@ class App(QMainWindow):
 
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
         self.checklists_dir = os.path.join(self.base_dir, "data", "checklists")
-        self.master_list_path = os.path.join(self.checklists_dir, "master_list.md")
+        self.master_list_path = os.path.join(self.checklists_dir, "master_list.json")
         self.master_list = None
         self.current_rig = None
         self.current_file = None
@@ -1448,7 +1427,7 @@ class App(QMainWindow):
         if d:
             self._dir_edit.setText(d)
             self.checklists_dir = d
-            self.master_list_path = os.path.join(d, "master_list.md")
+            self.master_list_path = os.path.join(d, "master_list.json")
             self._load_master()
             self._refresh_rigs()
 
@@ -1471,18 +1450,18 @@ class App(QMainWindow):
             return
         self.current_rig = rig
         rig_dir = os.path.join(self.checklists_dir, rig)
-        md_files = sorted([f for f in os.listdir(rig_dir) if f.endswith(".md")], key=str.lower)
+        json_files = sorted([f for f in os.listdir(rig_dir) if f.endswith(".json")], key=str.lower)
         self._file_combo.blockSignals(True)
         self._file_combo.clear()
-        self._file_combo.addItems(md_files)
+        self._file_combo.addItems(json_files)
         self._file_combo.blockSignals(False)
         self.rig_files = []
-        for fn in md_files:
+        for fn in json_files:
             try:
                 self.rig_files.append(InventoryFile.from_file(os.path.join(rig_dir, fn)))
             except Exception:
                 pass
-        if md_files:
+        if json_files:
             self._on_file_selected()
         else:
             self.current_file = None
@@ -1501,12 +1480,17 @@ class App(QMainWindow):
         self._rebuild_rig_tree()
         self._clear_editor(self._r_detail_title, self._r_editor_widget, self._r_editor_layout)
         if self.current_file:
-            total = sum(len(c.items) for a in self.current_file.areas for c in a.categories)
+            total = sum(len(c.items) + sum(len(s.items) for s in c.subcategories)
+                        for a in self.current_file.areas for c in a.categories)
             flag = ""
             if self.master_list:
                 mn = self.master_list.all_item_names()
-                nim = sum(1 for a in self.current_file.areas for c in a.categories
-                          for i in c.items if i.name not in mn)
+                nim = 0
+                for a in self.current_file.areas:
+                    for c in a.categories:
+                        nim += sum(1 for i in c.items if i.name not in mn)
+                        for s in c.subcategories:
+                            nim += sum(1 for i in s.items if i.name not in mn)
                 if nim:
                     flag = f", {nim} not in master"
             self._status.showMessage(f"{fname} — {total} items{flag}")
@@ -1547,7 +1531,7 @@ class App(QMainWindow):
                 self._status.showMessage(f"Master list error: {e}")
         else:
             self.master_list = None
-            self._status.showMessage("No master_list.md found")
+            self._status.showMessage("No master_list.json found")
         self._update_master_visibility()
 
     def _update_master_visibility(self):
@@ -1575,6 +1559,14 @@ class App(QMainWindow):
                             items[key] = (existing_name, max(existing_qty, item.qty))
                         else:
                             items[key] = (item.name, item.qty)
+                    for sub in cat.subcategories:
+                        for item in sub.items:
+                            key = item.name.lower()
+                            if key in items:
+                                existing_name, existing_qty = items[key]
+                                items[key] = (existing_name, max(existing_qty, item.qty))
+                            else:
+                                items[key] = (item.name, item.qty)
         if not items:
             self._status.showMessage("No items found in rig files.")
             return
@@ -2768,11 +2760,33 @@ class App(QMainWindow):
         q = self._r_search.text().strip().lower()
         mn = self.master_list.all_item_names() if self.master_list else set()
 
+        def _add_item_nodes(parent_node, items, data_prefix):
+            """Add item tree nodes. data_prefix is e.g. ("item", ai, ci) or ("subitem", ai, ci, si)."""
+            matches = [(ii, it) for ii, it in enumerate(items) if not q or q in it.name.lower()]
+            for ii, it in matches:
+                ok = it.name in mn
+                flag = "" if ok else " ⚠"
+                i_item = QTreeWidgetItem([f"{it.name}  ×{it.qty}{flag}"])
+                i_item.setData(0, Qt.ItemDataRole.UserRole, data_prefix + (ii,))
+                if not ok:
+                    i_item.setForeground(0, QBrush(QColor("#f38ba8")))
+                parent_node.addChild(i_item)
+            return len(matches)
+
         for ai, area in enumerate(self.current_file.areas):
             area_item = None
             for ci, cat in enumerate(area.categories):
-                matches = [(ii, it) for ii, it in enumerate(cat.items) if not q or q in it.name.lower()]
-                if not matches: continue
+                # Check if this category or its subcategories have matching items
+                cat_matches = [(ii, it) for ii, it in enumerate(cat.items) if not q or q in it.name.lower()]
+                sub_matches = {}
+                for si, sub in enumerate(cat.subcategories):
+                    sm = [(ii, it) for ii, it in enumerate(sub.items) if not q or q in it.name.lower()]
+                    if sm:
+                        sub_matches[si] = sm
+
+                if not cat_matches and not sub_matches:
+                    continue
+
                 if area_item is None:
                     seal = " [sealable]" if area.sealable else ""
                     child = f" (child of {area.child_of})" if area.child_of else ""
@@ -2781,19 +2795,28 @@ class App(QMainWindow):
                     self._r_tree.addTopLevelItem(area_item)
                     if q: area_item.setExpanded(True)
 
-                cat_item = QTreeWidgetItem([f"📂 {cat.name} ({len(matches)})"])
+                total = len(cat_matches) + sum(len(v) for v in sub_matches.values())
+                cat_item = QTreeWidgetItem([f"📂 {cat.name} ({total})"])
                 cat_item.setData(0, Qt.ItemDataRole.UserRole, ("cat", ai, ci))
                 area_item.addChild(cat_item)
                 if q: cat_item.setExpanded(True)
 
-                for ii, it in matches:
-                    ok = it.name in mn
-                    flag = "" if ok else " ⚠"
-                    i_item = QTreeWidgetItem([f"{it.name}  ×{it.qty}{flag}"])
-                    i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ai, ci, ii))
-                    if not ok:
-                        i_item.setForeground(0, QBrush(QColor("#f38ba8")))
-                    cat_item.addChild(i_item)
+                # Direct items
+                _add_item_nodes(cat_item, cat.items, ("item", ai, ci))
+
+                # Subcategories
+                for si, sub in enumerate(cat.subcategories):
+                    if si not in sub_matches and q:
+                        continue
+                    sub_count = len(sub_matches.get(si, []))
+                    if not sub_count and q:
+                        continue
+                    sub_count_display = sub_count if q else len(sub.items)
+                    sub_item = QTreeWidgetItem([f"📁 {sub.name} ({sub_count_display})"])
+                    sub_item.setData(0, Qt.ItemDataRole.UserRole, ("subcat", ai, ci, si))
+                    cat_item.addChild(sub_item)
+                    if q: sub_item.setExpanded(True)
+                    _add_item_nodes(sub_item, sub.items, ("subitem", ai, ci, si))
 
     def _on_rig_tree_select(self, item):
         data = item.data(0, Qt.ItemDataRole.UserRole)
@@ -2806,11 +2829,21 @@ class App(QMainWindow):
         elif kind == "cat":
             ci = data[2]
             self._show_rig_cat_editor(area, area.categories[ci])
+        elif kind == "subcat":
+            ci, si = data[2], data[3]
+            cat = area.categories[ci]
+            self._show_rig_subcat_editor(area, cat, cat.subcategories[si])
         elif kind == "item":
-            ci = data[2]; ii = data[3]
-            self._show_rig_item_editor(area, area.categories[ci], area.categories[ci].items[ii])
+            ci, ii = data[2], data[3]
+            cat = area.categories[ci]
+            self._show_rig_item_editor(area, cat, cat.items[ii])
+        elif kind == "subitem":
+            ci, si, ii = data[2], data[3], data[4]
+            subcat = area.categories[ci].subcategories[si]
+            self._show_rig_item_editor(area, subcat, subcat.items[ii])
 
     def _show_rig_item_editor(self, area, cat, item):
+        """Edit an item. `cat` may be a top-level Category or a subcategory."""
         self._clear_layout(self._r_editor_layout)
         self._r_detail_title.setText(f"Edit Item — {area.name} › {cat.name}")
         f = self._r_editor_layout
@@ -2829,15 +2862,25 @@ class App(QMainWindow):
         qty_spin.setValue(item.qty)
         form.addRow("Qty:", qty_spin)
 
-        dests = {}
+        # Build destinations including subcategories
+        dests = {}  # label -> items list (the list the item would be appended to)
         dest_combo = QComboBox()
-        cur = f"{area.name} › {cat.name}"
+        cur = None
         for a in self.current_file.areas:
             for c in a.categories:
                 lb = f"{a.name} › {c.name}"
                 dest_combo.addItem(lb)
-                dests[lb] = (a, c)
-        dest_combo.setCurrentText(cur)
+                dests[lb] = c.items
+                if c is cat:
+                    cur = lb
+                for sub in c.subcategories:
+                    slb = f"{a.name} › {c.name} › {sub.name}"
+                    dest_combo.addItem(slb)
+                    dests[slb] = sub.items
+                    if sub is cat:
+                        cur = slb
+        if cur:
+            dest_combo.setCurrentText(cur)
         form.addRow("Move to:", dest_combo)
         f.addLayout(form)
 
@@ -2849,7 +2892,7 @@ class App(QMainWindow):
             dl = dest_combo.currentText()
             if dl != cur and dl in dests:
                 cat.items.remove(item)
-                dests[dl][1].items.append(item)
+                dests[dl].append(item)
             self.dirty = True
             self._update_save_state()
             self._rebuild_rig_tree()
@@ -2962,6 +3005,20 @@ class App(QMainWindow):
                 self._rebuild_rig_tree()
         f.addWidget(QPushButton("Add Item", clicked=_add))
 
+        # Add Subcategory
+        f.addWidget(QLabel("<b>Add Subcategory:</b>"))
+        subcat_edit = QLineEdit()
+        f.addWidget(subcat_edit)
+        def _add_subcat():
+            n = subcat_edit.text().strip()
+            if n:
+                cat.subcategories.append(Category(n))
+                subcat_edit.clear()
+                self.dirty = True
+                self._update_save_state()
+                self._rebuild_rig_tree()
+        f.addWidget(QPushButton("Add Subcategory", clicked=_add_subcat))
+
         def _delete():
             if QMessageBox.question(self, "Delete", f"Delete '{cat.name}'?") == QMessageBox.StandardButton.Yes:
                 area.categories.remove(cat)
@@ -2972,6 +3029,54 @@ class App(QMainWindow):
         f.addWidget(QPushButton("Delete Category", clicked=_delete))
         f.addStretch()
 
+    def _show_rig_subcat_editor(self, area, parent_cat, subcat):
+        """Editor for a subcategory nested under a parent category."""
+        self._clear_layout(self._r_editor_layout)
+        self._r_detail_title.setText(f"Edit Subcategory — {area.name} › {parent_cat.name}")
+        f = self._r_editor_layout
+        form = QFormLayout()
+        name_edit = QLineEdit(subcat.name)
+        form.addRow("Name:", name_edit)
+        f.addLayout(form)
+
+        def _apply():
+            n = name_edit.text().strip()
+            if n: subcat.name = n
+            self.dirty = True
+            self._update_save_state()
+            self._rebuild_rig_tree()
+        f.addWidget(QPushButton("Apply", clicked=_apply))
+
+        f.addWidget(QLabel("<b>Add Item:</b>"))
+        form2 = QFormLayout()
+        item_edit = QLineEdit()
+        form2.addRow("Name:", item_edit)
+        item_qty = QSpinBox()
+        item_qty.setRange(0, 9999)
+        item_qty.setValue(1)
+        form2.addRow("Qty:", item_qty)
+        f.addLayout(form2)
+
+        def _add():
+            n = item_edit.text().strip()
+            if n:
+                subcat.items.append(Item(n, item_qty.value()))
+                item_edit.clear()
+                self.dirty = True
+                self._update_save_state()
+                self._rebuild_rig_tree()
+        f.addWidget(QPushButton("Add Item", clicked=_add))
+
+        def _delete():
+            if QMessageBox.question(self, "Delete", f"Delete subcategory '{subcat.name}'?") == QMessageBox.StandardButton.Yes:
+                parent_cat.subcategories.remove(subcat)
+                self.dirty = True
+                self._update_save_state()
+                self._rebuild_rig_tree()
+                self._clear_editor(self._r_detail_title, self._r_editor_widget, self._r_editor_layout)
+        f.addWidget(QPushButton("Delete Subcategory", clicked=_delete))
+        f.addStretch()
+
     def _on_rig_right_click(self, pos):
         if not self.current_file:
             return
@@ -2980,8 +3085,9 @@ class App(QMainWindow):
         menu = QMenu(self)
 
         # Classify all selected nodes
-        selected_items = []   # (area, cat, item)
+        selected_items = []   # (area, cat_or_subcat, item)
         selected_cats = []    # (area, cat)
+        selected_subcats = [] # (area, parent_cat, subcat)
         selected_areas = []   # (area,)
         for sel in selected:
             d = sel.data(0, Qt.ItemDataRole.UserRole)
@@ -2994,17 +3100,25 @@ class App(QMainWindow):
                 ci, ii = d[2], d[3]
                 cat = area.categories[ci]
                 selected_items.append((area, cat, cat.items[ii]))
+            elif kind == "subitem":
+                ci, si, ii = d[2], d[3], d[4]
+                subcat = area.categories[ci].subcategories[si]
+                selected_items.append((area, subcat, subcat.items[ii]))
             elif kind == "cat":
                 ci = d[2]
                 selected_cats.append((area, area.categories[ci]))
+            elif kind == "subcat":
+                ci, si = d[2], d[3]
+                cat = area.categories[ci]
+                selected_subcats.append((area, cat, cat.subcategories[si]))
             elif kind == "area":
                 selected_areas.append(area)
 
-        total_selected = len(selected_items) + len(selected_cats) + len(selected_areas)
+        total_selected = len(selected_items) + len(selected_cats) + len(selected_subcats) + len(selected_areas)
 
         if total_selected > 1:
             # Items-only multi-select: offer move
-            if selected_items and not selected_cats and not selected_areas:
+            if selected_items and not selected_cats and not selected_subcats and not selected_areas:
                 area_names = [a.name for a in self.current_file.areas]
                 move_menu = menu.addMenu(f"Move {len(selected_items)} items to Area")
                 for area_name in area_names:
@@ -3016,8 +3130,8 @@ class App(QMainWindow):
             # Delete all selected (any mix of types)
             menu.addAction(f"Delete {total_selected} selected",
                            lambda si=list(selected_items), sc=list(selected_cats),
-                                  sa=list(selected_areas):
-                               self._delete_selected_rig_nodes(si, sc, sa))
+                                  ssc=list(selected_subcats), sa=list(selected_areas):
+                               self._delete_selected_rig_nodes(si, sc, ssc, sa))
         elif not item:
             menu.addAction("Add Area…", self._add_rig_area)
         else:
@@ -3029,7 +3143,6 @@ class App(QMainWindow):
             if kind == "item":
                 ci = data[2]; ii = data[3]
                 cat = area.categories[ci]; it = cat.items[ii]
-                # Single item — offer move to area
                 area_names = [a.name for a in self.current_file.areas if a is not area]
                 if area_names:
                     move_menu = menu.addMenu("Move to Area")
@@ -3039,20 +3152,33 @@ class App(QMainWindow):
                                 [(area, cat, it)], a_name))
                     menu.addSeparator()
                 menu.addAction(f"Delete '{it.name}'",
-                    lambda: self._delete_selected_rig_nodes([(area, cat, it)], [], []))
+                    lambda: self._delete_selected_rig_nodes([(area, cat, it)], [], [], []))
+            elif kind == "subitem":
+                ci, si, ii = data[2], data[3], data[4]
+                subcat = area.categories[ci].subcategories[si]; it = subcat.items[ii]
+                menu.addAction(f"Delete '{it.name}'",
+                    lambda: self._delete_selected_rig_nodes([(area, subcat, it)], [], [], []))
+            elif kind == "subcat":
+                ci, si = data[2], data[3]
+                cat = area.categories[ci]; subcat = cat.subcategories[si]
+                menu.addAction("Add Item…", lambda: self._radd_item(subcat))
+                menu.addSeparator()
+                menu.addAction(f"Delete '{subcat.name}'",
+                    lambda: self._delete_selected_rig_nodes([], [], [(area, cat, subcat)], []))
             elif kind == "cat":
                 ci = data[2]; cat = area.categories[ci]
                 menu.addAction("Add Item…", lambda: self._radd_item(cat))
+                menu.addAction("Add Subcategory…", lambda: self._radd_subcat(cat))
                 menu.addSeparator()
                 menu.addAction(f"Delete '{cat.name}'",
-                    lambda: self._delete_selected_rig_nodes([], [(area, cat)], []))
+                    lambda: self._delete_selected_rig_nodes([], [(area, cat)], [], []))
             elif kind == "area":
                 menu.addAction("Add Category…", lambda: self._radd_cat(area))
                 menu.addSeparator()
                 menu.addAction("Add Area…", self._add_rig_area)
                 menu.addSeparator()
                 menu.addAction(f"Delete '{area.name}'",
-                    lambda: self._delete_selected_rig_nodes([], [], [area]))
+                    lambda: self._delete_selected_rig_nodes([], [], [], [area]))
         menu.exec(self._r_tree.viewport().mapToGlobal(pos))
 
     def _move_selected_to_rig_area(self, items_list, target_area_name):
@@ -3079,30 +3205,38 @@ class App(QMainWindow):
             self._rebuild_rig_tree()
             self._status.showMessage(f"Moved {moved} item(s) to '{target_area_name}'")
 
-    def _delete_selected_rig_nodes(self, items_list, cats_list, areas_list):
-        """Delete any mix of selected items, categories, and areas from rig file."""
+    def _delete_selected_rig_nodes(self, items_list, cats_list, subcats_list, areas_list):
+        """Delete any mix of selected items, categories, subcategories, and areas from rig file."""
         detail_parts = []
         if items_list:
             detail_parts.append(f"{len(items_list)} item(s)")
+        if subcats_list:
+            subcat_item_count = sum(len(sc.items) for _, _, sc in subcats_list)
+            detail_parts.append(f"{len(subcats_list)} subcategory(ies) ({subcat_item_count} items)")
         if cats_list:
-            cat_item_count = sum(len(c.items) for _, c in cats_list)
+            cat_item_count = sum(len(c.items) + sum(len(s.items) for s in c.subcategories) for _, c in cats_list)
             detail_parts.append(f"{len(cats_list)} category(ies) ({cat_item_count} items)")
         if areas_list:
             area_item_count = sum(
-                sum(len(c.items) for c in a.categories) for a in areas_list)
+                sum(len(c.items) + sum(len(s.items) for s in c.subcategories) for c in a.categories) for a in areas_list)
             detail_parts.append(f"{len(areas_list)} area(s) ({area_item_count} items)")
         detail = ", ".join(detail_parts)
-        total = len(items_list) + len(cats_list) + len(areas_list)
+        total = len(items_list) + len(cats_list) + len(subcats_list) + len(areas_list)
 
-        if total > 1 or cats_list or areas_list:
+        if total > 1 or cats_list or subcats_list or areas_list:
             if QMessageBox.question(self, "Delete",
                     f"Delete {detail}?") != QMessageBox.StandardButton.Yes:
                 return
 
-        # Delete items first (before their parent cats/areas get removed)
-        for _, cat, item in items_list:
-            if item in cat.items:
-                cat.items.remove(item)
+        # Delete items first (before their parent cats/subcats/areas get removed)
+        for _, cat_or_subcat, item in items_list:
+            if item in cat_or_subcat.items:
+                cat_or_subcat.items.remove(item)
+
+        # Delete subcategories
+        for area, parent_cat, subcat in subcats_list:
+            if subcat in parent_cat.subcategories:
+                parent_cat.subcategories.remove(subcat)
 
         # Delete categories
         for area, cat in cats_list:
@@ -3127,23 +3261,27 @@ class App(QMainWindow):
         if not target_data:
             return
 
-        # Determine target category
+        # Determine target items list (where dropped items will go)
         target_kind = target_data[0]
         target_ai = target_data[1]
         target_area = self.current_file.areas[target_ai]
 
         if target_kind == "item":
-            # Dropped on an item — use its category
             target_ci = target_data[2]
-            target_cat = target_area.categories[target_ci]
+            target_items_list = target_area.categories[target_ci].items
+        elif target_kind == "subitem":
+            target_ci, target_si = target_data[2], target_data[3]
+            target_items_list = target_area.categories[target_ci].subcategories[target_si].items
+        elif target_kind == "subcat":
+            target_ci, target_si = target_data[2], target_data[3]
+            target_items_list = target_area.categories[target_ci].subcategories[target_si].items
         elif target_kind == "cat":
             target_ci = target_data[2]
-            target_cat = target_area.categories[target_ci]
+            target_items_list = target_area.categories[target_ci].items
         elif target_kind == "area":
-            # Dropped on area — use first category or create one
             if not target_area.categories:
                 target_area.categories.append(Category("General"))
-            target_cat = target_area.categories[0]
+            target_items_list = target_area.categories[0].items
         else:
             return
 
@@ -3156,28 +3294,40 @@ class App(QMainWindow):
             src_ai = src_data[1]
             src_area = self.current_file.areas[src_ai]
 
-            if src_kind == "item":
-                src_ci = src_data[2]
-                src_ii = src_data[3]
-                src_cat = src_area.categories[src_ci]
-                item = src_cat.items[src_ii]
-                if src_cat is not target_cat:
-                    src_cat.items.remove(item)
-                    target_cat.items.append(item)
+            if src_kind in ("item", "subitem"):
+                if src_kind == "item":
+                    src_cat = src_area.categories[src_data[2]]
+                    item = src_cat.items[src_data[3]]
+                    src_list = src_cat.items
+                else:
+                    src_subcat = src_area.categories[src_data[2]].subcategories[src_data[3]]
+                    item = src_subcat.items[src_data[4]]
+                    src_list = src_subcat.items
+                if src_list is not target_items_list:
+                    src_list.remove(item)
+                    target_items_list.append(item)
                     moved += 1
             elif src_kind == "cat":
-                # Move entire category to target area
                 src_ci = src_data[2]
                 cat_to_move = src_area.categories[src_ci]
                 if src_area is not target_area:
                     src_area.categories.remove(cat_to_move)
                     target_area.categories.append(cat_to_move)
-                    moved += len(cat_to_move.items)
+                    moved += len(cat_to_move.items) + sum(len(s.items) for s in cat_to_move.subcategories)
+            elif src_kind == "subcat":
+                src_ci, src_si = src_data[2], src_data[3]
+                src_cat = src_area.categories[src_ci]
+                subcat_to_move = src_cat.subcategories[src_si]
+                # Move all subcat items into target
+                for it in subcat_to_move.items:
+                    target_items_list.append(it)
+                    moved += 1
+                src_cat.subcategories.remove(subcat_to_move)
 
         if moved:
             self._set_dirty()
             self._rebuild_rig_tree()
-            self._status.showMessage(f"Moved {moved} item(s) to '{target_area.name} › {target_cat.name}'")
+            self._status.showMessage(f"Moved {moved} item(s)")
 
     def _set_dirty(self):
         self.dirty = True
@@ -3204,6 +3354,13 @@ class App(QMainWindow):
         n, ok = QInputDialog.getText(self, "Add Category", "Category name:")
         if ok and n.strip():
             area.categories.append(Category(n.strip()))
+            self._set_dirty()
+            self._rebuild_rig_tree()
+
+    def _radd_subcat(self, cat):
+        n, ok = QInputDialog.getText(self, "Add Subcategory", "Subcategory name:")
+        if ok and n.strip():
+            cat.subcategories.append(Category(n.strip()))
             self._set_dirty()
             self._rebuild_rig_tree()
 
@@ -4402,10 +4559,10 @@ class App(QMainWindow):
         try:
             with open(widget_path, "r", encoding="utf-8") as f:
                 html = f.read()
-            md_content = self.current_file.to_markdown()
+            json_content = json.dumps(self.current_file.to_json_data())
             m = re.search(r"var\s+DEFAULT_INVENTORY\s*=\s*[\s\S]*?;", html)
             if m:
-                replacement = f"var DEFAULT_INVENTORY = {json.dumps(md_content)};"
+                replacement = f"var DEFAULT_INVENTORY = JSON.stringify({json_content});"
                 html = html[:m.start()] + replacement + html[m.end():]
             html = re.sub(r'<script\s+[^>]*src=["\'][^"\']*jotfor[^"\']*["\'][^>]*>\s*</script>',
                           '', html, flags=re.IGNORECASE)
