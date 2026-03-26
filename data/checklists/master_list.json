@@ -4,47 +4,12 @@
       "name": "Uncategorized",
       "items": [
         {
-          "name": "#0",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#1",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#2",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#3",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#4",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
           "name": "1 mL Syringe (Luer-Lock Tip, Without Needle)",
           "emsa_min": 3
         },
         {
           "name": "1\" Tape (Cloth/Synthetic)",
           "emsa_min": 2
-        },
-        {
-          "name": "10",
-          "emsa_min": 1,
-          "group": "BP Cuffs"
-        },
-        {
-          "name": "10 Fr.",
-          "emsa_min": 2,
-          "group": "OGTs/NGTs"
         },
         {
           "name": "10 mL Syringe",
@@ -55,89 +20,24 @@
           "emsa_min": 3
         },
         {
-          "name": "10-25kg GRAY",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
           "name": "10-Drop Set",
           "emsa_min": 4
-        },
-        {
-          "name": "100mm PINK",
-          "emsa_min": 1,
-          "group": "OPAs"
         },
         {
           "name": "10mL Syringe, Luer-Lock tip, Without Needle",
           "emsa_min": 2
         },
         {
-          "name": "11",
-          "emsa_min": 1,
-          "group": "BP Cuffs"
-        },
-        {
-          "name": "110mm ORANGE",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "11L",
-          "emsa_min": 1,
-          "group": "BP Cuffs"
-        },
-        {
-          "name": "12",
-          "emsa_min": 1,
-          "group": "BP Cuffs"
-        },
-        {
-          "name": "12 Fr.",
-          "emsa_min": 2,
-          "group": "OGTs/NGTs"
-        },
-        {
           "name": "12-lead cables",
           "emsa_min": 1
-        },
-        {
-          "name": "14 Fr.",
-          "emsa_min": 2,
-          "group": "NPAs"
-        },
-        {
-          "name": "14 ga ORANGE",
-          "emsa_min": 6,
-          "group": "IV Catheter"
         },
         {
           "name": "15mm I/O needle",
           "emsa_min": 1
         },
         {
-          "name": "16 Fr.",
-          "emsa_min": 2,
-          "group": "NPAs"
-        },
-        {
-          "name": "16 ga GRAY",
-          "emsa_min": 6,
-          "group": "IV Catheter"
-        },
-        {
-          "name": "18 Fr.",
-          "emsa_min": 2,
-          "group": "NPAs"
-        },
-        {
           "name": "18G Filter Needle",
           "emsa_min": 2
-        },
-        {
-          "name": "18G GREEN",
-          "emsa_min": 6,
-          "group": "IV Catheter"
         },
         {
           "name": "1mL Syringe, Luer-Lock tip, Without Needle",
@@ -152,52 +52,12 @@
           "emsa_min": 10
         },
         {
-          "name": "2-5kg PINK",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
-          "name": "20 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
           "name": "20 mL Syringe (Luer-Lock Tip, Without Needle)",
           "emsa_min": 1
         },
         {
-          "name": "20G PINK",
-          "emsa_min": 6,
-          "group": "IV Catheter"
-        },
-        {
-          "name": "22 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "22G BLUE",
-          "emsa_min": 4,
-          "group": "IV Catheter"
-        },
-        {
           "name": "22G Safety Needle",
           "emsa_min": 4
-        },
-        {
-          "name": "24 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "24G YELLOW",
-          "emsa_min": 4,
-          "group": "IV Catheter"
-        },
-        {
-          "name": "25-35kg WHITE",
-          "emsa_min": 1,
-          "group": "iGels"
         },
         {
           "name": "25G Safety Needle",
@@ -206,16 +66,6 @@
         {
           "name": "25mm I/O needle",
           "emsa_min": 1
-        },
-        {
-          "name": "26 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "28 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
         },
         {
           "name": "3 mL Syringe (Luer-Lock Tip, Without Needle)",
@@ -232,31 +82,6 @@
         {
           "name": "3.5 mm",
           "emsa_min": 1
-        },
-        {
-          "name": "30 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "30-60kg YELLOW",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
-          "name": "32 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "34 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "36 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
         },
         {
           "name": "3mL Syringe (With BD TwinPak)",
@@ -291,22 +116,12 @@
           "emsa_min": 1
         },
         {
-          "name": "40mm PINK",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
           "name": "45mm I/O needle",
           "emsa_min": 1
         },
         {
           "name": "5 mL Syringe (Luer-Lock Tip, Without Needle)",
           "emsa_min": 3
-        },
-        {
-          "name": "5-12kg BLUE",
-          "emsa_min": 1,
-          "group": "iGels"
         },
         {
           "name": "5.0 mm",
@@ -317,23 +132,8 @@
           "emsa_min": 2
         },
         {
-          "name": "50-90kg GREEN",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
-          "name": "50mm BLUE",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
           "name": "5mL Syringe, Luer-Lock tip, Without Needle",
           "emsa_min": 2
-        },
-        {
-          "name": "6 Fr.",
-          "emsa_min": 2,
-          "group": "OGTs/NGTs"
         },
         {
           "name": "6.0 mm",
@@ -356,37 +156,12 @@
           "emsa_min": 2
         },
         {
-          "name": "60mm GRAY",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "7",
-          "emsa_min": 1,
-          "group": "BP Cuffs"
-        },
-        {
           "name": "7.0 mm",
           "emsa_min": 2
         },
         {
           "name": "7.5 mm",
           "emsa_min": 2
-        },
-        {
-          "name": "70mm WHITE",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "8",
-          "emsa_min": 1,
-          "group": "BP Cuffs"
-        },
-        {
-          "name": "8 Fr.",
-          "emsa_min": 2,
-          "group": "OGTs/NGTs"
         },
         {
           "name": "8.0 mm",
@@ -397,28 +172,8 @@
           "emsa_min": 2
         },
         {
-          "name": "80mm GREEN",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "9",
-          "emsa_min": 1,
-          "group": "BP Cuffs"
-        },
-        {
           "name": "9.0 mm",
           "emsa_min": 2
-        },
-        {
-          "name": "90kg ORANGE",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
-          "name": "90mm YELLOW",
-          "emsa_min": 1,
-          "group": "OPAs"
         },
         {
           "name": "AA - Cell Battery",
@@ -435,11 +190,6 @@
         {
           "name": "Adenosine 6mg/2mL",
           "emsa_min": 3
-        },
-        {
-          "name": "Adhesive Bandages",
-          "emsa_min": 6,
-          "group": "Glucometer kit"
         },
         {
           "name": "Adhesive SpO2 Sensor - Adult/Neonatal",
@@ -504,11 +254,6 @@
         {
           "name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
           "emsa_min": 6
-        },
-        {
-          "name": "Alcohol Prep Pads",
-          "emsa_min": 20,
-          "group": "Glucometer kit"
         },
         {
           "name": "Alcohol Prep Pads Box",
@@ -827,11 +572,6 @@
           "emsa_min": 2
         },
         {
-          "name": "Glucometer, operational",
-          "emsa_min": 1,
-          "group": "Glucometer kit"
-        },
-        {
           "name": "Glucose Oral Gel 15 mg",
           "emsa_min": 2
         },
@@ -1000,18 +740,8 @@
           "emsa_min": 2
         },
         {
-          "name": "L",
-          "emsa_min": 2,
-          "group": "Soft Collars"
-        },
-        {
           "name": "Labetalol 100mg/20mL",
           "emsa_min": 4
-        },
-        {
-          "name": "Lancets",
-          "emsa_min": 6,
-          "group": "Glucometer kit"
         },
         {
           "name": "Large Adult CPAP Mask",
@@ -1058,21 +788,6 @@
           "emsa_min": 6
         },
         {
-          "name": "LW",
-          "emsa_min": 1,
-          "group": "nCPAP Prongs"
-        },
-        {
-          "name": "M",
-          "emsa_min": 1,
-          "group": "Soft Collars"
-        },
-        {
-          "name": "M Adult",
-          "emsa_min": 2,
-          "group": "Adult HFNCs"
-        },
-        {
           "name": "MAC S3",
           "emsa_min": 1
         },
@@ -1099,31 +814,6 @@
         {
           "name": "Magnesium Sulfate 5g/10mL",
           "emsa_min": 1
-        },
-        {
-          "name": "Child",
-          "emsa_min": 1,
-          "group": "Manual BP Cuff"
-        },
-        {
-          "name": "Infant",
-          "emsa_min": 1,
-          "group": "Manual BP Cuff"
-        },
-        {
-          "name": "Large Adult",
-          "emsa_min": 1,
-          "group": "Manual BP Cuff"
-        },
-        {
-          "name": "Small Adult",
-          "emsa_min": 1,
-          "group": "Manual BP Cuff"
-        },
-        {
-          "name": "Thigh",
-          "emsa_min": 1,
-          "group": "Manual BP Cuff"
         },
         {
           "name": "Manual Jet Ventilator",
@@ -1451,16 +1141,6 @@
           "emsa_min": 1
         },
         {
-          "name": "S",
-          "emsa_min": 1,
-          "group": "Soft Collars"
-        },
-        {
-          "name": "S Adult",
-          "emsa_min": 2,
-          "group": "Adult HFNCs"
-        },
-        {
           "name": "Scoop Stretcher",
           "emsa_min": 1
         },
@@ -1503,11 +1183,6 @@
         {
           "name": "Standalone Twinpaks",
           "emsa_min": 6
-        },
-        {
-          "name": "Sterile 2x2",
-          "emsa_min": 6,
-          "group": "Glucometer kit"
         },
         {
           "name": "Sterile 4x4",
@@ -1594,11 +1269,6 @@
           "emsa_min": 1
         },
         {
-          "name": "Test Strip Vial (at least 6 strips)",
-          "emsa_min": 1,
-          "group": "Glucometer kit"
-        },
-        {
           "name": "Thomas Tube Holder - Adult",
           "emsa_min": 1
         },
@@ -1673,21 +1343,6 @@
           "emsa_min": 5
         },
         {
-          "name": "XL",
-          "emsa_min": 1,
-          "group": "Pediatric HFNCs"
-        },
-        {
-          "name": "XL",
-          "emsa_min": 1,
-          "group": "Bonnets"
-        },
-        {
-          "name": "XXL",
-          "emsa_min": 1,
-          "group": "Bonnets"
-        },
-        {
           "name": "Yankauer Suction Tip + Tubing",
           "emsa_min": 3
         },
@@ -1702,6 +1357,405 @@
         {
           "name": "Zoll Monitor",
           "emsa_min": 1
+        }
+      ]
+    },
+    {
+      "name": "Airway Management",
+      "items": [
+        {
+          "name": "XL",
+          "emsa_min": 1,
+          "group": "Pediatric HFNCs"
+        },
+        {
+          "name": "M Adult",
+          "emsa_min": 2,
+          "group": "Adult HFNCs"
+        },
+        {
+          "name": "S Adult",
+          "emsa_min": 2,
+          "group": "Adult HFNCs"
+        },
+        {
+          "name": "100mm PINK",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "110mm ORANGE",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "40mm PINK",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "50mm BLUE",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "60mm GRAY",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "70mm WHITE",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "80mm GREEN",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "90mm YELLOW",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "14 Fr.",
+          "emsa_min": 2,
+          "group": "NPAs"
+        },
+        {
+          "name": "16 Fr.",
+          "emsa_min": 2,
+          "group": "NPAs"
+        },
+        {
+          "name": "18 Fr.",
+          "emsa_min": 2,
+          "group": "NPAs"
+        },
+        {
+          "name": "20 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "22 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "24 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "26 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "28 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "30 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "32 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "34 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "36 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "#4",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#3",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#2",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#1",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#0",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#0",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#1",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#2",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#3",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#4",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "10-25 kg GRAY",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "2-5 kg PINK",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "25-35 kg WHITE",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "30-60 kg YELLOW",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "5-12 kg BLUE",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "50-90 kg GREEN",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "90 kg ORANGE",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "10 Fr.",
+          "emsa_min": 2,
+          "group": "OGTs/NGTs"
+        },
+        {
+          "name": "12 Fr.",
+          "emsa_min": 2,
+          "group": "OGTs/NGTs"
+        },
+        {
+          "name": "6 Fr.",
+          "emsa_min": 2,
+          "group": "OGTs/NGTs"
+        },
+        {
+          "name": "8 Fr.",
+          "emsa_min": 2,
+          "group": "OGTs/NGTs"
+        }
+      ]
+    },
+    {
+      "name": "Trauma",
+      "items": [
+        {
+          "name": "L",
+          "emsa_min": 2,
+          "group": "Soft Collars"
+        },
+        {
+          "name": "M",
+          "emsa_min": 1,
+          "group": "Soft Collars"
+        },
+        {
+          "name": "S",
+          "emsa_min": 1,
+          "group": "Soft Collars"
+        }
+      ]
+    },
+    {
+      "name": "IV/IO/IM",
+      "items": [
+        {
+          "name": "14 ga ORANGE",
+          "emsa_min": 6,
+          "group": "IV Catheter"
+        },
+        {
+          "name": "16 ga GRAY",
+          "emsa_min": 6,
+          "group": "IV Catheter"
+        },
+        {
+          "name": "18 ga GREEN",
+          "emsa_min": 6,
+          "group": "IV Catheter"
+        },
+        {
+          "name": "20 ga PINK",
+          "emsa_min": 6,
+          "group": "IV Catheter"
+        },
+        {
+          "name": "22 ga BLUE",
+          "emsa_min": 4,
+          "group": "IV Catheter"
+        },
+        {
+          "name": "24 ga YELLOW",
+          "emsa_min": 4,
+          "group": "IV Catheter"
+        }
+      ]
+    },
+    {
+      "name": "Medications",
+      "items": []
+    },
+    {
+      "name": "BCPAP",
+      "items": [
+        {
+          "name": "XL",
+          "emsa_min": 1,
+          "group": "Bonnets"
+        },
+        {
+          "name": "XXL",
+          "emsa_min": 1,
+          "group": "Bonnets"
+        },
+        {
+          "name": "LW",
+          "emsa_min": 1,
+          "group": "nCPAP Prongs"
+        }
+      ]
+    },
+    {
+      "name": "Assessment",
+      "items": [
+        {
+          "name": "10",
+          "emsa_min": 1,
+          "group": "BP Cuffs"
+        },
+        {
+          "name": "11",
+          "emsa_min": 1,
+          "group": "BP Cuffs"
+        },
+        {
+          "name": "11L",
+          "emsa_min": 1,
+          "group": "BP Cuffs"
+        },
+        {
+          "name": "12",
+          "emsa_min": 1,
+          "group": "BP Cuffs"
+        },
+        {
+          "name": "7",
+          "emsa_min": 1,
+          "group": "BP Cuffs"
+        },
+        {
+          "name": "8",
+          "emsa_min": 1,
+          "group": "BP Cuffs"
+        },
+        {
+          "name": "9",
+          "emsa_min": 1,
+          "group": "BP Cuffs"
+        },
+        {
+          "name": "Adhesive Bandages",
+          "emsa_min": 6,
+          "group": "Glucometer kit"
+        },
+        {
+          "name": "Alcohol Prep Pads",
+          "emsa_min": 20,
+          "group": "Glucometer kit"
+        },
+        {
+          "name": "Glucometer, operational",
+          "emsa_min": 1,
+          "group": "Glucometer kit"
+        },
+        {
+          "name": "Lancets",
+          "emsa_min": 6,
+          "group": "Glucometer kit"
+        },
+        {
+          "name": "Sterile 2x2",
+          "emsa_min": 6,
+          "group": "Glucometer kit"
+        },
+        {
+          "name": "Test Strip Vial (at least 6 strips)",
+          "emsa_min": 1,
+          "group": "Glucometer kit"
+        },
+        {
+          "name": "Child",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
+        },
+        {
+          "name": "Infant",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
+        },
+        {
+          "name": "Large Adult",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
+        },
+        {
+          "name": "Small Adult",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
+        },
+        {
+          "name": "Thigh",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
         }
       ]
     }

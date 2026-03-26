@@ -535,6 +535,53 @@ class CategoryDelegate(QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
 
+class MoveToCategoryDialog(QDialog):
+    """Searchable category picker dialog with editable combo + MatchContains completer."""
+    def __init__(self, categories, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Move to Category")
+        self.setMinimumWidth(350)
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Select target category:"))
+
+        self._combo = QComboBox()
+        self._combo.setEditable(True)
+        self._combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self._combo.setMaxVisibleItems(10)
+        sorted_cats = sorted(categories, key=str.lower)
+        self._combo.addItems(sorted_cats)
+
+        completer = QCompleter(sorted_cats, self._combo)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        completer.setMaxVisibleItems(10)
+        self._combo.setCompleter(completer)
+        self._combo.setCurrentIndex(-1)
+        self._combo.lineEdit().clear()
+        layout.addWidget(self._combo)
+
+        # Auto-accept when user clicks dropdown item or picks from completer
+        self._combo.view().clicked.connect(lambda: QTimer.singleShot(0, self.accept))
+        completer.activated.connect(lambda: QTimer.singleShot(0, self.accept))
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok |
+            QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+        # Focus line edit and auto-show popup after dialog is shown
+        QTimer.singleShot(100, self._show_and_focus)
+
+    def _show_and_focus(self):
+        self._combo.lineEdit().setFocus()
+
+    def selected_category(self):
+        return self._combo.currentText()
+
+
 class SplitDialog(QDialog):
     """Dialog for manually splitting a compound item into multiple items."""
     def __init__(self, original_name, original_qty, parent=None):
@@ -1367,6 +1414,11 @@ class App(QMainWindow):
         self._rig_tab = QWidget()
         self._tabs.addTab(self._rig_tab, "Rig Files")
         self._build_rig_tab()
+
+        # Ctrl+1/2/3: quick tab navigation
+        for i in range(self._tabs.count()):
+            sc = QShortcut(QKeySequence(f"Ctrl+{i+1}"), self)
+            sc.activated.connect(lambda idx=i: self._tabs.setCurrentIndex(idx))
 
         # Status bar
         self._status = self.statusBar()
@@ -2956,7 +3008,9 @@ class App(QMainWindow):
         CN = DragDropTree.ROLE_CLEAN_NAME
 
         for ci, cat in enumerate(self.master_list.categories):
-            show = [(ii, it) for ii, it in enumerate(cat.items) if not q or q in it.name.lower()
+            cat_match = q and q in cat.name.lower()
+            show = [(ii, it) for ii, it in enumerate(cat.items) if not q or cat_match
+                    or q in it.name.lower()
                     or (it.group and q in it.group.lower())]
             if not show and q: continue
 
@@ -3772,9 +3826,12 @@ class App(QMainWindow):
 
         def _build_area_content(area_item, ai, area):
             """Populate an area node with categories, groups, and items."""
+            area_match = q and q in area.name.lower()
             for ci, cat in enumerate(area.categories):
+                cat_match = q and q in cat.name.lower()
                 matches = [(ii, it) for ii, it in enumerate(cat.items)
-                           if not q or q in it.name.lower() or (it.group and q in it.group.lower())]
+                           if not q or area_match or cat_match
+                           or q in it.name.lower() or (it.group and q in it.group.lower())]
                 if not matches:
                     continue
 
@@ -3841,8 +3898,8 @@ class App(QMainWindow):
             area_item.setData(0, CN, area.name)
             has_content = _build_area_content(area_item, ai, area)
 
-            if not has_content and q:
-                continue  # skip empty areas during search
+            if not has_content and q and not (q in area.name.lower()):
+                continue  # skip empty areas during search unless area name matches
 
             area_nodes[ai] = area_item
             if area.child_of:
@@ -4817,10 +4874,11 @@ class App(QMainWindow):
         if not cat_names:
             self._status.showMessage("No categories available")
             return
-        name, ok = QInputDialog.getItem(self, "Move to Category",
-            "Select target category:", cat_names, 0, False)
-        if ok and name:
-            self._execute_move_to_category(ft, items_list, groups_list, name)
+        dlg = MoveToCategoryDialog(cat_names, self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            name = dlg.selected_category()
+            if name:
+                self._execute_move_to_category(ft, items_list, groups_list, name)
 
     def _do_move_to_new_category(self):
         """Ctrl+N — move selected items/groups to a new category."""
