@@ -4,6 +4,31 @@
       "name": "Uncategorized",
       "items": [
         {
+          "name": "#0",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#1",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#2",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#3",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
+          "name": "#4",
+          "emsa_min": 1,
+          "group": "Miller Blades"
+        },
+        {
           "name": "1 mL Syringe (Luer-Lock Tip, Without Needle)",
           "emsa_min": 3
         },
@@ -13,11 +38,13 @@
         },
         {
           "name": "10",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "BP Cuffs"
         },
         {
           "name": "10 Fr.",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "group": "OGTs/NGTs"
         },
         {
           "name": "10 mL Syringe",
@@ -28,12 +55,9 @@
           "emsa_min": 3
         },
         {
-          "name": "10-25 kgs GRAY",
-          "emsa_min": 1
-        },
-        {
           "name": "10-25kg GRAY",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "iGels"
         },
         {
           "name": "10-Drop Set",
@@ -41,7 +65,8 @@
         },
         {
           "name": "100mm PINK",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "OPAs"
         },
         {
           "name": "10mL Syringe, Luer-Lock tip, Without Needle",
@@ -49,23 +74,28 @@
         },
         {
           "name": "11",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "BP Cuffs"
         },
         {
           "name": "110mm ORANGE",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "OPAs"
         },
         {
           "name": "11L",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "BP Cuffs"
         },
         {
           "name": "12",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "BP Cuffs"
         },
         {
           "name": "12 Fr.",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "group": "OGTs/NGTs"
         },
         {
           "name": "12-lead cables",
@@ -73,11 +103,13 @@
         },
         {
           "name": "14 Fr.",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "group": "NPAs"
         },
         {
           "name": "14G ORANGE",
-          "emsa_min": 6
+          "emsa_min": 6,
+          "group": "IV Catheter"
         },
         {
           "name": "15mm I/O needle",
@@ -85,15 +117,18 @@
         },
         {
           "name": "16 Fr.",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "group": "NPAs"
         },
         {
           "name": "16G GRAY",
-          "emsa_min": 6
+          "emsa_min": 6,
+          "group": "IV Catheter"
         },
         {
           "name": "18 Fr.",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "group": "NPAs"
         },
         {
           "name": "18G Filter Needle",
@@ -101,7 +136,8 @@
         },
         {
           "name": "18G GREEN",
-          "emsa_min": 6
+          "emsa_min": 6,
+          "group": "IV Catheter"
         },
         {
           "name": "1mL Syringe, Luer-Lock tip, Without Needle",
@@ -116,16 +152,14 @@
           "emsa_min": 10
         },
         {
-          "name": "2-5 kgs PINK",
-          "emsa_min": 1
-        },
-        {
           "name": "2-5kg PINK",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "iGels"
         },
         {
           "name": "20 Fr.",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "NPAs"
         },
         {
           "name": "20 mL Syringe (Luer-Lock Tip, Without Needle)",
@@ -133,15 +167,18 @@
         },
         {
           "name": "20G PINK",
-          "emsa_min": 6
+          "emsa_min": 6,
+          "group": "IV Catheter"
         },
         {
           "name": "22 Fr.",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "NPAs"
         },
         {
           "name": "22G BLUE",
-          "emsa_min": 4
+          "emsa_min": 4,
+          "group": "IV Catheter"
         },
         {
           "name": "22G Safety Needle",
@@ -149,19 +186,18 @@
         },
         {
           "name": "24 Fr.",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "NPAs"
         },
         {
           "name": "24G YELLOW",
-          "emsa_min": 4
-        },
-        {
-          "name": "25-35 kgs WHITE",
-          "emsa_min": 1
+          "emsa_min": 4,
+          "group": "IV Catheter"
         },
         {
           "name": "25-35kg WHITE",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "iGels"
         },
         {
           "name": "25G Safety Needle",
@@ -173,18 +209,20 @@
         },
         {
           "name": "26 Fr.",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "NPAs"
         },
         {
           "name": "28 Fr.",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "NPAs"
         },
         {
           "name": "3 mL Syringe (Luer-Lock Tip, Without Needle)",
           "emsa_min": 3
         },
         {
-          "name": "3-Way Stopcocks",
+          "name": "3-Way Stopcock",
           "emsa_min": 2
         },
         {
@@ -197,27 +235,28 @@
         },
         {
           "name": "30 Fr.",
-          "emsa_min": 1
-        },
-        {
-          "name": "30-60 kgs YELLOW",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "NPAs"
         },
         {
           "name": "30-60kg YELLOW",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "iGels"
         },
         {
           "name": "32 Fr.",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "NPAs"
         },
         {
           "name": "34 Fr.",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "NPAs"
         },
         {
           "name": "36 Fr.",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "NPAs"
         },
         {
           "name": "3mL Syringe (With BD TwinPak)",
@@ -252,40 +291,9 @@
           "emsa_min": 1
         },
         {
-          "name": "40mm (Black)",
-          "emsa_min": 1
-        },
-        {
-          "name": "40mm (Green)",
-          "emsa_min": 1
-        },
-        {
-          "name": "40mm (Light Blue)",
-          "emsa_min": 1
-        },
-        {
-          "name": "40mm (Orange)",
-          "emsa_min": 1
-        },
-        {
-          "name": "40mm (Pink)",
-          "emsa_min": 1
-        },
-        {
-          "name": "40mm (Red)",
-          "emsa_min": 1
-        },
-        {
-          "name": "40mm (White)",
-          "emsa_min": 1
-        },
-        {
-          "name": "40mm (Yellow)",
-          "emsa_min": 1
-        },
-        {
           "name": "40mm PINK",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "OPAs"
         },
         {
           "name": "45mm I/O needle",
@@ -296,12 +304,9 @@
           "emsa_min": 3
         },
         {
-          "name": "5-12 kgs BLUE",
-          "emsa_min": 1
-        },
-        {
           "name": "5-12kg BLUE",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "iGels"
         },
         {
           "name": "5.0 mm",
@@ -312,16 +317,14 @@
           "emsa_min": 2
         },
         {
-          "name": "50-90 kgs GREEN",
-          "emsa_min": 1
-        },
-        {
           "name": "50-90kg GREEN",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "iGels"
         },
         {
           "name": "50mm BLUE",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "OPAs"
         },
         {
           "name": "5mL Syringe, Luer-Lock tip, Without Needle",
@@ -329,7 +332,8 @@
         },
         {
           "name": "6 Fr.",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "group": "OGTs/NGTs"
         },
         {
           "name": "6.0 mm",
@@ -353,11 +357,13 @@
         },
         {
           "name": "60mm GRAY",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "OPAs"
         },
         {
           "name": "7",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "BP Cuffs"
         },
         {
           "name": "7.0 mm",
@@ -369,15 +375,18 @@
         },
         {
           "name": "70mm WHITE",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "OPAs"
         },
         {
           "name": "8",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "BP Cuffs"
         },
         {
           "name": "8 Fr.",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "group": "OGTs/NGTs"
         },
         {
           "name": "8.0 mm",
@@ -389,27 +398,27 @@
         },
         {
           "name": "80mm GREEN",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "OPAs"
         },
         {
           "name": "9",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "BP Cuffs"
         },
         {
           "name": "9.0 mm",
           "emsa_min": 2
         },
         {
-          "name": "90+ kgs ORANGE",
-          "emsa_min": 1
-        },
-        {
           "name": "90kg ORANGE",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "iGels"
         },
         {
           "name": "90mm YELLOW",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "OPAs"
         },
         {
           "name": "AA - Cell Battery",
@@ -429,7 +438,8 @@
         },
         {
           "name": "Adhesive Bandages",
-          "emsa_min": 6
+          "emsa_min": 6,
+          "group": "Glucometer kit"
         },
         {
           "name": "Adhesive SpO2 Sensor - Adult/Neonatal",
@@ -476,6 +486,10 @@
           "emsa_min": 3
         },
         {
+          "name": "Adult XCollar",
+          "emsa_min": 4
+        },
+        {
           "name": "Adult/Child Defib Pads",
           "emsa_min": 1
         },
@@ -493,7 +507,8 @@
         },
         {
           "name": "Alcohol Prep Pads",
-          "emsa_min": 20
+          "emsa_min": 20,
+          "group": "Glucometer kit"
         },
         {
           "name": "Alcohol Prep Pads Box",
@@ -596,6 +611,10 @@
           "emsa_min": 4
         },
         {
+          "name": "Calcium Gluconate 1g/10mL",
+          "emsa_min": 1
+        },
+        {
           "name": "Cavicide Spray Bottle",
           "emsa_min": 1
         },
@@ -622,6 +641,10 @@
         {
           "name": "Chlorhexidine Swabs Box",
           "emsa_min": 1
+        },
+        {
+          "name": "Coban",
+          "emsa_min": 6
         },
         {
           "name": "Cold Pack",
@@ -681,6 +704,10 @@
         },
         {
           "name": "Dopamine Vial 400mg/10mL",
+          "emsa_min": 1
+        },
+        {
+          "name": "Doppler",
           "emsa_min": 1
         },
         {
@@ -744,14 +771,6 @@
           "emsa_min": 1
         },
         {
-          "name": "EtCO2 NC - Adult",
-          "emsa_min": 1
-        },
-        {
-          "name": "EtCO2 NC - Pediatric",
-          "emsa_min": 1
-        },
-        {
           "name": "Extra Large",
           "emsa_min": 1
         },
@@ -788,6 +807,14 @@
           "emsa_min": 3
         },
         {
+          "name": "Getac",
+          "emsa_min": 1
+        },
+        {
+          "name": "Getac Charger",
+          "emsa_min": 1
+        },
+        {
           "name": "Glidescope Charger",
           "emsa_min": 1
         },
@@ -801,7 +828,8 @@
         },
         {
           "name": "Glucometer, operational",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "Glucometer kit"
         },
         {
           "name": "Glucose Oral Gel 15 mg",
@@ -822,6 +850,10 @@
         {
           "name": "Hamilton Adapter Bag",
           "emsa_min": 2
+        },
+        {
+          "name": "Hamilton Humidifier",
+          "emsa_min": 1
         },
         {
           "name": "Hand Sanitizer",
@@ -940,7 +972,27 @@
           "emsa_min": 2
         },
         {
+          "name": "IV Extension Set",
+          "emsa_min": 6
+        },
+        {
           "name": "IV Fluid Warmer",
+          "emsa_min": 1
+        },
+        {
+          "name": "IV Pump Chargers",
+          "emsa_min": 3
+        },
+        {
+          "name": "IV Pumps",
+          "emsa_min": 5
+        },
+        {
+          "name": "IV start kits",
+          "emsa_min": 4
+        },
+        {
+          "name": "Jackery + charger",
           "emsa_min": 1
         },
         {
@@ -949,7 +1001,17 @@
         },
         {
           "name": "L",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "group": "Soft Collars"
+        },
+        {
+          "name": "Labetalol 100mg/20mL",
+          "emsa_min": 4
+        },
+        {
+          "name": "Lancets",
+          "emsa_min": 6,
+          "group": "Glucometer kit"
         },
         {
           "name": "Large Adult CPAP Mask",
@@ -992,16 +1054,23 @@
           "emsa_min": 2
         },
         {
+          "name": "Lubricant Packet",
+          "emsa_min": 6
+        },
+        {
           "name": "LW",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "nCPAP Prongs"
         },
         {
           "name": "M",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "Soft Collars"
         },
         {
-          "name": "M Adult High-Flow Nasal Cannula",
-          "emsa_min": 2
+          "name": "M Adult",
+          "emsa_min": 2,
+          "group": "Adult HFNCs"
         },
         {
           "name": "MAC S3",
@@ -1032,24 +1101,29 @@
           "emsa_min": 1
         },
         {
-          "name": "Manual BP Cuff - Child",
-          "emsa_min": 1
+          "name": "Child",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
         },
         {
-          "name": "Manual BP Cuff - Infant",
-          "emsa_min": 1
+          "name": "Infant",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
         },
         {
-          "name": "Manual BP Cuff - Large Adult",
-          "emsa_min": 1
+          "name": "Large Adult",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
         },
         {
-          "name": "Manual BP Cuff - Small Adult",
-          "emsa_min": 1
+          "name": "Small Adult",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
         },
         {
-          "name": "Manual BP Cuff – Thigh",
-          "emsa_min": 1
+          "name": "Thigh",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
         },
         {
           "name": "Manual Jet Ventilator",
@@ -1061,7 +1135,8 @@
         },
         {
           "name": "Medical Group Supervisor Vest",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "MCI Bag"
         },
         {
           "name": "Medication Labels",
@@ -1098,6 +1173,10 @@
         {
           "name": "Monitor Battery (charged)",
           "emsa_min": 2
+        },
+        {
+          "name": "Monitor Charger",
+          "emsa_min": 1
         },
         {
           "name": "Monitor Printer Paper Rolls",
@@ -1174,6 +1253,10 @@
         {
           "name": "Non-Sterile 4\"x4\" Gauze Sponges Sleeve",
           "emsa_min": 1
+        },
+        {
+          "name": "Norepinephrine 4mg/4mL",
+          "emsa_min": 2
         },
         {
           "name": "Norepinephrine Bitartrate 4mg/4mL",
@@ -1308,6 +1391,10 @@
           "emsa_min": 1
         },
         {
+          "name": "Pen light",
+          "emsa_min": 2
+        },
+        {
           "name": "Petrolatum Dressing",
           "emsa_min": 2
         },
@@ -1360,12 +1447,22 @@
           "emsa_min": 1
         },
         {
-          "name": "S",
+          "name": "Ring Cutter",
           "emsa_min": 1
         },
         {
-          "name": "S Adult High-Flow Nasal Cannula",
-          "emsa_min": 2
+          "name": "S",
+          "emsa_min": 1,
+          "group": "Soft Collars"
+        },
+        {
+          "name": "S Adult",
+          "emsa_min": 2,
+          "group": "Adult HFNCs"
+        },
+        {
+          "name": "Scoop Stretcher",
+          "emsa_min": 1
         },
         {
           "name": "Shears",
@@ -1409,7 +1506,8 @@
         },
         {
           "name": "Sterile 2x2",
-          "emsa_min": 6
+          "emsa_min": 6,
+          "group": "Glucometer kit"
         },
         {
           "name": "Sterile 4x4",
@@ -1432,7 +1530,15 @@
           "emsa_min": 3
         },
         {
+          "name": "Stethoscope",
+          "emsa_min": 1
+        },
+        {
           "name": "Stretcher Battery",
+          "emsa_min": 1
+        },
+        {
+          "name": "Stretcher Charger",
           "emsa_min": 1
         },
         {
@@ -1489,7 +1595,8 @@
         },
         {
           "name": "Test Strip Vial (at least 6 strips)",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "Glucometer kit"
         },
         {
           "name": "Thomas Tube Holder - Adult",
@@ -1500,16 +1607,30 @@
           "emsa_min": 1
         },
         {
+          "name": "Traction Splint",
+          "emsa_min": 2
+        },
+        {
           "name": "Tranexamic Acid 1000mg/10mL",
           "emsa_min": 4
+        },
+        {
+          "name": "Trauma Dressing",
+          "emsa_min": 2
         },
         {
           "name": "Trauma Tourniquet",
           "emsa_min": 4
         },
         {
+          "name": "Triage Tags",
+          "emsa_min": 50,
+          "group": "MCI Bag"
+        },
+        {
           "name": "Triage Unit Leader Vest",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "MCI Bag"
         },
         {
           "name": "Triangular Bandage",
@@ -1532,6 +1653,10 @@
           "emsa_min": 3
         },
         {
+          "name": "Ventilator",
+          "emsa_min": 1
+        },
+        {
           "name": "Ventilator Circuit",
           "emsa_min": 3
         },
@@ -1549,15 +1674,22 @@
         },
         {
           "name": "XL",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "Pediatric HFNCs"
+        },
+        {
+          "name": "XL",
+          "emsa_min": 1,
+          "group": "Bonnets"
         },
         {
           "name": "XXL",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "Bonnets"
         },
         {
-          "name": "XXXL",
-          "emsa_min": 1
+          "name": "Yankauer Suction Tip + Tubing",
+          "emsa_min": 3
         },
         {
           "name": "Yellow Table",
@@ -1566,218 +1698,9 @@
         {
           "name": "Yellow Tags",
           "emsa_min": 20
-        }
-      ]
-    },
-    {
-      "name": "Trauma",
-      "items": [
-        {
-          "name": "Coban",
-          "emsa_min": 2
-        },
-        {
-          "name": "Traction Splint",
-          "emsa_min": 2
-        },
-        {
-          "name": "Ring Cutter",
-          "emsa_min": 1
-        },
-        {
-          "name": "Trauma Dressing",
-          "emsa_min": 2
-        },
-        {
-          "name": "X-Collar",
-          "emsa_min": 4
-        }
-      ]
-    },
-    {
-      "name": "Vascular Access",
-      "items": [
-        {
-          "name": "IV Extension Set",
-          "emsa_min": 4
-        },
-        {
-          "name": "3-Way Stopcock",
-          "emsa_min": 2
-        },
-        {
-          "name": "IV start kits",
-          "emsa_min": 4
-        }
-      ]
-    },
-    {
-      "name": "Medications",
-      "items": [
-        {
-          "name": "Labetalol 100mg/20mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Calcium Gluconate 1g/10mL",
-          "emsa_min": 1
-        },
-        {
-          "name": "Norepinephrine 4mg/4mL",
-          "emsa_min": 2
-        }
-      ]
-    },
-    {
-      "name": "Patient Assessment",
-      "items": [
-        {
-          "name": "Lancets",
-          "emsa_min": 10
-        },
-        {
-          "name": "Doppler",
-          "emsa_min": 1
-        },
-        {
-          "name": "Pen light",
-          "emsa_min": 2
-        },
-        {
-          "name": "Stethoscope",
-          "emsa_min": 1
-        }
-      ]
-    },
-    {
-      "name": "Patient Transportation",
-      "items": [
-        {
-          "name": "Scoop Stretcher",
-          "emsa_min": 1
-        }
-      ]
-    },
-    {
-      "name": "MCI",
-      "items": [
-        {
-          "name": "Triage Tags",
-          "emsa_min": 50
-        }
-      ]
-    },
-    {
-      "name": "Ambulance Equipment",
-      "items": [
-        {
-          "name": "Wall-Mounted Suction",
-          "emsa_min": 1
-        }
-      ]
-    },
-    {
-      "name": "Airway",
-      "items": [
-        {
-          "name": "Yankauer Suction Tip + Tubing",
-          "emsa_min": 3
-        },
-        {
-          "name": "Lubricant Packet",
-          "emsa_min": 2
-        },
-        {
-          "name": "Mac Blades, #0",
-          "emsa_min": 1
-        },
-        {
-          "name": "Mac Blades, #1",
-          "emsa_min": 1
-        },
-        {
-          "name": "Mac Blades, #2",
-          "emsa_min": 1
-        },
-        {
-          "name": "Mac Blades, #3",
-          "emsa_min": 1
-        },
-        {
-          "name": "Mac Blades, #4",
-          "emsa_min": 1
-        },
-        {
-          "name": "Miller Blades, #0",
-          "emsa_min": 1
-        },
-        {
-          "name": "Miller Blades, #1",
-          "emsa_min": 1
-        },
-        {
-          "name": "Miller Blades, #2",
-          "emsa_min": 1
-        },
-        {
-          "name": "Miller Blades, #3",
-          "emsa_min": 1
-        },
-        {
-          "name": "Miller Blades, #4",
-          "emsa_min": 1
-        }
-      ]
-    },
-    {
-      "name": "Electronics",
-      "items": [
-        {
-          "name": "Hamilton T1 Ventilator",
-          "emsa_min": 1
         },
         {
           "name": "Zoll Monitor",
-          "emsa_min": 1
-        },
-        {
-          "name": "Hamilton Humidifier",
-          "emsa_min": 1
-        },
-        {
-          "name": "Jackery",
-          "emsa_min": 1
-        },
-        {
-          "name": "Sapphire Infusion Pumps",
-          "emsa_min": 5
-        },
-        {
-          "name": "Getac Charger",
-          "emsa_min": 1
-        },
-        {
-          "name": "Sapphire Infusion Pump Chargers",
-          "emsa_min": 3
-        },
-        {
-          "name": "Zoll Monitor Charger",
-          "emsa_min": 1
-        },
-        {
-          "name": "Stretcher Battery Charger",
-          "emsa_min": 1
-        },
-        {
-          "name": "Stretcher Battery",
-          "emsa_min": 1
-        },
-        {
-          "name": "Getac",
-          "emsa_min": 1
-        },
-        {
-          "name": "Jackery Charger",
           "emsa_min": 1
         }
       ]

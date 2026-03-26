@@ -7,7 +7,7 @@ with a master list as the canonical item registry.
 Place this file in the root of your GitHub Pages repo (parent of
 data/checklists/{rig}/*.json) and run it.
 
-Requirements: pip3 install PyQt6 pdfplumber
+Requirements: pip3 install PyQt6 PyQt6-WebEngine pdfplumber
 """
 
 import os
@@ -41,13 +41,21 @@ from PyQt6.QtWidgets import (
     QStyledItemDelegate, QCompleter, QDialog, QDialogButtonBox,
     QAbstractItemDelegate
 )
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl
 from PyQt6.QtGui import QAction, QShortcut, QKeySequence, QColor, QBrush
+
+try:
+    from PyQt6.QtWebEngineWidgets import QWebEngineView
+    HAS_WEBENGINE = True
+except ImportError:
+    HAS_WEBENGINE = False
 
 
 class DragDropTree(QTreeWidget):
-    """QTreeWidget with multi-select, drag-drop, and drop signal."""
+    """QTreeWidget with multi-select, drag-drop, inline rename, and state persistence."""
+    ROLE_CLEAN_NAME = Qt.ItemDataRole.UserRole + 1
     itemsDropped = pyqtSignal(list, QTreeWidgetItem)  # (source_items, target_item)
+    itemRenamed = pyqtSignal(QTreeWidgetItem, str)     # (item, new_text)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -57,6 +65,10 @@ class DragDropTree(QTreeWidget):
         self.setDropIndicatorShown(True)
         self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         self.setDefaultDropAction(Qt.DropAction.MoveAction)
+        self._renaming = False
+        self._just_finished_rename = False
+        self._rename_guard = False
+        self.itemChanged.connect(self._on_item_changed)
 
     def dropEvent(self, event):
         target = self.itemAt(event.position().toPoint())
@@ -71,6 +83,96 @@ class DragDropTree(QTreeWidget):
         event.setDropAction(Qt.DropAction.IgnoreAction)
         event.accept()
         self.itemsDropped.emit(source_items, target)
+
+    def startRename(self, item):
+        """Begin inline rename on the given item."""
+        if not item:
+            return
+        try:
+            self._renaming = True
+            self._just_finished_rename = False
+            # Show just the clean name during editing
+            clean = item.data(0, self.ROLE_CLEAN_NAME)
+            if clean:
+                item.setText(0, clean)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
+            self.editItem(item, 0)
+        except RuntimeError:
+            self._renaming = False
+
+    def _on_item_changed(self, item, column):
+        """Handle inline rename completion."""
+        if self._rename_guard:
+            return
+        if self._renaming and column == 0:
+            self._renaming = False
+            self._just_finished_rename = True
+            try:
+                new_text = item.text(0).strip()
+            except RuntimeError:
+                return
+            if new_text:
+                self.itemRenamed.emit(item, new_text)
+
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if self._just_finished_rename:
+                self._just_finished_rename = False
+                return
+            item = self.currentItem()
+            if item:
+                try:
+                    data = item.data(0, Qt.ItemDataRole.UserRole)
+                except RuntimeError:
+                    return
+                if data and data[0] in ("cat", "area", "group"):
+                    item.setExpanded(not item.isExpanded())
+                    return
+        super().keyPressEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        item = self.itemAt(event.pos())
+        if item:
+            # Defer to avoid conflict with itemClicked signal processing
+            event.accept()
+            QTimer.singleShot(0, lambda: self.startRename(item))
+        else:
+            super().mouseDoubleClickEvent(event)
+
+    def save_expanded_state(self):
+        """Save expanded state of all nodes, keyed by UserRole data."""
+        state = set()
+        def _collect(item):
+            if item.isExpanded():
+                data = item.data(0, Qt.ItemDataRole.UserRole)
+                if data:
+                    state.add(str(data))
+            for i in range(item.childCount()):
+                _collect(item.child(i))
+        for i in range(self.topLevelItemCount()):
+            _collect(self.topLevelItem(i))
+        return state
+
+    def restore_expanded_state(self, state):
+        """Restore expanded state from a saved set."""
+        def _restore(item):
+            data = item.data(0, Qt.ItemDataRole.UserRole)
+            if data and str(data) in state:
+                item.setExpanded(True)
+            for i in range(item.childCount()):
+                _restore(item.child(i))
+        for i in range(self.topLevelItemCount()):
+            _restore(self.topLevelItem(i))
+
+    def beginRebuild(self):
+        """Call before clearing and rebuilding tree. Returns state to pass to endRebuild."""
+        self._rename_guard = True
+        return self.save_expanded_state()
+
+    def endRebuild(self, state):
+        """Call after rebuilding tree to restore state."""
+        self.restore_expanded_state(state)
+        self._rename_guard = False
 
 
 class ManagedTableWidget(QTableWidget):
@@ -324,7 +426,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "4.0.0"
+VERSION = "5.0.0"
 # == LEMSA directory ==========================================================
 
 LEMSA_DATA = [
@@ -367,17 +469,17 @@ LEMSA_DATA = [
 # == Data model ==============================================================
 
 class Item:
-    __slots__ = ("name", "qty")
-    def __init__(self, name, qty):
+    __slots__ = ("name", "qty", "group")
+    def __init__(self, name, qty, group=None):
         self.name = name
         self.qty = qty
+        self.group = group
 
 class Category:
-    __slots__ = ("name", "items", "subcategories")
+    __slots__ = ("name", "items")
     def __init__(self, name):
         self.name = name
         self.items = []
-        self.subcategories = []
 
 class Area:
     __slots__ = ("name", "sealable", "child_of", "categories")
@@ -418,12 +520,11 @@ class InventoryFile:
             for cat_obj in area_obj.get("categories", []):
                 cat = Category(cat_obj.get("name", "General"))
                 for item_obj in cat_obj.get("items", []):
-                    cat.items.append(Item(item_obj.get("name", ""), item_obj.get("qty", 1)))
-                for sub_obj in cat_obj.get("subcategories", []):
-                    subcat = Category(sub_obj.get("name", "General"))
-                    for item_obj in sub_obj.get("items", []):
-                        subcat.items.append(Item(item_obj.get("name", ""), item_obj.get("qty", 1)))
-                    cat.subcategories.append(subcat)
+                    cat.items.append(Item(
+                        item_obj.get("name", ""),
+                        item_obj.get("qty", 1),
+                        item_obj.get("group")
+                    ))
                 area.categories.append(cat)
             areas.append(area)
         return areas
@@ -441,14 +542,13 @@ class InventoryFile:
             for cat in area.categories:
                 cat_obj = {"name": cat.name}
                 if cat.items:
-                    cat_obj["items"] = [{"name": it.name, "qty": it.qty} for it in cat.items]
-                if cat.subcategories:
-                    cat_obj["subcategories"] = []
-                    for sub in cat.subcategories:
-                        sub_obj = {"name": sub.name}
-                        if sub.items:
-                            sub_obj["items"] = [{"name": it.name, "qty": it.qty} for it in sub.items]
-                        cat_obj["subcategories"].append(sub_obj)
+                    items = []
+                    for it in cat.items:
+                        item_obj = {"name": it.name, "qty": it.qty}
+                        if it.group:
+                            item_obj["group"] = it.group
+                        items.append(item_obj)
+                    cat_obj["items"] = items
                 cats.append(cat_obj)
             area_obj["categories"] = cats
             result.append(area_obj)
@@ -460,15 +560,7 @@ class InventoryFile:
             f.write("\n")
 
     def all_item_names(self):
-        names = set()
-        for area in self.areas:
-            for cat in area.categories:
-                for item in cat.items:
-                    names.add(item.name)
-                for sub in cat.subcategories:
-                    for item in sub.items:
-                        names.add(item.name)
-        return names
+        return {item.name for area in self.areas for cat in area.categories for item in cat.items}
 
     def rename_item_everywhere(self, old_name, new_name):
         count = 0
@@ -478,11 +570,6 @@ class InventoryFile:
                     if item.name == old_name:
                         item.name = new_name
                         count += 1
-                for sub in cat.subcategories:
-                    for item in sub.items:
-                        if item.name == old_name:
-                            item.name = new_name
-                            count += 1
         return count
 
     def item_locations(self, item_name):
@@ -493,22 +580,17 @@ class InventoryFile:
                     if item.name == item_name:
                         locs.append({"area": area.name, "category": cat.name,
                                      "qty": item.qty, "item_ref": item})
-                for sub in cat.subcategories:
-                    for item in sub.items:
-                        if item.name == item_name:
-                            locs.append({"area": area.name,
-                                         "category": f"{cat.name} > {sub.name}",
-                                         "qty": item.qty, "item_ref": item})
         return locs
 
 
 # == Master list model ========================================================
 
 class MasterItem:
-    __slots__ = ("name", "emsa_min")
-    def __init__(self, name, emsa_min):
+    __slots__ = ("name", "emsa_min", "group")
+    def __init__(self, name, emsa_min, group=None):
         self.name = name
         self.emsa_min = emsa_min
+        self.group = group
 
 class MasterCategory:
     __slots__ = ("name", "items")
@@ -531,21 +613,23 @@ class MasterList:
             for item_obj in cat_obj.get("items", []):
                 cat.items.append(MasterItem(
                     item_obj.get("name", ""),
-                    item_obj.get("emsa_min", 1)
+                    item_obj.get("emsa_min", 1),
+                    item_obj.get("group")
                 ))
             ml.categories.append(cat)
         return ml
 
     def to_json_data(self):
-        return {
-            "categories": [
-                {
-                    "name": cat.name,
-                    "items": [{"name": it.name, "emsa_min": it.emsa_min} for it in cat.items]
-                }
-                for cat in self.categories
-            ]
-        }
+        result = {"categories": []}
+        for cat in self.categories:
+            items = []
+            for it in cat.items:
+                item_obj = {"name": it.name, "emsa_min": it.emsa_min}
+                if it.group:
+                    item_obj["group"] = it.group
+                items.append(item_obj)
+            result["categories"].append({"name": cat.name, "items": items})
+        return result
 
     def save(self):
         with open(self.path, "w", encoding="utf-8") as f:
@@ -569,6 +653,12 @@ class MasterList:
                     item.name = new_name
                     return True
         return False
+
+    def iter_all_items(self):
+        """Yield (cat, item) for every item."""
+        for cat in self.categories:
+            for item in cat.items:
+                yield cat, item
 
 
 # == Application ==============================================================
@@ -706,9 +796,8 @@ class CompareWorker(QThread):
 
         # Compare against master
         master_names = {}
-        for cat in self.app.master_list.categories:
-            for item in cat.items:
-                master_names[item.name.lower()] = (cat.name, item)
+        for cat, item in self.app.master_list.iter_all_items():
+            master_names[item.name.lower()] = (cat.name, item)
 
         new_items = []
         qty_diffs = []
@@ -770,6 +859,13 @@ class App(QMainWindow):
         self._edit_scope = "empty"  # "empty" = skip filled cells, "all" = visit every cell
         self._editing_cell = None   # (row, col) when a cell edit is in progress
         self._ui_state_path = os.path.join(self.base_dir, "data", "ui_state.json")
+
+        # Preview panel debounce timer
+        self._preview_timer = QTimer()
+        self._preview_timer.setSingleShot(True)
+        self._preview_timer.setInterval(500)
+        self._preview_timer.timeout.connect(self._refresh_preview)
+        self._preview_html_cache = None  # cached widget HTML template
 
         self._build_ui()
         self._load_lemsa_config()
@@ -947,11 +1043,14 @@ class App(QMainWindow):
         left_layout.addLayout(sf)
 
         self._m_tree = DragDropTree()
+        self._m_tree.setIndentation(20)
+        self._m_tree.setRootIsDecorated(True)
         self._m_tree.setHeaderHidden(True)
         self._m_tree.itemClicked.connect(self._on_master_select)
         self._m_tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self._m_tree.customContextMenuRequested.connect(self._on_master_right_click)
         self._m_tree.itemsDropped.connect(self._on_master_drop)
+        self._m_tree.itemRenamed.connect(self._on_master_renamed)
         left_layout.addWidget(self._m_tree)
 
         # Placeholder shown when no master list exists
@@ -1193,16 +1292,13 @@ class App(QMainWindow):
         dir_row.addStretch()
         layout.addLayout(dir_row)
 
-        # Row 2: File selection + Simulate
+        # Row 2: File selection
         file_row = QHBoxLayout()
         file_row.addWidget(QLabel("File:"))
         self._file_combo = QComboBox()
         self._file_combo.setMinimumWidth(180)
         self._file_combo.currentTextChanged.connect(self._on_file_selected)
         file_row.addWidget(self._file_combo)
-        sim_btn = QPushButton("Simulate")
-        sim_btn.clicked.connect(self._simulate)
-        file_row.addWidget(sim_btn)
         file_row.addStretch()
         layout.addLayout(file_row)
 
@@ -1226,25 +1322,93 @@ class App(QMainWindow):
         left_layout.addLayout(sf)
 
         self._r_tree = DragDropTree()
+        self._r_tree.setIndentation(20)
+        self._r_tree.setRootIsDecorated(True)
         self._r_tree.setHeaderHidden(True)
         self._r_tree.itemClicked.connect(self._on_rig_tree_select)
         self._r_tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self._r_tree.customContextMenuRequested.connect(self._on_rig_right_click)
         self._r_tree.itemsDropped.connect(self._on_rig_drop)
+        self._r_tree.itemRenamed.connect(self._on_rig_renamed)
         left_layout.addWidget(self._r_tree)
         self._rig_splitter.addWidget(left)
 
+        # Right side: two panels with maximize toggles (mirrors master list tab)
         right = QWidget()
         right_layout = QVBoxLayout(right)
+        right_layout.setContentsMargins(4, 4, 4, 4)
+
+        self._r_right_splitter = QSplitter(Qt.Orientation.Vertical)
+
+        # Top panel: Editor
+        editor_panel = QWidget()
+        ep_layout = QVBoxLayout(editor_panel)
+        ep_layout.setContentsMargins(0, 0, 0, 0)
+        ep_header = QHBoxLayout()
         self._r_detail_title = QLabel("Select an item")
         self._r_detail_title.setStyleSheet("font-size: 14px; font-weight: bold;")
-        right_layout.addWidget(self._r_detail_title)
+        ep_header.addWidget(self._r_detail_title)
+        ep_header.addStretch()
+        self._r_editor_max_btn = QPushButton("⤢")
+        self._r_editor_max_btn.setFixedSize(24, 24)
+        self._r_editor_max_btn.setStyleSheet("padding: 2px;")
+        self._r_editor_max_btn.setToolTip("Maximize/restore editor panel")
+        self._r_editor_max_btn.clicked.connect(lambda: self._toggle_rig_panel("editor"))
+        ep_header.addWidget(self._r_editor_max_btn)
+        ep_layout.addLayout(ep_header)
         self._r_editor_area = QScrollArea()
         self._r_editor_area.setWidgetResizable(True)
         self._r_editor_widget = QWidget()
         self._r_editor_layout = QVBoxLayout(self._r_editor_widget)
         self._r_editor_area.setWidget(self._r_editor_widget)
-        right_layout.addWidget(self._r_editor_area)
+        ep_layout.addWidget(self._r_editor_area)
+        self._r_right_splitter.addWidget(editor_panel)
+
+        # Bottom panel: Preview
+        preview_panel = QWidget()
+        pp_layout = QVBoxLayout(preview_panel)
+        pp_layout.setContentsMargins(0, 0, 0, 0)
+        pp_header = QHBoxLayout()
+        preview_label = QLabel("Preview")
+        preview_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+        pp_header.addWidget(preview_label)
+        pp_header.addStretch()
+        sim_btn = QPushButton("Open in Browser")
+        sim_btn.setToolTip("Open preview in external browser")
+        sim_btn.clicked.connect(self._simulate)
+        pp_header.addWidget(sim_btn)
+        if HAS_WEBENGINE:
+            self._preview_refresh_btn = QPushButton("↻")
+            self._preview_refresh_btn.setFixedSize(24, 24)
+            self._preview_refresh_btn.setStyleSheet("padding: 2px;")
+            self._preview_refresh_btn.setToolTip("Refresh preview")
+            self._preview_refresh_btn.clicked.connect(self._refresh_preview)
+            pp_header.addWidget(self._preview_refresh_btn)
+        self._r_preview_max_btn = QPushButton("⤢")
+        self._r_preview_max_btn.setFixedSize(24, 24)
+        self._r_preview_max_btn.setStyleSheet("padding: 2px;")
+        self._r_preview_max_btn.setToolTip("Maximize/restore preview panel")
+        self._r_preview_max_btn.clicked.connect(lambda: self._toggle_rig_panel("preview"))
+        pp_header.addWidget(self._r_preview_max_btn)
+        pp_layout.addLayout(pp_header)
+
+        if HAS_WEBENGINE:
+            self._preview_web = QWebEngineView()
+            pp_layout.addWidget(self._preview_web)
+        else:
+            self._preview_web = None
+            no_preview = QLabel("Install PyQt6-WebEngine for inline preview")
+            no_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            no_preview.setStyleSheet("color: #6c7086; font-style: italic; padding: 20px;")
+            pp_layout.addWidget(no_preview)
+
+        self._r_right_splitter.addWidget(preview_panel)
+        self._r_right_splitter.setSizes([300, 300])
+        self._r_maximized_panel = None
+        self._r_editor_panel = editor_panel
+        self._r_preview_panel = preview_panel
+
+        right_layout.addWidget(self._r_right_splitter)
         self._rig_splitter.addWidget(right)
         self._rig_splitter.setSizes([400, 500])
 
@@ -1322,7 +1486,9 @@ class App(QMainWindow):
             "master_splitter": self._master_splitter.sizes(),
             "master_right_splitter": self._m_right_splitter.sizes(),
             "rig_splitter": self._rig_splitter.sizes(),
+            "rig_right_splitter": self._r_right_splitter.sizes(),
             "maximized_panel": self._m_maximized_panel,
+            "rig_maximized_panel": self._r_maximized_panel,
             "window_geometry": [self.x(), self.y(), self.width(), self.height()],
         }
         try:
@@ -1354,12 +1520,22 @@ class App(QMainWindow):
         if "master_right_splitter" in state:
             self._m_right_splitter.setSizes(state["master_right_splitter"])
         if "rig_splitter" in state:
-            self._rig_splitter.setSizes(state["rig_splitter"])
+            saved = state["rig_splitter"]
+            if len(saved) == self._rig_splitter.count():
+                self._rig_splitter.setSizes(saved)
+            # else: panel count changed (e.g. preview added), keep defaults
 
         saved_max = state.get("maximized_panel")
         if saved_max in ("editor", "lemsa"):
             self._m_maximized_panel = None  # reset so toggle works
             self._toggle_master_panel(saved_max)
+
+        if "rig_right_splitter" in state:
+            self._r_right_splitter.setSizes(state["rig_right_splitter"])
+        saved_rig_max = state.get("rig_maximized_panel")
+        if saved_rig_max in ("editor", "preview"):
+            self._r_maximized_panel = None  # reset so toggle works
+            self._toggle_rig_panel(saved_rig_max)
 
     def _toggle_master_panel(self, which):
         """Toggle maximize/restore for editor or lemsa panel."""
@@ -1382,6 +1558,28 @@ class App(QMainWindow):
                 self._m_lemsa_panel.show()
                 self._m_lemsa_max_btn.setText("⤡")
             self._m_maximized_panel = which
+
+    def _toggle_rig_panel(self, which):
+        """Toggle maximize/restore for editor or preview panel in rig tab."""
+        if self._r_maximized_panel == which:
+            # Restore
+            self._r_editor_panel.show()
+            self._r_preview_panel.show()
+            self._r_right_splitter.setSizes([300, 300])
+            self._r_maximized_panel = None
+            self._r_editor_max_btn.setText("⤢")
+            self._r_preview_max_btn.setText("⤢")
+        else:
+            # Maximize the requested panel
+            if which == "editor":
+                self._r_preview_panel.hide()
+                self._r_editor_panel.show()
+                self._r_editor_max_btn.setText("⤡")
+            else:
+                self._r_editor_panel.hide()
+                self._r_preview_panel.show()
+                self._r_preview_max_btn.setText("⤡")
+            self._r_maximized_panel = which
 
     def _show_progress(self, maximum=0, text=""):
         """Show the global progress bar with optional text overlay."""
@@ -1480,20 +1678,16 @@ class App(QMainWindow):
         self._rebuild_rig_tree()
         self._clear_editor(self._r_detail_title, self._r_editor_widget, self._r_editor_layout)
         if self.current_file:
-            total = sum(len(c.items) + sum(len(s.items) for s in c.subcategories)
-                        for a in self.current_file.areas for c in a.categories)
+            total = sum(len(c.items) for a in self.current_file.areas for c in a.categories)
             flag = ""
             if self.master_list:
                 mn = self.master_list.all_item_names()
-                nim = 0
-                for a in self.current_file.areas:
-                    for c in a.categories:
-                        nim += sum(1 for i in c.items if i.name not in mn)
-                        for s in c.subcategories:
-                            nim += sum(1 for i in s.items if i.name not in mn)
+                nim = sum(1 for a in self.current_file.areas for c in a.categories
+                          for i in c.items if i.name not in mn)
                 if nim:
                     flag = f", {nim} not in master"
             self._status.showMessage(f"{fname} — {total} items{flag}")
+        self._refresh_preview()
 
     def _duplicate_rig(self):
         if not self.current_rig:
@@ -1543,46 +1737,118 @@ class App(QMainWindow):
         self._m_no_master.setVisible(not has_master)
 
     def _create_master_from_rigs(self):
-        """Create a master list from all loaded rig files, combining duplicates."""
-        if not self.rig_files:
-            self._status.showMessage("No rig files loaded. Select a rig first.")
+        """Show a rig selection dialog, then create a master list from
+        the selected rigs' checklist files."""
+        d = self.checklists_dir
+        if not os.path.isdir(d):
+            self._status.showMessage("Checklists directory not found.")
             return
-        # Collect all items, combining duplicates by taking max qty
-        items = {}  # name_lower -> (name, max_qty)
-        for rf in self.rig_files:
+
+        # Discover all rigs and their JSON files
+        rig_info = {}  # rig_name -> [json_filenames]
+        for name in sorted(os.listdir(d), key=str.lower):
+            rig_dir = os.path.join(d, name)
+            if not os.path.isdir(rig_dir):
+                continue
+            json_files = sorted([f for f in os.listdir(rig_dir) if f.endswith(".json")], key=str.lower)
+            if json_files:
+                rig_info[name] = json_files
+
+        if not rig_info:
+            self._status.showMessage("No rigs with JSON files found.")
+            return
+
+        # Build selection dialog
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Select Rigs for Master List")
+        dlg.setMinimumWidth(400)
+        layout = QVBoxLayout(dlg)
+        layout.addWidget(QLabel("Select which rigs to include:"))
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll_widget = QWidget()
+        scroll_layout = QVBoxLayout(scroll_widget)
+
+        checkboxes = {}  # rig_name -> QCheckBox
+        for rig_name, files in rig_info.items():
+            file_list = ", ".join(files)
+            cb = QCheckBox(f"{rig_name}  ({len(files)} files: {file_list})")
+            cb.setChecked(True)
+            scroll_layout.addWidget(cb)
+            checkboxes[rig_name] = cb
+
+        scroll_layout.addStretch()
+        scroll.setWidget(scroll_widget)
+        layout.addWidget(scroll)
+
+        # Select all / none
+        btn_row = QHBoxLayout()
+        select_all = QPushButton("Select All")
+        select_all.clicked.connect(lambda: [cb.setChecked(True) for cb in checkboxes.values()])
+        btn_row.addWidget(select_all)
+        select_none = QPushButton("Select None")
+        select_none.clicked.connect(lambda: [cb.setChecked(False) for cb in checkboxes.values()])
+        btn_row.addWidget(select_none)
+        btn_row.addStretch()
+        layout.addLayout(btn_row)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok |
+                                   QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dlg.accept)
+        buttons.rejected.connect(dlg.reject)
+        layout.addWidget(buttons)
+
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        selected_rigs = [name for name, cb in checkboxes.items() if cb.isChecked()]
+        if not selected_rigs:
+            self._status.showMessage("No rigs selected.")
+            return
+
+        # Load inventory files from selected rigs
+        rig_files = []
+        for rig_name in selected_rigs:
+            rig_dir = os.path.join(d, rig_name)
+            for fn in rig_info[rig_name]:
+                try:
+                    rig_files.append(InventoryFile.from_file(os.path.join(rig_dir, fn)))
+                except Exception:
+                    pass
+
+        if not rig_files:
+            self._status.showMessage("No items found in selected rigs.")
+            return
+
+        # Collect all items: name_lower -> (name, max_qty, group_or_None)
+        items = {}
+        for rf in rig_files:
             for area in rf.areas:
                 for cat in area.categories:
                     for item in cat.items:
                         key = item.name.lower()
                         if key in items:
-                            existing_name, existing_qty = items[key]
-                            items[key] = (existing_name, max(existing_qty, item.qty))
+                            existing_name, existing_qty, existing_group = items[key]
+                            items[key] = (existing_name, max(existing_qty, item.qty),
+                                          item.group or existing_group)
                         else:
-                            items[key] = (item.name, item.qty)
-                    for sub in cat.subcategories:
-                        for item in sub.items:
-                            key = item.name.lower()
-                            if key in items:
-                                existing_name, existing_qty = items[key]
-                                items[key] = (existing_name, max(existing_qty, item.qty))
-                            else:
-                                items[key] = (item.name, item.qty)
-        if not items:
-            self._status.showMessage("No items found in rig files.")
-            return
+                            items[key] = (item.name, item.qty, item.group)
+
         # Create master list with single Uncategorized category
         self.master_list = MasterList(self.master_list_path)
         uncat = MasterCategory("Uncategorized")
-        for name, qty in sorted(items.values(), key=lambda x: x[0].lower()):
-            uncat.items.append(MasterItem(name, qty))
+        for name, qty, group in sorted(items.values(), key=lambda x: x[0].lower()):
+            uncat.items.append(MasterItem(name, qty, group))
         self.master_list.categories.append(uncat)
+        n_grouped = sum(1 for it in uncat.items if it.group)
         self.dirty_master = True
         self._update_save_state()
         self._rebuild_master_tree()
         self._update_master_visibility()
         self._status.showMessage(
-            f"Created master list with {len(uncat.items)} items from "
-            f"{len(self.rig_files)} rig file(s)")
+            f"Created master list with {len(uncat.items)} items "
+            f"({n_grouped} grouped) from {len(selected_rigs)} rig(s)")
 
     # -- LEMSA config --------------------------------------------------------
 
@@ -2151,58 +2417,60 @@ class App(QMainWindow):
     # -- Master list tree ----------------------------------------------------
 
     def _rebuild_master_tree(self):
-        expanded = set()
-        for i in range(self._m_tree.topLevelItemCount()):
-            item = self._m_tree.topLevelItem(i)
-            if item and item.isExpanded():
-                expanded.add(item.text(0))
+        saved = self._m_tree.beginRebuild()
         self._m_tree.clear()
-        if not self.master_list: return
+        if not self.master_list:
+            self._m_tree.endRebuild(saved)
+            return
         q = self._m_search.text().strip().lower()
+        CN = DragDropTree.ROLE_CLEAN_NAME
+
         for ci, cat in enumerate(self.master_list.categories):
-            show = [(ii, it) for ii, it in enumerate(cat.items) if not q or q in it.name.lower()]
+            show = [(ii, it) for ii, it in enumerate(cat.items) if not q or q in it.name.lower()
+                    or (it.group and q in it.group.lower())]
             if not show and q: continue
 
-            groups = {}
+            # Separate into groups and ungrouped
+            groups = {}  # group_name -> [(ii, item)]
             ungrouped = []
             for ii, it in show:
-                if ", " in it.name:
-                    prefix, suffix = it.name.split(", ", 1)
-                    groups.setdefault(prefix, []).append((ii, it, suffix))
+                if it.group:
+                    groups.setdefault(it.group, []).append((ii, it))
                 else:
                     ungrouped.append((ii, it))
-            real_groups = {}
-            for prefix, members in groups.items():
-                if len(members) >= 2:
-                    real_groups[prefix] = members
-                else:
-                    for ii, it, _ in members:
-                        ungrouped.append((ii, it))
 
-            total = len(ungrouped) + sum(len(m) for m in real_groups.values())
+            total = len(show)
             cat_text = f"📂 {cat.name} ({total})"
             cat_item = QTreeWidgetItem([cat_text])
             cat_item.setData(0, Qt.ItemDataRole.UserRole, ("cat", ci))
+            cat_item.setData(0, CN, cat.name)
             self._m_tree.addTopLevelItem(cat_item)
-            if cat_text in expanded or q:
+            if q:
                 cat_item.setExpanded(True)
 
-            for gi, prefix in enumerate(sorted(real_groups.keys(), key=str.lower)):
-                members = real_groups[prefix]
-                g_text = f"{prefix} ({len(members)})"
+            # Group nodes
+            for group_name in sorted(groups.keys(), key=str.lower):
+                members = groups[group_name]
+                g_text = f"📁 {group_name} ({len(members)})"
                 g_item = QTreeWidgetItem([g_text])
-                g_item.setData(0, Qt.ItemDataRole.UserRole, ("group", ci, gi, prefix))
+                g_item.setData(0, Qt.ItemDataRole.UserRole, ("group", ci, group_name))
+                g_item.setData(0, CN, group_name)
                 cat_item.addChild(g_item)
                 if q: g_item.setExpanded(True)
-                for ii, it, suffix in members:
-                    i_item = QTreeWidgetItem([f"{suffix}  (min {it.emsa_min})"])
+                for ii, it in members:
+                    i_item = QTreeWidgetItem([f"{it.name}  (min {it.emsa_min})"])
                     i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ci, ii))
+                    i_item.setData(0, CN, it.name)
                     g_item.addChild(i_item)
 
+            # Ungrouped items
             for ii, it in sorted(ungrouped, key=lambda x: x[1].name.lower()):
                 i_item = QTreeWidgetItem([f"{it.name}  (min {it.emsa_min})"])
                 i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ci, ii))
+                i_item.setData(0, CN, it.name)
                 cat_item.addChild(i_item)
+
+        self._m_tree.endRebuild(saved)
 
     def _on_master_select(self, item):
         data = item.data(0, Qt.ItemDataRole.UserRole)
@@ -2214,32 +2482,61 @@ class App(QMainWindow):
             ii = data[2]
             self._show_master_item_editor(cat, cat.items[ii])
         elif kind == "group":
-            prefix = data[3]
-            members = [it for it in cat.items if ", " in it.name and it.name.split(", ", 1)[0] == prefix]
-            self._show_master_group_editor(cat, prefix, members)
+            group_name = data[2]
+            members = [it for it in cat.items if it.group == group_name]
+            self._show_master_group_editor(cat, group_name, members)
         elif kind == "cat":
             self._show_master_cat_editor(cat)
+
+    def _on_master_renamed(self, tree_item, new_text):
+        """Handle inline rename in master tree."""
+        data = tree_item.data(0, Qt.ItemDataRole.UserRole)
+        if not data: return
+        kind = data[0]
+        ci = data[1]
+        cat = self.master_list.categories[ci]
+        if kind == "item":
+            ii = data[2]
+            item = cat.items[ii]
+            old_name = item.name
+            if new_text != old_name:
+                item.name = new_text
+                total = sum(rf.rename_item_everywhere(old_name, new_text) for rf in self.rig_files)
+                if total:
+                    self.dirty = True
+                self.dirty_master = True
+                self._update_save_state()
+        elif kind == "group":
+            old_group = data[2]
+            for it in cat.items:
+                if it.group == old_group:
+                    it.group = new_text
+            self.dirty_master = True
+            self._update_save_state()
+        elif kind == "cat":
+            cat.name = new_text
+            self.dirty_master = True
+            self._update_save_state()
+        self._rebuild_master_tree()
 
     def _show_master_item_editor(self, cat, item):
         self._clear_layout(self._m_editor_layout)
         f = self._m_editor_layout
-        has_prefix = ", " in item.name
-        if has_prefix:
-            prefix, suffix = item.name.split(", ", 1)
-            display = suffix
-            self._m_detail_title.setText(f"Edit Master Item — {cat.name} › {prefix}")
-        else:
-            prefix = None
-            display = item.name
-            self._m_detail_title.setText(f"Edit Master Item — {cat.name}")
+        title_parts = [cat.name]
+        if item.group:
+            title_parts.append(item.group)
+        self._m_detail_title.setText(f"Edit Master Item — {'  ›  '.join(title_parts)}")
 
         form = QFormLayout()
-        name_edit = QLineEdit(display)
+        name_edit = QLineEdit(item.name)
         form.addRow("Item Name:", name_edit)
         qty_spin = QSpinBox()
         qty_spin.setRange(0, 9999)
         qty_spin.setValue(item.emsa_min)
         form.addRow("EMSA Min Qty:", qty_spin)
+        group_edit = QLineEdit(item.group or "")
+        group_edit.setPlaceholderText("(none)")
+        form.addRow("Group:", group_edit)
         cat_combo = QComboBox()
         cat_combo.addItems([c.name for c in self.master_list.categories])
         cat_combo.setCurrentText(cat.name)
@@ -2265,9 +2562,8 @@ class App(QMainWindow):
         old_name = item.name
 
         def _apply():
-            new_suffix = name_edit.text().strip()
-            if not new_suffix: return
-            new_name = f"{prefix}, {new_suffix}" if prefix else new_suffix
+            new_name = name_edit.text().strip()
+            if not new_name: return
             if new_name != old_name:
                 item.name = new_name
                 total = sum(rf.rename_item_everywhere(old_name, new_name) for rf in self.rig_files)
@@ -2275,6 +2571,7 @@ class App(QMainWindow):
                     self._status.showMessage(f"Renamed '{old_name}' → '{new_name}' in {total} loc(s)")
                 self.dirty = True
             item.emsa_min = qty_spin.value()
+            item.group = group_edit.text().strip() or None
             new_cat = cat_combo.currentText()
             if new_cat != cat.name:
                 cat.items.remove(item)
@@ -2299,39 +2596,45 @@ class App(QMainWindow):
             self.dirty_master = True
             self._update_save_state()
             self._rebuild_master_tree()
+            self._update_master_visibility()
             self._clear_editor(self._m_detail_title, self._m_editor_widget, self._m_editor_layout)
         del_btn = QPushButton("Delete from Master")
         del_btn.clicked.connect(_delete)
         f.addWidget(del_btn)
         f.addStretch()
 
-    def _show_master_group_editor(self, cat, prefix, members):
+    def _show_master_group_editor(self, cat, group_name, members):
         self._clear_layout(self._m_editor_layout)
         self._m_detail_title.setText(f"Edit Group — {cat.name}")
         f = self._m_editor_layout
         form = QFormLayout()
-        name_edit = QLineEdit(prefix)
+        name_edit = QLineEdit(group_name)
         form.addRow("Group Name:", name_edit)
         form.addRow("Items:", QLabel(str(len(members))))
         f.addLayout(form)
-        old_prefix = prefix
+        old_group = group_name
 
         def _apply():
-            new_prefix = name_edit.text().strip()
-            if not new_prefix or new_prefix == old_prefix: return
+            new_group = name_edit.text().strip()
+            if not new_group or new_group == old_group: return
+            # Update group field on all members, and propagate to rig files
             total_renames = 0
             for it in members:
-                old_full = it.name
-                suffix = old_full.split(", ", 1)[1]
-                new_full = f"{new_prefix}, {suffix}"
-                it.name = new_full
-                total_renames += sum(rf.rename_item_everywhere(old_full, new_full) for rf in self.rig_files)
+                it.group = new_group
+                # Also update rig items with the same name
+                for rf in self.rig_files:
+                    for area in rf.areas:
+                        for rcat in area.categories:
+                            for ri in rcat.items:
+                                if ri.name == it.name and ri.group == old_group:
+                                    ri.group = new_group
+                                    total_renames += 1
             self.dirty_master = True
             self.dirty = bool(total_renames) or self.dirty
             self._update_save_state()
             self._rebuild_master_tree()
             self._rebuild_rig_tree()
-            self._status.showMessage(f"Renamed group '{old_prefix}' → '{new_prefix}'")
+            self._status.showMessage(f"Renamed group '{old_group}' → '{new_group}'")
 
         btn = QPushButton("Apply")
         btn.clicked.connect(_apply)
@@ -2339,12 +2642,13 @@ class App(QMainWindow):
 
         def _delete():
             if QMessageBox.question(self, "Delete Group",
-                    f"Delete '{prefix}' and all {len(members)} items?") == QMessageBox.StandardButton.Yes:
+                    f"Delete '{group_name}' and all {len(members)} items?") == QMessageBox.StandardButton.Yes:
                 for it in list(members):
                     cat.items.remove(it)
                 self.dirty_master = True
                 self._update_save_state()
                 self._rebuild_master_tree()
+                self._update_master_visibility()
                 self._clear_editor(self._m_detail_title, self._m_editor_widget, self._m_editor_layout)
         del_btn = QPushButton("Delete Group")
         del_btn.clicked.connect(_delete)
@@ -2359,6 +2663,9 @@ class App(QMainWindow):
         name_edit = QLineEdit(cat.name)
         form.addRow("Name:", name_edit)
         form.addRow("Items:", QLabel(str(len(cat.items))))
+        groups = {it.group for it in cat.items if it.group}
+        if groups:
+            form.addRow("Groups:", QLabel(", ".join(sorted(groups))))
         f.addLayout(form)
 
         def _apply():
@@ -2380,12 +2687,16 @@ class App(QMainWindow):
         new_qty.setRange(0, 9999)
         new_qty.setValue(1)
         form2.addRow("EMSA Min:", new_qty)
+        new_group = QLineEdit()
+        new_group.setPlaceholderText("(none)")
+        form2.addRow("Group:", new_group)
         f.addLayout(form2)
 
         def _add():
             n = new_name.text().strip()
             if n:
-                cat.items.append(MasterItem(n, new_qty.value()))
+                g = new_group.text().strip() or None
+                cat.items.append(MasterItem(n, new_qty.value(), g))
                 new_name.clear()
                 self.dirty_master = True
                 self._update_save_state()
@@ -2402,7 +2713,7 @@ class App(QMainWindow):
 
         # Classify all selected nodes
         selected_items = []   # (cat, item)
-        selected_groups = []  # (cat, prefix, [items])
+        selected_groups = []  # (cat, group_name, [items])
         selected_cats = []    # (cat,)
         for sel in selected:
             d = sel.data(0, Qt.ItemDataRole.UserRole)
@@ -2415,10 +2726,9 @@ class App(QMainWindow):
                 ii = d[2]
                 selected_items.append((cat, cat.items[ii]))
             elif kind == "group":
-                prefix = d[3]
-                members = [it for it in cat.items
-                           if ", " in it.name and it.name.split(", ", 1)[0] == prefix]
-                selected_groups.append((cat, prefix, members))
+                group_name = d[2]
+                members = [it for it in cat.items if it.group == group_name]
+                selected_groups.append((cat, group_name, members))
             elif kind == "cat":
                 selected_cats.append(cat)
 
@@ -2456,19 +2766,20 @@ class App(QMainWindow):
                     menu.addAction(f"Delete '{it.name}'", lambda: self._del_master_item(cat, it))
                 elif kind == "cat":
                     menu.addAction("Add Item…", lambda: self._qadd_master_item(cat))
+                    menu.addAction("Add Group…", lambda: self._qadd_master_group(cat))
                     menu.addSeparator()
                     menu.addAction("Add Category…", self._add_master_cat)
                     menu.addSeparator()
                     menu.addAction(f"Delete '{cat.name}'", lambda: self._del_master_cat(cat))
                 elif kind == "group":
-                    menu.addAction("Add Item…", lambda: self._qadd_master_item(cat))
+                    group_name = data[2]
+                    members = [it for it in cat.items if it.group == group_name]
+                    menu.addAction("Add Item to Group…",
+                        lambda gn=group_name: self._qadd_master_item_to_group(cat, gn))
                     menu.addSeparator()
-                    prefix = data[3]
-                    members = [it for it in cat.items
-                               if ", " in it.name and it.name.split(", ", 1)[0] == prefix]
-                    menu.addAction(f"Delete group '{prefix}' ({len(members)} items)",
-                                   lambda c=cat, m=list(members), p=prefix:
-                                       self._delete_selected_master_nodes([], [(c, p, m)], []))
+                    menu.addAction(f"Delete group '{group_name}' ({len(members)} items)",
+                                   lambda c=cat, gn=group_name, m=list(members):
+                                       self._delete_selected_master_nodes([], [(c, gn, m)], []))
 
         if not item:
             menu.addAction("Add Category…", self._add_master_cat)
@@ -2505,29 +2816,27 @@ class App(QMainWindow):
                 lambda il=list(items_list): self._duplicate_selected_to_master_group(il))
 
     def _add_selected_to_master_group(self, items_list):
-        """Add items to a comma-prefix group."""
-        group_name, ok = QInputDialog.getText(self, "Add to Group",
-            "Group name (items will be renamed to 'Group, ItemName'):")
+        """Set the group field on selected items."""
+        group_name, ok = QInputDialog.getText(self, "Set Group",
+            "Group name (items will be tagged with this group):")
         if not ok or not group_name.strip():
             return
-        prefix = group_name.strip()
+        group = group_name.strip()
         for cat, item in items_list:
-            # If already has a prefix, replace it; otherwise add it
-            if ", " in item.name:
-                _, suffix = item.name.split(", ", 1)
-            else:
-                suffix = item.name
-            old_name = item.name
-            item.name = f"{prefix}, {suffix}"
-            # Propagate to rig files
+            item.group = group
+            # Also update matching rig items
             for rf in self.rig_files:
-                rf.rename_item_everywhere(old_name, item.name)
+                for area in rf.areas:
+                    for rcat in area.categories:
+                        for ri in rcat.items:
+                            if ri.name == item.name:
+                                ri.group = group
         self.dirty_master = True
         self.dirty = True
         self._update_save_state()
         self._rebuild_master_tree()
         self._rebuild_rig_tree()
-        self._status.showMessage(f"Added {len(items_list)} item(s) to group '{prefix}'")
+        self._status.showMessage(f"Set group '{group}' on {len(items_list)} item(s)")
 
     def _move_selected_to_master_cat_by_name(self, items_list, cat_name):
         """Move items to a named category."""
@@ -2605,32 +2914,26 @@ class App(QMainWindow):
         self._duplicate_selected_to_master_cat(items_list, name)
 
     def _duplicate_selected_to_master_group(self, items_list):
-        """Duplicate items into a comma-prefix group."""
+        """Duplicate items with a group tag."""
         group_name, ok = QInputDialog.getText(self, "Duplicate to Group",
-            "Group name (items will be duplicated as 'Group, ItemName'):")
+            "Group name for duplicated items:")
         if not ok or not group_name.strip():
             return
-        prefix = group_name.strip()
+        group = group_name.strip()
         duped = 0
         for cat, item in items_list:
-            if ", " in item.name:
-                _, suffix = item.name.split(", ", 1)
-            else:
-                suffix = item.name
-            new_name = f"{prefix}, {suffix}"
             # Avoid exact duplicates in same category
-            if not any(it.name.lower() == new_name.lower() for it in cat.items):
-                cat.items.append(MasterItem(new_name, item.emsa_min))
+            if not any(it.name.lower() == item.name.lower() and it.group == group for it in cat.items):
+                cat.items.append(MasterItem(item.name, item.emsa_min, group))
                 duped += 1
         if duped:
             self.dirty_master = True
             self._update_save_state()
             self._rebuild_master_tree()
-            self._status.showMessage(f"Duplicated {duped} item(s) to group '{prefix}'")
+            self._status.showMessage(f"Duplicated {duped} item(s) to group '{group}'")
 
     def _delete_selected_master_nodes(self, items_list, groups_list, cats_list):
         """Delete any mix of selected items, groups, and categories from master."""
-        # Count total items being removed
         item_count = len(items_list)
         group_item_count = sum(len(members) for _, _, members in groups_list)
         cat_item_count = sum(len(c.items) for c in cats_list)
@@ -2649,18 +2952,15 @@ class App(QMainWindow):
                     f"Delete {detail}?") != QMessageBox.StandardButton.Yes:
                 return
 
-        # Delete items
         for cat, item in items_list:
             if item in cat.items:
                 cat.items.remove(item)
 
-        # Delete groups (all items with matching prefix)
-        for cat, prefix, members in groups_list:
+        for cat, group_name, members in groups_list:
             for it in list(members):
                 if it in cat.items:
                     cat.items.remove(it)
 
-        # Delete categories
         for cat in cats_list:
             if cat in self.master_list.categories:
                 self.master_list.categories.remove(cat)
@@ -2668,6 +2968,7 @@ class App(QMainWindow):
         self.dirty_master = True
         self._update_save_state()
         self._rebuild_master_tree()
+        self._update_master_visibility()
         self._clear_editor(self._m_detail_title, self._m_editor_widget, self._m_editor_layout)
         self._status.showMessage(f"Deleted {detail}")
 
@@ -2679,8 +2980,6 @@ class App(QMainWindow):
         if not target_data:
             return
 
-        # Find the target category
-        target_kind = target_data[0]
         target_ci = target_data[1]
         target_cat = self.master_list.categories[target_ci]
 
@@ -2701,10 +3000,8 @@ class App(QMainWindow):
                     target_cat.items.append(item)
                     moved += 1
             elif src_kind == "group":
-                # Move all items in the group
-                prefix = src_data[3]
-                group_items = [it for it in src_cat.items
-                              if ", " in it.name and it.name.split(", ", 1)[0] == prefix]
+                group_name = src_data[2]
+                group_items = [it for it in src_cat.items if it.group == group_name]
                 if src_cat is not target_cat:
                     for it in group_items:
                         src_cat.items.remove(it)
@@ -2741,6 +3038,7 @@ class App(QMainWindow):
         self.dirty_master = True
         self._update_save_state()
         self._rebuild_master_tree()
+        self._update_master_visibility()
 
     def _del_master_cat(self, cat):
         if cat.items:
@@ -2751,72 +3049,113 @@ class App(QMainWindow):
         self.dirty_master = True
         self._update_save_state()
         self._rebuild_master_tree()
+        self._update_master_visibility()
 
     # -- Rig tree ------------------------------------------------------------
 
     def _rebuild_rig_tree(self):
+        saved = self._r_tree.beginRebuild()
         self._r_tree.clear()
-        if not self.current_file: return
+        if not self.current_file:
+            self._r_tree.endRebuild(saved)
+            return
         q = self._r_search.text().strip().lower()
         mn = self.master_list.all_item_names() if self.master_list else set()
+        CN = DragDropTree.ROLE_CLEAN_NAME
 
-        def _add_item_nodes(parent_node, items, data_prefix):
-            """Add item tree nodes. data_prefix is e.g. ("item", ai, ci) or ("subitem", ai, ci, si)."""
-            matches = [(ii, it) for ii, it in enumerate(items) if not q or q in it.name.lower()]
-            for ii, it in matches:
-                ok = it.name in mn
-                flag = "" if ok else " ⚠"
-                i_item = QTreeWidgetItem([f"{it.name}  ×{it.qty}{flag}"])
-                i_item.setData(0, Qt.ItemDataRole.UserRole, data_prefix + (ii,))
-                if not ok:
-                    i_item.setForeground(0, QBrush(QColor("#f38ba8")))
-                parent_node.addChild(i_item)
-            return len(matches)
+        # Build area nodes, then nest children under parents
+        area_nodes = {}  # ai -> QTreeWidgetItem
+        child_areas = []  # [(ai, area)] — deferred until parents exist
 
-        for ai, area in enumerate(self.current_file.areas):
-            area_item = None
+        def _build_area_content(area_item, ai, area):
+            """Populate an area node with categories, groups, and items."""
             for ci, cat in enumerate(area.categories):
-                # Check if this category or its subcategories have matching items
-                cat_matches = [(ii, it) for ii, it in enumerate(cat.items) if not q or q in it.name.lower()]
-                sub_matches = {}
-                for si, sub in enumerate(cat.subcategories):
-                    sm = [(ii, it) for ii, it in enumerate(sub.items) if not q or q in it.name.lower()]
-                    if sm:
-                        sub_matches[si] = sm
-
-                if not cat_matches and not sub_matches:
+                matches = [(ii, it) for ii, it in enumerate(cat.items)
+                           if not q or q in it.name.lower() or (it.group and q in it.group.lower())]
+                if not matches:
                     continue
 
-                if area_item is None:
-                    seal = " [sealable]" if area.sealable else ""
-                    child = f" (child of {area.child_of})" if area.child_of else ""
-                    area_item = QTreeWidgetItem([f"📦 {area.name}{seal}{child}"])
-                    area_item.setData(0, Qt.ItemDataRole.UserRole, ("area", ai))
-                    self._r_tree.addTopLevelItem(area_item)
-                    if q: area_item.setExpanded(True)
-
-                total = len(cat_matches) + sum(len(v) for v in sub_matches.values())
-                cat_item = QTreeWidgetItem([f"📂 {cat.name} ({total})"])
+                cat_item = QTreeWidgetItem([f"📂 {cat.name} ({len(matches)})"])
                 cat_item.setData(0, Qt.ItemDataRole.UserRole, ("cat", ai, ci))
+                cat_item.setData(0, CN, cat.name)
                 area_item.addChild(cat_item)
                 if q: cat_item.setExpanded(True)
 
-                # Direct items
-                _add_item_nodes(cat_item, cat.items, ("item", ai, ci))
+                # Separate into groups and ungrouped
+                groups = {}
+                ungrouped = []
+                for ii, it in matches:
+                    if it.group:
+                        groups.setdefault(it.group, []).append((ii, it))
+                    else:
+                        ungrouped.append((ii, it))
 
-                # Subcategories
-                for si, sub in enumerate(cat.subcategories):
-                    if si not in sub_matches and q:
-                        continue
-                    sub_count = len(sub_matches.get(si, []))
-                    if not sub_count and q:
-                        continue
-                    sub_count_display = sub_count if q else len(sub.items)
-                    sub_item = QTreeWidgetItem([f"📁 {sub.name} ({sub_count_display})"])
-                    sub_item.setData(0, Qt.ItemDataRole.UserRole, ("subcat", ai, ci, si))
-                    cat_item.addChild(sub_item)
-                    if q: sub_item.setExpanded(True)
-                    _add_item_nodes(sub_item, sub.items, ("subitem", ai, ci, si))
+                # Group nodes
+                for group_name in sorted(groups.keys(), key=str.lower):
+                    members = groups[group_name]
+                    g_item = QTreeWidgetItem([f"📁 {group_name} ({len(members)})"])
+                    g_item.setData(0, Qt.ItemDataRole.UserRole, ("group", ai, ci, group_name))
+                    g_item.setData(0, CN, group_name)
+                    cat_item.addChild(g_item)
+                    if q: g_item.setExpanded(True)
+                    for ii, it in members:
+                        ok = it.name in mn
+                        flag = "" if ok else "  ⚠"
+                        i_item = QTreeWidgetItem([f"{it.name}  ×{it.qty}{flag}"])
+                        i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ai, ci, ii))
+                        i_item.setData(0, CN, it.name)
+                        if not ok:
+                            i_item.setForeground(0, QBrush(QColor("#f38ba8")))
+                        g_item.addChild(i_item)
+
+                # Ungrouped items
+                for ii, it in ungrouped:
+                    ok = it.name in mn
+                    flag = "" if ok else "  ⚠"
+                    i_item = QTreeWidgetItem([f"{it.name}  ×{it.qty}{flag}"])
+                    i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ai, ci, ii))
+                    i_item.setData(0, CN, it.name)
+                    if not ok:
+                        i_item.setForeground(0, QBrush(QColor("#f38ba8")))
+                    cat_item.addChild(i_item)
+
+            return area_item.childCount() > 0
+
+        # First pass: create all area nodes
+        for ai, area in enumerate(self.current_file.areas):
+            seal = "  🔒" if area.sealable else ""
+            area_item = QTreeWidgetItem([f"📦 {area.name}{seal}"])
+            area_item.setData(0, Qt.ItemDataRole.UserRole, ("area", ai))
+            area_item.setData(0, CN, area.name)
+            has_content = _build_area_content(area_item, ai, area)
+
+            if not has_content and q:
+                continue  # skip empty areas during search
+
+            area_nodes[ai] = area_item
+            if area.child_of:
+                child_areas.append((ai, area))
+            else:
+                self._r_tree.addTopLevelItem(area_item)
+                if q: area_item.setExpanded(True)
+
+        # Second pass: nest child areas under parents
+        for ai, area in child_areas:
+            parent_node = None
+            for pai, parea in enumerate(self.current_file.areas):
+                if parea.name == area.child_of and pai in area_nodes:
+                    parent_node = area_nodes[pai]
+                    break
+            if parent_node:
+                parent_node.addChild(area_nodes[ai])
+                if q: parent_node.setExpanded(True)
+            else:
+                # Parent not found — add as top-level
+                self._r_tree.addTopLevelItem(area_nodes[ai])
+            if q and ai in area_nodes:
+                area_nodes[ai].setExpanded(True)
+
+        self._r_tree.endRebuild(saved)
 
     def _on_rig_tree_select(self, item):
         data = item.data(0, Qt.ItemDataRole.UserRole)
@@ -2829,21 +3168,42 @@ class App(QMainWindow):
         elif kind == "cat":
             ci = data[2]
             self._show_rig_cat_editor(area, area.categories[ci])
-        elif kind == "subcat":
-            ci, si = data[2], data[3]
-            cat = area.categories[ci]
-            self._show_rig_subcat_editor(area, cat, cat.subcategories[si])
+        elif kind == "group":
+            ci = data[2]
+            group_name = data[3]
+            self._show_rig_group_editor(area, area.categories[ci], group_name)
         elif kind == "item":
             ci, ii = data[2], data[3]
             cat = area.categories[ci]
             self._show_rig_item_editor(area, cat, cat.items[ii])
-        elif kind == "subitem":
-            ci, si, ii = data[2], data[3], data[4]
-            subcat = area.categories[ci].subcategories[si]
-            self._show_rig_item_editor(area, subcat, subcat.items[ii])
+
+    def _on_rig_renamed(self, tree_item, new_text):
+        """Handle inline rename in rig tree."""
+        data = tree_item.data(0, Qt.ItemDataRole.UserRole)
+        if not data: return
+        kind = data[0]
+        ai = data[1]
+        area = self.current_file.areas[ai]
+        if kind == "item":
+            ci, ii = data[2], data[3]
+            item = area.categories[ci].items[ii]
+            item.name = new_text
+        elif kind == "cat":
+            ci = data[2]
+            area.categories[ci].name = new_text
+        elif kind == "group":
+            ci = data[2]
+            old_group = data[3]
+            for it in area.categories[ci].items:
+                if it.group == old_group:
+                    it.group = new_text
+        elif kind == "area":
+            area.name = new_text
+        self._set_dirty()
+        self._rebuild_rig_tree()
 
     def _show_rig_item_editor(self, area, cat, item):
-        """Edit an item. `cat` may be a top-level Category or a subcategory."""
+        """Edit an item."""
         self._clear_layout(self._r_editor_layout)
         self._r_detail_title.setText(f"Edit Item — {area.name} › {cat.name}")
         f = self._r_editor_layout
@@ -2861,26 +3221,20 @@ class App(QMainWindow):
         qty_spin.setRange(0, 9999)
         qty_spin.setValue(item.qty)
         form.addRow("Qty:", qty_spin)
+        group_edit = QLineEdit(item.group or "")
+        group_edit.setPlaceholderText("(none)")
+        form.addRow("Group:", group_edit)
 
-        # Build destinations including subcategories
-        dests = {}  # label -> items list (the list the item would be appended to)
+        # Build destinations
+        dests = {}
         dest_combo = QComboBox()
-        cur = None
+        cur = f"{area.name} › {cat.name}"
         for a in self.current_file.areas:
             for c in a.categories:
                 lb = f"{a.name} › {c.name}"
                 dest_combo.addItem(lb)
-                dests[lb] = c.items
-                if c is cat:
-                    cur = lb
-                for sub in c.subcategories:
-                    slb = f"{a.name} › {c.name} › {sub.name}"
-                    dest_combo.addItem(slb)
-                    dests[slb] = sub.items
-                    if sub is cat:
-                        cur = slb
-        if cur:
-            dest_combo.setCurrentText(cur)
+                dests[lb] = (a, c)
+        dest_combo.setCurrentText(cur)
         form.addRow("Move to:", dest_combo)
         f.addLayout(form)
 
@@ -2889,10 +3243,11 @@ class App(QMainWindow):
             if not nn: return
             item.name = nn
             item.qty = qty_spin.value()
+            item.group = group_edit.text().strip() or None
             dl = dest_combo.currentText()
             if dl != cur and dl in dests:
                 cat.items.remove(item)
-                dests[dl].append(item)
+                dests[dl][1].items.append(item)
             self.dirty = True
             self._update_save_state()
             self._rebuild_rig_tree()
@@ -2993,31 +3348,21 @@ class App(QMainWindow):
         item_qty.setRange(0, 9999)
         item_qty.setValue(1)
         form2.addRow("Qty:", item_qty)
+        item_group = QLineEdit()
+        item_group.setPlaceholderText("(none)")
+        form2.addRow("Group:", item_group)
         f.addLayout(form2)
 
         def _add():
             n = item_edit.text().strip()
             if n:
-                cat.items.append(Item(n, item_qty.value()))
+                g = item_group.text().strip() or None
+                cat.items.append(Item(n, item_qty.value(), g))
                 item_edit.clear()
                 self.dirty = True
                 self._update_save_state()
                 self._rebuild_rig_tree()
         f.addWidget(QPushButton("Add Item", clicked=_add))
-
-        # Add Subcategory
-        f.addWidget(QLabel("<b>Add Subcategory:</b>"))
-        subcat_edit = QLineEdit()
-        f.addWidget(subcat_edit)
-        def _add_subcat():
-            n = subcat_edit.text().strip()
-            if n:
-                cat.subcategories.append(Category(n))
-                subcat_edit.clear()
-                self.dirty = True
-                self._update_save_state()
-                self._rebuild_rig_tree()
-        f.addWidget(QPushButton("Add Subcategory", clicked=_add_subcat))
 
         def _delete():
             if QMessageBox.question(self, "Delete", f"Delete '{cat.name}'?") == QMessageBox.StandardButton.Yes:
@@ -3029,52 +3374,50 @@ class App(QMainWindow):
         f.addWidget(QPushButton("Delete Category", clicked=_delete))
         f.addStretch()
 
-    def _show_rig_subcat_editor(self, area, parent_cat, subcat):
-        """Editor for a subcategory nested under a parent category."""
+    def _show_rig_group_editor(self, area, cat, group_name):
+        """Editor for a group of items within a rig category."""
+        members = [it for it in cat.items if it.group == group_name]
         self._clear_layout(self._r_editor_layout)
-        self._r_detail_title.setText(f"Edit Subcategory — {area.name} › {parent_cat.name}")
+        self._r_detail_title.setText(f"Edit Group — {area.name} › {cat.name}")
         f = self._r_editor_layout
         form = QFormLayout()
-        name_edit = QLineEdit(subcat.name)
-        form.addRow("Name:", name_edit)
+        name_edit = QLineEdit(group_name)
+        form.addRow("Group Name:", name_edit)
+        form.addRow("Items:", QLabel(str(len(members))))
         f.addLayout(form)
+        old_group = group_name
 
         def _apply():
-            n = name_edit.text().strip()
-            if n: subcat.name = n
+            new_group = name_edit.text().strip()
+            if not new_group or new_group == old_group: return
+            for it in members:
+                it.group = new_group
             self.dirty = True
             self._update_save_state()
             self._rebuild_rig_tree()
+            self._status.showMessage(f"Renamed group '{old_group}' → '{new_group}'")
         f.addWidget(QPushButton("Apply", clicked=_apply))
 
-        f.addWidget(QLabel("<b>Add Item:</b>"))
-        form2 = QFormLayout()
-        item_edit = QLineEdit()
-        form2.addRow("Name:", item_edit)
-        item_qty = QSpinBox()
-        item_qty.setRange(0, 9999)
-        item_qty.setValue(1)
-        form2.addRow("Qty:", item_qty)
-        f.addLayout(form2)
-
-        def _add():
-            n = item_edit.text().strip()
-            if n:
-                subcat.items.append(Item(n, item_qty.value()))
-                item_edit.clear()
-                self.dirty = True
-                self._update_save_state()
-                self._rebuild_rig_tree()
-        f.addWidget(QPushButton("Add Item", clicked=_add))
+        def _ungroup():
+            for it in members:
+                it.group = None
+            self.dirty = True
+            self._update_save_state()
+            self._rebuild_rig_tree()
+            self._clear_editor(self._r_detail_title, self._r_editor_widget, self._r_editor_layout)
+            self._status.showMessage(f"Ungrouped {len(members)} item(s)")
+        f.addWidget(QPushButton("Ungroup Items", clicked=_ungroup))
 
         def _delete():
-            if QMessageBox.question(self, "Delete", f"Delete subcategory '{subcat.name}'?") == QMessageBox.StandardButton.Yes:
-                parent_cat.subcategories.remove(subcat)
+            if QMessageBox.question(self, "Delete",
+                    f"Delete group '{group_name}' and {len(members)} items?") == QMessageBox.StandardButton.Yes:
+                for it in list(members):
+                    cat.items.remove(it)
                 self.dirty = True
                 self._update_save_state()
                 self._rebuild_rig_tree()
                 self._clear_editor(self._r_detail_title, self._r_editor_widget, self._r_editor_layout)
-        f.addWidget(QPushButton("Delete Subcategory", clicked=_delete))
+        f.addWidget(QPushButton("Delete Group", clicked=_delete))
         f.addStretch()
 
     def _on_rig_right_click(self, pos):
@@ -3085,9 +3428,8 @@ class App(QMainWindow):
         menu = QMenu(self)
 
         # Classify all selected nodes
-        selected_items = []   # (area, cat_or_subcat, item)
+        selected_items = []   # (area, cat, item)
         selected_cats = []    # (area, cat)
-        selected_subcats = [] # (area, parent_cat, subcat)
         selected_areas = []   # (area,)
         for sel in selected:
             d = sel.data(0, Qt.ItemDataRole.UserRole)
@@ -3100,25 +3442,17 @@ class App(QMainWindow):
                 ci, ii = d[2], d[3]
                 cat = area.categories[ci]
                 selected_items.append((area, cat, cat.items[ii]))
-            elif kind == "subitem":
-                ci, si, ii = d[2], d[3], d[4]
-                subcat = area.categories[ci].subcategories[si]
-                selected_items.append((area, subcat, subcat.items[ii]))
             elif kind == "cat":
                 ci = d[2]
                 selected_cats.append((area, area.categories[ci]))
-            elif kind == "subcat":
-                ci, si = d[2], d[3]
-                cat = area.categories[ci]
-                selected_subcats.append((area, cat, cat.subcategories[si]))
             elif kind == "area":
                 selected_areas.append(area)
 
-        total_selected = len(selected_items) + len(selected_cats) + len(selected_subcats) + len(selected_areas)
+        total_selected = len(selected_items) + len(selected_cats) + len(selected_areas)
 
         if total_selected > 1:
             # Items-only multi-select: offer move
-            if selected_items and not selected_cats and not selected_subcats and not selected_areas:
+            if selected_items and not selected_cats and not selected_areas:
                 area_names = [a.name for a in self.current_file.areas]
                 move_menu = menu.addMenu(f"Move {len(selected_items)} items to Area")
                 for area_name in area_names:
@@ -3130,8 +3464,8 @@ class App(QMainWindow):
             # Delete all selected (any mix of types)
             menu.addAction(f"Delete {total_selected} selected",
                            lambda si=list(selected_items), sc=list(selected_cats),
-                                  ssc=list(selected_subcats), sa=list(selected_areas):
-                               self._delete_selected_rig_nodes(si, sc, ssc, sa))
+                                  sa=list(selected_areas):
+                               self._delete_selected_rig_nodes(si, sc, sa))
         elif not item:
             menu.addAction("Add Area…", self._add_rig_area)
         else:
@@ -3152,33 +3486,32 @@ class App(QMainWindow):
                                 [(area, cat, it)], a_name))
                     menu.addSeparator()
                 menu.addAction(f"Delete '{it.name}'",
-                    lambda: self._delete_selected_rig_nodes([(area, cat, it)], [], [], []))
-            elif kind == "subitem":
-                ci, si, ii = data[2], data[3], data[4]
-                subcat = area.categories[ci].subcategories[si]; it = subcat.items[ii]
-                menu.addAction(f"Delete '{it.name}'",
-                    lambda: self._delete_selected_rig_nodes([(area, subcat, it)], [], [], []))
-            elif kind == "subcat":
-                ci, si = data[2], data[3]
-                cat = area.categories[ci]; subcat = cat.subcategories[si]
-                menu.addAction("Add Item…", lambda: self._radd_item(subcat))
+                    lambda: self._delete_selected_rig_nodes([(area, cat, it)], [], []))
+            elif kind == "group":
+                ci = data[2]; group_name = data[3]
+                cat = area.categories[ci]
+                members = [it for it in cat.items if it.group == group_name]
+                menu.addAction("Add Item to Group…",
+                    lambda c=cat, gn=group_name: self._radd_item_to_group(c, gn))
                 menu.addSeparator()
-                menu.addAction(f"Delete '{subcat.name}'",
-                    lambda: self._delete_selected_rig_nodes([], [], [(area, cat, subcat)], []))
+                menu.addAction(f"Delete group '{group_name}' ({len(members)} items)",
+                    lambda c=cat, m=list(members):
+                        self._delete_selected_rig_nodes(
+                            [(area, c, it) for it in m], [], []))
             elif kind == "cat":
                 ci = data[2]; cat = area.categories[ci]
                 menu.addAction("Add Item…", lambda: self._radd_item(cat))
-                menu.addAction("Add Subcategory…", lambda: self._radd_subcat(cat))
+                menu.addAction("Add Group…", lambda: self._radd_group(cat))
                 menu.addSeparator()
                 menu.addAction(f"Delete '{cat.name}'",
-                    lambda: self._delete_selected_rig_nodes([], [(area, cat)], [], []))
+                    lambda: self._delete_selected_rig_nodes([], [(area, cat)], []))
             elif kind == "area":
                 menu.addAction("Add Category…", lambda: self._radd_cat(area))
                 menu.addSeparator()
                 menu.addAction("Add Area…", self._add_rig_area)
                 menu.addSeparator()
                 menu.addAction(f"Delete '{area.name}'",
-                    lambda: self._delete_selected_rig_nodes([], [], [], [area]))
+                    lambda: self._delete_selected_rig_nodes([], [], [area]))
         menu.exec(self._r_tree.viewport().mapToGlobal(pos))
 
     def _move_selected_to_rig_area(self, items_list, target_area_name):
@@ -3205,45 +3538,34 @@ class App(QMainWindow):
             self._rebuild_rig_tree()
             self._status.showMessage(f"Moved {moved} item(s) to '{target_area_name}'")
 
-    def _delete_selected_rig_nodes(self, items_list, cats_list, subcats_list, areas_list):
-        """Delete any mix of selected items, categories, subcategories, and areas from rig file."""
+    def _delete_selected_rig_nodes(self, items_list, cats_list, areas_list):
+        """Delete any mix of selected items, categories, and areas from rig file."""
         detail_parts = []
         if items_list:
             detail_parts.append(f"{len(items_list)} item(s)")
-        if subcats_list:
-            subcat_item_count = sum(len(sc.items) for _, _, sc in subcats_list)
-            detail_parts.append(f"{len(subcats_list)} subcategory(ies) ({subcat_item_count} items)")
         if cats_list:
-            cat_item_count = sum(len(c.items) + sum(len(s.items) for s in c.subcategories) for _, c in cats_list)
+            cat_item_count = sum(len(c.items) for _, c in cats_list)
             detail_parts.append(f"{len(cats_list)} category(ies) ({cat_item_count} items)")
         if areas_list:
             area_item_count = sum(
-                sum(len(c.items) + sum(len(s.items) for s in c.subcategories) for c in a.categories) for a in areas_list)
+                sum(len(c.items) for c in a.categories) for a in areas_list)
             detail_parts.append(f"{len(areas_list)} area(s) ({area_item_count} items)")
         detail = ", ".join(detail_parts)
-        total = len(items_list) + len(cats_list) + len(subcats_list) + len(areas_list)
+        total = len(items_list) + len(cats_list) + len(areas_list)
 
-        if total > 1 or cats_list or subcats_list or areas_list:
+        if total > 1 or cats_list or areas_list:
             if QMessageBox.question(self, "Delete",
                     f"Delete {detail}?") != QMessageBox.StandardButton.Yes:
                 return
 
-        # Delete items first (before their parent cats/subcats/areas get removed)
-        for _, cat_or_subcat, item in items_list:
-            if item in cat_or_subcat.items:
-                cat_or_subcat.items.remove(item)
+        for _, cat, item in items_list:
+            if item in cat.items:
+                cat.items.remove(item)
 
-        # Delete subcategories
-        for area, parent_cat, subcat in subcats_list:
-            if subcat in parent_cat.subcategories:
-                parent_cat.subcategories.remove(subcat)
-
-        # Delete categories
         for area, cat in cats_list:
             if cat in area.categories:
                 area.categories.remove(cat)
 
-        # Delete areas
         for area in areas_list:
             if area in self.current_file.areas:
                 self.current_file.areas.remove(area)
@@ -3261,27 +3583,20 @@ class App(QMainWindow):
         if not target_data:
             return
 
-        # Determine target items list (where dropped items will go)
         target_kind = target_data[0]
         target_ai = target_data[1]
         target_area = self.current_file.areas[target_ai]
 
-        if target_kind == "item":
+        if target_kind in ("item", "group"):
             target_ci = target_data[2]
-            target_items_list = target_area.categories[target_ci].items
-        elif target_kind == "subitem":
-            target_ci, target_si = target_data[2], target_data[3]
-            target_items_list = target_area.categories[target_ci].subcategories[target_si].items
-        elif target_kind == "subcat":
-            target_ci, target_si = target_data[2], target_data[3]
-            target_items_list = target_area.categories[target_ci].subcategories[target_si].items
+            target_cat = target_area.categories[target_ci]
         elif target_kind == "cat":
             target_ci = target_data[2]
-            target_items_list = target_area.categories[target_ci].items
+            target_cat = target_area.categories[target_ci]
         elif target_kind == "area":
             if not target_area.categories:
                 target_area.categories.append(Category("General"))
-            target_items_list = target_area.categories[0].items
+            target_cat = target_area.categories[0]
         else:
             return
 
@@ -3294,18 +3609,13 @@ class App(QMainWindow):
             src_ai = src_data[1]
             src_area = self.current_file.areas[src_ai]
 
-            if src_kind in ("item", "subitem"):
-                if src_kind == "item":
-                    src_cat = src_area.categories[src_data[2]]
-                    item = src_cat.items[src_data[3]]
-                    src_list = src_cat.items
-                else:
-                    src_subcat = src_area.categories[src_data[2]].subcategories[src_data[3]]
-                    item = src_subcat.items[src_data[4]]
-                    src_list = src_subcat.items
-                if src_list is not target_items_list:
-                    src_list.remove(item)
-                    target_items_list.append(item)
+            if src_kind == "item":
+                src_ci = src_data[2]
+                src_cat = src_area.categories[src_ci]
+                item = src_cat.items[src_data[3]]
+                if src_cat is not target_cat:
+                    src_cat.items.remove(item)
+                    target_cat.items.append(item)
                     moved += 1
             elif src_kind == "cat":
                 src_ci = src_data[2]
@@ -3313,25 +3623,17 @@ class App(QMainWindow):
                 if src_area is not target_area:
                     src_area.categories.remove(cat_to_move)
                     target_area.categories.append(cat_to_move)
-                    moved += len(cat_to_move.items) + sum(len(s.items) for s in cat_to_move.subcategories)
-            elif src_kind == "subcat":
-                src_ci, src_si = src_data[2], src_data[3]
-                src_cat = src_area.categories[src_ci]
-                subcat_to_move = src_cat.subcategories[src_si]
-                # Move all subcat items into target
-                for it in subcat_to_move.items:
-                    target_items_list.append(it)
-                    moved += 1
-                src_cat.subcategories.remove(subcat_to_move)
+                    moved += len(cat_to_move.items)
 
         if moved:
             self._set_dirty()
             self._rebuild_rig_tree()
-            self._status.showMessage(f"Moved {moved} item(s)")
+            self._status.showMessage(f"Moved {moved} item(s) to '{target_area.name} › {target_cat.name}'")
 
     def _set_dirty(self):
         self.dirty = True
         self._update_save_state()
+        self._schedule_preview_refresh()
 
     def _add_rig_area(self):
         if not self.current_file: return
@@ -3357,12 +3659,53 @@ class App(QMainWindow):
             self._set_dirty()
             self._rebuild_rig_tree()
 
-    def _radd_subcat(self, cat):
-        n, ok = QInputDialog.getText(self, "Add Subcategory", "Subcategory name:")
-        if ok and n.strip():
-            cat.subcategories.append(Category(n.strip()))
-            self._set_dirty()
-            self._rebuild_rig_tree()
+    def _radd_group(self, cat):
+        """Add a new group to a rig category (creates first item with group tag)."""
+        group_name, ok = QInputDialog.getText(self, "Add Group", "Group name:")
+        if not ok or not group_name.strip(): return
+        group_name = group_name.strip()
+        item_name, ok = QInputDialog.getText(self, "First Item", f"Item name for '{group_name}':")
+        if not ok or not item_name.strip(): return
+        q, ok = QInputDialog.getInt(self, "Qty", "Quantity:", 1, 0, 9999)
+        if not ok: return
+        cat.items.append(Item(item_name.strip(), q, group_name))
+        self._set_dirty()
+        self._rebuild_rig_tree()
+
+    def _radd_item_to_group(self, cat, group_name):
+        """Add an item pre-tagged with a group."""
+        n, ok = QInputDialog.getText(self, "Add Item", f"Item name for '{group_name}':")
+        if not ok or not n.strip(): return
+        q, ok = QInputDialog.getInt(self, "Qty", "Quantity:", 1, 0, 9999)
+        if not ok: return
+        cat.items.append(Item(n.strip(), q, group_name))
+        self._set_dirty()
+        self._rebuild_rig_tree()
+
+    def _qadd_master_group(self, cat):
+        """Add a new group to a master category (creates first item with group tag)."""
+        group_name, ok = QInputDialog.getText(self, "Add Group", "Group name:")
+        if not ok or not group_name.strip(): return
+        group_name = group_name.strip()
+        item_name, ok = QInputDialog.getText(self, "First Item", f"Item name for '{group_name}':")
+        if not ok or not item_name.strip(): return
+        q, ok = QInputDialog.getInt(self, "EMSA Min", "EMSA minimum qty:", 1, 0, 9999)
+        if not ok: return
+        cat.items.append(MasterItem(item_name.strip(), q, group_name))
+        self.dirty_master = True
+        self._update_save_state()
+        self._rebuild_master_tree()
+
+    def _qadd_master_item_to_group(self, cat, group_name):
+        """Add an item pre-tagged with a group to the master list."""
+        n, ok = QInputDialog.getText(self, "Add Item", f"Item name for '{group_name}':")
+        if not ok or not n.strip(): return
+        q, ok = QInputDialog.getInt(self, "EMSA Min", "EMSA minimum qty:", 1, 0, 9999)
+        if not ok: return
+        cat.items.append(MasterItem(n.strip(), q, group_name))
+        self.dirty_master = True
+        self._update_save_state()
+        self._rebuild_master_tree()
 
     # -- LEMSA PDF comparison ------------------------------------------------
 
@@ -3530,9 +3873,8 @@ class App(QMainWindow):
             all_lemsa = {k: v for k, v in all_lemsa.items() if k not in exclusions}
 
         master_names = {}
-        for cat in self.master_list.categories:
-            for item in cat.items:
-                master_names[item.name.lower()] = (cat.name, item)
+        for cat, item in self.master_list.iter_all_items():
+            master_names[item.name.lower()] = (cat.name, item)
 
         # Load name aliases for "Name Difference" items
         aliases = self._load_name_aliases()
@@ -3591,9 +3933,8 @@ class App(QMainWindow):
         # -- All Items table --
         all_rows = []
         master_names = {}
-        for cat in self.master_list.categories:
-            for item in cat.items:
-                master_names[item.name.lower()] = (cat.name, item)
+        for cat, item in self.master_list.iter_all_items():
+            master_names[item.name.lower()] = (cat.name, item)
 
         # New items
         for data in new_items:
@@ -3839,8 +4180,8 @@ class App(QMainWindow):
                 if not target_cat:
                     target_cat = MasterCategory(category)
                     self.master_list.categories.append(target_cat)
-                # Check for duplicates
-                if any(it.name.lower() == new_name.lower() for it in target_cat.items):
+                # Check for duplicates across entire master list
+                if new_name.lower() in {n.lower() for n in self.master_list.all_item_names()}:
                     skipped += 1
                     continue
                 target_cat.items.append(MasterItem(new_name, qty))
@@ -4574,6 +4915,52 @@ class App(QMainWindow):
         except Exception as e:
             self._status.showMessage(f"Simulate error: {e}")
 
+    # -- Preview panel -------------------------------------------------------
+
+    def _get_widget_html_template(self):
+        """Load and cache the widget HTML with JotForm scripts stripped."""
+        if self._preview_html_cache is not None:
+            return self._preview_html_cache
+        widget_path = os.path.join(self.base_dir, "widgets", "ems-inventory-checklist.html")
+        if not os.path.isfile(widget_path):
+            return None
+        with open(widget_path, "r", encoding="utf-8") as f:
+            html = f.read()
+        # Strip JotForm script tags (widget won't be in an iframe)
+        html = re.sub(r'<script\s+[^>]*src=["\'][^"\']*jotfor[^"\']*["\'][^>]*>\s*</script>',
+                      '', html, flags=re.IGNORECASE)
+        self._preview_html_cache = html
+        return html
+
+    def _schedule_preview_refresh(self):
+        """Debounced preview refresh — restarts the 500ms timer."""
+        if self._preview_web is not None:
+            self._preview_timer.start()
+
+    def _refresh_preview(self):
+        """Inject current inventory data into widget HTML and load into preview."""
+        if self._preview_web is None or not self.current_file:
+            return
+        html = self._get_widget_html_template()
+        if not html:
+            return
+        try:
+            json_content = json.dumps(self.current_file.to_json_data())
+            m = re.search(r"var\s+DEFAULT_INVENTORY\s*=\s*[\s\S]*?;", html)
+            if m:
+                injected = html[:m.start()] + \
+                    f"var DEFAULT_INVENTORY = JSON.stringify({json_content});" + \
+                    html[m.end():]
+            else:
+                injected = html
+            # Write to a temp file so QWebEngine can load it with proper file:// context
+            tmp_path = os.path.join(tempfile.gettempdir(), "ems_editor_preview.html")
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                f.write(injected)
+            self._preview_web.setUrl(QUrl.fromLocalFile(tmp_path))
+        except Exception as e:
+            self._status.showMessage(f"Preview error: {e}")
+
     # -- Save ----------------------------------------------------------------
 
     def _update_save_state(self):
@@ -4581,6 +4968,8 @@ class App(QMainWindow):
         self._save_action.setEnabled(enabled)
         base = f"EMS Inventory Editor v{VERSION}"
         self.setWindowTitle(f"● {base}" if enabled else base)
+        if self.dirty:
+            self._schedule_preview_refresh()
 
     def _save_all(self):
         errors = []
@@ -4778,6 +5167,16 @@ if __name__ == "__main__":
         }
         QTreeWidget::branch:hover:!selected {
             background-color: #313244;
+        }
+        QTreeWidget::branch:has-siblings:!adjoins-item {
+            border-left: 1px dotted #585b70;
+        }
+        QTreeWidget::branch:has-siblings:adjoins-item {
+            border-left: 1px dotted #585b70;
+            border-bottom: 1px dotted #585b70;
+        }
+        QTreeWidget::branch:!has-children:!has-siblings:adjoins-item {
+            border-bottom: 1px dotted #585b70;
         }
         QHeaderView::section {
             background-color: #181825;

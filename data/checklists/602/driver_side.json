@@ -533,6 +533,126 @@
           {
             "name": "lubricant packet",
             "qty": 6
+          },
+          {
+            "name": "20 Fr.",
+            "qty": 1,
+            "group": "NPAs"
+          },
+          {
+            "name": "22 Fr.",
+            "qty": 1,
+            "group": "NPAs"
+          },
+          {
+            "name": "24 Fr.",
+            "qty": 1,
+            "group": "NPAs"
+          },
+          {
+            "name": "26 Fr.",
+            "qty": 1,
+            "group": "NPAs"
+          },
+          {
+            "name": "28 Fr.",
+            "qty": 1,
+            "group": "NPAs"
+          },
+          {
+            "name": "30 Fr.",
+            "qty": 1,
+            "group": "NPAs"
+          },
+          {
+            "name": "32 Fr.",
+            "qty": 1,
+            "group": "NPAs"
+          },
+          {
+            "name": "34 Fr.",
+            "qty": 1,
+            "group": "NPAs"
+          },
+          {
+            "name": "36 Fr.",
+            "qty": 1,
+            "group": "NPAs"
+          },
+          {
+            "name": "40mm PINK",
+            "qty": 1,
+            "group": "OPAs"
+          },
+          {
+            "name": "50mm BLUE",
+            "qty": 1,
+            "group": "OPAs"
+          },
+          {
+            "name": "60mm GRAY",
+            "qty": 1,
+            "group": "OPAs"
+          },
+          {
+            "name": "70mm WHITE",
+            "qty": 1,
+            "group": "OPAs"
+          },
+          {
+            "name": "80mm GREEN",
+            "qty": 1,
+            "group": "OPAs"
+          },
+          {
+            "name": "90mm YELLOW",
+            "qty": 1,
+            "group": "OPAs"
+          },
+          {
+            "name": "100mm PINK",
+            "qty": 1,
+            "group": "OPAs"
+          },
+          {
+            "name": "110mm ORANGE",
+            "qty": 1,
+            "group": "OPAs"
+          },
+          {
+            "name": "90kg ORANGE",
+            "qty": 1,
+            "group": "iGels"
+          },
+          {
+            "name": "50-90kg GREEN",
+            "qty": 1,
+            "group": "iGels"
+          },
+          {
+            "name": "30-60kg YELLOW",
+            "qty": 1,
+            "group": "iGels"
+          },
+          {
+            "name": "25-35kg WHITE",
+            "qty": 1,
+            "group": "iGels"
+          },
+          {
+            "name": "10-25kg GRAY",
+            "qty": 1,
+            "group": "iGels"
+          },
+          {
+            "name": "5-12kg BLUE",
+            "qty": 1,
+            "group": "iGels"
+          },
+          {
+            "name": "2-5kg PINK",
+            "qty": 1,
+            "group": "iGels"
           }
         ]
       }
@@ -656,6 +776,21 @@
           {
             "name": "Traction Splint",
             "qty": 2
+          },
+          {
+            "name": "Triage Tags",
+            "qty": 50,
+            "group": "MCI Bag"
+          },
+          {
+            "name": "Medical Group Supervisor Vest",
+            "qty": 1,
+            "group": "MCI Bag"
+          },
+          {
+            "name": "Triage Unit Leader Vest",
+            "qty": 1,
+            "group": "MCI Bag"
           }
         ]
       },

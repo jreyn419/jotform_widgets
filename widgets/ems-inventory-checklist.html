@@ -1770,8 +1770,18 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.12.2';
+    var VERSION = '1.14.0';
     var CHANGELOG = [
+      { version: '1.14.0', date: '2026-03-25', changes: [
+        'Items now support an optional "group" field for item-type grouping (e.g. iGels, NPAs, Mac Blades)',
+        'Groups render as collapsible sub-headers within their parent category',
+        'Subcategories array removed from JSON schema — use group field on items instead',
+      ]},
+      { version: '1.13.0', date: '2026-03-25', changes: [
+        'Inventory settings now accept .json files in addition to .md files',
+        'JSON format supports areas, categories, subcategories, sealable flags, and childOf parent-child hierarchy',
+        'Auto-detects format (JSON vs markdown) after fetching external file',
+      ]},
       { version: '1.12.2', date: '2026-03-05', changes: [
         'Fixed: markdown path now supports full URLs (e.g. https://user.github.io/repo/data/file.md) in addition to relative paths',
       ]},
@@ -2326,19 +2336,112 @@
 
       return result;
     }
-    
+
+    // Parses the JSON inventory format into the same internal structure as
+    // parseInventory(). JSON schema:
+    // [ { area, sealable?, childOf?, categories: [ { name, items: [{name, qty, group?}] } ] } ]
+    function parseInventoryJSON(jsonArray) {
+      var result = {};
+      categoryMeta = {};
+      sealableAreas = {};
+      areaHierarchy = {};
+      areaParent = {};
+
+      for (var a = 0; a < jsonArray.length; a++) {
+        var areaObj = jsonArray[a];
+        var areaName = areaObj.area;
+        if (!areaName) continue;
+
+        if (!result[areaName]) {
+          result[areaName] = {};
+        }
+
+        // Sealable flag
+        if (areaObj.sealable) {
+          sealableAreas[areaName] = true;
+        }
+
+        // Parent-child hierarchy (flat childOf reference)
+        if (areaObj.childOf) {
+          var parentName = areaObj.childOf;
+          areaParent[areaName] = parentName;
+          if (!areaHierarchy[parentName]) {
+            areaHierarchy[parentName] = [];
+          }
+          areaHierarchy[parentName].push(areaName);
+        }
+
+        var categories = areaObj.categories || [];
+        for (var c = 0; c < categories.length; c++) {
+          var catObj = categories[c];
+          var catName = catObj.name || 'General';
+
+          // Register top-level category
+          if (!result[areaName][catName]) {
+            result[areaName][catName] = [];
+          }
+          categoryMeta[areaName + '::' + catName] = { level: 0, parent: null };
+
+          // Add category items — items with a group field go into a sub-category
+          var items = catObj.items || [];
+          for (var i = 0; i < items.length; i++) {
+            var itemObj = items[i];
+            var targetCat = catName;
+
+            if (itemObj.group) {
+              // Create a qualified sub-category for the group
+              var qualifiedName = catName + ' > ' + itemObj.group;
+              if (!result[areaName][qualifiedName]) {
+                result[areaName][qualifiedName] = [];
+              }
+              if (!categoryMeta[areaName + '::' + qualifiedName]) {
+                categoryMeta[areaName + '::' + qualifiedName] = { level: 1, parent: catName, displayName: itemObj.group };
+              }
+              targetCat = qualifiedName;
+            }
+
+            result[areaName][targetCat].push({
+              name: itemObj.name,
+              required: itemObj.qty || 1
+            });
+          }
+        }
+      }
+
+      return result;
+    }
+
+    // Auto-detects format (JSON array vs markdown text) and parses accordingly.
+    function parseInventoryAuto(content) {
+      // Try JSON first: if content starts with '[', attempt JSON parse
+      var trimmed = content.trim();
+      if (trimmed.charAt(0) === '[') {
+        try {
+          var jsonArray = JSON.parse(trimmed);
+          if (Array.isArray(jsonArray)) {
+            console.log('[Widget] Detected JSON inventory format (' + jsonArray.length + ' areas)');
+            return parseInventoryJSON(jsonArray);
+          }
+        } catch (e) {
+          console.warn('[Widget] Content looks like JSON but failed to parse, falling back to markdown:', e.message);
+        }
+      }
+      // Fall back to markdown parser
+      return parseInventory(content);
+    }
+
     // =====================================================
-    // MARKDOWN FILE FETCH
+    // EXTERNAL FILE FETCH
     // =====================================================
 
-    // Detects if the inventoryItems setting is a relative path to a .md file
-    // rather than inline checklist data.
-    function isMarkdownPath(text) {
+    // Detects if the inventoryItems setting is a path to an external file
+    // (.md or .json) rather than inline checklist data.
+    function isExternalFilePath(text) {
       if (!text) return false;
       var trimmed = text.trim();
-      // Matches a full URL ending in .md (e.g. https://user.github.io/repo/data/file.md)
-      // or a relative path ending in .md (e.g. data/checklists/file.md)
-      return /\.md$/.test(trimmed) && trimmed.indexOf('|') === -1;
+      // Matches a full URL or relative path ending in .md or .json,
+      // but not inline data that happens to contain | (markdown items)
+      return /\.(md|json)$/i.test(trimmed) && trimmed.indexOf('|') === -1;
     }
 
     // Derives the base URL from the widget's own location so relative paths
@@ -2348,10 +2451,11 @@
       return href.substring(0, href.lastIndexOf('/') + 1);
     }
 
-    // Fetches a markdown checklist file, then calls back with the text content.
-    // On failure, calls back with null so the caller can fall back to defaults.
-    function fetchMarkdownInventory(mdPath, callback) {
-      var trimmed = mdPath.trim();
+    // Fetches an external checklist file (.md or .json), then calls back with
+    // the text content. On failure, calls back with null so the caller can
+    // fall back to defaults.
+    function fetchInventoryFile(filePath, callback) {
+      var trimmed = filePath.trim();
       // If it's already a full URL, use it directly; otherwise resolve relative to widget
       var url = /^https?:\/\//i.test(trimmed) ? trimmed : getWidgetBaseUrl() + trimmed;
       console.log('[Widget] Fetching checklist from: ' + url);
@@ -5147,7 +5251,7 @@
           cachedFormID = fp.formID || (data && data.formID) || null;
 
           // Load inventory from widget settings — supports inline text
-          // or a relative path to a .md file on the same GitHub Pages origin.
+          // or a path to an external .md or .json file on the same GitHub Pages origin.
           // Decode HTML entities first: JotForm encodes setting values
           // (e.g. / becomes &#x2F;) which would break path detection.
           var _rawInventory = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
@@ -5156,7 +5260,7 @@
           var inventoryText = _decodeEl.value;
           console.log('[Widget] inventoryItems raw:', JSON.stringify(_rawInventory).substring(0, 120));
           console.log('[Widget] inventoryItems decoded:', JSON.stringify(inventoryText).substring(0, 120));
-          console.log('[Widget] isMarkdownPath:', isMarkdownPath(inventoryText));
+          console.log('[Widget] isExternalFilePath:', isExternalFilePath(inventoryText));
 
           function continueAfterInventoryLoad() {
             // Derive tagged area support from per-area Sealable: config
@@ -5263,20 +5367,20 @@
           }
           } // end continueAfterInventoryLoad
 
-          // Branch: if the setting is a .md file path, fetch it async;
-          // otherwise parse inline text synchronously.
-          if (isMarkdownPath(inventoryText)) {
-            fetchMarkdownInventory(inventoryText, function(mdContent) {
-              if (mdContent) {
-                INVENTORY = parseInventory(mdContent);
+          // Branch: if the setting is an external file path (.md or .json),
+          // fetch it async; otherwise parse inline text synchronously.
+          if (isExternalFilePath(inventoryText)) {
+            fetchInventoryFile(inventoryText, function(fileContent) {
+              if (fileContent) {
+                INVENTORY = parseInventoryAuto(fileContent);
               } else {
-                console.warn('[Widget] Markdown fetch failed, falling back to DEFAULT_INVENTORY');
-                INVENTORY = parseInventory(DEFAULT_INVENTORY);
+                console.warn('[Widget] File fetch failed, falling back to DEFAULT_INVENTORY');
+                INVENTORY = parseInventoryAuto(DEFAULT_INVENTORY);
               }
               continueAfterInventoryLoad();
             });
           } else {
-            INVENTORY = parseInventory(inventoryText);
+            INVENTORY = parseInventoryAuto(inventoryText);
             continueAfterInventoryLoad();
           }
         });
@@ -5310,11 +5414,11 @@
         });
       } else {
         // Standalone mode - use default inventory
-        // (DEFAULT_INVENTORY could also be overridden to a .md path for testing)
+        // (DEFAULT_INVENTORY could also be overridden to a .md/.json path for testing)
         var standaloneText = DEFAULT_INVENTORY;
 
         function continueStandalone(inventoryContent) {
-          INVENTORY = parseInventory(inventoryContent);
+          INVENTORY = parseInventoryAuto(inventoryContent);
           enableTaggedAreas = Object.keys(sealableAreas).length > 0;
           buildUI();
 
@@ -5348,9 +5452,9 @@
           saveState();
         }
 
-        if (isMarkdownPath(standaloneText)) {
-          fetchMarkdownInventory(standaloneText, function(mdContent) {
-            continueStandalone(mdContent || DEFAULT_INVENTORY);
+        if (isExternalFilePath(standaloneText)) {
+          fetchInventoryFile(standaloneText, function(fileContent) {
+            continueStandalone(fileContent || DEFAULT_INVENTORY);
           });
         } else {
           continueStandalone(standaloneText);

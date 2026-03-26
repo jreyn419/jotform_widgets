@@ -1,21 +1,26 @@
 {
   "lemsa_splitter": [
-    452,
-    971
+    453,
+    974
   ],
   "master_splitter": [
-    245,
-    1178
+    285,
+    1142
   ],
   "master_right_splitter": [
-    159,
-    581
+    303,
+    466
   ],
   "rig_splitter": [
-    570,
-    853
+    194,
+    442
+  ],
+  "rig_right_splitter": [
+    216,
+    261
   ],
   "maximized_panel": null,
+  "rig_maximized_panel": null,
   "window_geometry": [
     0,
     30,

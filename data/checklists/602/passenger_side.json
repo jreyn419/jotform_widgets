@@ -38,6 +38,31 @@
           {
             "name": "Equipment Mount – Aluminum",
             "qty": 1
+          },
+          {
+            "name": "L",
+            "qty": 2,
+            "group": "Adult HFNCs"
+          },
+          {
+            "name": "M Adult High-Flow Nasal Cannula",
+            "qty": 2,
+            "group": "Adult HFNCs"
+          },
+          {
+            "name": "S Adult High-Flow Nasal Cannula",
+            "qty": 2,
+            "group": "Adult HFNCs"
+          },
+          {
+            "name": "XL",
+            "qty": 1,
+            "group": "Pediatric HFNCs"
+          },
+          {
+            "name": "L",
+            "qty": 1,
+            "group": "Pediatric HFNCs"
           }
         ]
       }
@@ -172,29 +197,24 @@
             "qty": 1
           },
           {
-            "name": "Infant",
-            "qty": 1,
-            "group": "Manual BP Cuff"
+            "name": "Manual BP Cuff - Infant",
+            "qty": 1
           },
           {
-            "name": "Child",
-            "qty": 1,
-            "group": "Manual BP Cuff"
+            "name": "Manual BP Cuff - Child",
+            "qty": 1
           },
           {
-            "name": "Small Adult",
-            "qty": 1,
-            "group": "Manual BP Cuff"
+            "name": "Manual BP Cuff - Small Adult",
+            "qty": 1
           },
           {
-            "name": "Large Adult",
-            "qty": 1,
-            "group": "Manual BP Cuff"
+            "name": "Manual BP Cuff - Large Adult",
+            "qty": 1
           },
           {
-            "name": "Thigh",
-            "qty": 1,
-            "group": "Manual BP Cuff"
+            "name": "Manual BP Cuff – Thigh",
+            "qty": 1
           }
         ]
       },
@@ -266,6 +286,71 @@
           {
             "name": "Electrode Bag",
             "qty": 1
+          },
+          {
+            "name": "Lancets",
+            "qty": 6,
+            "group": "Glucometer kit"
+          },
+          {
+            "name": "Sterile 2x2",
+            "qty": 6,
+            "group": "Glucometer kit"
+          },
+          {
+            "name": "Adhesive Bandages",
+            "qty": 6,
+            "group": "Glucometer kit"
+          },
+          {
+            "name": "Alcohol Prep Pads",
+            "qty": 6,
+            "group": "Glucometer kit"
+          },
+          {
+            "name": "Test Strip Vial (at least 6 strips)",
+            "qty": 1,
+            "group": "Glucometer kit"
+          },
+          {
+            "name": "Glucometer, operational",
+            "qty": 1,
+            "group": "Glucometer kit"
+          },
+          {
+            "name": "7",
+            "qty": 1,
+            "group": "BP Cuffs"
+          },
+          {
+            "name": "8",
+            "qty": 1,
+            "group": "BP Cuffs"
+          },
+          {
+            "name": "9",
+            "qty": 1,
+            "group": "BP Cuffs"
+          },
+          {
+            "name": "10",
+            "qty": 1,
+            "group": "BP Cuffs"
+          },
+          {
+            "name": "11",
+            "qty": 1,
+            "group": "BP Cuffs"
+          },
+          {
+            "name": "11L",
+            "qty": 1,
+            "group": "BP Cuffs"
+          },
+          {
+            "name": "12",
+            "qty": 1,
+            "group": "BP Cuffs"
           }
         ]
       },
@@ -316,6 +401,21 @@
           {
             "name": "Pelvic Sling",
             "qty": 1
+          },
+          {
+            "name": "L",
+            "qty": 1,
+            "group": "Soft Collars"
+          },
+          {
+            "name": "M",
+            "qty": 1,
+            "group": "Soft Collars"
+          },
+          {
+            "name": "S",
+            "qty": 1,
+            "group": "Soft Collars"
           }
         ]
       }
@@ -497,6 +597,36 @@
           {
             "name": "Temporal Thermometer",
             "qty": 1
+          },
+          {
+            "name": "24G YELLOW",
+            "qty": 4,
+            "group": "IV Catheter"
+          },
+          {
+            "name": "22G BLUE",
+            "qty": 4,
+            "group": "IV Catheter"
+          },
+          {
+            "name": "20G PINK",
+            "qty": 6,
+            "group": "IV Catheter"
+          },
+          {
+            "name": "18G GREEN",
+            "qty": 6,
+            "group": "IV Catheter"
+          },
+          {
+            "name": "16G GRAY",
+            "qty": 6,
+            "group": "IV Catheter"
+          },
+          {
+            "name": "14G ORANGE",
+            "qty": 6,
+            "group": "IV Catheter"
           }
         ]
       },
