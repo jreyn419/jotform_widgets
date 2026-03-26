@@ -318,6 +318,26 @@ class DragDropTree(QTreeWidget):
         self.restore_expanded_state(state)
         self._rename_guard = False
 
+    def select_by_data(self, target_data):
+        """Select and scroll to the tree item whose UserRole data matches target_data."""
+        def _find(item):
+            try:
+                if item.data(0, Qt.ItemDataRole.UserRole) == target_data:
+                    return item
+            except RuntimeError:
+                return None
+            for i in range(item.childCount()):
+                found = _find(item.child(i))
+                if found:
+                    return found
+            return None
+        for i in range(self.topLevelItemCount()):
+            found = _find(self.topLevelItem(i))
+            if found:
+                self.setCurrentItem(found)
+                self.scrollToItem(found)
+                return
+
     def focusInEvent(self, event):
         super().focusInEvent(event)
         self.focusGained.emit()
@@ -3032,6 +3052,11 @@ class App(QMainWindow):
             self.dirty_master = True
             self._update_save_state()
         self._rebuild_master_tree()
+        # Re-select the renamed item (group key uses new name)
+        if kind == "group":
+            self._m_tree.select_by_data(("group", ci, new_text))
+        else:
+            self._m_tree.select_by_data(data)
 
     def _show_master_item_editor(self, cat, item):
         self._clear_layout(self._m_editor_layout)
@@ -3888,6 +3913,11 @@ class App(QMainWindow):
             area.name = new_text
         self._set_dirty()
         self._rebuild_rig_tree()
+        # Re-select the renamed item (group key uses new name)
+        if kind == "group":
+            self._r_tree.select_by_data(("group", ai, data[2], new_text))
+        else:
+            self._r_tree.select_by_data(data)
 
     def _show_rig_item_editor(self, area, cat, item):
         """Edit an item."""
