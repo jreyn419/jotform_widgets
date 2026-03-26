@@ -1542,6 +1542,8 @@ class App(QMainWindow):
         sf.addWidget(QLabel("Search:"))
         self._m_search = QLineEdit()
         self._m_search.textChanged.connect(lambda: self._rebuild_master_tree())
+        self._m_search._paired_tree = '_m_tree'
+        self._m_search.installEventFilter(self)
         sf.addWidget(self._m_search)
         clear_btn = QPushButton("✕")
         clear_btn.setFixedWidth(30)
@@ -1822,6 +1824,8 @@ class App(QMainWindow):
         sf.addWidget(QLabel("Search:"))
         self._r_search = QLineEdit()
         self._r_search.textChanged.connect(lambda: self._rebuild_rig_tree())
+        self._r_search._paired_tree = '_r_tree'
+        self._r_search.installEventFilter(self)
         sf.addWidget(self._r_search)
         clear_btn = QPushButton("✕")
         clear_btn.setFixedWidth(30)
@@ -5717,6 +5721,16 @@ class App(QMainWindow):
     def eventFilter(self, obj, event):
         """Handle floating tooltips on viewport and keyboard navigation on table."""
         from PyQt6.QtCore import QEvent, QPoint
+
+        # Search fields: down arrow jumps to paired tree
+        if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Down:
+            tree_attr = getattr(obj, '_paired_tree', None)
+            if tree_attr:
+                tree = getattr(self, tree_attr, None)
+                if tree and tree.topLevelItemCount() > 0:
+                    tree.setFocus()
+                    tree.setCurrentItem(tree.topLevelItem(0))
+                    return True
 
         # Viewport: floating tooltip
         if obj == self._m_all_table.viewport():
