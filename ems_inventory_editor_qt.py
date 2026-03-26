@@ -577,7 +577,7 @@ class SplitDialog(QDialog):
 VERSION = "5.0.0"
 # == LEMSA / State EMS directory ===============================================
 
-LEMSA_DATA = [
+_LEMSA_DATA_DEFAULT = [
     # -- Alabama --
     {"name": "Alabama Office of EMS", "state": "Alabama", "counties": [], "url": "https://www.alabamapublichealth.gov/ems/"},
     # -- Alaska --
@@ -1242,6 +1242,8 @@ class App(QMainWindow):
         self.dirty = False
         self.dirty_master = False
         self.lemsa_config_path = os.path.join(self.base_dir, "data", "lemsa_config.json")
+        self.lemsa_directory_path = os.path.join(self.base_dir, "data", "lemsa_directory.json")
+        self.lemsa_data = []
         self.lemsa_config = {}
         self._checking = False
         self._worker = None
@@ -1274,6 +1276,7 @@ class App(QMainWindow):
         self._preview_html_cache = None  # cached widget HTML template
 
         self._build_ui()
+        self._load_lemsa_directory()
         self._load_lemsa_config()
         self._rebuild_lemsa_list()
         self._load_master()
@@ -1899,7 +1902,7 @@ class App(QMainWindow):
         This method reverses that to match source strings to config acronyms.
         """
         source_map = {}  # source_string → {"acronym": str, "full_name": str}
-        for lemsa in LEMSA_DATA:
+        for lemsa in self.lemsa_data:
             name = lemsa["name"]
             conf = self._get_lemsa_conf(name)
             acronym = conf.get("acronym", "")
@@ -2292,6 +2295,31 @@ class App(QMainWindow):
             f"Created master list with {len(uncat.items)} items "
             f"({n_grouped} grouped) from {len(selected_rigs)} rig(s)")
 
+    # -- LEMSA directory -------------------------------------------------------
+
+    def _load_lemsa_directory(self):
+        """Load agency list from external JSON, falling back to built-in default."""
+        if os.path.isfile(self.lemsa_directory_path):
+            try:
+                with open(self.lemsa_directory_path, "r", encoding="utf-8") as f:
+                    self.lemsa_data = json.load(f)
+                return
+            except Exception:
+                pass
+        # Fall back to built-in default and write it out
+        self.lemsa_data = list(_LEMSA_DATA_DEFAULT)
+        self._save_lemsa_directory()
+
+    def _save_lemsa_directory(self):
+        """Persist the agency list to data/lemsa_directory.json."""
+        try:
+            os.makedirs(os.path.dirname(self.lemsa_directory_path), exist_ok=True)
+            with open(self.lemsa_directory_path, "w", encoding="utf-8") as f:
+                json.dump(self.lemsa_data, f, indent=2, ensure_ascii=False)
+                f.write("\n")
+        except Exception as e:
+            self._status.showMessage(f"Failed to save LEMSA directory: {e}")
+
     # -- LEMSA config --------------------------------------------------------
 
     def _load_lemsa_config(self):
@@ -2536,7 +2564,7 @@ class App(QMainWindow):
         # Group by state, preserving order of first appearance
         state_order = []
         state_items = {}  # state -> [(index, lemsa, conf, tracked)]
-        for i, lemsa in enumerate(LEMSA_DATA):
+        for i, lemsa in enumerate(self.lemsa_data):
             state = lemsa.get("state", "Other")
             name = lemsa["name"]
             counties = ", ".join(lemsa.get("counties", []))
@@ -2583,7 +2611,7 @@ class App(QMainWindow):
     def _on_lemsa_select(self, item):
         idx = item.data(0, Qt.ItemDataRole.UserRole)
         if idx is not None:
-            self._show_lemsa_editor(LEMSA_DATA[idx])
+            self._show_lemsa_editor(self.lemsa_data[idx])
 
     def _show_lemsa_editor(self, lemsa):
         self._clear_layout(self._l_editor_layout)
@@ -2711,7 +2739,7 @@ class App(QMainWindow):
         if self._checking:
             return
         tracked = [(l, self._get_lemsa_conf(l["name"]))
-                    for l in LEMSA_DATA if self._get_lemsa_conf(l["name"]).get("tracked")]
+                    for l in self.lemsa_data if self._get_lemsa_conf(l["name"]).get("tracked")]
         if not tracked:
             self._status.showMessage("No tracked LEMSAs.")
             if callback:
