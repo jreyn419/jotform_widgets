@@ -15,6 +15,7 @@ import sys
 import re
 import shutil
 import tempfile
+import time
 import webbrowser
 import subprocess
 import json
@@ -42,7 +43,7 @@ from PyQt6.QtWidgets import (
     QAbstractItemDelegate
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl
-from PyQt6.QtGui import QAction, QShortcut, QKeySequence, QColor, QBrush
+from PyQt6.QtGui import QAction, QShortcut, QKeySequence, QColor, QBrush, QPalette, QPainter, QPixmap, QPen, QIcon, QFont
 
 try:
     from PyQt6.QtWebEngineWidgets import QWebEngineView
@@ -51,54 +52,135 @@ except ImportError:
     HAS_WEBENGINE = False
 
 
+def _emoji_icon(char, size=16):
+    """Render an emoji character to a QIcon."""
+    px = QPixmap(size, size)
+    px.fill(QColor(0, 0, 0, 0))
+    p = QPainter(px)
+    font = QFont()
+    font.setPixelSize(size - 2)
+    p.setFont(font)
+    p.drawText(px.rect(), Qt.AlignmentFlag.AlignCenter, char)
+    p.end()
+    return QIcon(px)
+
+
+# Cached icons — populated after QApplication is created
+_ICONS = {}
+
+def _init_icons():
+    global _ICONS
+    _ICONS = {
+        "area": _emoji_icon("\U0001f4e6"),
+        "cat": _emoji_icon("\U0001f4c2"),
+        "group": _emoji_icon("\U0001f4c1"),
+        "seal": _emoji_icon("\U0001f512"),
+        "warn": _emoji_icon("\u26a0"),
+    }
+
+
 class DragDropTree(QTreeWidget):
     """QTreeWidget with multi-select, drag-drop, inline rename, and state persistence."""
     ROLE_CLEAN_NAME = Qt.ItemDataRole.UserRole + 1
-    itemsDropped = pyqtSignal(list, QTreeWidgetItem)  # (source_items, target_item)
+    itemsDropped = pyqtSignal(list, object)  # (source_data_list, target_data)
     itemRenamed = pyqtSignal(QTreeWidgetItem, str)     # (item, new_text)
+    focusGained = pyqtSignal()                          # emitted on focus-in
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setColumnCount(2)
+        self.setHeaderHidden(True)
+        self.header().setStretchLastSection(False)
+        self.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.header().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)
         self.setDefaultDropAction(Qt.DropAction.MoveAction)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self._renaming = False
-        self._just_finished_rename = False
         self._rename_guard = False
+        self._drag_source_items = []
+        self._editor_closed_at = 0  # monotonic timestamp
+        self._pre_rename_expanded = None
         self.itemChanged.connect(self._on_item_changed)
+        self.itemDoubleClicked.connect(self._on_double_click)
+
+    def startDrag(self, supportedActions):
+        """Capture selected items before Qt might clear selection during drag."""
+        self._drag_source_items = list(self.selectedItems())
+        super().startDrag(supportedActions)
+
+    def dragEnterEvent(self, event):
+        event.acceptProposedAction()
+
+    def dragMoveEvent(self, event):
+        event.acceptProposedAction()
 
     def dropEvent(self, event):
+        if event.source() is not self:
+            event.ignore()
+            return
         target = self.itemAt(event.position().toPoint())
         if not target:
             event.ignore()
             return
         source_items = self.selectedItems()
+        if not source_items:
+            source_items = getattr(self, '_drag_source_items', [])
         if not source_items or target in source_items:
             event.ignore()
             return
-        # Don't let Qt handle the move — we do it in the data model
+        # Serialize all data BEFORE accepting — Qt may delete items after accept
+        target_data = target.data(0, Qt.ItemDataRole.UserRole)
+        source_data = []
+        for si in source_items:
+            try:
+                source_data.append(si.data(0, Qt.ItemDataRole.UserRole))
+            except RuntimeError:
+                source_data.append(None)
+        # Prevent Qt from touching the tree
         event.setDropAction(Qt.DropAction.IgnoreAction)
         event.accept()
-        self.itemsDropped.emit(source_items, target)
+        self.itemsDropped.emit(source_data, target_data)
 
-    def startRename(self, item):
-        """Begin inline rename on the given item."""
+    def _on_double_click(self, item, column):
+        """Start inline rename on double-click."""
         if not item:
             return
         try:
+            # Save expand state — Qt toggles it on double-click before this fires
+            data = item.data(0, Qt.ItemDataRole.UserRole)
+            if data and data[0] in ("cat", "area", "group"):
+                # Qt already toggled, so invert to get the original state
+                self._pre_rename_expanded = not item.isExpanded()
+                item.setExpanded(self._pre_rename_expanded)
+            else:
+                self._pre_rename_expanded = None
+        except RuntimeError:
+            return
+        QTimer.singleShot(0, lambda: self._startRename(item))
+
+    def _startRename(self, item):
+        """Begin inline rename on the given item."""
+        try:
+            # Guard: block itemChanged while we set up the edit field
+            self._rename_guard = True
             self._renaming = True
-            self._just_finished_rename = False
-            # Show just the clean name during editing
             clean = item.data(0, self.ROLE_CLEAN_NAME)
             if clean:
                 item.setText(0, clean)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
+            self._rename_guard = False
+            # Force edit even with NoEditTriggers
+            self.setEditTriggers(QAbstractItemView.EditTrigger.AllEditTriggers)
             self.editItem(item, 0)
+            self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         except RuntimeError:
             self._renaming = False
+            self._rename_guard = False
 
     def _on_item_changed(self, item, column):
         """Handle inline rename completion."""
@@ -106,7 +188,7 @@ class DragDropTree(QTreeWidget):
             return
         if self._renaming and column == 0:
             self._renaming = False
-            self._just_finished_rename = True
+            self._editor_closed_at = time.monotonic()
             try:
                 new_text = item.text(0).strip()
             except RuntimeError:
@@ -114,30 +196,65 @@ class DragDropTree(QTreeWidget):
             if new_text:
                 self.itemRenamed.emit(item, new_text)
 
-    def keyPressEvent(self, event):
-        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            if self._just_finished_rename:
-                self._just_finished_rename = False
-                return
-            item = self.currentItem()
-            if item:
-                try:
-                    data = item.data(0, Qt.ItemDataRole.UserRole)
-                except RuntimeError:
-                    return
-                if data and data[0] in ("cat", "area", "group"):
-                    item.setExpanded(not item.isExpanded())
-                    return
-        super().keyPressEvent(event)
+    def closeEditor(self, editor, hint):
+        """Called by Qt when inline editor closes. Record timestamp."""
+        super().closeEditor(editor, hint)
+        self._editor_closed_at = time.monotonic()
 
-    def mouseDoubleClickEvent(self, event):
-        item = self.itemAt(event.pos())
-        if item:
-            # Defer to avoid conflict with itemClicked signal processing
-            event.accept()
-            QTimer.singleShot(0, lambda: self.startRename(item))
-        else:
-            super().mouseDoubleClickEvent(event)
+    def commitData(self, editor):
+        """Called by Qt when editor data is committed. Also record timestamp."""
+        super().commitData(editor)
+        self._editor_closed_at = time.monotonic()
+
+    def event(self, event):
+        """Intercept keyboard events for rename, copy, and Enter suppression."""
+        from PyQt6.QtCore import QEvent
+        if event.type() == QEvent.Type.KeyPress:
+            key = event.key()
+            mods = event.modifiers()
+            # Ctrl+R: rename current item
+            if key == Qt.Key.Key_R and mods & Qt.KeyboardModifier.ControlModifier:
+                item = self.currentItem()
+                if item:
+                    self._startRename(item)
+                return True
+            # Ctrl+C: copy selected items
+            if key == Qt.Key.Key_C and mods & Qt.KeyboardModifier.ControlModifier:
+                self._copySelected()
+                return True
+            # Enter/Return handling
+            if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+                # Suppress if currently editing or editor just closed
+                if self.state() == QAbstractItemView.State.EditingState:
+                    return super().event(event)  # let Qt handle editor commit
+                if time.monotonic() - self._editor_closed_at < 0.3:
+                    return True  # consumed — don't toggle
+                item = self.currentItem()
+                if item:
+                    try:
+                        data = item.data(0, Qt.ItemDataRole.UserRole)
+                    except RuntimeError:
+                        pass
+                    else:
+                        if data and data[0] in ("cat", "area", "group"):
+                            item.setExpanded(not item.isExpanded())
+                            return True  # consumed
+        return super().event(event)
+
+    def _copySelected(self):
+        """Copy selected items to clipboard as tab-separated text."""
+        from PyQt6.QtWidgets import QApplication as QApp
+        lines = []
+        for item in self.selectedItems():
+            try:
+                col0 = item.data(0, self.ROLE_CLEAN_NAME) or item.text(0)
+                col1 = item.text(1).strip()
+                line = f"{col0}\t{col1}" if col1 else col0
+                lines.append(line)
+            except RuntimeError:
+                continue
+        if lines:
+            QApp.clipboard().setText("\n".join(lines))
 
     def save_expanded_state(self):
         """Save expanded state of all nodes, keyed by UserRole data."""
@@ -173,6 +290,10 @@ class DragDropTree(QTreeWidget):
         """Call after rebuilding tree to restore state."""
         self.restore_expanded_state(state)
         self._rename_guard = False
+
+    def focusInEvent(self, event):
+        super().focusInEvent(event)
+        self.focusGained.emit()
 
 
 class ManagedTableWidget(QTableWidget):
@@ -860,6 +981,20 @@ class App(QMainWindow):
         self._editing_cell = None   # (row, col) when a cell edit is in progress
         self._ui_state_path = os.path.join(self.base_dir, "data", "ui_state.json")
 
+        # Undo/redo stacks (separate per tree, snapshot-based)
+        self._rig_undo_stack = []
+        self._rig_redo_stack = []
+        self._rig_last_snap = None
+        self._master_undo_stack = []
+        self._master_redo_stack = []
+        self._master_last_snap = None
+        self._undo_suppress = False  # suppress during undo/redo restore
+        self._undo_max = 50
+
+        # Clipboard
+        self._clipboard = None  # {"items": [...], "mode": "copy"/"cut", "source": "rig"/"master"}
+        self._last_focused_tree = "rig"  # track which tree was last focused
+
         # Preview panel debounce timer
         self._preview_timer = QTimer()
         self._preview_timer.setSingleShot(True)
@@ -890,14 +1025,32 @@ class App(QMainWindow):
         file_menu.addAction(quit_action)
 
         edit_menu = menubar.addMenu("Edit")
+        self._undo_action = QAction("Undo", self)
+        self._undo_action.setShortcut(QKeySequence("Ctrl+Z"))
+        self._undo_action.triggered.connect(self._smart_undo)
+        edit_menu.addAction(self._undo_action)
+        self._redo_action = QAction("Redo", self)
+        self._redo_action.setShortcut(QKeySequence("Ctrl+Shift+Z"))
+        self._redo_action.triggered.connect(self._smart_redo)
+        edit_menu.addAction(self._redo_action)
+        edit_menu.addSeparator()
+        self._cut_action = QAction("Cut", self)
+        self._cut_action.setShortcut(QKeySequence("Ctrl+X"))
+        self._cut_action.triggered.connect(self._smart_cut)
+        edit_menu.addAction(self._cut_action)
         self._copy_action = QAction("Copy", self)
         self._copy_action.setShortcut(QKeySequence("Ctrl+C"))
-        self._copy_action.triggered.connect(self._copy_cell)
+        self._copy_action.triggered.connect(self._smart_copy)
         edit_menu.addAction(self._copy_action)
         self._paste_action = QAction("Paste", self)
         self._paste_action.setShortcut(QKeySequence("Ctrl+V"))
-        self._paste_action.triggered.connect(self._paste_cell)
+        self._paste_action.triggered.connect(self._smart_paste)
         edit_menu.addAction(self._paste_action)
+        edit_menu.addSeparator()
+        self._rename_action = QAction("Rename", self)
+        self._rename_action.setShortcut(QKeySequence("Ctrl+R"))
+        self._rename_action.triggered.connect(self._do_rename)
+        edit_menu.addAction(self._rename_action)
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -1045,8 +1198,9 @@ class App(QMainWindow):
         self._m_tree = DragDropTree()
         self._m_tree.setIndentation(20)
         self._m_tree.setRootIsDecorated(True)
-        self._m_tree.setHeaderHidden(True)
         self._m_tree.itemClicked.connect(self._on_master_select)
+        self._m_tree.itemClicked.connect(lambda: setattr(self, '_last_focused_tree', 'master'))
+        self._m_tree.focusGained.connect(lambda: setattr(self, '_last_focused_tree', 'master'))
         self._m_tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self._m_tree.customContextMenuRequested.connect(self._on_master_right_click)
         self._m_tree.itemsDropped.connect(self._on_master_drop)
@@ -1324,8 +1478,9 @@ class App(QMainWindow):
         self._r_tree = DragDropTree()
         self._r_tree.setIndentation(20)
         self._r_tree.setRootIsDecorated(True)
-        self._r_tree.setHeaderHidden(True)
         self._r_tree.itemClicked.connect(self._on_rig_tree_select)
+        self._r_tree.itemClicked.connect(lambda: setattr(self, '_last_focused_tree', 'rig'))
+        self._r_tree.focusGained.connect(lambda: setattr(self, '_last_focused_tree', 'rig'))
         self._r_tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self._r_tree.customContextMenuRequested.connect(self._on_rig_right_click)
         self._r_tree.itemsDropped.connect(self._on_rig_drop)
@@ -1675,6 +1830,10 @@ class App(QMainWindow):
         except Exception as e:
             self.current_file = None
             self._status.showMessage(f"Parse error: {e}")
+        # Reset undo stacks for new file
+        self._rig_undo_stack.clear()
+        self._rig_redo_stack.clear()
+        self._rig_last_snap = json.dumps(self.current_file.to_json_data()) if self.current_file else None
         self._rebuild_rig_tree()
         self._clear_editor(self._r_detail_title, self._r_editor_widget, self._r_editor_layout)
         if self.current_file:
@@ -1726,6 +1885,10 @@ class App(QMainWindow):
         else:
             self.master_list = None
             self._status.showMessage("No master_list.json found")
+        # Reset master undo stacks
+        self._master_undo_stack.clear()
+        self._master_redo_stack.clear()
+        self._master_last_snap = json.dumps(self.master_list.to_json_data()) if self.master_list else None
         self._update_master_visibility()
 
     def _update_master_visibility(self):
@@ -2417,6 +2580,15 @@ class App(QMainWindow):
     # -- Master list tree ----------------------------------------------------
 
     def _rebuild_master_tree(self):
+        # Auto-push undo if data changed since last snapshot
+        if self.master_list and not self._undo_suppress:
+            new_snap = json.dumps(self.master_list.to_json_data())
+            if self._master_last_snap is not None and new_snap != self._master_last_snap:
+                self._master_undo_stack.append(self._master_last_snap)
+                if len(self._master_undo_stack) > self._undo_max:
+                    self._master_undo_stack.pop(0)
+                self._master_redo_stack.clear()
+            self._master_last_snap = new_snap
         saved = self._m_tree.beginRebuild()
         self._m_tree.clear()
         if not self.master_list:
@@ -2440,8 +2612,9 @@ class App(QMainWindow):
                     ungrouped.append((ii, it))
 
             total = len(show)
-            cat_text = f"📂 {cat.name} ({total})"
-            cat_item = QTreeWidgetItem([cat_text])
+            cat_item = QTreeWidgetItem([cat.name])
+            cat_item.setText(1, f"({total})")
+            cat_item.setIcon(0, _ICONS["cat"])
             cat_item.setData(0, Qt.ItemDataRole.UserRole, ("cat", ci))
             cat_item.setData(0, CN, cat.name)
             self._m_tree.addTopLevelItem(cat_item)
@@ -2451,21 +2624,24 @@ class App(QMainWindow):
             # Group nodes
             for group_name in sorted(groups.keys(), key=str.lower):
                 members = groups[group_name]
-                g_text = f"📁 {group_name} ({len(members)})"
-                g_item = QTreeWidgetItem([g_text])
+                g_item = QTreeWidgetItem([group_name])
+                g_item.setText(1, f"({len(members)})")
+                g_item.setIcon(0, _ICONS["group"])
                 g_item.setData(0, Qt.ItemDataRole.UserRole, ("group", ci, group_name))
                 g_item.setData(0, CN, group_name)
                 cat_item.addChild(g_item)
                 if q: g_item.setExpanded(True)
                 for ii, it in members:
-                    i_item = QTreeWidgetItem([f"{it.name}  (min {it.emsa_min})"])
+                    i_item = QTreeWidgetItem([it.name])
+                    i_item.setText(1, f"min {it.emsa_min}")
                     i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ci, ii))
                     i_item.setData(0, CN, it.name)
                     g_item.addChild(i_item)
 
             # Ungrouped items
             for ii, it in sorted(ungrouped, key=lambda x: x[1].name.lower()):
-                i_item = QTreeWidgetItem([f"{it.name}  (min {it.emsa_min})"])
+                i_item = QTreeWidgetItem([it.name])
+                i_item.setText(1, f"min {it.emsa_min}")
                 i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ci, ii))
                 i_item.setData(0, CN, it.name)
                 cat_item.addChild(i_item)
@@ -2707,7 +2883,10 @@ class App(QMainWindow):
         f.addStretch()
 
     def _on_master_right_click(self, pos):
+        self._last_focused_tree = "master"
         item = self._m_tree.itemAt(pos)
+        if item:
+            self._m_tree.setCurrentItem(item)
         selected = self._m_tree.selectedItems()
         menu = QMenu(self)
 
@@ -2783,6 +2962,20 @@ class App(QMainWindow):
 
         if not item:
             menu.addAction("Add Category…", self._add_master_cat)
+
+        # Standard edit actions
+        menu.addSeparator()
+        if item:
+            menu.addAction("Rename\tCtrl+R", self._do_rename)
+        menu.addAction("Copy\tCtrl+C", self._do_copy)
+        menu.addAction("Cut\tCtrl+X", self._do_cut)
+        if self._clipboard and self._clipboard["items"]:
+            n = len(self._clipboard["items"])
+            mode = self._clipboard["mode"]
+            menu.addAction(f"Paste ({n} item{'s' if n > 1 else ''}, {mode})\tCtrl+V", self._do_paste)
+        menu.addSeparator()
+        menu.addAction(f"Undo\tCtrl+Z", self._master_undo)
+        menu.addAction(f"Redo\tCtrl+Shift+Z", self._master_redo)
 
         menu.exec(self._m_tree.viewport().mapToGlobal(pos))
 
@@ -2972,41 +3165,63 @@ class App(QMainWindow):
         self._clear_editor(self._m_detail_title, self._m_editor_widget, self._m_editor_layout)
         self._status.showMessage(f"Deleted {detail}")
 
-    def _on_master_drop(self, source_items, target_item):
-        """Handle drag-drop in master tree."""
-        if not self.master_list:
-            return
-        target_data = target_item.data(0, Qt.ItemDataRole.UserRole)
-        if not target_data:
+    def _on_master_drop(self, source_data_list, target_data):
+        """Handle drag-drop in master tree. Receives pre-serialized UserRole data."""
+        if not self.master_list or not target_data:
             return
 
+        target_kind = target_data[0]
         target_ci = target_data[1]
+        if target_ci >= len(self.master_list.categories):
+            return
         target_cat = self.master_list.categories[target_ci]
+        target_group = target_data[2] if target_kind == "group" else None
 
-        moved = 0
-        for src in source_items:
-            src_data = src.data(0, Qt.ItemDataRole.UserRole)
+        # Collect moves first
+        item_moves = []  # [(src_cat, item_obj)]
+        group_moves = []  # [(src_cat, [item_objs])]
+        for src_data in source_data_list:
             if not src_data:
                 continue
             src_kind = src_data[0]
             src_ci = src_data[1]
+            if src_ci >= len(self.master_list.categories):
+                continue
             src_cat = self.master_list.categories[src_ci]
 
             if src_kind == "item":
                 ii = src_data[2]
-                item = src_cat.items[ii]
-                if src_cat is not target_cat:
-                    src_cat.items.remove(item)
-                    target_cat.items.append(item)
-                    moved += 1
+                if ii < len(src_cat.items):
+                    item = src_cat.items[ii]
+                    if src_cat is not target_cat or target_group is not None:
+                        item_moves.append((src_cat, item))
             elif src_kind == "group":
                 group_name = src_data[2]
                 group_items = [it for it in src_cat.items if it.group == group_name]
                 if src_cat is not target_cat:
-                    for it in group_items:
-                        src_cat.items.remove(it)
-                        target_cat.items.append(it)
-                    moved += len(group_items)
+                    group_moves.append((src_cat, group_items))
+
+        # Apply moves
+        moved = 0
+        for src_cat, item in item_moves:
+            if item in src_cat.items:
+                src_cat.items.remove(item)
+                if target_group is not None:
+                    item.group = target_group
+                target_cat.items.append(item)
+                moved += 1
+            elif src_cat is target_cat and target_group is not None:
+                # Same category, just re-tagging the group
+                item.group = target_group
+                moved += 1
+        for src_cat, items in group_moves:
+            for it in items:
+                if it in src_cat.items:
+                    src_cat.items.remove(it)
+                    if target_group is not None:
+                        it.group = target_group
+                    target_cat.items.append(it)
+                    moved += 1
 
         if moved:
             self.dirty_master = True
@@ -3054,6 +3269,15 @@ class App(QMainWindow):
     # -- Rig tree ------------------------------------------------------------
 
     def _rebuild_rig_tree(self):
+        # Auto-push undo if data changed since last snapshot
+        if self.current_file and not self._undo_suppress:
+            new_snap = json.dumps(self.current_file.to_json_data())
+            if self._rig_last_snap is not None and new_snap != self._rig_last_snap:
+                self._rig_undo_stack.append(self._rig_last_snap)
+                if len(self._rig_undo_stack) > self._undo_max:
+                    self._rig_undo_stack.pop(0)
+                self._rig_redo_stack.clear()
+            self._rig_last_snap = new_snap
         saved = self._r_tree.beginRebuild()
         self._r_tree.clear()
         if not self.current_file:
@@ -3075,7 +3299,9 @@ class App(QMainWindow):
                 if not matches:
                     continue
 
-                cat_item = QTreeWidgetItem([f"📂 {cat.name} ({len(matches)})"])
+                cat_item = QTreeWidgetItem([cat.name])
+                cat_item.setText(1, f"({len(matches)})")
+                cat_item.setIcon(0, _ICONS["cat"])
                 cat_item.setData(0, Qt.ItemDataRole.UserRole, ("cat", ai, ci))
                 cat_item.setData(0, CN, cat.name)
                 area_item.addChild(cat_item)
@@ -3093,7 +3319,9 @@ class App(QMainWindow):
                 # Group nodes
                 for group_name in sorted(groups.keys(), key=str.lower):
                     members = groups[group_name]
-                    g_item = QTreeWidgetItem([f"📁 {group_name} ({len(members)})"])
+                    g_item = QTreeWidgetItem([group_name])
+                    g_item.setText(1, f"({len(members)})")
+                    g_item.setIcon(0, _ICONS["group"])
                     g_item.setData(0, Qt.ItemDataRole.UserRole, ("group", ai, ci, group_name))
                     g_item.setData(0, CN, group_name)
                     cat_item.addChild(g_item)
@@ -3101,30 +3329,35 @@ class App(QMainWindow):
                     for ii, it in members:
                         ok = it.name in mn
                         flag = "" if ok else "  ⚠"
-                        i_item = QTreeWidgetItem([f"{it.name}  ×{it.qty}{flag}"])
+                        i_item = QTreeWidgetItem([it.name])
+                        i_item.setText(1, f"×{it.qty}{flag}")
                         i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ai, ci, ii))
                         i_item.setData(0, CN, it.name)
                         if not ok:
                             i_item.setForeground(0, QBrush(QColor("#f38ba8")))
+                            i_item.setForeground(1, QBrush(QColor("#f38ba8")))
                         g_item.addChild(i_item)
 
                 # Ungrouped items
                 for ii, it in ungrouped:
                     ok = it.name in mn
                     flag = "" if ok else "  ⚠"
-                    i_item = QTreeWidgetItem([f"{it.name}  ×{it.qty}{flag}"])
+                    i_item = QTreeWidgetItem([it.name])
+                    i_item.setText(1, f"×{it.qty}{flag}")
                     i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ai, ci, ii))
                     i_item.setData(0, CN, it.name)
                     if not ok:
                         i_item.setForeground(0, QBrush(QColor("#f38ba8")))
+                        i_item.setForeground(1, QBrush(QColor("#f38ba8")))
                     cat_item.addChild(i_item)
 
             return area_item.childCount() > 0
 
         # First pass: create all area nodes
         for ai, area in enumerate(self.current_file.areas):
-            seal = "  🔒" if area.sealable else ""
-            area_item = QTreeWidgetItem([f"📦 {area.name}{seal}"])
+            seal = " 🔒" if area.sealable else ""
+            area_item = QTreeWidgetItem([f"{area.name}{seal}"])
+            area_item.setIcon(0, _ICONS["area"])
             area_item.setData(0, Qt.ItemDataRole.UserRole, ("area", ai))
             area_item.setData(0, CN, area.name)
             has_content = _build_area_content(area_item, ai, area)
@@ -3423,7 +3656,10 @@ class App(QMainWindow):
     def _on_rig_right_click(self, pos):
         if not self.current_file:
             return
+        self._last_focused_tree = "rig"
         item = self._r_tree.itemAt(pos)
+        if item:
+            self._r_tree.setCurrentItem(item)
         selected = self._r_tree.selectedItems()
         menu = QMenu(self)
 
@@ -3512,6 +3748,20 @@ class App(QMainWindow):
                 menu.addSeparator()
                 menu.addAction(f"Delete '{area.name}'",
                     lambda: self._delete_selected_rig_nodes([], [], [area]))
+        # Standard edit actions
+        menu.addSeparator()
+        if item:
+            menu.addAction("Rename\tCtrl+R", self._do_rename)
+        menu.addAction("Copy\tCtrl+C", self._do_copy)
+        menu.addAction("Cut\tCtrl+X", self._do_cut)
+        if self._clipboard and self._clipboard["items"]:
+            n = len(self._clipboard["items"])
+            mode = self._clipboard["mode"]
+            menu.addAction(f"Paste ({n} item{'s' if n > 1 else ''}, {mode})\tCtrl+V", self._do_paste)
+        menu.addSeparator()
+        menu.addAction(f"Undo\tCtrl+Z", self._rig_undo)
+        menu.addAction(f"Redo\tCtrl+Shift+Z", self._rig_redo)
+
         menu.exec(self._r_tree.viewport().mapToGlobal(pos))
 
     def _move_selected_to_rig_area(self, items_list, target_area_name):
@@ -3575,23 +3825,28 @@ class App(QMainWindow):
         self._clear_editor(self._r_detail_title, self._r_editor_widget, self._r_editor_layout)
         self._status.showMessage(f"Deleted {detail}")
 
-    def _on_rig_drop(self, source_items, target_item):
-        """Handle drag-drop in rig tree."""
-        if not self.current_file:
-            return
-        target_data = target_item.data(0, Qt.ItemDataRole.UserRole)
-        if not target_data:
+    def _on_rig_drop(self, source_data_list, target_data):
+        """Handle drag-drop in rig tree. Receives pre-serialized UserRole data."""
+        if not self.current_file or not target_data:
             return
 
         target_kind = target_data[0]
         target_ai = target_data[1]
+        if target_ai >= len(self.current_file.areas):
+            return
         target_area = self.current_file.areas[target_ai]
+        target_group = None  # group tag to apply to moved items
 
-        if target_kind in ("item", "group"):
+        if target_kind == "group":
             target_ci = target_data[2]
+            if target_ci >= len(target_area.categories):
+                return
             target_cat = target_area.categories[target_ci]
-        elif target_kind == "cat":
+            target_group = target_data[3]  # group_name
+        elif target_kind in ("item", "cat"):
             target_ci = target_data[2]
+            if target_ci >= len(target_area.categories):
+                return
             target_cat = target_area.categories[target_ci]
         elif target_kind == "area":
             if not target_area.categories:
@@ -3600,35 +3855,419 @@ class App(QMainWindow):
         else:
             return
 
-        moved = 0
-        for src in source_items:
-            src_data = src.data(0, Qt.ItemDataRole.UserRole)
+        # Collect all moves first
+        item_moves = []  # [(src_cat, item_obj)]
+        cat_moves = []   # [(src_area, cat_obj)]
+        for src_data in source_data_list:
             if not src_data:
                 continue
             src_kind = src_data[0]
             src_ai = src_data[1]
+            if src_ai >= len(self.current_file.areas):
+                continue
             src_area = self.current_file.areas[src_ai]
 
             if src_kind == "item":
                 src_ci = src_data[2]
+                if src_ci >= len(src_area.categories):
+                    continue
                 src_cat = src_area.categories[src_ci]
-                item = src_cat.items[src_data[3]]
-                if src_cat is not target_cat:
-                    src_cat.items.remove(item)
-                    target_cat.items.append(item)
-                    moved += 1
+                ii = src_data[3]
+                if ii < len(src_cat.items):
+                    item = src_cat.items[ii]
+                    if src_cat is not target_cat or target_group is not None:
+                        item_moves.append((src_cat, item))
             elif src_kind == "cat":
                 src_ci = src_data[2]
+                if src_ci >= len(src_area.categories):
+                    continue
                 cat_to_move = src_area.categories[src_ci]
                 if src_area is not target_area:
-                    src_area.categories.remove(cat_to_move)
-                    target_area.categories.append(cat_to_move)
-                    moved += len(cat_to_move.items)
+                    cat_moves.append((src_area, cat_to_move))
+
+        # Apply moves
+        moved = 0
+        for src_cat, item in item_moves:
+            if src_cat is target_cat and target_group is not None:
+                # Same category, just re-tag the group
+                item.group = target_group
+                moved += 1
+            elif item in src_cat.items:
+                src_cat.items.remove(item)
+                if target_group is not None:
+                    item.group = target_group
+                target_cat.items.append(item)
+                moved += 1
+        for src_area, cat_obj in cat_moves:
+            if cat_obj in src_area.categories:
+                src_area.categories.remove(cat_obj)
+                target_area.categories.append(cat_obj)
+                moved += len(cat_obj.items)
 
         if moved:
             self._set_dirty()
             self._rebuild_rig_tree()
             self._status.showMessage(f"Moved {moved} item(s) to '{target_area.name} › {target_cat.name}'")
+
+    # -- Undo / Redo / Clipboard -----------------------------------------------
+
+    def _focused_tree(self):
+        """Return 'rig' or 'master' depending on which tree was last focused."""
+        # Check live focus first
+        if self._r_tree.hasFocus():
+            return "rig"
+        if self._m_tree.hasFocus():
+            return "master"
+        # Fall back to tracked value
+        return self._last_focused_tree
+
+    def _rig_undo(self):
+        if not self._rig_undo_stack or not self.current_file:
+            self._status.showMessage("Nothing to undo (rig)")
+            return
+        # Push current state to redo
+        self._rig_redo_stack.append(
+            json.dumps(self.current_file.to_json_data()))
+        # Pop and restore
+        snap = self._rig_undo_stack.pop()
+        self._undo_suppress = True
+        self.current_file.areas = InventoryFile._parse_json(json.loads(snap))
+        self._rig_last_snap = snap
+        self.dirty = True
+        self._update_save_state()
+        self._rebuild_rig_tree()
+        self._undo_suppress = False
+        self._status.showMessage(f"Undo (rig) — {len(self._rig_undo_stack)} remaining")
+
+    def _rig_redo(self):
+        if not self._rig_redo_stack or not self.current_file:
+            self._status.showMessage("Nothing to redo (rig)")
+            return
+        self._rig_undo_stack.append(
+            json.dumps(self.current_file.to_json_data()))
+        snap = self._rig_redo_stack.pop()
+        self._undo_suppress = True
+        self.current_file.areas = InventoryFile._parse_json(json.loads(snap))
+        self._rig_last_snap = snap
+        self.dirty = True
+        self._update_save_state()
+        self._rebuild_rig_tree()
+        self._undo_suppress = False
+        self._status.showMessage(f"Redo (rig) — {len(self._rig_redo_stack)} remaining")
+
+    def _master_undo(self):
+        if not self._master_undo_stack or not self.master_list:
+            self._status.showMessage("Nothing to undo (master)")
+            return
+        self._master_redo_stack.append(
+            json.dumps(self.master_list.to_json_data()))
+        snap = self._master_undo_stack.pop()
+        self._undo_suppress = True
+        data = json.loads(snap)
+        self.master_list.categories = []
+        for cat_obj in data.get("categories", []):
+            cat = MasterCategory(cat_obj.get("name", "Uncategorized"))
+            for item_obj in cat_obj.get("items", []):
+                cat.items.append(MasterItem(
+                    item_obj.get("name", ""),
+                    item_obj.get("emsa_min", 1),
+                    item_obj.get("group")))
+            self.master_list.categories.append(cat)
+        self._master_last_snap = snap
+        self.dirty_master = True
+        self._update_save_state()
+        self._rebuild_master_tree()
+        self._update_master_visibility()
+        self._undo_suppress = False
+        self._status.showMessage(f"Undo (master) — {len(self._master_undo_stack)} remaining")
+
+    def _master_redo(self):
+        if not self._master_redo_stack or not self.master_list:
+            self._status.showMessage("Nothing to redo (master)")
+            return
+        self._master_undo_stack.append(
+            json.dumps(self.master_list.to_json_data()))
+        snap = self._master_redo_stack.pop()
+        self._undo_suppress = True
+        data = json.loads(snap)
+        self.master_list.categories = []
+        for cat_obj in data.get("categories", []):
+            cat = MasterCategory(cat_obj.get("name", "Uncategorized"))
+            for item_obj in cat_obj.get("items", []):
+                cat.items.append(MasterItem(
+                    item_obj.get("name", ""),
+                    item_obj.get("emsa_min", 1),
+                    item_obj.get("group")))
+            self.master_list.categories.append(cat)
+        self._master_last_snap = snap
+        self.dirty_master = True
+        self._update_save_state()
+        self._rebuild_master_tree()
+        self._update_master_visibility()
+        self._undo_suppress = False
+        self._status.showMessage(f"Redo (master) — {len(self._master_redo_stack)} remaining")
+
+    def _smart_undo(self):
+        self._do_undo()
+
+    def _smart_redo(self):
+        self._do_redo()
+
+    def _smart_copy(self):
+        try:
+            if self._m_all_table.hasFocus() or self._m_missing_table.hasFocus():
+                self._copy_cell()
+                return
+        except (AttributeError, RuntimeError):
+            pass
+        self._do_copy()
+
+    def _smart_cut(self):
+        self._do_cut()
+
+    def _smart_paste(self):
+        try:
+            if self._m_all_table.hasFocus() or self._m_missing_table.hasFocus():
+                self._paste_cell()
+                return
+        except (AttributeError, RuntimeError):
+            pass
+        self._do_paste()
+
+    def _do_undo(self):
+        ft = self._focused_tree()
+        if ft == "rig":
+            self._rig_undo()
+        else:
+            self._master_undo()
+
+    def _do_redo(self):
+        ft = self._focused_tree()
+        if ft == "rig":
+            self._rig_redo()
+        else:
+            self._master_redo()
+
+    def _do_rename(self):
+        ft = self._focused_tree()
+        tree = self._r_tree if ft == "rig" else self._m_tree
+        item = tree.currentItem()
+        if item:
+            tree._startRename(item)
+
+    def _do_copy(self):
+        ft = self._focused_tree()
+        tree = self._r_tree if ft == "rig" else self._m_tree
+        items = self._serialize_selected(tree, ft)
+        if items:
+            self._clipboard = {"items": items, "mode": "copy", "source": ft}
+            self._status.showMessage(f"Copied {len(items)} item(s)")
+
+    def _do_cut(self):
+        ft = self._focused_tree()
+        tree = self._r_tree if ft == "rig" else self._m_tree
+        items = self._serialize_selected(tree, ft)
+        if items:
+            self._clipboard = {"items": items, "mode": "cut", "source": ft}
+            self._status.showMessage(f"Cut {len(items)} item(s) — paste to move")
+
+    def _do_paste(self):
+        if not self._clipboard or not self._clipboard["items"]:
+            self._status.showMessage("Nothing to paste")
+            return
+        ft = self._focused_tree()
+        tree = self._r_tree if ft == "rig" else self._m_tree
+        sel = tree.currentItem()
+
+        # Determine target container
+        target_cat = None
+        target_group = None
+        if sel:
+            data = sel.data(0, Qt.ItemDataRole.UserRole)
+            if data:
+                kind = data[0]
+                if kind == "item":
+                    QMessageBox.warning(self, "Paste", "Cannot paste inside an item.\nSelect a category, group, or area.")
+                    return
+                target_cat, target_group = self._resolve_paste_target(ft, data)
+
+        # If no target, create/find "Uncategorized"
+        if target_cat is None:
+            target_cat = self._get_or_create_uncategorized(ft)
+            if target_cat is None:
+                return
+
+        clip_items = self._clipboard["items"]
+        clip_source = self._clipboard["source"]
+        is_cut = self._clipboard["mode"] == "cut"
+
+        # For cut: remove from source FIRST
+        if is_cut:
+            self._remove_cut_items(clip_items, clip_source)
+
+        # Add to target
+        pasted = 0
+        for ci in clip_items:
+            # Use target_group if pasting into a group, otherwise keep original
+            group = target_group if target_group is not None else ci.get("group")
+            if ft == "rig":
+                target_cat.items.append(Item(
+                    ci["name"], ci.get("qty", ci.get("emsa_min", 1)),
+                    group))
+            else:
+                target_cat.items.append(MasterItem(
+                    ci["name"], ci.get("emsa_min", ci.get("qty", 1)),
+                    group))
+            pasted += 1
+
+
+        if is_cut:
+            self._clipboard = None
+
+        # Rebuild affected trees
+        if ft == "rig" or (is_cut and clip_source == "rig"):
+            self._set_dirty()
+            self._rebuild_rig_tree()
+        if ft == "master" or (is_cut and clip_source == "master"):
+            self.dirty_master = True
+            self._update_save_state()
+            self._rebuild_master_tree()
+            self._update_master_visibility()
+
+        self._status.showMessage(f"Pasted {pasted} item(s)")
+
+    def _serialize_selected(self, tree, tree_type):
+        """Serialize selected tree items to clipboard dicts."""
+        items = []
+        for sel in tree.selectedItems():
+            data = sel.data(0, Qt.ItemDataRole.UserRole)
+            if not data:
+                continue
+            kind = data[0]
+            if tree_type == "rig" and self.current_file:
+                ai = data[1]
+                area = self.current_file.areas[ai]
+                if kind == "item":
+                    ci, ii = data[2], data[3]
+                    it = area.categories[ci].items[ii]
+                    items.append({"name": it.name, "qty": it.qty, "group": it.group,
+                                  "_src": ("rig", ai, ci, ii)})
+                elif kind == "group":
+                    ci, gn = data[2], data[3]
+                    for it in area.categories[ci].items:
+                        if it.group == gn:
+                            items.append({"name": it.name, "qty": it.qty, "group": it.group,
+                                          "_src": ("rig", ai, ci, None)})
+                elif kind == "cat":
+                    ci = data[2]
+                    for it in area.categories[ci].items:
+                        items.append({"name": it.name, "qty": it.qty, "group": it.group,
+                                      "_src": ("rig", ai, ci, None)})
+            elif tree_type == "master" and self.master_list:
+                ci = data[1]
+                cat = self.master_list.categories[ci]
+                if kind == "item":
+                    ii = data[2]
+                    it = cat.items[ii]
+                    items.append({"name": it.name, "emsa_min": it.emsa_min, "group": it.group,
+                                  "_src": ("master", ci, ii)})
+                elif kind == "group":
+                    gn = data[2]
+                    for it in cat.items:
+                        if it.group == gn:
+                            items.append({"name": it.name, "emsa_min": it.emsa_min, "group": it.group,
+                                          "_src": ("master", ci, None)})
+                elif kind == "cat":
+                    for it in cat.items:
+                        items.append({"name": it.name, "emsa_min": it.emsa_min, "group": it.group,
+                                      "_src": ("master", ci, None)})
+        return items
+
+    def _resolve_paste_target(self, tree_type, data):
+        """Resolve a tree node to (Category, group_name_or_None) for pasting into."""
+        kind = data[0]
+        if tree_type == "rig" and self.current_file:
+            ai = data[1]
+            area = self.current_file.areas[ai]
+            if kind == "cat":
+                return area.categories[data[2]], None
+            elif kind == "group":
+                return area.categories[data[2]], data[3]  # ci, group_name
+            elif kind == "area":
+                if not area.categories:
+                    area.categories.append(Category("General"))
+                return area.categories[0], None
+        elif tree_type == "master" and self.master_list:
+            ci = data[1]
+            if kind == "cat":
+                return self.master_list.categories[ci], None
+            elif kind == "group":
+                return self.master_list.categories[ci], data[2]  # group_name
+        return None, None
+
+    def _get_or_create_uncategorized(self, tree_type):
+        """Get or create an 'Uncategorized' container for paste with no selection."""
+        if tree_type == "rig":
+            if not self.current_file:
+                return None
+            for area in self.current_file.areas:
+                for cat in area.categories:
+                    if cat.name == "Uncategorized":
+                        return cat
+            # Create one in first area
+            if not self.current_file.areas:
+                self.current_file.areas.append(Area("Uncategorized"))
+            cat = Category("Uncategorized")
+            self.current_file.areas[0].categories.append(cat)
+            return cat
+        else:
+            if not self.master_list:
+                return None
+            for cat in self.master_list.categories:
+                if cat.name == "Uncategorized":
+                    return cat
+            cat = MasterCategory("Uncategorized")
+            self.master_list.categories.append(cat)
+            return cat
+
+    def _remove_cut_items(self, clip_items, source_type):
+        """Remove cut items from their source using stored source references."""
+        if source_type == "rig" and self.current_file:
+            # Group by (ai, ci) to remove from correct categories
+            to_remove = {}  # (ai, ci) -> set of item names
+            for ci_data in clip_items:
+                src = ci_data.get("_src")
+                if src and src[0] == "rig":
+                    key = (src[1], src[2])  # (ai, ci)
+                    to_remove.setdefault(key, set()).add(ci_data["name"])
+            if to_remove:
+                for (ai, ci), names in to_remove.items():
+                    if ai < len(self.current_file.areas):
+                        area = self.current_file.areas[ai]
+                        if ci < len(area.categories):
+                            cat = area.categories[ci]
+                            cat.items = [it for it in cat.items if it.name not in names]
+            else:
+                # Fallback: remove by name globally
+                names = {ci_data["name"] for ci_data in clip_items}
+                for area in self.current_file.areas:
+                    for cat in area.categories:
+                        cat.items = [it for it in cat.items if it.name not in names]
+        elif source_type == "master" and self.master_list:
+            to_remove = {}  # ci -> set of item names
+            for ci_data in clip_items:
+                src = ci_data.get("_src")
+                if src and src[0] == "master":
+                    to_remove.setdefault(src[1], set()).add(ci_data["name"])
+            if to_remove:
+                for ci, names in to_remove.items():
+                    if ci < len(self.master_list.categories):
+                        cat = self.master_list.categories[ci]
+                        cat.items = [it for it in cat.items if it.name not in names]
+            else:
+                names = {ci_data["name"] for ci_data in clip_items}
+                for cat in self.master_list.categories:
+                    cat.items = [it for it in cat.items if it.name not in names]
 
     def _set_dirty(self):
         self.dirty = True
@@ -5009,9 +5648,107 @@ class App(QMainWindow):
         event.accept()
 
 
+def _generate_branch_images():
+    """Generate tree branch connector and arrow images, return temp dir path."""
+    d = os.path.join(tempfile.gettempdir(), "ems_editor_branch")
+    os.makedirs(d, exist_ok=True)
+    sz = 20  # image size matches tree indentation
+    line_color = QColor("#585b70")
+    arrow_color = QColor("#a6adc8")
+
+    def _make_pixmap():
+        px = QPixmap(sz, sz)
+        px.fill(QColor(0, 0, 0, 0))
+        return px
+
+    def _dotted_pen():
+        pen = QPen(line_color)
+        pen.setStyle(Qt.PenStyle.DotLine)
+        pen.setWidth(1)
+        return pen
+
+    # vline: vertical dotted line through center (has siblings, no item)
+    px = _make_pixmap()
+    p = QPainter(px)
+    p.setPen(_dotted_pen())
+    p.drawLine(sz // 2, 0, sz // 2, sz)
+    p.end()
+    px.save(os.path.join(d, "vline.png"))
+
+    # branch-more: T-connector (vertical + horizontal to right)
+    px = _make_pixmap()
+    p = QPainter(px)
+    p.setPen(_dotted_pen())
+    p.drawLine(sz // 2, 0, sz // 2, sz)       # vertical through
+    p.drawLine(sz // 2, sz // 2, sz, sz // 2)  # horizontal to right
+    p.end()
+    px.save(os.path.join(d, "branch-more.png"))
+
+    # branch-end: L-connector (half vertical + horizontal to right)
+    px = _make_pixmap()
+    p = QPainter(px)
+    p.setPen(_dotted_pen())
+    p.drawLine(sz // 2, 0, sz // 2, sz // 2)   # vertical top to center
+    p.drawLine(sz // 2, sz // 2, sz, sz // 2)   # horizontal to right
+    p.end()
+    px.save(os.path.join(d, "branch-end.png"))
+
+    # arrow-closed: [+] box with dotted border
+    px = _make_pixmap()
+    p = QPainter(px)
+    p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
+    box_pen = QPen(line_color)
+    box_pen.setStyle(Qt.PenStyle.DotLine)
+    box_pen.setWidth(1)
+    p.setPen(box_pen)
+    bx, by, bsz = 3, 4, 12
+    p.drawRect(bx, by, bsz, bsz)
+    # + sign
+    plus_pen = QPen(arrow_color)
+    plus_pen.setWidth(1)
+    p.setPen(plus_pen)
+    mid_x = bx + bsz // 2
+    mid_y = by + bsz // 2
+    p.drawLine(bx + 3, mid_y, bx + bsz - 3, mid_y)       # horizontal
+    p.drawLine(mid_x, by + 3, mid_x, by + bsz - 3)         # vertical
+    p.end()
+    px.save(os.path.join(d, "arrow-closed.png"))
+
+    # arrow-open: [-] box with dotted border
+    px = _make_pixmap()
+    p = QPainter(px)
+    p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
+    p.setPen(box_pen)
+    p.drawRect(bx, by, bsz, bsz)
+    # - sign
+    p.setPen(plus_pen)
+    p.drawLine(bx + 3, mid_y, bx + bsz - 3, mid_y)       # horizontal only
+    p.end()
+    px.save(os.path.join(d, "arrow-open.png"))
+
+    return d
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
+    branch_dir = _generate_branch_images()
+    _init_icons()
+    # Paths for stylesheet (forward slashes for Qt CSS on all platforms)
+    bp = branch_dir.replace("\\", "/")
+    # Dark palette so Fusion draws widgets in dark colors
+    palette = QPalette()
+    palette.setColor(QPalette.ColorRole.Window, QColor("#1e1e2e"))
+    palette.setColor(QPalette.ColorRole.WindowText, QColor("#cdd6f4"))
+    palette.setColor(QPalette.ColorRole.Base, QColor("#1e1e2e"))
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor("#313244"))
+    palette.setColor(QPalette.ColorRole.Text, QColor("#cdd6f4"))
+    palette.setColor(QPalette.ColorRole.Button, QColor("#313244"))
+    palette.setColor(QPalette.ColorRole.ButtonText, QColor("#cdd6f4"))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor("#3b5998"))
+    palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#f0f0f0"))
+    palette.setColor(QPalette.ColorRole.Mid, QColor("#585b70"))
+    app.setPalette(palette)
     app.setStyleSheet("""
         /* === Catppuccin Mocha Base === */
         QMainWindow, QWidget {
@@ -5150,7 +5887,18 @@ if __name__ == "__main__":
             outline: none;
         }
         QTreeWidget::item {
-            padding: 3px 0px;
+            padding: 2px 0px;
+            min-height: 22px;
+        }
+        QTreeWidget QLineEdit {
+            background-color: #313244;
+            color: #cdd6f4;
+            border: 1px solid #89b4fa;
+            border-radius: 2px;
+            padding: 2px 4px;
+            min-height: 18px;
+            selection-background-color: #3b5998;
+            selection-color: #f0f0f0;
         }
         QTreeWidget::item:selected {
             background-color: #3b5998;
@@ -5169,14 +5917,24 @@ if __name__ == "__main__":
             background-color: #313244;
         }
         QTreeWidget::branch:has-siblings:!adjoins-item {
-            border-left: 1px dotted #585b70;
+            border-image: url(""" + bp + """/vline.png) 0;
         }
         QTreeWidget::branch:has-siblings:adjoins-item {
-            border-left: 1px dotted #585b70;
-            border-bottom: 1px dotted #585b70;
+            border-image: url(""" + bp + """/branch-more.png) 0;
         }
         QTreeWidget::branch:!has-children:!has-siblings:adjoins-item {
-            border-bottom: 1px dotted #585b70;
+            border-image: url(""" + bp + """/branch-end.png) 0;
+        }
+        QTreeWidget::branch:has-children:!has-siblings:closed,
+        QTreeWidget::branch:closed:has-children:has-siblings {
+            image: url(""" + bp + """/arrow-closed.png);
+        }
+        QTreeWidget::branch:open:has-children:!has-siblings,
+        QTreeWidget::branch:open:has-children:has-siblings {
+            image: url(""" + bp + """/arrow-open.png);
+        }
+        QTreeWidget {
+            show-decoration-selected: 1;
         }
         QHeaderView::section {
             background-color: #181825;
