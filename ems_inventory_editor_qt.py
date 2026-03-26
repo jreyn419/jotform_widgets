@@ -32,6 +32,8 @@ from collections import defaultdict
 from copy import deepcopy
 import html as html_module
 
+os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-logging --log-level=3"
+
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QTabWidget, QSplitter,
     QTreeWidget, QTreeWidgetItem, QVBoxLayout, QHBoxLayout, QFormLayout,
@@ -6213,14 +6215,17 @@ def _generate_branch_images():
     px.save(os.path.join(d, "branch-end.png"))
 
     # arrow-closed: [+] box with dotted border
+    bg_color = QColor("#1e1e2e")  # tree background — occludes branch lines
     px = _make_pixmap()
     p = QPainter(px)
     p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
+    bx, by, bsz = 3, 4, 12
+    # Fill box background to hide branch lines behind it
+    p.fillRect(bx, by, bsz + 1, bsz + 1, bg_color)
     box_pen = QPen(line_color)
     box_pen.setStyle(Qt.PenStyle.DotLine)
     box_pen.setWidth(1)
     p.setPen(box_pen)
-    bx, by, bsz = 3, 4, 12
     p.drawRect(bx, by, bsz, bsz)
     # + sign
     plus_pen = QPen(arrow_color)
@@ -6237,6 +6242,7 @@ def _generate_branch_images():
     px = _make_pixmap()
     p = QPainter(px)
     p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
+    p.fillRect(bx, by, bsz + 1, bsz + 1, bg_color)
     p.setPen(box_pen)
     p.drawRect(bx, by, bsz, bsz)
     # - sign
