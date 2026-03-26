@@ -1472,6 +1472,8 @@ class App(QMainWindow):
         sf.addWidget(QLabel("Search:"))
         self._l_search = QLineEdit()
         self._l_search.textChanged.connect(lambda: self._rebuild_lemsa_list())
+        self._l_search._paired_tree = '_l_tree'
+        self._l_search.installEventFilter(self)
         sf.addWidget(self._l_search)
         clear_btn = QPushButton("✕")
         clear_btn.setFixedWidth(30)
@@ -1507,6 +1509,8 @@ class App(QMainWindow):
         self._l_tree.setHeaderHidden(True)
         self._l_tree.itemClicked.connect(self._on_lemsa_select)
         self._l_tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self._l_tree._paired_search = '_l_search'
+        self._l_tree.installEventFilter(self)
         left_layout.addWidget(self._l_tree)
 
         self._lemsa_splitter.addWidget(left)
@@ -1562,6 +1566,8 @@ class App(QMainWindow):
         self._m_tree.customContextMenuRequested.connect(self._on_master_right_click)
         self._m_tree.itemsDropped.connect(self._on_master_drop)
         self._m_tree.itemRenamed.connect(self._on_master_renamed)
+        self._m_tree._paired_search = '_m_search'
+        self._m_tree.installEventFilter(self)
         left_layout.addWidget(self._m_tree)
 
         # Placeholder shown when no master list exists
@@ -1844,6 +1850,8 @@ class App(QMainWindow):
         self._r_tree.customContextMenuRequested.connect(self._on_rig_right_click)
         self._r_tree.itemsDropped.connect(self._on_rig_drop)
         self._r_tree.itemRenamed.connect(self._on_rig_renamed)
+        self._r_tree._paired_search = '_r_search'
+        self._r_tree.installEventFilter(self)
         left_layout.addWidget(self._r_tree)
         self._rig_splitter.addWidget(left)
 
@@ -5732,8 +5740,19 @@ class App(QMainWindow):
                     tree.setCurrentItem(tree.topLevelItem(0))
                     return True
 
+        # Trees: up arrow from topmost item jumps to paired search
+        if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Up:
+            search_attr = getattr(obj, '_paired_search', None)
+            if search_attr and isinstance(obj, QTreeWidget):
+                current = obj.currentItem()
+                if current and current is obj.topLevelItem(0):
+                    search = getattr(self, search_attr, None)
+                    if search:
+                        search.setFocus()
+                        return True
+
         # Viewport: floating tooltip
-        if obj == self._m_all_table.viewport():
+        if hasattr(self, '_m_all_table') and obj == self._m_all_table.viewport():
             if event.type() == QEvent.Type.MouseMove:
                 pos = event.position().toPoint()
                 idx = self._m_all_table.indexAt(pos)
@@ -5751,7 +5770,7 @@ class App(QMainWindow):
                 return True  # suppress default tooltip
 
         # Table: keyboard cell navigation (only when not editing)
-        if obj == self._m_all_table and event.type() == QEvent.Type.KeyPress and self._editing_cell is None:
+        if hasattr(self, '_m_all_table') and obj == self._m_all_table and event.type() == QEvent.Type.KeyPress and self._editing_cell is None:
             row = self._m_all_table.currentRow()
             col = self._m_all_table.currentColumn()
             if row < 0:
