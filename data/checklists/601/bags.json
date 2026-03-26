@@ -1,0 +1,1077 @@
+[
+  {
+    "area": "Small Blue Bag: “Medslinger”",
+    "categories": [
+      {
+        "name": "Main Compartment",
+        "items": [
+          {
+            "name": "Ventilator Circuit w/ Exhaust Valve",
+            "qty": 1
+          },
+          {
+            "name": "Inline Nebulizer Kit",
+            "qty": 1
+          },
+          {
+            "name": "Inline EtCO2",
+            "qty": 2
+          },
+          {
+            "name": "Omni-Flex",
+            "qty": 2
+          },
+          {
+            "name": "HME Filter",
+            "qty": 2
+          },
+          {
+            "name": "Full Set",
+            "qty": 5
+          },
+          {
+            "name": "Half Set",
+            "qty": 5
+          }
+        ]
+      },
+      {
+        "name": "Main Compartment, Zippered Pocket",
+        "items": [
+          {
+            "name": "Invasive Monitoring Cable - Oval Port",
+            "qty": 2
+          },
+          {
+            "name": "Invasive Monitoring Cable - Square Port",
+            "qty": 1
+          }
+        ]
+      },
+      {
+        "name": "Secondary Compartment",
+        "items": [
+          {
+            "name": "Adhesive SpO2 Sensor - Adult/Neonatal",
+            "qty": 1
+          },
+          {
+            "name": "Adhesive SpO2 Sensor – Infant",
+            "qty": 1
+          },
+          {
+            "name": "Bulb Syringe",
+            "qty": 1
+          },
+          {
+            "name": "EtCO2 Nasal Cannula - Adult",
+            "qty": 1
+          },
+          {
+            "name": "EtCO2 Nasal Cannula – Pediatric",
+            "qty": 1
+          }
+        ]
+      },
+      {
+        "name": "Secondary Compartment, Zippered Pocket",
+        "items": [
+          {
+            "name": "Temperature Monitoring Cable",
+            "qty": 1
+          },
+          {
+            "name": "Disposable Temperature Monitoring Sensor - Neonate/Infant",
+            "qty": 3
+          }
+        ]
+      },
+      {
+        "name": "Outside Pocket",
+        "items": [
+          {
+            "name": "N95 Mask",
+            "qty": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "area": "Large Blue Bag: “Responder”",
+    "sealable": true,
+    "categories": [
+      {
+        "name": "Top Zippered Pocket",
+        "items": [
+          {
+            "name": "Thomas Tube Holder - Adult",
+            "qty": 1
+          },
+          {
+            "name": "Thomas Tube Holder - Pediatric",
+            "qty": 1
+          },
+          {
+            "name": "Infant ETT Securement Device",
+            "qty": 2
+          }
+        ]
+      },
+      {
+        "name": "Main Compartment",
+        "items": [
+          {
+            "name": "Adult Bougie-To-Go (left of cells)",
+            "qty": 1
+          },
+          {
+            "name": "Pediatric Bougie-To-Go (left of cells)",
+            "qty": 1
+          },
+          {
+            "name": "Stylet - 12 Fr. (right of cells)",
+            "qty": 1
+          },
+          {
+            "name": "Stylet - 10 Fr. (right of cells)",
+            "qty": 1
+          },
+          {
+            "name": "Stylet - 8 Fr. (right of cells)",
+            "qty": 1
+          },
+          {
+            "name": "Stylet - 6 Fr. (right of cells)",
+            "qty": 1
+          }
+        ]
+      },
+      {
+        "name": "Main Compartment, Mesh Pocket; iGels",
+        "items": [
+          {
+            "name": "90+ kgs ORANGE",
+            "qty": 1
+          },
+          {
+            "name": "50-90 kgs GREEN",
+            "qty": 1
+          },
+          {
+            "name": "30-60 kgs YELLOW",
+            "qty": 1
+          },
+          {
+            "name": "25-35 kgs WHITE",
+            "qty": 1
+          },
+          {
+            "name": "10-25 kgs GRAY",
+            "qty": 1
+          },
+          {
+            "name": "5-12 kgs BLUE",
+            "qty": 1
+          },
+          {
+            "name": "2-5 kgs PINK",
+            "qty": 1
+          }
+        ]
+      },
+      {
+        "name": "Left-Side Zippered Pocket",
+        "items": [
+          {
+            "name": "DuCanto Suction Tip",
+            "qty": 1
+          },
+          {
+            "name": "60 mL Syringe, Catheter Tip",
+            "qty": 1
+          }
+        ],
+        "subcategories": [
+          {
+            "name": "Suction Catheters",
+            "items": [
+              {
+                "name": "6 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "8 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "10 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "12 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "14 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "16 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "18 Fr.",
+                "qty": 1
+              }
+            ]
+          },
+          {
+            "name": "OGTs/NGTs",
+            "items": [
+              {
+                "name": "6 Fr.",
+                "qty": 2
+              },
+              {
+                "name": "8 Fr.",
+                "qty": 2
+              },
+              {
+                "name": "10 Fr.",
+                "qty": 2
+              },
+              {
+                "name": "12 Fr.",
+                "qty": 2
+              },
+              {
+                "name": "14 Fr.",
+                "qty": 2
+              },
+              {
+                "name": "16 Fr.",
+                "qty": 2
+              },
+              {
+                "name": "18 Fr.",
+                "qty": 2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Right-Side Zippered Pocket",
+        "items": [
+          {
+            "name": "Colorimetric CO2 Detector",
+            "qty": 1
+          },
+          {
+            "name": "Chest Decompression Needle",
+            "qty": 3
+          },
+          {
+            "name": "NC - Adult",
+            "qty": 1
+          },
+          {
+            "name": "EtCO2 NC - Adult",
+            "qty": 1
+          },
+          {
+            "name": "Nebulizer Mask - Adult",
+            "qty": 1
+          },
+          {
+            "name": "NRB - Adult",
+            "qty": 1
+          },
+          {
+            "name": "NC - Pediatric",
+            "qty": 1
+          },
+          {
+            "name": "EtCO2 NC - Pediatric",
+            "qty": 1
+          },
+          {
+            "name": "Nebulizer Mask - Pediatric",
+            "qty": 1
+          },
+          {
+            "name": "NRB – Pediatric",
+            "qty": 1
+          }
+        ],
+        "subcategories": [
+          {
+            "name": "NPAs",
+            "items": [
+              {
+                "name": "14 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "16 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "18 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "20 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "22 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "24 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "26 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "28 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "30 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "32 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "34 Fr.",
+                "qty": 1
+              },
+              {
+                "name": "36 Fr.",
+                "qty": 1
+              }
+            ]
+          },
+          {
+            "name": "OPAs",
+            "items": [
+              {
+                "name": "40mm (Pink)",
+                "qty": 1
+              },
+              {
+                "name": "40mm (Light Blue)",
+                "qty": 1
+              },
+              {
+                "name": "40mm (Black)",
+                "qty": 1
+              },
+              {
+                "name": "40mm (White)",
+                "qty": 1
+              },
+              {
+                "name": "40mm (Green)",
+                "qty": 1
+              },
+              {
+                "name": "40mm (Yellow)",
+                "qty": 1
+              },
+              {
+                "name": "40mm (Red)",
+                "qty": 1
+              },
+              {
+                "name": "40mm (Orange)",
+                "qty": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "area": "Medicine StatPacks Cell",
+    "sealable": true,
+    "categories": [
+      {
+        "name": "Elastic Pouch",
+        "items": [
+          {
+            "name": "NS Flushes 10mL",
+            "qty": 5
+          }
+        ]
+      },
+      {
+        "name": "Syringe Storage",
+        "items": [
+          {
+            "name": "10mL Syringe, Luer-Lock tip, Without Needle",
+            "qty": 2
+          },
+          {
+            "name": "5mL Syringe, Luer-Lock tip, Without Needle",
+            "qty": 2
+          },
+          {
+            "name": "3mL Syringe, With Twinpak",
+            "qty": 4
+          },
+          {
+            "name": "1mL Syringe, Luer-Lock tip, Without Needle",
+            "qty": 4
+          },
+          {
+            "name": "Standalone Twinpaks",
+            "qty": 6
+          }
+        ]
+      },
+      {
+        "name": "Main Compartment",
+        "items": [
+          {
+            "name": "Atropine Sulfate Preload",
+            "qty": 1
+          },
+          {
+            "name": "Calcium Chloride 10% Preload",
+            "qty": 1
+          },
+          {
+            "name": "D50W Preload",
+            "qty": 1
+          },
+          {
+            "name": "Lidocaine HCl Preload",
+            "qty": 1
+          },
+          {
+            "name": "Naloxone Hydrochloride Preload",
+            "qty": 1
+          },
+          {
+            "name": "Epinephrine Preload",
+            "qty": 1
+          },
+          {
+            "name": "NS Bag 100mL",
+            "qty": 1
+          },
+          {
+            "name": "NS Bag 250mL",
+            "qty": 1
+          },
+          {
+            "name": "Calcium Gluconate 1g/10mL",
+            "qty": 1
+          },
+          {
+            "name": "Labetalol 100mg/20mL",
+            "qty": 1
+          },
+          {
+            "name": "Magnesium Sulfate 5g/10mL",
+            "qty": 1
+          },
+          {
+            "name": "Sodium Bicarbonate Vial 50mEq/50mL",
+            "qty": 1
+          },
+          {
+            "name": "Dopamine Vial 400mg/10mL",
+            "qty": 1
+          }
+        ]
+      },
+      {
+        "name": "Small Vials",
+        "items": [
+          {
+            "name": "Epinephrine 1mg/1mL",
+            "qty": 3
+          },
+          {
+            "name": "Norepinephrine Bitartrate 4mg/4mL",
+            "qty": 3
+          },
+          {
+            "name": "Adenosine 6mg/2mL",
+            "qty": 3
+          },
+          {
+            "name": "Amiodarone 150mg/3mL",
+            "qty": 3
+          },
+          {
+            "name": "Atropine Sulfate 1mg/1mL",
+            "qty": 2
+          },
+          {
+            "name": "Ondansetron 4mg/2mL",
+            "qty": 2
+          },
+          {
+            "name": "Diphenhydramine 50mg/1mL",
+            "qty": 2
+          },
+          {
+            "name": "Hydralazine 20mg/1mL",
+            "qty": 2
+          }
+        ]
+      },
+      {
+        "name": "Misc. Storage, Zippered Pocket",
+        "items": [
+          {
+            "name": "Epinephrine 1mg/1mL",
+            "qty": 2
+          },
+          {
+            "name": "Norepinephrine Bitartrate 4mg/4mL",
+            "qty": 1
+          },
+          {
+            "name": "Ondansetron 4mg/2mL",
+            "qty": 1
+          },
+          {
+            "name": "MADs",
+            "qty": 2
+          },
+          {
+            "name": "Medication Labels",
+            "qty": 6
+          },
+          {
+            "name": "3-Way Stopcocks",
+            "qty": 2
+          }
+        ]
+      }
+    ],
+    "childOf": "Large Blue Bag: “Responder”"
+  },
+  {
+    "area": "Universal StatPacks Cell",
+    "sealable": true,
+    "categories": [
+      {
+        "name": "Loose",
+        "items": [
+          {
+            "name": "Bubbler",
+            "qty": 1
+          },
+          {
+            "name": "Pediatric Emergency Tape",
+            "qty": 1
+          },
+          {
+            "name": "Equipment Mount - Aluminum",
+            "qty": 1
+          },
+          {
+            "name": "Hamilton Adapter Bag",
+            "qty": 2
+          }
+        ]
+      },
+      {
+        "name": "Bonnets Bag",
+        "items": [
+          {
+            "name": "nCPAP Generator",
+            "qty": 2
+          },
+          {
+            "name": "Swivel Y-piece",
+            "qty": 1
+          }
+        ],
+        "subcategories": [
+          {
+            "name": "Bonnets",
+            "items": [
+              {
+                "name": "XXXL",
+                "qty": 1
+              },
+              {
+                "name": "XXL",
+                "qty": 1
+              },
+              {
+                "name": "XL",
+                "qty": 1
+              },
+              {
+                "name": "L",
+                "qty": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "nCPAP Mask Bag",
+        "items": [
+          {
+            "name": "Minifoam",
+            "qty": 1
+          }
+        ],
+        "subcategories": [
+          {
+            "name": "nCPAP Masks",
+            "items": [
+              {
+                "name": "XL",
+                "qty": 1
+              },
+              {
+                "name": "L",
+                "qty": 1
+              },
+              {
+                "name": "M",
+                "qty": 1
+              },
+              {
+                "name": "S",
+                "qty": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "nCPAP Prongs Bag",
+        "items": [
+          {
+            "name": "Minifoam",
+            "qty": 1
+          }
+        ],
+        "subcategories": [
+          {
+            "name": "nCPAP Prongs",
+            "items": [
+              {
+                "name": "XL",
+                "qty": 1
+              },
+              {
+                "name": "LW",
+                "qty": 1
+              },
+              {
+                "name": "L",
+                "qty": 1
+              },
+              {
+                "name": "M",
+                "qty": 1
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "childOf": "Large Blue Bag: “Responder”"
+  },
+  {
+    "area": "Blue Airway Bag",
+    "sealable": true,
+    "categories": [
+      {
+        "name": "ET Tube Bundle",
+        "items": [
+          {
+            "name": "9.0 mm",
+            "qty": 2
+          },
+          {
+            "name": "8.5 mm",
+            "qty": 2
+          },
+          {
+            "name": "8.0 mm",
+            "qty": 2
+          },
+          {
+            "name": "7.5 mm",
+            "qty": 2
+          },
+          {
+            "name": "7.0 mm",
+            "qty": 2
+          },
+          {
+            "name": "6.5 mm",
+            "qty": 2
+          },
+          {
+            "name": "6.0 mm",
+            "qty": 2
+          },
+          {
+            "name": "5.5 mm",
+            "qty": 2
+          },
+          {
+            "name": "5.0 mm",
+            "qty": 2
+          },
+          {
+            "name": "4.5 mm",
+            "qty": 1
+          },
+          {
+            "name": "4.0 mm",
+            "qty": 1
+          },
+          {
+            "name": "3.5 mm",
+            "qty": 1
+          },
+          {
+            "name": "3.0 mm",
+            "qty": 1
+          }
+        ]
+      },
+      {
+        "name": "Transparent Blade Pockets - Sizing Scheme : #5 (largest), #1 (smallest)",
+        "subcategories": [
+          {
+            "name": "Mac Blades",
+            "items": [
+              {
+                "name": "#4",
+                "qty": 1
+              },
+              {
+                "name": "#3",
+                "qty": 1
+              },
+              {
+                "name": "#2",
+                "qty": 1
+              },
+              {
+                "name": "#1",
+                "qty": 1
+              },
+              {
+                "name": "#0",
+                "qty": 1
+              }
+            ]
+          },
+          {
+            "name": "Miller Blades",
+            "items": [
+              {
+                "name": "#4",
+                "qty": 1
+              },
+              {
+                "name": "#3",
+                "qty": 1
+              },
+              {
+                "name": "#2",
+                "qty": 1
+              },
+              {
+                "name": "#1",
+                "qty": 1
+              },
+              {
+                "name": "#0",
+                "qty": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Transparent Zippered Pocket",
+        "items": [
+          {
+            "name": "C - Cell Battery",
+            "qty": 2
+          },
+          {
+            "name": "AA - Cell Battery",
+            "qty": 2
+          },
+          {
+            "name": "Laryngoscope Light",
+            "qty": 2
+          }
+        ]
+      },
+      {
+        "name": "Pockets Opposite Blades",
+        "items": [
+          {
+            "name": "10 mL Syringe",
+            "qty": 3
+          },
+          {
+            "name": "Lubricant Packet",
+            "qty": 2
+          },
+          {
+            "name": "Laryngoscope Handle - Adult",
+            "qty": 1
+          },
+          {
+            "name": "Laryngoscope Handle – Pediatric",
+            "qty": 1
+          },
+          {
+            "name": "Magill Forceps – Adult",
+            "qty": 1
+          },
+          {
+            "name": "Magill Forceps – Pediatric",
+            "qty": 1
+          }
+        ]
+      }
+    ],
+    "childOf": "Large Blue Bag: “Responder”"
+  },
+  {
+    "area": "Glidescope Bag",
+    "sealable": true,
+    "categories": [
+      {
+        "name": "Transparent Pocket",
+        "items": [
+          {
+            "name": "Hyperangle S3",
+            "qty": 1
+          },
+          {
+            "name": "Hyperangle S4",
+            "qty": 1
+          },
+          {
+            "name": "Miller S0",
+            "qty": 1
+          },
+          {
+            "name": "Miller S1",
+            "qty": 1
+          },
+          {
+            "name": "MAC S3",
+            "qty": 1
+          },
+          {
+            "name": "MAC S4",
+            "qty": 1
+          }
+        ]
+      },
+      {
+        "name": "Glidescope Storage",
+        "items": [
+          {
+            "name": "Glidescope Go 2",
+            "qty": 1
+          },
+          {
+            "name": "Glidescope Charger",
+            "qty": 1
+          },
+          {
+            "name": "Charger Adapter Kit",
+            "qty": 1
+          }
+        ]
+      },
+      {
+        "name": "Main Compartment",
+        "items": [
+          {
+            "name": "Hyperangulated Stylets",
+            "qty": 2
+          }
+        ]
+      }
+    ],
+    "childOf": "Large Blue Bag: “Responder”"
+  },
+  {
+    "area": "Zoll Monitor",
+    "categories": [
+      {
+        "name": "Left Bag: Left Zippered Pocket",
+        "items": [
+          {
+            "name": "Cuff cable",
+            "qty": 1
+          }
+        ],
+        "subcategories": [
+          {
+            "name": "BP Cuffs",
+            "items": [
+              {
+                "name": "7",
+                "qty": 1
+              },
+              {
+                "name": "8",
+                "qty": 1
+              },
+              {
+                "name": "9",
+                "qty": 1
+              },
+              {
+                "name": "10",
+                "qty": 1
+              },
+              {
+                "name": "11",
+                "qty": 1
+              },
+              {
+                "name": "12",
+                "qty": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Left Bag: Right Zippered Pocket",
+        "items": [
+          {
+            "name": "pinna clip pulse ox",
+            "qty": 1
+          },
+          {
+            "name": "finger clip pulse ox",
+            "qty": 1
+          },
+          {
+            "name": "adult/neonate adhesive pulse ox",
+            "qty": 1
+          },
+          {
+            "name": "pediatric adhesive pulse ox",
+            "qty": 1
+          },
+          {
+            "name": "infant adhesive pulse ox",
+            "qty": 1
+          },
+          {
+            "name": "12-lead cables",
+            "qty": 1
+          },
+          {
+            "name": "4-lead cables",
+            "qty": 1
+          },
+          {
+            "name": "SpO2 Monitoring Cable",
+            "qty": 1
+          }
+        ]
+      },
+      {
+        "name": "Right Bag: Left Zippered Pocket",
+        "items": [
+          {
+            "name": "EKG razors",
+            "qty": 3
+          },
+          {
+            "name": "Defib cable",
+            "qty": 1
+          },
+          {
+            "name": "Adult Defibrillation Pad",
+            "qty": 2
+          },
+          {
+            "name": "Pediatric Defibrillation Pad",
+            "qty": 2
+          }
+        ]
+      },
+      {
+        "name": "Right Bag: Right Zippered Pocket",
+        "items": [
+          {
+            "name": "NS flushes",
+            "qty": 5
+          },
+          {
+            "name": "Electrode Bag (At least half full)",
+            "qty": 1
+          },
+          {
+            "name": "PO aspirin",
+            "qty": 1
+          },
+          {
+            "name": "SL nitroglycerin",
+            "qty": 1
+          }
+        ],
+        "subcategories": [
+          {
+            "name": "Glucometer kit",
+            "items": [
+              {
+                "name": "Lancets",
+                "qty": 6
+              },
+              {
+                "name": "Sterile 2x2",
+                "qty": 6
+              },
+              {
+                "name": "Adhesive Bandages",
+                "qty": 6
+              },
+              {
+                "name": "Alcohol Prep Pads",
+                "qty": 6
+              },
+              {
+                "name": "Test Strip Vial (at least 6 strips)",
+                "qty": 1
+              },
+              {
+                "name": "Glucometer, operational",
+                "qty": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

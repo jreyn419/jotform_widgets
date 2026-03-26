@@ -1,0 +1,32 @@
+{
+  "1\u201d & 2\u201d adhesive tape rolls": {
+    "original_name": "1\u201d & 2\u201d Adhesive Tape Rolls",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "1\u201d Adhesive Tape Rolls",
+        "qty": 2
+      },
+      {
+        "name": "2\u201d Adhesive Tape Rolls",
+        "qty": 2
+      }
+    ]
+  },
+  "22 ga, 25 ga safety injection needles": {
+    "original_name": "22 ga, 25 ga Safety Injection Needles",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "22 ga Safety Injection Needles",
+        "qty": 2
+      },
+      {
+        "name": "25 ga Safety Injection Needles",
+        "qty": 2
+      }
+    ]
+  }
+}

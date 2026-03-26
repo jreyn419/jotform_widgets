@@ -1,0 +1,2726 @@
+{
+  "in ambulance oxygen source, minimum of 500 psi with a wall mounted regulator": {
+    "name": "In ambulance oxygen source, minimum of 500 PSI with a wall mounted regulator",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "portable oxygen - d or e size cylinders, minimum of 200 psi, with regulator": {
+    "name": "Portable oxygen - D or E size cylinders, minimum of 200 PSI, with regulator",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "spare portable oxygen - d or e size cylinders, minimum of 1800 psi": {
+    "name": "Spare Portable oxygen - D or E size cylinders, minimum of 1800 PSI",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "wall mounted suction device": {
+    "name": "Wall mounted suction device",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "battery powered portable suction unit": {
+    "name": "Battery powered portable suction unit",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "disposable suction canisters": {
+    "name": "Disposable suction canisters",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "suction catheters with control for each size fr 14, 18": {
+    "name": "Suction catheters with control for each size Fr 14, 18",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "connecting tubing for suction units": {
+    "name": "Connecting tubing for suction units",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "yankauer tonsil tip suction catheter": {
+    "name": "Yankauer Tonsil Tip Suction Catheter",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "disposable bag valve device - adult": {
+    "name": "Disposable bag valve device - adult",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "disposable bag valve device \u2013 pediatric": {
+    "name": "Disposable bag valve device \u2013 pediatric",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "disposable bag valve device \u2013 infant": {
+    "name": "Disposable bag valve device \u2013 infant",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "tube of water-soluble lubricating jelly (or multiple single use packets)": {
+    "name": "Tube of water-soluble lubricating jelly (or multiple single use packets)",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "oropharyngeal airway kit (adult, child, infant) each size 0 \u2013 8 or 40mm to 110mm": {
+    "name": "Oropharyngeal Airway Kit (adult, child, infant) each size 0 \u2013 8 or 40mm to 110mm",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "nasopharyngeal airways, each size fr 20, 24, 28, 32, 36": {
+    "name": "Nasopharyngeal Airways, each size Fr 20, 24, 28, 32, 36",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "nasal cannula, pediatric": {
+    "name": "Nasal Cannula, pediatric",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "nasal cannula, adult": {
+    "name": "Nasal Cannula, adult",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "adult non-rebreather oxygen mask": {
+    "name": "Adult Non-rebreather oxygen mask",
+    "qty": 4,
+    "sources": [
+      "San Joaquin EMS Agency",
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "pediatric non-rebreather oxygen mask": {
+    "name": "Pediatric Non-rebreather oxygen mask",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "adult laryngoscope handle with alkaline batteries or 2 disposable handles": {
+    "name": "Adult laryngoscope handle with alkaline batteries or 2 disposable handles",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "pediatric laryngoscope handle with alkaline batteries or 2 disposable handles": {
+    "name": "Pediatric laryngoscope handle with alkaline batteries or 2 disposable handles",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "spare alkaline batteries for laryngoscope handle": {
+    "name": "Spare alkaline batteries for laryngoscope handle",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "disposable macintosh laryngeal blades each size: #1, #2, #3, #4": {
+    "name": "Disposable Macintosh laryngeal blades each size: #1, #2, #3, #4",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "disposable miller laryngeal blades each size: #0, #1, #2, #3, #4": {
+    "name": "Disposable Miller laryngeal blades each size: #0, #1, #2, #3, #4",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "magill forceps \u2013 adult and pediatric": {
+    "name": "Magill Forceps \u2013 Adult and Pediatric",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "endotracheal tubes each size: 6.0, 6.5, 7.0, 7.5, 8.0, 8.5": {
+    "name": "Endotracheal tubes each size: 6.0, 6.5, 7.0, 7.5, 8.0, 8.5",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "et tube holder": {
+    "name": "ET tube holder",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "disposable endotracheal tube introducers": {
+    "name": "Disposable Endotracheal Tube introducers",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "endotracheal tube stylet": {
+    "name": "Endotracheal tube stylet",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "end tidal co2 device, adult": {
+    "name": "End tidal CO2 device, adult",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "end tidal co2 device, pediatric": {
+    "name": "End tidal CO2 device, pediatric",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "nebulizer mask adult": {
+    "name": "Nebulizer mask adult",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "nebulizer mask pediatric": {
+    "name": "Nebulizer mask pediatric",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "saline humidifier": {
+    "name": "Saline humidifier",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "breath actuated nebulizer": {
+    "name": "Breath actuated nebulizer",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "needle and catheter for pleural decompression: 10 or 14 gauge 3.25 inch needle (with betadine swab, tape, and 10 ml syringe)": {
+    "name": "Needle and catheter for pleural decompression: 10 or 14 gauge 3.25 inch needle (with Betadine swab, tape, and 10 ml syringe)",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "percutaneous needle cricothyroidotomy insertion kit, which includes: 10 ml syringe, translaryngeal jet ventilator device with push-button and high-pressure tubing with locking device (adult), 10- or 12-gauge needle for adult, and betadine swab, or enk oxygen flow modulator set, (adult), and betadine swab or kit approved by ems medical director.": {
+    "name": "Percutaneous Needle Cricothyroidotomy insertion kit, which includes: 10 ml syringe, Translaryngeal jet ventilator device with push-button and high-pressure tubing with locking device (Adult), 10- or 12-gauge needle for adult, and Betadine swab, or Enk Oxygen Flow Modulator set, (Adult), and Betadine swab or kit approved by EMS Medical Director.",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "igel airway each size 3.0, 4.0, 5.0": {
+    "name": "iGel Airway each size 3.0, 4.0, 5.0",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "igel airway each size 1.0,1.5, 2.0, 2.5": {
+    "name": "iGel Airway each size 1.0,1.5, 2.0, 2.5",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "pneumatic continuous positive airway pressure (cpap) device with manufacturers recommended size masks": {
+    "name": "Pneumatic Continuous Positive Airway Pressure (CPAP) device with manufacturers recommended size masks",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "zoll z series\u2122 ventilator with cpap and/or bipap*": {
+    "name": "Zoll Z series\u2122 ventilator with CPAP and/or BiPAP*",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "adult ventilator circuits*": {
+    "name": "Adult Ventilator Circuits*",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "cpap mask compatible with zoll z series\u2122 ventilator each size large and extra large*": {
+    "name": "CPAP mask compatible with Zoll Z series\u2122 ventilator each size large and extra large*",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "inline hepa filter*": {
+    "name": "Inline Hepa Filter*",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "stethoscope": {
+    "name": "Stethoscope",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency",
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "penlight": {
+    "name": "Penlight",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "patient thermometer": {
+    "name": "Patient thermometer",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "pulse oximetry device approved by the food and drug": {
+    "name": "Pulse oximetry device approved by the Food and Drug",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "blood glucose measuring device approved by the fda with": {
+    "name": "Blood glucose measuring device approved by the FDA with",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "length based pediatric resuscitation tape": {
+    "name": "Length based pediatric resuscitation tape",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency",
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "cardiac monitor with defibrillation/pacing/12 lead capable": {
+    "name": "Cardiac monitor with defibrillation/pacing/12 lead capable",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "pediatric defibrillation equipment": {
+    "name": "Pediatric defibrillation equipment",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "ecg electrodes all patient sizes": {
+    "name": "ECG electrodes all patient sizes",
+    "qty": 6,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "automated external defibrillator \u2013 compliant with the current aha": {
+    "name": "Automated External Defibrillator \u2013 Compliant with the current AHA",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "aed cables and pads for sizes adult and pediatric": {
+    "name": "AED cables and pads for sizes adult and pediatric",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "piston style mechanical compression device": {
+    "name": "Piston style mechanical compression device",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "bandage shears (heavy duty)": {
+    "name": "Bandage shears (heavy duty)",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "rolls of tape, size 1\u201d or 2\u201d or 3\u201d hypoallergenic (transpore/paper)": {
+    "name": "Rolls of tape, size 1\u201d or 2\u201d or 3\u201d Hypoallergenic (Transpore/paper)",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "emesis basins": {
+    "name": "Emesis basins",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "bed pan/fracture pan": {
+    "name": "Bed pan/fracture pan",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "urinal": {
+    "name": "Urinal",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency",
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "ob kit, which includes: (1) pair of sterile gloves, (1) drape sheet,": {
+    "name": "OB Kit, which includes: (1) pair of sterile gloves, (1) drape sheet,",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "ring cutter": {
+    "name": "Ring Cutter",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "soft ankle/wrist restraints": {
+    "name": "Soft ankle/wrist restraints",
+    "qty": 4,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "board for use in extrication": {
+    "name": "Board for use in extrication",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "scoop stretcher": {
+    "name": "Scoop stretcher",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "one or more of the following for use in patient movement on": {
+    "name": "One or more of the following for use in patient movement on",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "kendrick immobilization device (ked) or similar device approved": {
+    "name": "Kendrick Immobilization Device (KED) or similar device approved",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "pediatric immobilization device": {
+    "name": "Pediatric immobilization device",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "x-collars\u2122": {
+    "name": "X-Collars\u2122",
+    "qty": 4,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "soft cervical collars \u2013 small pediatric": {
+    "name": "Soft cervical collars \u2013 small pediatric",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "adult traction splint for femur": {
+    "name": "Adult traction splint for femur",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "pediatric traction splint for femur or adult traction splint that adjusts": {
+    "name": "Pediatric traction splint for femur or adult traction splint that adjusts",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "rigid splints for splinting each extremity": {
+    "name": "Rigid splints for splinting each extremity",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "sterile burn sheets": {
+    "name": "Sterile burn sheets",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "occlusive dressings": {
+    "name": "Occlusive dressings",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "2 x 2 gauze pads sterile": {
+    "name": "2 x 2 gauze pads Sterile",
+    "qty": 4,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "4 x 4 gauze pads sterile": {
+    "name": "4 x 4 gauze pads Sterile",
+    "qty": 5,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "hemostatic dressings: quick clot combat gauze le; or quick": {
+    "name": "Hemostatic dressings: Quick Clot Combat Gauze LE; or Quick",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "trauma dressings": {
+    "name": "Trauma dressings",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "gauze roll type bandages, size 2 or 4 or 6": {
+    "name": "Gauze roll type bandages, size 2 or 4 or 6",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "triangular bandages": {
+    "name": "Triangular bandages",
+    "qty": 4,
+    "sources": [
+      "San Joaquin EMS Agency",
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "instant ice packs": {
+    "name": "Instant ice packs",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "trauma tourniquets: sof tactical tourniquet or the combat": {
+    "name": "Trauma Tourniquets: SOF Tactical Tourniquet or the Combat",
+    "qty": 4,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "san joaquin county map book (current within 2 years) or gps": {
+    "name": "San Joaquin County Map Book (current within 2 years) or GPS",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "map book for assigned response zones or district (current within 1": {
+    "name": "Map book for assigned response zones or district (current within 1",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "battery operated flashlight": {
+    "name": "Battery operated flashlight",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "functional environmental controls for heat and air conditioning for": {
+    "name": "Functional environmental controls for heat and air conditioning for",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "patient compartment door latches operable from inside and": {
+    "name": "Patient compartment door latches operable from inside and",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "patient sheets (disposable)": {
+    "name": "Patient sheets (disposable)",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "patient blankets (disposable)": {
+    "name": "Patient blankets (disposable)",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "patient pillows (disposable)": {
+    "name": "Patient pillows (disposable)",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "ambulance gurney with mattress, capable of elevating the head,": {
+    "name": "Ambulance gurney with mattress, capable of elevating the head,",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "vhf & uhf mobile radio minimum 45-watt power located in": {
+    "name": "VHF & UHF mobile radio minimum 45-watt power located in",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "uhf control head, microphone and speaker installed in each": {
+    "name": "UHF control head, microphone and speaker installed in each",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "san joaquin county ems agency bls protocols": {
+    "name": "San Joaquin County EMS Agency BLS Protocols",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "san joaquin county ems agency als protocols": {
+    "name": "San Joaquin County EMS Agency ALS Protocols",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "field operations guide ics 420-1 (fog manual), current edition": {
+    "name": "Field Operations Guide ICS 420-1 (FOG Manual), current edition",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "start triage tags": {
+    "name": "START triage tags",
+    "qty": 25,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "mci vests - medical group supervisor, triage unit leader (min)": {
+    "name": "MCI Vests - Medical Group Supervisor, Triage Unit Leader (min)",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "bottle of instant hand sanitizer (alcohol based) or box of": {
+    "name": "Bottle of instant hand sanitizer (alcohol based) or box of",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "biohazard bags (various sizes recommended)": {
+    "name": "Biohazard bags (various sizes recommended)",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "commercial biohazard spill kit or equivalent": {
+    "name": "Commercial Biohazard spill kit or equivalent",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "covered waste container": {
+    "name": "Covered waste container",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "needle disposal system, which is osha compliant": {
+    "name": "Needle disposal system, which is OSHA compliant",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "antibacterial disinfectant solution": {
+    "name": "Antibacterial disinfectant solution",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "isolation kit including: (2) gowns, (2) n95 or n100 respirators, (2)": {
+    "name": "Isolation Kit including: (2) Gowns, (2) N95 or N100 respirators, (2)",
+    "qty": 3,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "epinephrine auto-injector (adult) 0.3mg": {
+    "name": "Epinephrine auto-injector (adult) 0.3mg",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "epinephrine auto-injector (pediatric) 0.15mg": {
+    "name": "Epinephrine auto-injector (pediatric) 0.15mg",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "naloxone preload syringe": {
+    "name": "Naloxone preload syringe",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "mucosal atomizer device": {
+    "name": "Mucosal Atomizer Device",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "glucose for oral administration (tube)": {
+    "name": "Glucose for oral administration (tube)",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "albuterol aerosolized solution 2.5 mg each": {
+    "name": "Albuterol Aerosolized Solution 2.5 mg each",
+    "qty": 4,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "atrovent (ipratropium bromide hfa) 0.5 mg packets": {
+    "name": "Atrovent (Ipratropium bromide HFA) 0.5 mg packets",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "iv normal saline 250ml (maintained at manufacturer\u2019s recommended temperature range)": {
+    "name": "IV Normal Saline 250ml (maintained at manufacturer\u2019s recommended temperature range)",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "iv normal saline 1000ml bags (maintained at a range of 2 degrees within normal body temperature": {
+    "name": "IV Normal Saline 1000ml bags (maintained at a range of 2 degrees within normal body temperature",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "iv warming system capable of maintaining two 1000ml bags at a range of 2 degrees within normal body temperature": {
+    "name": "IV warming system capable of maintaining two 1000ml bags at a range of 2 degrees within normal body temperature",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "normal saline for injection 10ml or 20 ml vials or preloads": {
+    "name": "Normal saline for injection 10ml or 20 ml vials or preloads",
+    "qty": 4,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "saline/sterile water 1000ml irrigating": {
+    "name": "Saline/Sterile Water 1000ml Irrigating",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "iv start kit, which contains: \u2013 (2) alcohol or chlorhexidine wipes, (1) roll tape, 3/4\u201d, (2) \u2013 2\u201d x 2\u201d gauze sponge, (1) id label, (1) providone iodine prep, (1) adhesive bandage, (1) latex free tourniquet, (1) opsite dressing (or equivalent)": {
+    "name": "IV start kit, which contains: \u2013 (2) Alcohol or Chlorhexidine wipes, (1) Roll tape, 3/4\u201d, (2) \u2013 2\u201d x 2\u201d gauze sponge, (1) ID label, (1) Providone iodine prep, (1) Adhesive bandage, (1) Latex Free Tourniquet, (1) OpSite Dressing (or equivalent)",
+    "qty": 3,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "disposable razors": {
+    "name": "Disposable razors",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "iv catheters each size: 16ga, 18ga, 20ga, 22ga": {
+    "name": "IV catheters each size: 16ga, 18ga, 20ga, 22ga",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "iv catheters each size: 14ga, 24ga": {
+    "name": "IV catheters each size: 14ga, 24ga",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "hypodermic needles each size:, 21ga, 25ga": {
+    "name": "Hypodermic needles each size:, 21ga, 25ga",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "disposable syringes each size: 1ml sub-q, 3ml, 5ml/6ml, 10ml/12ml": {
+    "name": "Disposable syringes each size: 1ml sub-q, 3ml, 5ml/6ml, 10ml/12ml",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "io drill": {
+    "name": "IO drill",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "io needles each size: 15mm, 25mm, 45mm": {
+    "name": "IO Needles each size: 15mm, 25mm, 45mm",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "betadine solution or swabs": {
+    "name": "Betadine solution or swabs",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "solution administration set, macrodrip": {
+    "name": "Solution administration set, Macrodrip",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "solution administration set, microdrip": {
+    "name": "Solution administration set, Microdrip",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "secondary iv infusion kit": {
+    "name": "Secondary IV infusion kit",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "medication added labels": {
+    "name": "Medication added labels",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "iv extension tubing": {
+    "name": "IV extension tubing",
+    "qty": 4,
+    "sources": [
+      "San Joaquin EMS Agency",
+      "Yolo County EMS Agency"
+    ]
+  },
+  "saline locks": {
+    "name": "Saline locks",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "dial-a-flow or equivalent": {
+    "name": "Dial-a-Flow or equivalent",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "1000ml pressure infusion bag or equivalent": {
+    "name": "1000ml Pressure infusion bag or equivalent",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "non c channel video laryngoscope with photo or video recording ability***": {
+    "name": "Non C Channel Video Laryngoscope with photo or video recording ability***",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "bvm peep valve": {
+    "name": "BVM PEEP valve",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "doppler": {
+    "name": "Doppler",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "tube ultra sound gel": {
+    "name": "Tube Ultra Sound Gel",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "reflex hammer": {
+    "name": "Reflex hammer",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "meconium aspirator": {
+    "name": "Meconium aspirator",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "pediatric stylet 6fr": {
+    "name": "Pediatric stylet 6fr",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "spo2 ear probe": {
+    "name": "SpO2 Ear probe",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "neo-tee: t-piece resuscitator": {
+    "name": "NEO-TEE: T-Piece resuscitator",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "edwards (oval) invasive line cable": {
+    "name": "Edwards (Oval) invasive line cable",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "abbott (square) invasive line cable": {
+    "name": "Abbott (square) invasive line cable",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "transducer (ext side)": {
+    "name": "Transducer (ext side)",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "mechanical ventilator": {
+    "name": "Mechanical Ventilator",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "adult ventilator circuit": {
+    "name": "Adult ventilator circuit",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "pediatric ventilator circuit": {
+    "name": "Pediatric ventilator circuit",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "multi channel iv pump": {
+    "name": "Multi channel IV pump",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "iv pump line sets": {
+    "name": "IV pump line sets",
+    "qty": 6,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "iv pump half sets": {
+    "name": "IV pump half sets",
+    "qty": 6,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "warming mattress": {
+    "name": "Warming mattress",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "0.2 micron filter": {
+    "name": "0.2 micron filter",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "amiodarone 150mg": {
+    "name": "Amiodarone 150mg",
+    "qty": 3,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "phenergan 25mg/ml": {
+    "name": "Phenergan 25mg/ml",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "solu-medrol 125mg": {
+    "name": "Solu-medrol 125mg",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "ofimev 1000/100ml": {
+    "name": "Ofimev 1000/100ml",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "etomidate 40mg 20/ml": {
+    "name": "Etomidate 40mg 20/ml",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "rocuronium 100mg/10ml": {
+    "name": "Rocuronium 100mg/10ml",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "esmolol 2000mg/100ml": {
+    "name": "Esmolol 2000mg/100ml",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "norepinephrine 4mg/4ml": {
+    "name": "Norepinephrine 4mg/4ml",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "phenylephrine 10mg/ml": {
+    "name": "Phenylephrine 10mg/ml",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "calcium gluconate 1g/10ml": {
+    "name": "Calcium Gluconate 1g/10ml",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "nitroglycerin 50mg/10ml": {
+    "name": "Nitroglycerin 50mg/10ml",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "lasix 100mg/10ml": {
+    "name": "Lasix 100mg/10ml",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "nicardipine 25mg/10ml": {
+    "name": "Nicardipine 25mg/10ml",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "pitocin 10u/1ml": {
+    "name": "Pitocin 10u/1ml",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "terbutaline": {
+    "name": "Terbutaline",
+    "qty": 1,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "labetalol 100mg/20ml": {
+    "name": "Labetalol 100mg/20ml",
+    "qty": 2,
+    "sources": [
+      "San Joaquin EMS Agency"
+    ]
+  },
+  "eye protection (face shields, goggles, splash resistance)": {
+    "name": "Eye Protection (face shields, goggles, splash resistance)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "flashlight (battery operated)": {
+    "name": "Flashlight (battery operated)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "radios with dual band frequency programed to yolo county dispatch channels": {
+    "name": "Radios with Dual Band frequency programed to Yolo County Dispatch Channels",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "adhesive tape 1\", 2\", or 3\"": {
+    "name": "Adhesive Tape 1\", 2\", or 3\"",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "bag-valve-mask (bvm) - self-inflating resuscitation device, with clear mask, capable of": {
+    "name": "Bag-Valve-Mask (BVM) - Self-inflating resuscitation device, with clear mask, capable of",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "bandages (rolled) 2\" or 3\"": {
+    "name": "Bandages (Rolled) 2\" or 3\"",
+    "qty": 3,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "band-aids (assorted sizes)": {
+    "name": "Band-Aids (assorted sizes)",
+    "qty": 6,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "biohazard bags (red)": {
+    "name": "Biohazard Bags (Red)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "blood pressure cuff - portable (sphygmomanometers) (adult/large arm/pediatric/infant)": {
+    "name": "Blood Pressure Cuff - Portable (sphygmomanometers) (adult/large arm/pediatric/infant)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "burn sheets (sterile) \u2013 commercially packaged or sterile burn sheet": {
+    "name": "Burn Sheets (sterile) \u2013 commercially packaged or sterile burn sheet",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "cervical collars (hard) \u2013 sizes to fit all patients over one (1) year of age": {
+    "name": "Cervical Collars (hard) \u2013 sizes to fit all patients over one (1) year of age",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "chest seals": {
+    "name": "Chest Seals",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "child safe restraints (pediatric/infant)": {
+    "name": "Child Safe Restraints (pediatric/infant)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "coban": {
+    "name": "Coban",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "cpap - continuous positive airway pressure equipment": {
+    "name": "CPAP - Continuous Positive Airway Pressure equipment",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "cpap \u2013 masks (s, m, l)": {
+    "name": "CPAP \u2013 Masks (S, M, L)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "emergency blanket thermal or equivalent (reflective foil)": {
+    "name": "Emergency Blanket thermal or equivalent (reflective foil)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "emesis basin or disposable emesis bags & covered waste container": {
+    "name": "Emesis Basin or Disposable Emesis Bags & Covered Waste Container",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "gauze pads 4\u201d x 4\" (sterile)": {
+    "name": "Gauze Pads 4\u201d x 4\" (sterile)",
+    "qty": 4,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "glucometer (with lancets, test strips [10 each], & alcohol swabs)": {
+    "name": "Glucometer (with lancets, test strips [10 each], & alcohol swabs)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "gurney, capable of elevating the head & being adjustable, straps for securing patient to gurney, wheels, non-permeable covering material, and means of securing gurney in vehicle (if applicable)": {
+    "name": "Gurney, capable of elevating the head & being adjustable, straps for securing patient to gurney, wheels, non-permeable covering material, and means of securing gurney in vehicle (if applicable)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "hot & cold packs": {
+    "name": "Hot & Cold Packs",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "israeli bandage or equivalent": {
+    "name": "Israeli Bandage or equivalent",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "kerlix sterile gauze rolls": {
+    "name": "Kerlix Sterile Gauze Rolls",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "multi-trauma dressing, sterile": {
+    "name": "Multi-Trauma Dressing, sterile",
+    "qty": 4,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "nasal cannula (adult/pediatric)": {
+    "name": "Nasal Cannula (adult/pediatric)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "nasopharyngeal airways: 16,18, 20, 22, 24, 26, 28, 30, 32, 34": {
+    "name": "Nasopharyngeal Airways: 16,18, 20, 22, 24, 26, 28, 30, 32, 34",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "obstetrics kit": {
+    "name": "Obstetrics Kit",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "oropharyngeal airways: 00, 0, 1, 2, 3, 4, 5, 6": {
+    "name": "Oropharyngeal Airways: 00, 0, 1, 2, 3, 4, 5, 6",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "oxygen (o2) mask (pediatric/infant)": {
+    "name": "Oxygen (O2) Mask (pediatric/infant)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "oxygen (o2) mask non-rebreather (adult/pediatric)": {
+    "name": "Oxygen (O2) Mask Non-rebreather (adult/pediatric)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "oxygen (o2) tank \u2013 fixed in vehicle with regulator (m-tank or equivalent)": {
+    "name": "Oxygen (O2) Tank \u2013 Fixed in vehicle with regulator (M-tank or equivalent)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "pedi board": {
+    "name": "Pedi Board",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "pen light": {
+    "name": "Pen Light",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "pharyngeal tonsil tip (rigid) for suctioning": {
+    "name": "Pharyngeal Tonsil Tip (rigid) for suctioning",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "pulse oximeter probes (adult/pediatric)": {
+    "name": "Pulse Oximeter Probes (adult/pediatric)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "quikclot\u00ae dressing, z fold": {
+    "name": "QuikClot\u00ae Dressing, Z Fold",
+    "qty": 4,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "razor": {
+    "name": "Razor",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "scoop stretcher with straps or equivalent": {
+    "name": "Scoop Stretcher with straps or equivalent",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "sharps container (appropriately sized)": {
+    "name": "Sharps Container (appropriately sized)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "spine board \u2013 rigid, long with four (4) straps (or equivalent)": {
+    "name": "Spine Board \u2013 rigid, long with four (4) straps (or equivalent)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "splints \u2013 soft or cushioned surface or equivalent padded board, wrap around, wire ladder, inflatable, vacuum or cardboard (able to accommodate adult/pediatric/infants)": {
+    "name": "Splints \u2013 soft or cushioned surface or equivalent padded board, wrap around, wire ladder, inflatable, vacuum or cardboard (able to accommodate adult/pediatric/infants)",
+    "qty": 4,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "stair chair": {
+    "name": "Stair Chair",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "sterile h2o": {
+    "name": "Sterile H2O",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "stethoscope \u2013 adult/pediatric (or combination)": {
+    "name": "Stethoscope \u2013 adult/pediatric (or combination)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "thermometer": {
+    "name": "Thermometer",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency",
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "tourniquet (c-a-t or sof-t)": {
+    "name": "Tourniquet (C-A-T or Sof-T)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "traction splints, (adult/pediatric)": {
+    "name": "Traction Splints, (adult/pediatric)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "trauma shears": {
+    "name": "Trauma Shears",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "triage tags": {
+    "name": "Triage Tags",
+    "qty": 50,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "triangular bandages 40\"": {
+    "name": "Triangular Bandages 40\"",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "endotracheal tube introducer (etti) (e.g. bougie; adult)": {
+    "name": "Endotracheal Tube Introducer (ETTI) (e.g. Bougie; adult)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "etco2 non-invasive adapter \u2013 ett (waveform)": {
+    "name": "EtCO2 Non-invasive Adapter \u2013 ETT (Waveform)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "etco2 non-invasive cannula (waveform)": {
+    "name": "EtCO2 Non-invasive Cannula (Waveform)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "ett nebulizer adapter": {
+    "name": "ETT Nebulizer Adapter",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "ett securing device - adult/pediatric": {
+    "name": "ETT Securing Device - adult/pediatric",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "i-gel\u00ae - assorted supraglottic airway sizes": {
+    "name": "i-gel\u00ae - Assorted Supraglottic Airway sizes",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "intraosseous (io) insertion device (e.g. ez-io\u00ae, jamshidi\u00ae)": {
+    "name": "Intraosseous (IO) Insertion Device (e.g. EZ-IO\u00ae, Jamshidi\u00ae)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "io needles (pink, blue, yellow)": {
+    "name": "IO Needles (Pink, Blue, Yellow)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "iv arm board (pediatric)": {
+    "name": "IV Arm Board (pediatric)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "iv catheters: 16 ga, 18 ga, 20 ga, 22 ga, 24 ga": {
+    "name": "IV Catheters: 16 ga, 18 ga, 20 ga, 22 ga, 24 ga",
+    "qty": 4,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "iv fluid warmer (9-1-1 providers only)": {
+    "name": "IV Fluid Warmer (9-1-1 Providers ONLY)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "iv start kits": {
+    "name": "IV Start Kits",
+    "qty": 4,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "iv tubing: macro drip (10/15 gtt)": {
+    "name": "IV Tubing: Macro Drip (10/15 gtt)",
+    "qty": 4,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "iv tubing: micro drip (60 gtt)": {
+    "name": "IV Tubing: Micro Drip (60 gtt)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "laryngoscope blades: macintosh # 2, 3, 4": {
+    "name": "Laryngoscope Blades: MacIntosh # 2, 3, 4",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "laryngoscope blades: miller # 2, 3, 4": {
+    "name": "Laryngoscope Blades: Miller # 2, 3, 4",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "laryngoscope handle": {
+    "name": "Laryngoscope Handle",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency",
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "laryngoscope light bulb (extra)": {
+    "name": "Laryngoscope Light Bulb (extra)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "magill forceps (adult/pediatric)": {
+    "name": "Magill Forceps (adult/pediatric)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "medication-added labels": {
+    "name": "Medication-added Labels",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "mucosal atomizer devices (mad)": {
+    "name": "Mucosal Atomizer Devices (MAD)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "nebulizer (hand held for inhalation)": {
+    "name": "Nebulizer (hand held for inhalation)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "nebulizer mask (adult/pediatric)": {
+    "name": "Nebulizer Mask (adult/pediatric)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "needles: 18 ga, 20 ga, 22 ga, 24 ga, 25 ga": {
+    "name": "Needles: 18 ga, 20 ga, 22 ga, 24 ga, 25 ga",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "pediatric length-based weight determination tape": {
+    "name": "Pediatric Length-based Weight Determination Tape",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "pleural decompression/needle 14 ga x 3\u201d": {
+    "name": "Pleural Decompression/Needle 14 ga x 3\u201d",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "pressure bag": {
+    "name": "Pressure Bag",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "secured narcotics drug box": {
+    "name": "Secured Narcotics Drug Box",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "syringes: 1 ml, 3 ml, 5 ml, 10 ml, 50 ml": {
+    "name": "Syringes: 1 mL, 3 mL, 5 mL, 10 mL, 50 mL",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "transparent tape (venaguard/tegaderm) or equivalent": {
+    "name": "Transparent Tape (Venaguard/Tegaderm) or equivalent",
+    "qty": 6,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "transpore tape": {
+    "name": "Transpore Tape",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "vial access cannula": {
+    "name": "Vial Access Cannula",
+    "qty": 5,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "arterial line equipment (swan-ganz, cvp, ivp, iabp)": {
+    "name": "Arterial line equipment (Swan-Ganz, CVP, IVP, IABP)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "defibrillator pads (adult/pediatric)": {
+    "name": "Defibrillator Pads (adult/pediatric)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "ecg portable monitor/defibrillator with invasive monitoring capabilities: strip chart recorder 12-lead synchronized cardioversion etco2 pulse ox pacing defibrillation (adult/pediatric)": {
+    "name": "ECG Portable Monitor/Defibrillator with Invasive Monitoring capabilities: Strip Chart Recorder 12-Lead Synchronized Cardioversion EtCO2 Pulse Ox Pacing Defibrillation (adult/pediatric)",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "ecg electrodes": {
+    "name": "ECG Electrodes",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "ecg electrodes pediatric": {
+    "name": "ECG Electrodes Pediatric",
+    "qty": 4,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "ecg extra charged batteries": {
+    "name": "ECG Extra Charged Batteries",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "endotracheal tubes (ett): - various sizes": {
+    "name": "Endotracheal tubes (ETT): - various sizes",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "infusion pumps (provide type to lemsa)": {
+    "name": "Infusion Pumps (provide type to LEMSA)",
+    "qty": 1,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "medications carried \u2013 list must be provided to lemsa only": {
+    "name": "Medications carried \u2013 List must be provided to LEMSA ONLY",
+    "qty": 2,
+    "sources": [
+      "Yolo County EMS Agency"
+    ]
+  },
+  "effective: 10/01/2025": {
+    "name": "Effective: 10/01/2025",
+    "qty": 701,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "als provider agency inventory requirements": {
+    "name": "ALS Provider Agency Inventory Requirements",
+    "qty": 701,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "mobile uhf med-net radio": {
+    "name": "Mobile UHF Med-Net Radio",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "portable uhf med-net radio or mobile telephone": {
+    "name": "Portable UHF Med-Net Radio OR Mobile Telephone",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "maps (paper or electronic covering normal service area)": {
+    "name": "Maps (paper or electronic covering normal service area)",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "dot emergency response guidebook (erg)": {
+    "name": "DOT Emergency Response Guidebook (ERG)",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "firescope field operations guide (fog)": {
+    "name": "FIRESCOPE Field Operations Guide (FOG)",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "nemsis version 3.4 compliant electronic pcr system": {
+    "name": "NEMSIS Version 3.4 Compliant Electronic PCR System",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "refusal of ems care forms": {
+    "name": "Refusal of EMS Care Forms",
+    "qty": 10,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "dms all risk triage tags": {
+    "name": "DMS All Risk Triage Tags",
+    "qty": 10,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "triage kit (mci vests for \u2018triage unit leader\u2019 and \u2018medical group supervisor\u2019, pens, trauma shears, clipboard, patient tracking sheets, start triage reference sheet, barrier tape, glow sticks)": {
+    "name": "Triage Kit (MCI vests for \u2018Triage Unit Leader\u2019 and \u2018Medical Group Supervisor\u2019, pens, trauma shears, clipboard, patient tracking sheets, START Triage reference sheet, barrier tape, glow sticks)",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "covered waste container (red biohazard bags acceptable)": {
+    "name": "Covered Waste Container (red biohazard bags acceptable)",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "adult, pediatric & thigh bp cuff": {
+    "name": "Adult, Pediatric & Thigh BP Cuff",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "flashlight or penlight": {
+    "name": "Flashlight OR Penlight",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "bedpan or fracture pan": {
+    "name": "Bedpan OR Fracture Pan",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "sharps container": {
+    "name": "Sharps Container",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "pillows, sheets, pillowcases & towels": {
+    "name": "Pillows, Sheets, Pillowcases & Towels",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "blankets": {
+    "name": "Blankets",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "emesis basin/disposable emesis bags": {
+    "name": "Emesis Basin/Disposable Emesis Bags",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "ambulance cot & vehicle securing equipment": {
+    "name": "Ambulance Cot & Vehicle Securing Equipment",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "collapsible stretcher/breakaway flat": {
+    "name": "Collapsible Stretcher/Breakaway Flat",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "pulse oximeter": {
+    "name": "Pulse Oximeter",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "portable monitor/defibrillator (capable of synchronized cardioversion, transcutaneous pacing, 12 lead ecg with printout and waveform capnography)": {
+    "name": "Portable Monitor/Defibrillator (capable of synchronized cardioversion, transcutaneous pacing, 12 Lead ECG with printout and waveform capnography)",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "spare monitor/defibrillator battery": {
+    "name": "Spare Monitor/Defibrillator Battery",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "adult/pediatric ecg electrodes": {
+    "name": "Adult/Pediatric ECG Electrodes",
+    "qty": 48,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "glucometer": {
+    "name": "Glucometer",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "glucometer test strips": {
+    "name": "Glucometer Test Strips",
+    "qty": 10,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "lancets": {
+    "name": "Lancets",
+    "qty": 10,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "ambulance mounted \u2018h\u2019 or \u2018m\u2019 oxygen tank": {
+    "name": "Ambulance Mounted \u2018H\u2019 or \u2018M\u2019 Oxygen Tank",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "ambulance wall mounted oxygen regulator with liter flow": {
+    "name": "Ambulance Wall Mounted Oxygen Regulator with Liter Flow",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "portable \u2018d\u2019 or \u2018e\u2019 oxygen cylinder": {
+    "name": "Portable \u2018D\u2019 or \u2018E\u2019 Oxygen Cylinder",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "portable oxygen regulator with liter flow": {
+    "name": "Portable Oxygen Regulator with Liter Flow",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "nasal cannula": {
+    "name": "Nasal Cannula",
+    "qty": 4,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "pediatric oxygen mask": {
+    "name": "Pediatric Oxygen Mask",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "handheld nebulizer & aerosol/nebulizer mask": {
+    "name": "Handheld Nebulizer & Aerosol/Nebulizer Mask",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "disposable cpap circuit with mask": {
+    "name": "Disposable CPAP Circuit with Mask",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "adult bag valve mask (bvm) with s, m & l adult masks": {
+    "name": "Adult Bag Valve Mask (BVM) With S, M & L Adult Masks",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "pediatric bag valve mask (bvm) with neonate & child masks": {
+    "name": "Pediatric Bag Valve Mask (BVM) With Neonate & Child Masks",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "oropharyngeal airways: sizes 40 mm \u2013 110 mm or equivalent": {
+    "name": "Oropharyngeal Airways: Sizes 40 mm \u2013 110 mm or Equivalent",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "nasopharyngeal airways: sizes 20 fr \u2013 34 fr or equivalent": {
+    "name": "Nasopharyngeal Airways: Sizes 20 Fr \u2013 34 Fr or Equivalent",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "water soluble lubricant": {
+    "name": "Water Soluble Lubricant",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "ambulance mounted suction unit": {
+    "name": "Ambulance Mounted Suction Unit",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "portable mechanical suction unit": {
+    "name": "Portable Mechanical Suction Unit",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "spare suction canisters/bags with lids": {
+    "name": "Spare Suction Canisters/Bags with Lids",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "tonsillar tip suction handle": {
+    "name": "Tonsillar Tip Suction Handle",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "suction catheters: sizes 6 fr \u2013 14 fr": {
+    "name": "Suction Catheters: Sizes 6 Fr \u2013 14 Fr",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "straight (miller) laryngoscope blades: sizes 0 \u2013 4": {
+    "name": "Straight (Miller) Laryngoscope Blades: Sizes 0 \u2013 4",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "curved (macintosh) laryngoscope blades: sizes 3, 4": {
+    "name": "Curved (Macintosh) Laryngoscope Blades: Sizes 3, 4",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "spare laryngoscope blade bulb (if not using disposable blades)": {
+    "name": "Spare Laryngoscope Blade Bulb (if not using disposable blades)",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "magill forceps: adult & pediatric": {
+    "name": "Magill Forceps: Adult & Pediatric",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "cuffed endotracheal tubes: sizes 6.0, 6.5, 7.0, 7.5, 8.0, 8.5": {
+    "name": "Cuffed Endotracheal Tubes: Sizes 6.0, 6.5, 7.0, 7.5, 8.0, 8.5",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "adult endotracheal tube stylet": {
+    "name": "Adult Endotracheal Tube Stylet",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "flex guide ett introducer": {
+    "name": "Flex Guide ETT Introducer",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "i-gel airway devices: sizes 1.0, 1.5, 2.0, 2.5": {
+    "name": "i-gel Airway Devices: Sizes 1.0, 1.5, 2.0, 2.5",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "i-gel airway devices: sizes 3, 4, 5": {
+    "name": "i-gel Airway Devices: Sizes 3, 4, 5",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "advanced airway tube/device holder": {
+    "name": "Advanced Airway Tube/Device Holder",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "mainstream etco disposable capnography circuit 2": {
+    "name": "Mainstream EtCO Disposable Capnography Circuit 2",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "sidestream etco disposable capnography circuit, adult 2": {
+    "name": "Sidestream EtCO Disposable Capnography Circuit, Adult 2",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "sidestream etco disposable capnography circuit, pediatric 2": {
+    "name": "Sidestream EtCO Disposable Capnography Circuit, Pediatric 2",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "minimum 14 ga x 3.25\u201d pleural decompression catheter with capnospot\u00ae pneumothorax decompression indicator or simplified pneumothorax emergency air release (spear\u00ae) device": {
+    "name": "Minimum 14 ga x 3.25\u201d Pleural Decompression Catheter with Capnospot\u00ae Pneumothorax Decompression Indicator OR Simplified Pneumothorax Emergency Air Release (SPEAR\u00ae) Device",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "kendrick extrication device (ked) or equivalent": {
+    "name": "Kendrick Extrication Device (KED) or Equivalent",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "adult long spine board with straps": {
+    "name": "Adult Long Spine Board with Straps",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "pediatric spine board": {
+    "name": "Pediatric Spine Board",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "head immobilization set": {
+    "name": "Head Immobilization Set",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "rigid c-collars: sizes pediatric & s, m, l adult or adjustable": {
+    "name": "Rigid C-Collars: Sizes Pediatric & S, M, L Adult OR Adjustable",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "approved commercial pelvic binder": {
+    "name": "Approved Commercial Pelvic Binder",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "arm & leg splints (sam, cardboard, vacuum, etc.)": {
+    "name": "Arm & Leg Splints (SAM, cardboard, vacuum, etc.)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "traction splint": {
+    "name": "Traction Splint",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "ob kit (gloves, cord clamps, dressings, bulb syringe, cap, etc.)": {
+    "name": "OB Kit (gloves, cord clamps, dressings, bulb syringe, cap, etc.)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "band-aids": {
+    "name": "Band-Aids",
+    "qty": 10,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "bandage shears": {
+    "name": "Bandage Shears",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "1\u201d & 2\u201d adhesive tape rolls": {
+    "name": "1\u201d & 2\u201d Adhesive Tape Rolls",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "non-sterile 4x4 compresses": {
+    "name": "Non-Sterile 4x4 Compresses",
+    "qty": 50,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "sterile 4x4 compresses": {
+    "name": "Sterile 4x4 Compresses",
+    "qty": 10,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "2\u201d, 3\u201d or 4\u201d kling/kerlix rolls": {
+    "name": "2\u201d, 3\u201d or 4\u201d Kling/Kerlix Rolls",
+    "qty": 5,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "trauma dressing": {
+    "name": "Trauma Dressing",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "petroleum gauze": {
+    "name": "Petroleum Gauze",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "approved commercial tourniquet device": {
+    "name": "Approved Commercial Tourniquet Device",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "1000 ml sterile irrigation solution": {
+    "name": "1000 mL Sterile Irrigation Solution",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "cold packs & heat packs": {
+    "name": "Cold Packs & Heat Packs",
+    "qty": 4,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "alcohol swabs": {
+    "name": "Alcohol Swabs",
+    "qty": 20,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "chlorhexidine swabs/skin prep": {
+    "name": "Chlorhexidine Swabs/Skin Prep",
+    "qty": 5,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "iv start pack or equivalent (with tourniquet)": {
+    "name": "IV Start Pack or Equivalent (with tourniquet)",
+    "qty": 4,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "iv catheter: sizes 14 ga, 16 ga, 18 ga, 20 ga": {
+    "name": "IV Catheter: Sizes 14 ga, 16 ga, 18 ga, 20 ga",
+    "qty": 6,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "iv catheter: sizes 22 ga, 24 ga": {
+    "name": "IV Catheter: Sizes 22 ga, 24 ga",
+    "qty": 4,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "micro-drip & macro-drip iv set or selectable drip iv set": {
+    "name": "Micro-Drip & Macro-Drip IV Set OR Selectable Drip IV Set",
+    "qty": 4,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "iv extension set": {
+    "name": "IV Extension Set",
+    "qty": 4,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "3-way stopcock": {
+    "name": "3-Way Stopcock",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "iv fluid pressure infusion bag": {
+    "name": "IV Fluid Pressure Infusion Bag",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "syringes: sizes: 1 ml, 3 \u2013 5 ml, 10 ml": {
+    "name": "Syringes: Sizes: 1 mL, 3 \u2013 5 mL, 10 mL",
+    "qty": 3,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "50 \u2013 60 ml syringe": {
+    "name": "50 \u2013 60 mL Syringe",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "22 ga, 25 ga safety injection needles": {
+    "name": "22 ga, 25 ga Safety Injection Needles",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "filter needle (only if utilizing medications in ampules)": {
+    "name": "Filter Needle (only if utilizing medications in ampules)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "vial access cannulas": {
+    "name": "Vial Access Cannulas",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "mucosal atomizer device (mad)": {
+    "name": "Mucosal Atomizer Device (MAD)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "arm boards: sizes short & long": {
+    "name": "Arm Boards: Sizes Short & Long",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "normal saline 250 ml bag": {
+    "name": "Normal Saline 250 mL Bag",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "normal saline 1000 ml bag": {
+    "name": "Normal Saline 1000 mL Bag",
+    "qty": 6,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "acetaminophen \u2013 iv (1000 mg)": {
+    "name": "Acetaminophen \u2013 IV (1000 mg)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "adenosine (6 mg/2 ml)": {
+    "name": "Adenosine (6 mg/2 mL)",
+    "qty": 3,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "albuterol (2.5 mg/3 ml)": {
+    "name": "Albuterol (2.5 mg/3 mL)",
+    "qty": 6,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "amiodarone (150 mg/3 ml)": {
+    "name": "Amiodarone (150 mg/3 mL)",
+    "qty": 6,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "aspirin (chewable tablets)": {
+    "name": "Aspirin (chewable tablets)",
+    "qty": 8,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "atropine (1 mg/10 ml)": {
+    "name": "Atropine (1 mg/10 mL)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "calcium chloride (1 gm/10 ml)": {
+    "name": "Calcium Chloride (1 gm/10 mL)",
+    "qty": 4,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "dextrose 10% (250 ml bag)": {
+    "name": "Dextrose 10% (250 mL bag)",
+    "qty": 3,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "diphenhydramine (50 mg/1 ml)": {
+    "name": "Diphenhydramine (50 mg/1 mL)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "diphenhydramine elixir (100 mg)": {
+    "name": "Diphenhydramine elixir (100 mg)",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "epinephrine 1:1,000 (1 mg/1 ml \u2013 1 ml vial or ampule)": {
+    "name": "Epinephrine 1:1,000 (1 mg/1 mL \u2013 1 mL vial or ampule)",
+    "qty": 5,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "epinephrine 1:10,000 (1 mg/10 ml)": {
+    "name": "Epinephrine 1:10,000 (1 mg/10 mL)",
+    "qty": 8,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "glucagon (1 mg)": {
+    "name": "Glucagon (1 mg)",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "glucose oral product (minimum 15 gm)": {
+    "name": "Glucose Oral Product (minimum 15 gm)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "ipratropium (500 mcg/2.5 ml)": {
+    "name": "Ipratropium (500 mcg/2.5 mL)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "ketorolac (30 mg/1 ml)": {
+    "name": "Ketorolac (30 mg/1 mL)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "lidocaine 2% (100 mg/5 ml)": {
+    "name": "Lidocaine 2% (100 mg/5 mL)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "naloxone (2 mg/2 ml)": {
+    "name": "Naloxone (2 mg/2 mL)",
+    "qty": 4,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "nitroglycerin 0.4 mg (tablet bottle or aerosol spray)": {
+    "name": "Nitroglycerin 0.4 mg (tablet bottle or aerosol spray)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "ondansetron (4 mg/2 ml)": {
+    "name": "Ondansetron (4 mg/2 mL)",
+    "qty": 6,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "ondansetron oral disintegrating tablets (4 mg)": {
+    "name": "Ondansetron Oral Disintegrating Tablets (4 mg)",
+    "qty": 4,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "sodium bicarbonate (50 meq/50 ml)": {
+    "name": "Sodium Bicarbonate (50 mEq/50 mL)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "tranexamic acid (1 gm)": {
+    "name": "Tranexamic Acid (1 gm)",
+    "qty": 2,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "controlled substances locking storage container": {
+    "name": "Controlled Substances Locking Storage Container",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "controlled substances tracking sheet": {
+    "name": "Controlled Substances Tracking Sheet",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  },
+  "carpuject holder (only if utilizing capuject supplied medications)": {
+    "name": "Carpuject Holder (only if utilizing capuject supplied medications)",
+    "qty": 1,
+    "sources": [
+      "Sierra-Sacramento Valley EMS Agency"
+    ]
+  }
+}
