@@ -3151,6 +3151,12 @@ class App(QMainWindow):
             self._build_group_cat_submenu(grp_move_menu, list(selected_groups))
             menu.addSeparator()
 
+        # Quick move shortcuts (items or groups selected, no categories)
+        if (selected_items or selected_groups) and not selected_cats:
+            menu.addAction("Move to Category…\tCtrl+M", self._do_move_to_category)
+            menu.addAction("Move to New Category…\tCtrl+N", self._do_move_to_new_category)
+            menu.addSeparator()
+
         # Delete
         if total_selected > 1:
             menu.addAction(f"Delete {total_selected} selected",
@@ -4028,6 +4034,8 @@ class App(QMainWindow):
                 move_menu.addAction(area_name,
                     lambda an=area_name, si=list(selected_items):
                         self._move_selected_to_rig_area(si, an))
+            menu.addAction("Move to Category…\tCtrl+M", self._do_move_to_category)
+            menu.addAction("Move to New Category…\tCtrl+N", self._do_move_to_new_category)
             menu.addSeparator()
 
         # Delete
