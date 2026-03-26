@@ -1233,7 +1233,8 @@ class App(QMainWindow):
         self.setMinimumSize(900, 550)
 
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
-        self.checklists_dir = os.path.join(self.base_dir, "data", "checklists")
+        self.repo_root = os.path.normpath(os.path.join(self.base_dir, "..", ".."))
+        self.checklists_dir = os.path.join(self.repo_root, "data", "checklists")
         self.master_list_path = os.path.join(self.checklists_dir, "master_list.json")
         self.master_list = None
         self.current_rig = None
@@ -1241,8 +1242,8 @@ class App(QMainWindow):
         self.rig_files = []
         self.dirty = False
         self.dirty_master = False
-        self.lemsa_config_path = os.path.join(self.base_dir, "data", "lemsa_config.json")
-        self.lemsa_directory_path = os.path.join(self.base_dir, "data", "lemsa_directory.json")
+        self.lemsa_config_path = os.path.join(self.repo_root, "reference", "lemsa_config.json")
+        self.lemsa_directory_path = os.path.join(self.repo_root, "reference", "lemsa_directory.json")
         self.lemsa_data = []
         self.lemsa_config = {}
         self._checking = False
@@ -1252,7 +1253,7 @@ class App(QMainWindow):
         self._edit_dir = "across"   # "across" = row-first, "down" = column-first
         self._edit_scope = "empty"  # "empty" = skip filled cells, "all" = visit every cell
         self._editing_cell = None   # (row, col) when a cell edit is in progress
-        self._ui_state_path = os.path.join(self.base_dir, "data", "ui_state.json")
+        self._ui_state_path = os.path.join(self.base_dir, "ui_state.json")
 
         # Undo/redo stacks (separate per tree, snapshot-based)
         self._rig_undo_stack = []
@@ -2402,7 +2403,7 @@ class App(QMainWindow):
     # -- Table edits persistence ---------------------------------------------
 
     def _get_table_edits_path(self):
-        return os.path.join(self.base_dir, "data", "lemsa_table_edits.json")
+        return os.path.join(self.repo_root, "reference", "lemsa_table_edits.json")
 
     def _load_table_edits(self):
         path = self._get_table_edits_path()
@@ -2469,7 +2470,7 @@ class App(QMainWindow):
     # -- Name alias persistence -----------------------------------------------
 
     def _get_aliases_path(self):
-        return os.path.join(self.base_dir, "data", "lemsa_name_aliases.json")
+        return os.path.join(self.repo_root, "reference", "lemsa_name_aliases.json")
 
     def _load_name_aliases(self):
         path = self._get_aliases_path()
@@ -2509,7 +2510,7 @@ class App(QMainWindow):
     # -- Exclusions persistence -----------------------------------------------
 
     def _get_exclusions_path(self):
-        return os.path.join(self.base_dir, "data", "lemsa_exclusions.json")
+        return os.path.join(self.repo_root, "reference", "lemsa_exclusions.json")
 
     def _load_exclusions(self):
         path = self._get_exclusions_path()
@@ -2533,7 +2534,7 @@ class App(QMainWindow):
     # -- Splits persistence ---------------------------------------------------
 
     def _get_splits_path(self):
-        return os.path.join(self.base_dir, "data", "lemsa_splits.json")
+        return os.path.join(self.repo_root, "reference", "lemsa_splits.json")
 
     def _load_splits(self):
         path = self._get_splits_path()
@@ -2833,7 +2834,7 @@ class App(QMainWindow):
         raise Exception(f"Could not fetch {url}")
 
     def _fetch_via_browser(self, url):
-        script = os.path.join(self.base_dir, "fetch_page.js")
+        script = os.path.join(self.repo_root, "tools", "scraper", "fetch_page.js")
         if not os.path.isfile(script):
             raise Exception("fetch_page.js not found")
         result = subprocess.run(["node", script, "--download", url],
@@ -2844,7 +2845,7 @@ class App(QMainWindow):
         return base64.b64decode(result.stdout)
 
     def _fetch_rendered_html(self, url):
-        script = os.path.join(self.base_dir, "fetch_page.js")
+        script = os.path.join(self.repo_root, "tools", "scraper", "fetch_page.js")
         if not os.path.isfile(script):
             raise Exception("fetch_page.js not found")
         try:
@@ -6214,7 +6215,7 @@ class App(QMainWindow):
         if not self.current_file:
             self._status.showMessage("No file loaded to simulate.")
             return
-        widget_path = os.path.join(self.base_dir, "widgets", "ems-inventory-checklist.html")
+        widget_path = os.path.join(self.repo_root, "widgets", "ems-inventory-checklist.html")
         if not os.path.isfile(widget_path):
             self._status.showMessage(f"Widget not found: {widget_path}")
             return
@@ -6242,7 +6243,7 @@ class App(QMainWindow):
         """Load and cache the widget HTML with JotForm scripts stripped."""
         if self._preview_html_cache is not None:
             return self._preview_html_cache
-        widget_path = os.path.join(self.base_dir, "widgets", "ems-inventory-checklist.html")
+        widget_path = os.path.join(self.repo_root, "widgets", "ems-inventory-checklist.html")
         if not os.path.isfile(widget_path):
             return None
         with open(widget_path, "r", encoding="utf-8") as f:

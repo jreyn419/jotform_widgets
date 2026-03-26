@@ -13,8 +13,27 @@ widgets/
   ems-inventory-checklist.html   # Multi-area inventory management (~4300 lines)
   oxygen-supply-check.html       # Oxygen cylinder status tracking (~700 lines)
   news-bulletin.html             # Announcements & review schedule (~530 lines)
+  suggestion-box.html            # User suggestions widget
 data/
   announcements.json             # Remote announcements data for news-bulletin
+  checklists/                    # Rig checklist definitions (per-rig JSON)
+    master_list.json             # Master item list across all rigs
+    601/, 602/                   # Per-rig inventory files (driver_side, passenger_side, bags)
+tools/
+  editor/
+    ems_inventory_editor_qt.py   # PyQt6 desktop editor for inventory checklists & LEMSA data
+    ui_state.json                # Editor window state persistence
+  scraper/
+    fetch_page.js                # Puppeteer script for fetching JS-rendered pages
+    package.json                 # Node dependencies (puppeteer)
+reference/
+  lemsa/                         # LEMSA source PDFs and compiled item data
+  lemsa_config.json              # LEMSA agency tracking configuration
+  lemsa_directory.json           # LEMSA agency directory
+  lemsa_table_edits.json         # Manual overrides for LEMSA item matching
+  lemsa_name_aliases.json        # LEMSA-to-master item name mappings
+  lemsa_exclusions.json          # Items excluded from LEMSA comparison
+  lemsa_splits.json              # Items split across LEMSA categories
 ```
 
 ## Architecture
