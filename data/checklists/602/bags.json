@@ -413,6 +413,7 @@
   {
     "area": "Medicine StatPacks Cell",
     "sealable": true,
+    "childOf": "Large Blue Bag: “Responder”",
     "categories": [
       {
         "name": "Elastic Pouch",
@@ -571,12 +572,12 @@
           }
         ]
       }
-    ],
-    "childOf": "Large Blue Bag: “Responder”"
+    ]
   },
   {
     "area": "Universal StatPacks Cell",
     "sealable": true,
+    "childOf": "Large Blue Bag: “Responder”",
     "categories": [
       {
         "name": "Loose",
@@ -690,59 +691,70 @@
           }
         ]
       }
-    ],
-    "childOf": "Large Blue Bag: “Responder”"
+    ]
   },
   {
     "area": "Blue Airway Bag",
     "sealable": true,
+    "childOf": "Large Blue Bag: “Responder”",
     "categories": [
       {
         "name": "ET Tube Bundle",
         "items": [
           {
             "name": "9.0 mm",
-            "qty": 2
+            "qty": 2,
+            "group": "ET Tube"
           },
           {
             "name": "8.5 mm",
-            "qty": 2
+            "qty": 2,
+            "group": "ET Tube"
           },
           {
             "name": "8.0 mm",
-            "qty": 2
+            "qty": 2,
+            "group": "ET Tube"
           },
           {
             "name": "7.5 mm",
-            "qty": 2
+            "qty": 2,
+            "group": "ET Tube"
           },
           {
             "name": "7.0 mm",
-            "qty": 2
+            "qty": 2,
+            "group": "ET Tube"
           },
           {
             "name": "6.5 mm",
-            "qty": 2
+            "qty": 2,
+            "group": "ET Tube"
           },
           {
             "name": "6.0 mm",
-            "qty": 2
+            "qty": 2,
+            "group": "ET Tube"
           },
           {
             "name": "5.5 mm",
-            "qty": 2
+            "qty": 2,
+            "group": "ET Tube"
           },
           {
             "name": "5.0 mm",
-            "qty": 2
+            "qty": 2,
+            "group": "ET Tube"
           },
           {
             "name": "4.5 mm",
-            "qty": 1
+            "qty": 1,
+            "group": "ET Tube"
           },
           {
             "name": "4.0 mm",
-            "qty": 1
+            "qty": 1,
+            "group": "ET Tube"
           },
           {
             "name": "3.5 mm",
@@ -855,12 +867,12 @@
           }
         ]
       }
-    ],
-    "childOf": "Large Blue Bag: “Responder”"
+    ]
   },
   {
     "area": "Glidescope Bag",
     "sealable": true,
+    "childOf": "Large Blue Bag: “Responder”",
     "categories": [
       {
         "name": "Transparent Pocket",
@@ -917,8 +929,7 @@
           }
         ]
       }
-    ],
-    "childOf": "Large Blue Bag: “Responder”"
+    ]
   },
   {
     "area": "Zoll Monitor",

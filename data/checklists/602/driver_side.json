@@ -696,23 +696,28 @@
         "items": [
           {
             "name": "I/O stabilizer",
-            "qty": 1
+            "qty": 1,
+            "group": "IO Drill Kit"
           },
           {
             "name": "15mm I/O needle",
-            "qty": 1
+            "qty": 1,
+            "group": "IO Drill Kit"
           },
           {
             "name": "45mm I/O needle",
-            "qty": 1
+            "qty": 1,
+            "group": "IO Drill Kit"
           },
           {
             "name": "25mm I/O needle",
-            "qty": 1
+            "qty": 1,
+            "group": "IO Drill Kit"
           },
           {
             "name": "I/O drill",
-            "qty": 1
+            "qty": 1,
+            "group": "IO Drill Kit"
           },
           {
             "name": "Infectious control cleanup kit",

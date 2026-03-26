@@ -12,10 +12,6 @@
           "emsa_min": 2
         },
         {
-          "name": "10 mL Syringe",
-          "emsa_min": 3
-        },
-        {
           "name": "10 mL Syringe (Luer-Lock Tip, Without Needle)",
           "emsa_min": 3
         },
@@ -29,10 +25,6 @@
         },
         {
           "name": "12-lead cables",
-          "emsa_min": 1
-        },
-        {
-          "name": "15mm I/O needle",
           "emsa_min": 1
         },
         {
@@ -62,10 +54,6 @@
         {
           "name": "25G Safety Needle",
           "emsa_min": 4
-        },
-        {
-          "name": "25mm I/O needle",
-          "emsa_min": 1
         },
         {
           "name": "3 mL Syringe (Luer-Lock Tip, Without Needle)",
@@ -108,39 +96,11 @@
           "emsa_min": 1
         },
         {
-          "name": "4.0 mm",
-          "emsa_min": 1
-        },
-        {
-          "name": "4.5 mm",
-          "emsa_min": 1
-        },
-        {
-          "name": "45mm I/O needle",
-          "emsa_min": 1
-        },
-        {
           "name": "5 mL Syringe (Luer-Lock Tip, Without Needle)",
           "emsa_min": 3
         },
         {
-          "name": "5.0 mm",
-          "emsa_min": 2
-        },
-        {
-          "name": "5.5 mm",
-          "emsa_min": 2
-        },
-        {
           "name": "5mL Syringe, Luer-Lock tip, Without Needle",
-          "emsa_min": 2
-        },
-        {
-          "name": "6.0 mm",
-          "emsa_min": 2
-        },
-        {
-          "name": "6.5 mm",
           "emsa_min": 2
         },
         {
@@ -153,26 +113,6 @@
         },
         {
           "name": "60mL Syringe (Luer-Lock Tip)",
-          "emsa_min": 2
-        },
-        {
-          "name": "7.0 mm",
-          "emsa_min": 2
-        },
-        {
-          "name": "7.5 mm",
-          "emsa_min": 2
-        },
-        {
-          "name": "8.0 mm",
-          "emsa_min": 2
-        },
-        {
-          "name": "8.5 mm",
-          "emsa_min": 2
-        },
-        {
-          "name": "9.0 mm",
           "emsa_min": 2
         },
         {
@@ -634,14 +574,6 @@
         {
           "name": "Hyperangulated Stylets",
           "emsa_min": 2
-        },
-        {
-          "name": "I/O drill",
-          "emsa_min": 1
-        },
-        {
-          "name": "I/O stabilizer",
-          "emsa_min": 1
         },
         {
           "name": "Ibuprofen Oral Suspension",
@@ -1504,31 +1436,6 @@
           "group": "Miller Blades"
         },
         {
-          "name": "#0",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#1",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#2",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#3",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#4",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
           "name": "10-25 kg GRAY",
           "emsa_min": 1,
           "group": "iGels"
@@ -1582,6 +1489,86 @@
           "name": "8 Fr.",
           "emsa_min": 2,
           "group": "OGTs/NGTs"
+        },
+        {
+          "name": "#0",
+          "emsa_min": 1,
+          "group": "Mac Blades"
+        },
+        {
+          "name": "#1",
+          "emsa_min": 1,
+          "group": "Mac Blades"
+        },
+        {
+          "name": "#2",
+          "emsa_min": 1,
+          "group": "Mac Blades"
+        },
+        {
+          "name": "#3",
+          "emsa_min": 1,
+          "group": "Mac Blades"
+        },
+        {
+          "name": "#4",
+          "emsa_min": 1,
+          "group": "Mac Blades"
+        },
+        {
+          "name": "4.0 mm",
+          "emsa_min": 1,
+          "group": "ET Tube"
+        },
+        {
+          "name": "4.5 mm",
+          "emsa_min": 1,
+          "group": "ET Tube"
+        },
+        {
+          "name": "5.0 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "5.5 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "6.0 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "6.5 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "7.0 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "7.5 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "8.0 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "8.5 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "9.0 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
         }
       ]
     },
@@ -1637,6 +1624,31 @@
           "name": "24 ga YELLOW",
           "emsa_min": 4,
           "group": "IV Catheter"
+        },
+        {
+          "name": "15mm I/O needle",
+          "emsa_min": 1,
+          "group": "IO Drill Kit"
+        },
+        {
+          "name": "25mm I/O needle",
+          "emsa_min": 1,
+          "group": "IO Drill Kit"
+        },
+        {
+          "name": "45mm I/O needle",
+          "emsa_min": 1,
+          "group": "IO Drill Kit"
+        },
+        {
+          "name": "I/O drill",
+          "emsa_min": 1,
+          "group": "IO Drill Kit"
+        },
+        {
+          "name": "I/O stabilizer",
+          "emsa_min": 1,
+          "group": "IO Drill Kit"
         }
       ]
     },

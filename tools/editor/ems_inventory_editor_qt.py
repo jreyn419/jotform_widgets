@@ -536,13 +536,14 @@ class CategoryDelegate(QStyledItemDelegate):
 
 
 class MoveToCategoryDialog(QDialog):
-    """Searchable category picker dialog with editable combo + MatchContains completer."""
+    """Searchable category picker dialog with editable combo + MatchContains completer.
+    Typing a non-existing name and pressing Enter creates a new category."""
     def __init__(self, categories, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Move to Category")
         self.setMinimumWidth(350)
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel("Select target category:"))
+        layout.addWidget(QLabel("Select or type a new category:"))
 
         self._combo = QComboBox()
         self._combo.setEditable(True)
@@ -565,6 +566,9 @@ class MoveToCategoryDialog(QDialog):
         self._combo.view().clicked.connect(lambda: QTimer.singleShot(0, self.accept))
         completer.activated.connect(lambda: QTimer.singleShot(0, self.accept))
 
+        # Enter in line edit accepts (even for new names)
+        self._combo.lineEdit().returnPressed.connect(self._on_return)
+
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok |
             QDialogButtonBox.StandardButton.Cancel)
@@ -572,14 +576,114 @@ class MoveToCategoryDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
-        # Focus line edit and auto-show popup after dialog is shown
+        # Focus line edit after dialog is shown
         QTimer.singleShot(100, self._show_and_focus)
+
+    def _on_return(self):
+        """Accept on Enter, even for new category names."""
+        if self._combo.currentText().strip():
+            self.accept()
 
     def _show_and_focus(self):
         self._combo.lineEdit().setFocus()
 
     def selected_category(self):
-        return self._combo.currentText()
+        return self._combo.currentText().strip()
+
+
+class MoveToGroupDialog(QDialog):
+    """Searchable group + category picker dialog.
+    If the selected group exists in exactly one category, auto-selects it."""
+    def __init__(self, groups_by_cat, all_categories, parent=None):
+        """groups_by_cat: dict {group_name: [cat_name, ...]}
+        all_categories: list of all category names"""
+        super().__init__(parent)
+        self.setWindowTitle("Move to Group")
+        self.setMinimumWidth(350)
+        self._groups_by_cat = groups_by_cat
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Group name:"))
+
+        # Group combobox
+        all_groups = sorted(groups_by_cat.keys(), key=str.lower)
+        self._group_combo = QComboBox()
+        self._group_combo.setEditable(True)
+        self._group_combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self._group_combo.setMaxVisibleItems(10)
+        self._group_combo.addItems(all_groups)
+
+        g_completer = QCompleter(all_groups, self._group_combo)
+        g_completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        g_completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        g_completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        g_completer.setMaxVisibleItems(10)
+        self._group_combo.setCompleter(g_completer)
+        self._group_combo.setCurrentIndex(-1)
+        self._group_combo.lineEdit().clear()
+        layout.addWidget(self._group_combo)
+
+        # Category combobox
+        layout.addWidget(QLabel("Category:"))
+        sorted_cats = sorted(all_categories, key=str.lower)
+        self._cat_combo = QComboBox()
+        self._cat_combo.setEditable(True)
+        self._cat_combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self._cat_combo.setMaxVisibleItems(10)
+        self._cat_combo.addItems(sorted_cats)
+
+        c_completer = QCompleter(sorted_cats, self._cat_combo)
+        c_completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        c_completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        c_completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        c_completer.setMaxVisibleItems(10)
+        self._cat_combo.setCompleter(c_completer)
+        self._cat_combo.setCurrentIndex(-1)
+        self._cat_combo.lineEdit().clear()
+        layout.addWidget(self._cat_combo)
+
+        # Auto-select category when group is picked from dropdown/completer
+        self._group_combo.view().clicked.connect(
+            lambda: QTimer.singleShot(0, self._auto_select_cat))
+        g_completer.activated.connect(
+            lambda: QTimer.singleShot(0, self._auto_select_cat))
+
+        # Auto-accept when category is picked
+        self._cat_combo.view().clicked.connect(lambda: QTimer.singleShot(0, self.accept))
+        c_completer.activated.connect(lambda: QTimer.singleShot(0, self.accept))
+        self._cat_combo.lineEdit().returnPressed.connect(self._on_cat_return)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok |
+            QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+        QTimer.singleShot(100, lambda: self._group_combo.lineEdit().setFocus())
+
+    def _auto_select_cat(self):
+        """If selected group exists in exactly one category, auto-select and accept."""
+        group = self._group_combo.currentText().strip()
+        cats = self._groups_by_cat.get(group, [])
+        if len(cats) == 1:
+            self._cat_combo.setCurrentText(cats[0])
+            QTimer.singleShot(0, self.accept)
+        else:
+            # Focus category combobox for manual selection
+            self._cat_combo.lineEdit().setFocus()
+            self._cat_combo.lineEdit().selectAll()
+
+    def _on_cat_return(self):
+        if self._group_combo.currentText().strip() and self._cat_combo.currentText().strip():
+            self.accept()
+
+    def selected_group(self):
+        return self._group_combo.currentText().strip()
+
+    def selected_category(self):
+        return self._cat_combo.currentText().strip()
+
 
 
 class SplitDialog(QDialog):
@@ -1361,6 +1465,11 @@ class App(QMainWindow):
         self._save_action.triggered.connect(self._save_all)
         file_menu.addAction(self._save_action)
         file_menu.addSeparator()
+        new_cat_action = QAction("New Category…", self)
+        new_cat_action.setShortcut(QKeySequence("Ctrl+N"))
+        new_cat_action.triggered.connect(self._do_move_to_new_category)
+        file_menu.addAction(new_cat_action)
+        file_menu.addSeparator()
         quit_action = QAction("Quit", self)
         quit_action.setShortcut(QKeySequence("Ctrl+Q"))
         quit_action.triggered.connect(self.close)
@@ -1451,9 +1560,21 @@ class App(QMainWindow):
         move_shortcut = QShortcut(QKeySequence("Ctrl+M"), self)
         move_shortcut.activated.connect(self._do_move_to_category)
 
-        # Ctrl+N: move selected to new category
-        move_new_shortcut = QShortcut(QKeySequence("Ctrl+N"), self)
-        move_new_shortcut.activated.connect(self._do_move_to_new_category)
+        # Ctrl+Shift+M: move selected to group
+        move_group_shortcut = QShortcut(QKeySequence("Ctrl+Shift+M"), self)
+        move_group_shortcut.activated.connect(self._do_move_to_group)
+
+        # Ctrl+D: duplicate selected to category
+        dup_cat_shortcut = QShortcut(QKeySequence("Ctrl+D"), self)
+        dup_cat_shortcut.activated.connect(self._do_duplicate_to_category)
+
+        # Ctrl+Shift+D: duplicate selected to group
+        dup_group_shortcut = QShortcut(QKeySequence("Ctrl+Shift+D"), self)
+        dup_group_shortcut.activated.connect(self._do_duplicate_to_group)
+
+        # Ctrl+Delete: delete selected
+        del_shortcut = QShortcut(QKeySequence("Ctrl+Delete"), self)
+        del_shortcut.activated.connect(self._do_delete)
 
     # -- LEMSA Equipment tab -------------------------------------------------
 
@@ -3315,17 +3436,15 @@ class App(QMainWindow):
         self._last_focused_tree = "master"
         item = self._m_tree.itemAt(pos)
         if item:
-            # Only change current item if the right-clicked item isn't already
-            # part of the selection — otherwise multi-select gets collapsed
             if item not in self._m_tree.selectedItems():
                 self._m_tree.setCurrentItem(item)
         selected = self._m_tree.selectedItems()
         menu = QMenu(self)
 
         # Classify all selected nodes
-        selected_items = []   # (cat, item)
-        selected_groups = []  # (cat, group_name, [items])
-        selected_cats = []    # (cat,)
+        selected_items = []
+        selected_groups = []
+        selected_cats = []
         for sel in selected:
             d = sel.data(0, Qt.ItemDataRole.UserRole)
             if not d:
@@ -3334,12 +3453,11 @@ class App(QMainWindow):
             ci = d[1]
             cat = self.master_list.categories[ci]
             if kind == "item":
-                ii = d[2]
-                selected_items.append((cat, cat.items[ii]))
+                selected_items.append((cat, cat.items[d[2]]))
             elif kind == "group":
-                group_name = d[2]
-                members = [it for it in cat.items if it.group == group_name]
-                selected_groups.append((cat, group_name, members))
+                gn = d[2]
+                members = [it for it in cat.items if it.group == gn]
+                selected_groups.append((cat, gn, members))
             elif kind == "cat":
                 selected_cats.append(cat)
 
@@ -3352,33 +3470,22 @@ class App(QMainWindow):
                 ci = data[1]
                 cat = self.master_list.categories[ci]
 
-                # Context-specific actions first
-                if kind == "item" and total_selected <= 1:
-                    menu.addAction("Rename\tCtrl+R", self._do_rename)
-                    menu.addSeparator()
-
-                elif kind == "group":
+                if kind == "group":
                     group_name = data[2]
-                    members = [it for it in cat.items if it.group == group_name]
-                    menu.addAction("Rename\tCtrl+R", self._do_rename)
                     menu.addAction("Add Item to Group…",
                         lambda gn=group_name: self._qadd_master_item_to_group(cat, gn))
                     menu.addAction("Ungroup Items",
                         lambda c=cat, gn=group_name: self._ungroup_master(c, gn))
-                    if total_selected <= 1:
-                        grp_list = [(cat, group_name, members)]
-                        move_cat_menu = menu.addMenu("Move to Category…")
-                        self._build_group_cat_submenu(move_cat_menu, grp_list)
                     menu.addSeparator()
 
                 elif kind == "cat":
-                    menu.addAction("Rename\tCtrl+R", self._do_rename)
                     menu.addAction("Add Item…", lambda: self._qadd_master_item(cat))
                     menu.addAction("Add Group…", lambda: self._qadd_master_group(cat))
-                    menu.addAction("Add Category…", self._add_master_cat)
                     menu.addSeparator()
 
-        # Clipboard actions
+        # --- Common section: Rename / Copy / Cut ---
+        if item:
+            menu.addAction("Rename\tCtrl+R", self._do_rename)
         menu.addAction("Copy\tCtrl+C", self._do_copy)
         menu.addAction("Cut\tCtrl+X", self._do_cut)
         if self._clipboard and self._clipboard["items"]:
@@ -3387,60 +3494,29 @@ class App(QMainWindow):
             menu.addAction(f"Paste ({n} item{'s' if n > 1 else ''}, {mode})\tCtrl+V", self._do_paste)
         menu.addSeparator()
 
-        # Multi-select move/duplicate
-        if selected_items and not selected_groups and not selected_cats:
-            n = len(selected_items)
-            if n >= 1:
-                add_menu = menu.addMenu(f"Move {n} item(s) to…")
-                self._build_target_submenu(add_menu, selected_items, move=True)
-                dup_menu = menu.addMenu(f"Duplicate {n} item(s) to…")
-                self._build_target_submenu(dup_menu, selected_items, move=False)
-                menu.addSeparator()
-
-        # Multi-group move to category
-        if selected_groups and not selected_cats:
-            ng = len(selected_groups)
-            grp_move_menu = menu.addMenu(f"Move {ng} group(s) to Category…")
-            self._build_group_cat_submenu(grp_move_menu, list(selected_groups))
-            menu.addSeparator()
-
-        # Quick move shortcuts (items or groups selected, no categories)
+        # --- Move / Duplicate ---
         if (selected_items or selected_groups) and not selected_cats:
-            menu.addAction("Move to Category…\tCtrl+M", self._do_move_to_category)
-            menu.addAction("Move to New Category…\tCtrl+N", self._do_move_to_new_category)
+            move_menu = menu.addMenu("Move")
+            move_menu.addAction("To Category…\tCtrl+M", self._do_move_to_category)
+            move_menu.addAction("To Group…\tCtrl+Shift+M", self._do_move_to_group)
+
+            if selected_items and not selected_groups:
+                dup_menu = menu.addMenu("Duplicate")
+                dup_menu.addAction("To Category…\tCtrl+D", self._do_duplicate_to_category)
+                dup_menu.addAction("To Group…\tCtrl+Shift+D", self._do_duplicate_to_group)
             menu.addSeparator()
 
-        # Delete
-        if total_selected > 1:
-            menu.addAction(f"Delete {total_selected} selected",
-                           lambda si=list(selected_items), sg=list(selected_groups),
-                                  sc=list(selected_cats):
-                               self._delete_selected_master_nodes(si, sg, sc))
-        elif item:
-            data = item.data(0, Qt.ItemDataRole.UserRole)
-            if data:
-                kind = data[0]
-                ci = data[1]
-                cat = self.master_list.categories[ci]
-                if kind == "item":
-                    it = cat.items[data[2]]
-                    menu.addAction(f"Delete '{it.name}'", lambda: self._del_master_item(cat, it))
-                elif kind == "group":
-                    group_name = data[2]
-                    members = [it for it in cat.items if it.group == group_name]
-                    menu.addAction(f"Delete group '{group_name}' ({len(members)} items)",
-                                   lambda c=cat, gn=group_name, m=list(members):
-                                       self._delete_selected_master_nodes([], [(c, gn, m)], []))
-                elif kind == "cat":
-                    menu.addAction(f"Delete '{cat.name}'", lambda: self._del_master_cat(cat))
+        # --- Undo / Redo ---
+        menu.addAction("Undo\tCtrl+Z", self._master_undo)
+        menu.addAction("Redo\tCtrl+Shift+Z", self._master_redo)
+        menu.addSeparator()
+
+        # --- Delete ---
+        if total_selected > 0:
+            menu.addAction(f"Delete\tCtrl+Del", self._do_delete)
 
         if not item:
             menu.addAction("Add Category…", self._add_master_cat)
-
-        # Undo/Redo
-        menu.addSeparator()
-        menu.addAction("Undo\tCtrl+Z", self._master_undo)
-        menu.addAction("Redo\tCtrl+Shift+Z", self._master_redo)
 
         menu.exec(self._m_tree.viewport().mapToGlobal(pos))
 
@@ -4212,17 +4288,15 @@ class App(QMainWindow):
         self._last_focused_tree = "rig"
         item = self._r_tree.itemAt(pos)
         if item:
-            # Only change current item if the right-clicked item isn't already
-            # part of the selection — otherwise multi-select gets collapsed
             if item not in self._r_tree.selectedItems():
                 self._r_tree.setCurrentItem(item)
         selected = self._r_tree.selectedItems()
         menu = QMenu(self)
 
         # Classify all selected nodes
-        selected_items = []   # (area, cat, item)
-        selected_cats = []    # (area, cat)
-        selected_areas = []   # (area,)
+        selected_items = []
+        selected_cats = []
+        selected_areas = []
         for sel in selected:
             d = sel.data(0, Qt.ItemDataRole.UserRole)
             if not d:
@@ -4235,8 +4309,7 @@ class App(QMainWindow):
                 cat = area.categories[ci]
                 selected_items.append((area, cat, cat.items[ii]))
             elif kind == "cat":
-                ci = d[2]
-                selected_cats.append((area, area.categories[ci]))
+                selected_cats.append((area, area.categories[d[2]]))
             elif kind == "area":
                 selected_areas.append(area)
 
@@ -4249,15 +4322,9 @@ class App(QMainWindow):
                 ai = data[1]
                 area = self.current_file.areas[ai]
 
-                # Context-specific actions first
-                if kind == "item" and total_selected <= 1:
-                    menu.addAction("Rename\tCtrl+R", self._do_rename)
-                    menu.addSeparator()
-
-                elif kind == "group":
+                if kind == "group":
                     ci = data[2]; group_name = data[3]
                     cat = area.categories[ci]
-                    menu.addAction("Rename\tCtrl+R", self._do_rename)
                     menu.addAction("Add Item to Group…",
                         lambda c=cat, gn=group_name: self._radd_item_to_group(c, gn))
                     menu.addAction("Ungroup Items",
@@ -4266,18 +4333,18 @@ class App(QMainWindow):
 
                 elif kind == "cat":
                     ci = data[2]; cat = area.categories[ci]
-                    menu.addAction("Rename\tCtrl+R", self._do_rename)
                     menu.addAction("Add Item…", lambda: self._radd_item(cat))
                     menu.addAction("Add Group…", lambda: self._radd_group(cat))
                     menu.addSeparator()
 
                 elif kind == "area":
-                    menu.addAction("Rename\tCtrl+R", self._do_rename)
                     menu.addAction("Add Category…", lambda: self._radd_cat(area))
                     menu.addAction("Add Area…", self._add_rig_area)
                     menu.addSeparator()
 
-        # Clipboard actions
+        # --- Common section: Rename / Copy / Cut ---
+        if item:
+            menu.addAction("Rename\tCtrl+R", self._do_rename)
         menu.addAction("Copy\tCtrl+C", self._do_copy)
         menu.addAction("Cut\tCtrl+X", self._do_cut)
         if self._clipboard and self._clipboard["items"]:
@@ -4286,57 +4353,36 @@ class App(QMainWindow):
             menu.addAction(f"Paste ({n} item{'s' if n > 1 else ''}, {mode})\tCtrl+V", self._do_paste)
         menu.addSeparator()
 
-        # Move to area (items only)
+        # --- Move / Duplicate ---
         if selected_items and not selected_cats and not selected_areas:
-            n = len(selected_items)
+            move_menu = menu.addMenu("Move")
+            move_menu.addAction("To Category…\tCtrl+M", self._do_move_to_category)
+            move_menu.addAction("To Group…\tCtrl+Shift+M", self._do_move_to_group)
+            # Move to area submenu
             area_names = [a.name for a in self.current_file.areas]
-            move_menu = menu.addMenu(f"Move {n} item(s) to Area…")
-            for area_name in area_names:
-                move_menu.addAction(area_name,
-                    lambda an=area_name, si=list(selected_items):
-                        self._move_selected_to_rig_area(si, an))
-            menu.addAction("Move to Category…\tCtrl+M", self._do_move_to_category)
-            menu.addAction("Move to New Category…\tCtrl+N", self._do_move_to_new_category)
+            if len(area_names) > 1:
+                area_menu = move_menu.addMenu("To Area…")
+                for area_name in area_names:
+                    area_menu.addAction(area_name,
+                        lambda an=area_name, si=list(selected_items):
+                            self._move_selected_to_rig_area(si, an))
+
+            dup_menu = menu.addMenu("Duplicate")
+            dup_menu.addAction("To Category…\tCtrl+D", self._do_duplicate_to_category)
+            dup_menu.addAction("To Group…\tCtrl+Shift+D", self._do_duplicate_to_group)
             menu.addSeparator()
 
-        # Delete
-        if total_selected > 1:
-            menu.addAction(f"Delete {total_selected} selected",
-                           lambda si=list(selected_items), sc=list(selected_cats),
-                                  sa=list(selected_areas):
-                               self._delete_selected_rig_nodes(si, sc, sa))
-        elif item:
-            data = item.data(0, Qt.ItemDataRole.UserRole)
-            if data:
-                kind = data[0]
-                ai = data[1]
-                area = self.current_file.areas[ai]
-                if kind == "item":
-                    it = area.categories[data[2]].items[data[3]]
-                    menu.addAction(f"Delete '{it.name}'",
-                        lambda: self._delete_selected_rig_nodes([(area, area.categories[data[2]], it)], [], []))
-                elif kind == "group":
-                    cat = area.categories[data[2]]
-                    members = [it for it in cat.items if it.group == data[3]]
-                    menu.addAction(f"Delete group '{data[3]}' ({len(members)} items)",
-                        lambda c=cat, m=list(members):
-                            self._delete_selected_rig_nodes(
-                                [(area, c, it) for it in m], [], []))
-                elif kind == "cat":
-                    cat = area.categories[data[2]]
-                    menu.addAction(f"Delete '{cat.name}'",
-                        lambda: self._delete_selected_rig_nodes([], [(area, cat)], []))
-                elif kind == "area":
-                    menu.addAction(f"Delete '{area.name}'",
-                        lambda: self._delete_selected_rig_nodes([], [], [area]))
+        # --- Undo / Redo ---
+        menu.addAction("Undo\tCtrl+Z", self._rig_undo)
+        menu.addAction("Redo\tCtrl+Shift+Z", self._rig_redo)
+        menu.addSeparator()
+
+        # --- Delete ---
+        if total_selected > 0:
+            menu.addAction("Delete\tCtrl+Del", self._do_delete)
 
         if not item:
             menu.addAction("Add Area…", self._add_rig_area)
-
-        # Undo/Redo
-        menu.addSeparator()
-        menu.addAction("Undo\tCtrl+Z", self._rig_undo)
-        menu.addAction("Redo\tCtrl+Shift+Z", self._rig_redo)
 
         menu.exec(self._r_tree.viewport().mapToGlobal(pos))
 
@@ -4875,7 +4921,7 @@ class App(QMainWindow):
             self._status.showMessage(f"Moved {moved} item(s) to '{cat_name}'")
 
     def _do_move_to_category(self):
-        """Ctrl+M — move selected items/groups to an existing category."""
+        """Ctrl+M — move selected items/groups to a category (creates new if typed)."""
         ft = self._focused_tree()
         tree = self._r_tree if ft == "rig" else self._m_tree
         items_list, groups_list = self._classify_tree_selection(tree, ft)
@@ -4883,13 +4929,11 @@ class App(QMainWindow):
             self._status.showMessage("Select items or groups to move")
             return
         cat_names = self._get_category_names_for_move(ft, items_list, groups_list)
-        if not cat_names:
-            self._status.showMessage("No categories available")
-            return
         dlg = MoveToCategoryDialog(cat_names, self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
             name = dlg.selected_category()
             if name:
+                self._ensure_category_exists(ft, name, items_list, groups_list)
                 self._execute_move_to_category(ft, items_list, groups_list, name)
 
     def _do_move_to_new_category(self):
@@ -4905,7 +4949,11 @@ class App(QMainWindow):
         if not ok or not name.strip():
             return
         name = name.strip()
-        # Create category if it doesn't exist
+        self._ensure_category_exists(ft, name, items_list, groups_list)
+        self._execute_move_to_category(ft, items_list, groups_list, name)
+
+    def _ensure_category_exists(self, ft, name, items_list, groups_list):
+        """Create category if it doesn't already exist."""
         if ft == "master" and self.master_list:
             if not any(c.name == name for c in self.master_list.categories):
                 self.master_list.categories.append(MasterCategory(name))
@@ -4917,7 +4965,218 @@ class App(QMainWindow):
                 area = groups_list[0][0]
             if area and not any(c.name == name for c in area.categories):
                 area.categories.append(Category(name))
-        self._execute_move_to_category(ft, items_list, groups_list, name)
+
+    def _do_delete(self):
+        """Ctrl+Delete — delete selected items/groups/categories/areas."""
+        ft = self._focused_tree()
+        if ft == "master" and self.master_list:
+            tree = self._m_tree
+            selected_items = []
+            selected_groups = []
+            selected_cats = []
+            for sel in tree.selectedItems():
+                d = sel.data(0, Qt.ItemDataRole.UserRole)
+                if not d:
+                    continue
+                kind = d[0]
+                ci = d[1]
+                cat = self.master_list.categories[ci]
+                if kind == "item":
+                    selected_items.append((cat, cat.items[d[2]]))
+                elif kind == "group":
+                    gn = d[2]
+                    members = [it for it in cat.items if it.group == gn]
+                    selected_groups.append((cat, gn, members))
+                elif kind == "cat":
+                    selected_cats.append(cat)
+            if selected_items or selected_groups or selected_cats:
+                self._delete_selected_master_nodes(selected_items, selected_groups, selected_cats)
+        elif ft == "rig" and self.current_file:
+            tree = self._r_tree
+            selected_items = []
+            selected_cats = []
+            selected_areas = []
+            for sel in tree.selectedItems():
+                d = sel.data(0, Qt.ItemDataRole.UserRole)
+                if not d:
+                    continue
+                kind = d[0]
+                ai = d[1]
+                area = self.current_file.areas[ai]
+                if kind == "item":
+                    ci, ii = d[2], d[3]
+                    cat = area.categories[ci]
+                    selected_items.append((area, cat, cat.items[ii]))
+                elif kind == "cat":
+                    selected_cats.append((area, area.categories[d[2]]))
+                elif kind == "area":
+                    selected_areas.append(area)
+            if selected_items or selected_cats or selected_areas:
+                self._delete_selected_rig_nodes(selected_items, selected_cats, selected_areas)
+
+    def _get_groups_by_cat(self, ft):
+        """Return dict {group_name: [cat_name, ...]} and list of all cat names."""
+        groups_by_cat = defaultdict(list)
+        all_cats = []
+        if ft == "master" and self.master_list:
+            for cat in self.master_list.categories:
+                all_cats.append(cat.name)
+                seen = set()
+                for it in cat.items:
+                    if it.group and it.group not in seen:
+                        groups_by_cat[it.group].append(cat.name)
+                        seen.add(it.group)
+        elif ft == "rig" and self.current_file:
+            # Use area from first selected item's area
+            tree = self._r_tree
+            area = None
+            for sel in tree.selectedItems():
+                d = sel.data(0, Qt.ItemDataRole.UserRole)
+                if d:
+                    area = self.current_file.areas[d[1]]
+                    break
+            if area:
+                for cat in area.categories:
+                    all_cats.append(cat.name)
+                    seen = set()
+                    for it in cat.items:
+                        if it.group and it.group not in seen:
+                            groups_by_cat[it.group].append(cat.name)
+                            seen.add(it.group)
+        return dict(groups_by_cat), all_cats
+
+    def _do_move_to_group(self):
+        """Ctrl+Shift+M — move selected items to a group (with category selection)."""
+        ft = self._focused_tree()
+        tree = self._r_tree if ft == "rig" else self._m_tree
+        items_list, groups_list = self._classify_tree_selection(tree, ft)
+        if not items_list and not groups_list:
+            self._status.showMessage("Select items or groups to move")
+            return
+        groups_by_cat, all_cats = self._get_groups_by_cat(ft)
+        if not all_cats:
+            self._status.showMessage("No categories available")
+            return
+        dlg = MoveToGroupDialog(groups_by_cat, all_cats, self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            group = dlg.selected_group()
+            cat_name = dlg.selected_category()
+            if group and cat_name:
+                self._ensure_category_exists(ft, cat_name, items_list, groups_list)
+                # Set group on all items, then move to target category
+                all_items = list(items_list)
+                for entry in groups_list:
+                    if ft == "master":
+                        src_cat, gn, members = entry
+                        all_items.extend((src_cat, it) for it in members)
+                    else:
+                        src_area, src_cat, gn, members = entry
+                        all_items.extend((src_area, src_cat, it) for it in members)
+                for entry in all_items:
+                    item = entry[-1]
+                    item.group = group
+                self._execute_move_to_category(ft, all_items if items_list else [],
+                                                groups_list, cat_name)
+
+    def _do_duplicate_to_category(self):
+        """Ctrl+D — duplicate selected items to a category."""
+        ft = self._focused_tree()
+        tree = self._r_tree if ft == "rig" else self._m_tree
+        items_list, _ = self._classify_tree_selection(tree, ft)
+        if not items_list:
+            self._status.showMessage("Select items to duplicate")
+            return
+        cat_names = self._get_category_names_for_move(ft, items_list, [])
+        dlg = MoveToCategoryDialog(cat_names, self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            name = dlg.selected_category()
+            if name:
+                self._ensure_category_exists(ft, name, items_list, [])
+                if ft == "master":
+                    self._duplicate_selected_to_master_cat(items_list, name)
+                elif ft == "rig":
+                    self._duplicate_selected_to_rig_cat(items_list, name)
+
+    def _do_duplicate_to_group(self):
+        """Ctrl+Shift+D — duplicate selected items to a group."""
+        ft = self._focused_tree()
+        tree = self._r_tree if ft == "rig" else self._m_tree
+        items_list, _ = self._classify_tree_selection(tree, ft)
+        if not items_list:
+            self._status.showMessage("Select items to duplicate")
+            return
+        groups_by_cat, all_cats = self._get_groups_by_cat(ft)
+        if not all_cats:
+            self._status.showMessage("No categories available")
+            return
+        dlg = MoveToGroupDialog(groups_by_cat, all_cats, self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            group = dlg.selected_group()
+            cat_name = dlg.selected_category()
+            if group and cat_name:
+                self._ensure_category_exists(ft, cat_name, items_list, [])
+                if ft == "master":
+                    # Duplicate items into target cat with group tag
+                    target_cat = None
+                    for c in self.master_list.categories:
+                        if c.name == cat_name:
+                            target_cat = c
+                            break
+                    if target_cat:
+                        duped = 0
+                        for _, item in items_list:
+                            if not any(it.name.lower() == item.name.lower()
+                                       and it.group == group for it in target_cat.items):
+                                target_cat.items.append(MasterItem(item.name, item.emsa_min, group))
+                                duped += 1
+                        if duped:
+                            self.dirty_master = True
+                            self._update_save_state()
+                            self._rebuild_master_tree()
+                            self._status.showMessage(
+                                f"Duplicated {duped} item(s) to '{cat_name}' group '{group}'")
+                elif ft == "rig":
+                    area = items_list[0][0] if items_list else None
+                    if area:
+                        target_cat = None
+                        for c in area.categories:
+                            if c.name == cat_name:
+                                target_cat = c
+                                break
+                        if target_cat:
+                            duped = 0
+                            for _, _, item in items_list:
+                                if not any(it.name.lower() == item.name.lower()
+                                           and it.group == group for it in target_cat.items):
+                                    target_cat.items.append(Item(item.name, item.qty, group))
+                                    duped += 1
+                            if duped:
+                                self._set_dirty()
+                                self._rebuild_rig_tree()
+                                self._status.showMessage(
+                                    f"Duplicated {duped} item(s) to '{cat_name}' group '{group}'")
+
+    def _duplicate_selected_to_rig_cat(self, items_list, cat_name):
+        """Duplicate items into a named category in the rig tree."""
+        area = items_list[0][0] if items_list else None
+        if not area:
+            return
+        target_cat = None
+        for c in area.categories:
+            if c.name == cat_name:
+                target_cat = c
+                break
+        if not target_cat:
+            return
+        duped = 0
+        for _, _, item in items_list:
+            if not any(it.name.lower() == item.name.lower() for it in target_cat.items):
+                target_cat.items.append(Item(item.name, item.qty, item.group))
+                duped += 1
+        if duped:
+            self._set_dirty()
+            self._rebuild_rig_tree()
+            self._status.showMessage(f"Duplicated {duped} item(s) to '{cat_name}'")
 
     def _serialize_selected(self, tree, tree_type):
         """Serialize selected tree items to clipboard dicts."""
