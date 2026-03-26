@@ -32,7 +32,7 @@ from collections import defaultdict
 from copy import deepcopy
 import html as html_module
 
-os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-logging --log-level=3"
+os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-logging"
 
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QTabWidget, QSplitter,
@@ -575,43 +575,144 @@ class SplitDialog(QDialog):
 
 
 VERSION = "5.0.0"
-# == LEMSA directory ==========================================================
+# == LEMSA / State EMS directory ===============================================
 
 LEMSA_DATA = [
-    {"name": "Alameda County EMS", "counties": ["Alameda"], "url": "https://ems.acgov.org/"},
-    {"name": "Central California EMS Agency", "counties": ["Fresno", "Kings", "Madera", "Tulare"], "url": "https://www.fresnocountyca.gov/Departments/Public-Health/Emergency-Services"},
-    {"name": "Coastal Valleys EMS Agency", "counties": ["Mendocino", "Sonoma"], "url": "https://www.coastalvalleysems.org/"},
-    {"name": "Contra Costa EMS Agency", "counties": ["Contra Costa"], "url": "https://www.cchealth.org/about-contra-costa-health/divisions/ems"},
-    {"name": "El Dorado County EMS Agency", "counties": ["El Dorado"], "url": "https://www.eldoradocounty.ca.gov/Public-Safety-Justice/Emergency-Medical-Services"},
-    {"name": "Imperial County EMS Agency", "counties": ["Imperial"], "url": "https://www.icphd.org/emergency-medical-services/"},
-    {"name": "Inland Counties Emergency Medical Agency (ICEMA)", "counties": ["Inyo", "Mono", "San Bernardino"], "url": "https://icema.sbcounty.gov/"},
-    {"name": "Kern County EMS Agency", "counties": ["Kern"], "url": "https://www.kernpublichealth.com/emergency-medical-services"},
-    {"name": "Los Angeles County EMS Agency", "counties": ["Los Angeles"], "url": "https://dhs.lacounty.gov/emergency-medical-services-agency/"},
-    {"name": "Marin County EMS Agency", "counties": ["Marin"], "url": "https://ems.marinhhs.org/"},
-    {"name": "Merced County EMS Agency", "counties": ["Merced"], "url": "https://www.countyofmerced.com/2261/Emergency-Medical-Services"},
-    {"name": "Monterey County EMS Agency", "counties": ["Monterey"], "url": "https://www.co.monterey.ca.us/government/departments-a-h/health/emergency-medical-services"},
-    {"name": "Mountain Counties EMS Agency (MCEMSA)", "counties": ["Alpine", "Amador", "Calaveras", "Mariposa"], "url": "https://www.mvemsa.org/"},
-    {"name": "Napa County EMS Agency", "counties": ["Napa"], "url": "https://www.napacounty.gov/756/Emergency-Medical-Services-EMS-Agency"},
-    {"name": "North Coast EMS", "counties": ["Del Norte", "Humboldt", "Lake"], "url": "http://www.northcoastems.com/"},
-    {"name": "Northern California EMS Inc.", "counties": ["Lassen", "Modoc", "Plumas", "Sierra", "Trinity"], "url": "https://norcalems.org/"},
-    {"name": "Orange County EMS Agency", "counties": ["Orange"], "url": "https://www.ochealthinfo.com/providers-partners/emergency-medical-services"},
-    {"name": "Riverside County EMS Agency", "counties": ["Riverside"], "url": "https://www.rivcoems.org/"},
-    {"name": "Sacramento County EMS Agency", "counties": ["Sacramento"], "url": "https://dhs.saccounty.gov/PUB/EMS/Pages/EMS-Home.aspx"},
-    {"name": "San Benito County EMS Agency", "counties": ["San Benito"], "url": "https://www.cosb.us/departments/office-of-emergency-services-oes-and-emergency-medical-services/emergency-medical-services-ems"},
-    {"name": "San Diego County EMS Agency", "counties": ["San Diego"], "url": "https://www.sandiegocounty.gov/content/sdc/ems.html"},
-    {"name": "San Francisco EMS Agency", "counties": ["San Francisco"], "url": "https://sf.gov/departments/department-emergency-management/emergency-medical-services-agency"},
-    {"name": "San Joaquin EMS Agency", "counties": ["San Joaquin"], "url": "https://www.sjgov.org/department/ems"},
-    {"name": "San Luis Obispo County EMS Agency", "counties": ["San Luis Obispo"], "url": "https://www.slocounty.ca.gov/Departments/Health-Agency/Public-Health/Emergency-Medical-Services/Emergency-Medical-Services-Agency.aspx"},
-    {"name": "San Mateo County EMS Agency", "counties": ["San Mateo"], "url": "https://www.smchealth.org/ems"},
-    {"name": "Santa Barbara County EMS Agency", "counties": ["Santa Barbara"], "url": "https://www.countyofsb.org/412/Emergency-Medical-Services"},
-    {"name": "Santa Clara County EMS Agency", "counties": ["Santa Clara"], "url": "https://emsagency.sccgov.org/home"},
-    {"name": "Santa Cruz County EMS Agency", "counties": ["Santa Cruz"], "url": "https://www.santacruzhealth.org/HSAHome/HSADivisions/PublicHealth/EmergencyMedicalServices.aspx"},
-    {"name": "Sierra-Sacramento Valley EMS Agency", "counties": ["Butte", "Colusa", "Glenn", "Nevada", "Placer", "Shasta", "Siskiyou", "Sutter", "Tehama", "Yuba"], "url": "https://www.ssvems.com/"},
-    {"name": "Solano County EMS Agency", "counties": ["Solano"], "url": "https://www.solanocounty.com/depts/ems/default.asp"},
-    {"name": "Stanislaus County EMS Agency", "counties": ["Stanislaus"], "url": "https://stanems.com/"},
-    {"name": "Tuolumne County EMS Agency", "counties": ["Tuolumne"], "url": "https://www.tuolumnecounty.ca.gov/302/Emergency-Medical-Services"},
-    {"name": "Ventura County EMS Agency", "counties": ["Ventura"], "url": "https://vchca.org/ems"},
-    {"name": "Yolo County EMS Agency", "counties": ["Yolo"], "url": "https://www.yolocounty.org/government/general-government-departments/health-human-services/providers-partners/yolo-emergency-medical-services-agency-yemsa"},
+    # -- Alabama --
+    {"name": "Alabama Office of EMS", "state": "Alabama", "counties": [], "url": "https://www.alabamapublichealth.gov/ems/"},
+    # -- Alaska --
+    {"name": "Alaska EMS Program", "state": "Alaska", "counties": [], "url": "https://dhss.alaska.gov/dph/Emergency/Pages/ems/default.aspx"},
+    # -- Arizona --
+    {"name": "Arizona Bureau of EMS & Trauma System", "state": "Arizona", "counties": [], "url": "https://www.azdhs.gov/preparedness/emergency-medical-services-trauma-system/"},
+    # -- Arkansas --
+    {"name": "Arkansas Dept. of Health – EMS", "state": "Arkansas", "counties": [], "url": "https://www.healthy.arkansas.gov/programs-services/topics/emergency-medical-services"},
+    # -- California (LEMSAs) --
+    {"name": "Alameda County EMS", "state": "California", "counties": ["Alameda"], "url": "https://ems.acgov.org/"},
+    {"name": "Central California EMS Agency", "state": "California", "counties": ["Fresno", "Kings", "Madera", "Tulare"], "url": "https://www.fresnocountyca.gov/Departments/Public-Health/Emergency-Services"},
+    {"name": "Coastal Valleys EMS Agency", "state": "California", "counties": ["Mendocino", "Sonoma"], "url": "https://www.coastalvalleysems.org/"},
+    {"name": "Contra Costa EMS Agency", "state": "California", "counties": ["Contra Costa"], "url": "https://www.cchealth.org/about-contra-costa-health/divisions/ems"},
+    {"name": "El Dorado County EMS Agency", "state": "California", "counties": ["El Dorado"], "url": "https://www.eldoradocounty.ca.gov/Public-Safety-Justice/Emergency-Medical-Services"},
+    {"name": "Imperial County EMS Agency", "state": "California", "counties": ["Imperial"], "url": "https://www.icphd.org/emergency-medical-services/"},
+    {"name": "Inland Counties Emergency Medical Agency (ICEMA)", "state": "California", "counties": ["Inyo", "Mono", "San Bernardino"], "url": "https://icema.sbcounty.gov/"},
+    {"name": "Kern County EMS Agency", "state": "California", "counties": ["Kern"], "url": "https://www.kernpublichealth.com/emergency-medical-services"},
+    {"name": "Los Angeles County EMS Agency", "state": "California", "counties": ["Los Angeles"], "url": "https://dhs.lacounty.gov/emergency-medical-services-agency/"},
+    {"name": "Marin County EMS Agency", "state": "California", "counties": ["Marin"], "url": "https://ems.marinhhs.org/"},
+    {"name": "Merced County EMS Agency", "state": "California", "counties": ["Merced"], "url": "https://www.countyofmerced.com/2261/Emergency-Medical-Services"},
+    {"name": "Monterey County EMS Agency", "state": "California", "counties": ["Monterey"], "url": "https://www.co.monterey.ca.us/government/departments-a-h/health/emergency-medical-services"},
+    {"name": "Mountain Counties EMS Agency (MCEMSA)", "state": "California", "counties": ["Alpine", "Amador", "Calaveras", "Mariposa"], "url": "https://www.mvemsa.org/"},
+    {"name": "Napa County EMS Agency", "state": "California", "counties": ["Napa"], "url": "https://www.napacounty.gov/756/Emergency-Medical-Services-EMS-Agency"},
+    {"name": "North Coast EMS", "state": "California", "counties": ["Del Norte", "Humboldt", "Lake"], "url": "http://www.northcoastems.com/"},
+    {"name": "Northern California EMS Inc.", "state": "California", "counties": ["Lassen", "Modoc", "Plumas", "Sierra", "Trinity"], "url": "https://norcalems.org/"},
+    {"name": "Orange County EMS Agency", "state": "California", "counties": ["Orange"], "url": "https://www.ochealthinfo.com/providers-partners/emergency-medical-services"},
+    {"name": "Riverside County EMS Agency", "state": "California", "counties": ["Riverside"], "url": "https://www.rivcoems.org/"},
+    {"name": "Sacramento County EMS Agency", "state": "California", "counties": ["Sacramento"], "url": "https://dhs.saccounty.gov/PUB/EMS/Pages/EMS-Home.aspx"},
+    {"name": "San Benito County EMS Agency", "state": "California", "counties": ["San Benito"], "url": "https://www.cosb.us/departments/office-of-emergency-services-oes-and-emergency-medical-services/emergency-medical-services-ems"},
+    {"name": "San Diego County EMS Agency", "state": "California", "counties": ["San Diego"], "url": "https://www.sandiegocounty.gov/content/sdc/ems.html"},
+    {"name": "San Francisco EMS Agency", "state": "California", "counties": ["San Francisco"], "url": "https://sf.gov/departments/department-emergency-management/emergency-medical-services-agency"},
+    {"name": "San Joaquin EMS Agency", "state": "California", "counties": ["San Joaquin"], "url": "https://www.sjgov.org/department/ems"},
+    {"name": "San Luis Obispo County EMS Agency", "state": "California", "counties": ["San Luis Obispo"], "url": "https://www.slocounty.ca.gov/Departments/Health-Agency/Public-Health/Emergency-Medical-Services/Emergency-Medical-Services-Agency.aspx"},
+    {"name": "San Mateo County EMS Agency", "state": "California", "counties": ["San Mateo"], "url": "https://www.smchealth.org/ems"},
+    {"name": "Santa Barbara County EMS Agency", "state": "California", "counties": ["Santa Barbara"], "url": "https://www.countyofsb.org/412/Emergency-Medical-Services"},
+    {"name": "Santa Clara County EMS Agency", "state": "California", "counties": ["Santa Clara"], "url": "https://emsagency.sccgov.org/home"},
+    {"name": "Santa Cruz County EMS Agency", "state": "California", "counties": ["Santa Cruz"], "url": "https://www.santacruzhealth.org/HSAHome/HSADivisions/PublicHealth/EmergencyMedicalServices.aspx"},
+    {"name": "Sierra-Sacramento Valley EMS Agency", "state": "California", "counties": ["Butte", "Colusa", "Glenn", "Nevada", "Placer", "Shasta", "Siskiyou", "Sutter", "Tehama", "Yuba"], "url": "https://www.ssvems.com/"},
+    {"name": "Solano County EMS Agency", "state": "California", "counties": ["Solano"], "url": "https://www.solanocounty.com/depts/ems/default.asp"},
+    {"name": "Stanislaus County EMS Agency", "state": "California", "counties": ["Stanislaus"], "url": "https://stanems.com/"},
+    {"name": "Tuolumne County EMS Agency", "state": "California", "counties": ["Tuolumne"], "url": "https://www.tuolumnecounty.ca.gov/302/Emergency-Medical-Services"},
+    {"name": "Ventura County EMS Agency", "state": "California", "counties": ["Ventura"], "url": "https://vchca.org/ems"},
+    {"name": "Yolo County EMS Agency", "state": "California", "counties": ["Yolo"], "url": "https://www.yolocounty.org/government/general-government-departments/health-human-services/providers-partners/yolo-emergency-medical-services-agency-yemsa"},
+    # -- Colorado --
+    {"name": "Colorado Dept. of Public Health & Environment – EMS", "state": "Colorado", "counties": [], "url": "https://cdphe.colorado.gov/emergency-care/emergency-medical-services"},
+    # -- Connecticut --
+    {"name": "Connecticut Office of EMS", "state": "Connecticut", "counties": [], "url": "https://portal.ct.gov/dph/emergency-medical-services/ems/office-of-emergency-medical-services"},
+    # -- Delaware --
+    {"name": "Delaware Office of EMS", "state": "Delaware", "counties": [], "url": "https://dhss.delaware.gov/dhss/dph/ems/ems.html"},
+    # -- District of Columbia --
+    {"name": "DC Fire & EMS", "state": "District of Columbia", "counties": [], "url": "https://fems.dc.gov/"},
+    # -- Florida --
+    {"name": "Florida Bureau of EMS", "state": "Florida", "counties": [], "url": "https://www.floridahealth.gov/licensing-and-regulation/ems-system/index.html"},
+    # -- Georgia --
+    {"name": "Georgia Office of EMS & Trauma", "state": "Georgia", "counties": [], "url": "https://dph.georgia.gov/EMS"},
+    # -- Hawaii --
+    {"name": "Hawaii EMS & Injury Prevention System Branch", "state": "Hawaii", "counties": [], "url": "https://health.hawaii.gov/ems/"},
+    # -- Idaho --
+    {"name": "Idaho EMS Bureau", "state": "Idaho", "counties": [], "url": "https://healthandwelfare.idaho.gov/providers/emergency-medical-services-ems/emergency-medical-services"},
+    # -- Illinois --
+    {"name": "Illinois Dept. of Public Health – EMS", "state": "Illinois", "counties": [], "url": "https://dph.illinois.gov/topics-services/emergency-preparedness-response/ems.html"},
+    # -- Indiana --
+    {"name": "Indiana Dept. of Homeland Security – EMS", "state": "Indiana", "counties": [], "url": "https://www.in.gov/dhs/fire-prevention-and-public-safety/ems/"},
+    # -- Iowa --
+    {"name": "Iowa Dept. of Public Health – Bureau of EMS", "state": "Iowa", "counties": [], "url": "https://idph.iowa.gov/bureau-of-emergency-and-trauma-services"},
+    # -- Kansas --
+    {"name": "Kansas Board of EMS", "state": "Kansas", "counties": [], "url": "https://www.ksbems.org/"},
+    # -- Kentucky --
+    {"name": "Kentucky Board of EMS", "state": "Kentucky", "counties": [], "url": "https://kbems.ky.gov/"},
+    # -- Louisiana --
+    {"name": "Louisiana Bureau of EMS", "state": "Louisiana", "counties": [], "url": "https://ldh.la.gov/page/bureau-of-emergency-medical-services"},
+    # -- Maine --
+    {"name": "Maine EMS", "state": "Maine", "counties": [], "url": "https://www.maine.gov/ems/"},
+    # -- Maryland --
+    {"name": "Maryland Institute for EMS Systems (MIEMSS)", "state": "Maryland", "counties": [], "url": "https://www.miemss.org/"},
+    # -- Massachusetts --
+    {"name": "Massachusetts Dept. of Public Health – Office of EMS", "state": "Massachusetts", "counties": [], "url": "https://www.mass.gov/orgs/office-of-emergency-medical-services"},
+    # -- Michigan --
+    {"name": "Michigan Dept. of Health & Human Services – EMS", "state": "Michigan", "counties": [], "url": "https://www.michigan.gov/mdhhs/doing-business/providers/ems"},
+    # -- Minnesota --
+    {"name": "Minnesota EMS Regulatory Board (EMSRB)", "state": "Minnesota", "counties": [], "url": "https://mn.gov/emsrb/"},
+    # -- Mississippi --
+    {"name": "Mississippi Bureau of EMS", "state": "Mississippi", "counties": [], "url": "https://www.ems.ms.gov/"},
+    # -- Missouri --
+    {"name": "Missouri Bureau of EMS & Trauma", "state": "Missouri", "counties": [], "url": "https://health.mo.gov/safety/ems/"},
+    # -- Montana --
+    {"name": "Montana EMS & Trauma Systems", "state": "Montana", "counties": [], "url": "https://dphhs.mt.gov/publichealth/emsts"},
+    # -- Nebraska --
+    {"name": "Nebraska Dept. of Health & Human Services – EMS", "state": "Nebraska", "counties": [], "url": "https://dhhs.ne.gov/Pages/Emergency-Medical-Services.aspx"},
+    # -- Nevada --
+    {"name": "Nevada Dept. of Health & Human Services – EMS", "state": "Nevada", "counties": [], "url": "https://dpbh.nv.gov/Reg/EMS/EMS_-_Home/"},
+    # -- New Hampshire --
+    {"name": "New Hampshire Bureau of EMS", "state": "New Hampshire", "counties": [], "url": "https://www.nh.gov/safety/divisions/fstems/ems/"},
+    # -- New Jersey --
+    {"name": "New Jersey Office of EMS", "state": "New Jersey", "counties": [], "url": "https://www.nj.gov/health/ems/"},
+    # -- New Mexico --
+    {"name": "New Mexico EMS Bureau", "state": "New Mexico", "counties": [], "url": "https://www.nmhealth.org/about/erd/ecss/ems/"},
+    # -- New York --
+    {"name": "New York Bureau of EMS & Trauma Systems", "state": "New York", "counties": [], "url": "https://www.health.ny.gov/professionals/ems/"},
+    # -- North Carolina --
+    {"name": "North Carolina Office of EMS", "state": "North Carolina", "counties": [], "url": "https://www.ncdhhs.gov/divisions/health-service-regulation/north-carolina-office-emergency-medical-services"},
+    # -- North Dakota --
+    {"name": "North Dakota Dept. of Health – EMS", "state": "North Dakota", "counties": [], "url": "https://www.health.nd.gov/epr/emergency-medical-systems/"},
+    # -- Ohio --
+    {"name": "Ohio Division of EMS", "state": "Ohio", "counties": [], "url": "https://www.ems.ohio.gov/"},
+    # -- Oklahoma --
+    {"name": "Oklahoma Dept. of Health – EMS Division", "state": "Oklahoma", "counties": [], "url": "https://oklahoma.gov/health/protective-health/emergency-systems/ems-division.html"},
+    # -- Oregon --
+    {"name": "Oregon EMS & Trauma Systems", "state": "Oregon", "counties": [], "url": "https://www.oregon.gov/oha/ph/providerpartnerresources/emstraumasystems/"},
+    # -- Pennsylvania --
+    {"name": "Pennsylvania Bureau of EMS", "state": "Pennsylvania", "counties": [], "url": "https://www.health.pa.gov/topics/EMS/Pages/EMS.aspx"},
+    # -- Rhode Island --
+    {"name": "Rhode Island Division of EMS", "state": "Rhode Island", "counties": [], "url": "https://health.ri.gov/programs/emergencymedicalservices/"},
+    # -- South Carolina --
+    {"name": "South Carolina DHEC – Bureau of EMS", "state": "South Carolina", "counties": [], "url": "https://scdhec.gov/health/health-professionals-hpcs/emergency-medical-services-ems"},
+    # -- South Dakota --
+    {"name": "South Dakota EMS Program", "state": "South Dakota", "counties": [], "url": "https://doh.sd.gov/providers/licensure-certification/emergency-medical-services/"},
+    # -- Tennessee --
+    {"name": "Tennessee Office of EMS", "state": "Tennessee", "counties": [], "url": "https://www.tn.gov/health/health-program-areas/health-professional-boards/ems-board.html"},
+    # -- Texas --
+    {"name": "Texas DSHS – EMS/Trauma Systems", "state": "Texas", "counties": [], "url": "https://www.dshs.texas.gov/dshs-ems-trauma-systems"},
+    # -- Utah --
+    {"name": "Utah Bureau of EMS & Preparedness", "state": "Utah", "counties": [], "url": "https://bemsp.utah.gov/"},
+    # -- Vermont --
+    {"name": "Vermont EMS", "state": "Vermont", "counties": [], "url": "https://healthvermont.gov/emergency/ems"},
+    # -- Virginia --
+    {"name": "Virginia Office of EMS", "state": "Virginia", "counties": [], "url": "https://www.vdh.virginia.gov/emergency-medical-services/"},
+    # -- Washington --
+    {"name": "Washington Dept. of Health – Office of Community Health Systems (EMS & Trauma)", "state": "Washington", "counties": [], "url": "https://doh.wa.gov/public-health-provider-resources/emergency-medical-services-ems-systems"},
+    # -- West Virginia --
+    {"name": "West Virginia Office of EMS", "state": "West Virginia", "counties": [], "url": "https://oems.wv.gov/"},
+    # -- Wisconsin --
+    {"name": "Wisconsin Dept. of Health Services – EMS", "state": "Wisconsin", "counties": [], "url": "https://www.dhs.wisconsin.gov/ems/index.htm"},
+    # -- Wyoming --
+    {"name": "Wyoming Office of EMS", "state": "Wyoming", "counties": [], "url": "https://health.wyo.gov/publichealth/ems/"},
 ]
 
 # == Data model ==============================================================
@@ -2431,28 +2532,53 @@ class App(QMainWindow):
         self._l_tree.clear()
         q = self._l_search.text().strip().lower()
         tracked_only = self._l_tracked_only.isChecked()
+
+        # Group by state, preserving order of first appearance
+        state_order = []
+        state_items = {}  # state -> [(index, lemsa, conf, tracked)]
         for i, lemsa in enumerate(LEMSA_DATA):
+            state = lemsa.get("state", "Other")
             name = lemsa["name"]
-            counties = ", ".join(lemsa["counties"])
-            searchable = f"{name} {counties}".lower()
+            counties = ", ".join(lemsa.get("counties", []))
+            searchable = f"{name} {counties} {state}".lower()
             if q and q not in searchable:
                 continue
             conf = self._get_lemsa_conf(name)
             tracked = conf.get("tracked", False)
             if tracked_only and not tracked:
                 continue
-            prefix = "✓ " if tracked else "  "
-            acronym_tag = f" [{conf.get('acronym', '')}]" if conf.get("acronym") else ""
-            status = ""
-            if conf.get("last_checked"):
-                status = f"  [{conf['last_checked']}]"
-            if conf.get("last_hash"):
-                status += "  ✔"
-            item = QTreeWidgetItem([f"{prefix}{name}{acronym_tag}{status}"])
-            item.setData(0, Qt.ItemDataRole.UserRole, i)
-            if tracked:
-                item.setForeground(0, QBrush(QColor("#a6e3a1")))
-            self._l_tree.addTopLevelItem(item)
+            if state not in state_items:
+                state_order.append(state)
+                state_items[state] = []
+            state_items[state].append((i, lemsa, conf, tracked))
+
+        for state in state_order:
+            entries = state_items[state]
+            n_tracked = sum(1 for _, _, _, t in entries if t)
+            state_label = f"{state} ({len(entries)})"
+            if n_tracked:
+                state_label += f"  [{n_tracked} tracked]"
+            state_node = QTreeWidgetItem([state_label])
+            state_node.setForeground(0, QBrush(QColor("#89b4fa")))
+            font = state_node.font(0)
+            font.setBold(True)
+            state_node.setFont(0, font)
+            for i, lemsa, conf, tracked in entries:
+                name = lemsa["name"]
+                prefix = "✓ " if tracked else "  "
+                acronym_tag = f" [{conf.get('acronym', '')}]" if conf.get("acronym") else ""
+                status = ""
+                if conf.get("last_checked"):
+                    status = f"  [{conf['last_checked']}]"
+                if conf.get("last_hash"):
+                    status += "  ✔"
+                child = QTreeWidgetItem([f"{prefix}{name}{acronym_tag}{status}"])
+                child.setData(0, Qt.ItemDataRole.UserRole, i)
+                if tracked:
+                    child.setForeground(0, QBrush(QColor("#a6e3a1")))
+                state_node.addChild(child)
+            self._l_tree.addTopLevelItem(state_node)
+            state_node.setExpanded(True)
 
     def _on_lemsa_select(self, item):
         idx = item.data(0, Qt.ItemDataRole.UserRole)
@@ -2467,7 +2593,12 @@ class App(QMainWindow):
         layout = self._l_editor_layout
 
         form = QFormLayout()
-        form.addRow("Counties:", QLabel(", ".join(lemsa["counties"])))
+        state = lemsa.get("state", "")
+        if state:
+            form.addRow("State:", QLabel(state))
+        counties_str = ", ".join(lemsa.get("counties", []))
+        if counties_str:
+            form.addRow("Counties:", QLabel(counties_str))
 
         url_label = QLabel(f'<a href="{lemsa["url"]}">{lemsa["url"]}</a>')
         url_label.setOpenExternalLinks(True)
@@ -6215,17 +6346,14 @@ def _generate_branch_images():
     px.save(os.path.join(d, "branch-end.png"))
 
     # arrow-closed: [+] box with dotted border
-    bg_color = QColor("#1e1e2e")  # tree background — occludes branch lines
     px = _make_pixmap()
     p = QPainter(px)
     p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
-    bx, by, bsz = 3, 4, 12
-    # Fill box background to hide branch lines behind it
-    p.fillRect(bx, by, bsz + 1, bsz + 1, bg_color)
     box_pen = QPen(line_color)
     box_pen.setStyle(Qt.PenStyle.DotLine)
     box_pen.setWidth(1)
     p.setPen(box_pen)
+    bx, by, bsz = 3, 4, 12
     p.drawRect(bx, by, bsz, bsz)
     # + sign
     plus_pen = QPen(arrow_color)
@@ -6242,7 +6370,6 @@ def _generate_branch_images():
     px = _make_pixmap()
     p = QPainter(px)
     p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
-    p.fillRect(bx, by, bsz + 1, bsz + 1, bg_color)
     p.setPen(box_pen)
     p.drawRect(bx, by, bsz, bsz)
     # - sign
