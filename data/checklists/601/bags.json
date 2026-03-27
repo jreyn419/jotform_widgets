@@ -26,12 +26,14 @@
             "qty": 2
           },
           {
-            "name": "Full Set",
-            "qty": 5
+            "name": "Full",
+            "qty": 5,
+            "group": "Sapphire Infusion Set"
           },
           {
-            "name": "Half Set",
-            "qty": 5
+            "name": "Half",
+            "qty": 5,
+            "group": "Sapphire Infusion Set"
           }
         ]
       },

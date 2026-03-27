@@ -16,18 +16,6 @@
           "emsa_min": 3
         },
         {
-          "name": "4-lead cables",
-          "emsa_min": 1
-        },
-        {
-          "name": "4-lead cord",
-          "emsa_min": 1
-        },
-        {
-          "name": "60 mL Syringe, Catheter Tip",
-          "emsa_min": 1
-        },
-        {
           "name": "60-Drop Set",
           "emsa_min": 4
         },
@@ -177,14 +165,6 @@
         },
         {
           "name": "BP cuff connector tubing (short, bifurcated tubing)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Bracket for 2 IV Pumps",
-          "emsa_min": 1
-        },
-        {
-          "name": "Bracket for 3 IV Pumps",
           "emsa_min": 1
         },
         {
@@ -392,14 +372,6 @@
           "emsa_min": 1
         },
         {
-          "name": "Full Set",
-          "emsa_min": 5
-        },
-        {
-          "name": "Full Sets",
-          "emsa_min": 10
-        },
-        {
           "name": "Gauze Rolls",
           "emsa_min": 3
         },
@@ -430,14 +402,6 @@
         {
           "name": "Goggles",
           "emsa_min": 3
-        },
-        {
-          "name": "Half Set",
-          "emsa_min": 5
-        },
-        {
-          "name": "Half Sets",
-          "emsa_min": 10
         },
         {
           "name": "Hamilton Adapter Bag",
@@ -562,14 +526,6 @@
         {
           "name": "IV Fluid Warmer",
           "emsa_min": 1
-        },
-        {
-          "name": "IV Pump Chargers",
-          "emsa_min": 3
-        },
-        {
-          "name": "IV Pumps",
-          "emsa_min": 5
         },
         {
           "name": "IV start kits",
@@ -1617,6 +1573,11 @@
           "name": "3mL",
           "emsa_min": 4,
           "group": "Syringe, Twinpak"
+        },
+        {
+          "name": "60 mL Syringe, Catheter Tip",
+          "emsa_min": 1,
+          "group": "Syringe, Luer Lock, Needle-less"
         }
       ]
     },
@@ -1771,6 +1732,47 @@
         {
           "name": "Zoll Monitor",
           "emsa_min": 1
+        },
+        {
+          "name": "4-lead cables",
+          "emsa_min": 1
+        },
+        {
+          "name": "4-lead cord",
+          "emsa_min": 1
+        }
+      ]
+    },
+    {
+      "name": "Infusion Pump Equipment",
+      "items": [
+        {
+          "name": "Full",
+          "emsa_min": 5,
+          "group": "Infusion Set, Sapphire"
+        },
+        {
+          "name": "Half",
+          "emsa_min": 5,
+          "group": "Infusion Set, Sapphire"
+        },
+        {
+          "name": "Pump, Sapphire",
+          "emsa_min": 5
+        },
+        {
+          "name": "Charger, Sapphire",
+          "emsa_min": 3
+        },
+        {
+          "name": "Two Pump",
+          "emsa_min": 1,
+          "group": "Bracket, Sapphire"
+        },
+        {
+          "name": "Three Pump",
+          "emsa_min": 1,
+          "group": "Bracket, Sapphire"
         }
       ]
     }

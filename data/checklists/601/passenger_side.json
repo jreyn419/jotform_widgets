@@ -54,7 +54,7 @@
             "qty": 1
           },
           {
-            "name": "IV Pump Chargers",
+            "name": "Charger, Sapphire",
             "qty": 3
           },
           {
@@ -75,16 +75,19 @@
         "name": "Middle Shelf",
         "items": [
           {
-            "name": "IV Pumps",
-            "qty": 5
+            "name": "Two Pump",
+            "qty": 5,
+            "group": "Bracket, Sapphire"
           },
           {
-            "name": "Bracket for 3 IV Pumps",
-            "qty": 1
+            "name": "Three Pump",
+            "qty": 1,
+            "group": "Bracket, Sapphire"
           },
           {
-            "name": "Bracket for 2 IV Pumps",
-            "qty": 1
+            "name": "Two Pump",
+            "qty": 1,
+            "group": "Bracket, Sapphire"
           }
         ]
       },

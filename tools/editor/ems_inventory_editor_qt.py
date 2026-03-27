@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-EMS Inventory JSON Editor v4.0.0 (PyQt6)
+ReadyRig v5.0.0 (PyQt6)
 A GUI tool for managing EMS inventory checklist JSON files
 with a master list as the canonical item registry.
 
@@ -1404,7 +1404,7 @@ class ConfirmDialog(QDialog):
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(f"EMS Inventory Editor v{VERSION}")
+        self.setWindowTitle("ReadyRig")
         self.resize(1150, 750)
         self.setMinimumSize(900, 550)
 
@@ -1554,6 +1554,11 @@ class App(QMainWindow):
         progress_layout.addWidget(self._g_spinner)
         self._status.addPermanentWidget(self._progress_widget)
         self._progress_widget.hide()
+
+        # Version label (permanent, far right)
+        self._version_label = QLabel(f"v{VERSION}")
+        self._version_label.setStyleSheet("color: #6c7086; padding-right: 6px;")
+        self._status.addPermanentWidget(self._version_label)
         self._spinner_frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
         self._spinner_idx = 0
         self._spinner_timer = None
@@ -2273,6 +2278,9 @@ class App(QMainWindow):
     def _tick_spinner(self):
         self._spinner_idx = (self._spinner_idx + 1) % len(self._spinner_frames)
         self._g_spinner.setText(self._spinner_frames[self._spinner_idx])
+        # Suppress status messages while progress is active
+        if self._status.currentMessage():
+            self._status.clearMessage()
 
     # -- Dir / rig / file management -----------------------------------------
 
@@ -6810,7 +6818,7 @@ class App(QMainWindow):
     def _update_save_state(self):
         enabled = self.dirty or self.dirty_master
         self._save_action.setEnabled(enabled)
-        base = f"EMS Inventory Editor v{VERSION}"
+        base = "ReadyRig"
         self.setWindowTitle(f"● {base}" if enabled else base)
         if self.dirty:
             self._schedule_preview_refresh()
@@ -6946,11 +6954,93 @@ def _generate_branch_images():
     return d
 
 
+def _generate_app_icon():
+    """Render the Star of Life + checklist logo as a multi-size QIcon."""
+    icon = QIcon()
+    for sz in (16, 32, 48, 64, 128, 256):
+        px = QPixmap(sz, sz)
+        px.fill(QColor(0, 0, 0, 0))
+        p = QPainter(px)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        cx, cy = sz / 2, sz / 2
+        # Scale all dimensions relative to icon size
+        arm_w = sz * 0.15
+        arm_h = sz * 0.38
+        arm_r = sz * 0.02
+        center_r = sz * 0.22
+
+        # Draw 6 arms of Star of Life
+        star_color = QColor("#89b4fa")
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(QBrush(star_color))
+        for i in range(6):
+            angle = i * 60
+            p.save()
+            p.translate(cx, cy)
+            p.rotate(angle)
+            p.drawRoundedRect(
+                int(-arm_w / 2), int(-sz * 0.48),
+                int(arm_w), int(arm_h),
+                arm_r, arm_r)
+            p.restore()
+
+        # Center circle (dark fill)
+        p.setBrush(QBrush(QColor("#1e1e2e")))
+        p.setPen(QPen(star_color, max(1, sz * 0.012)))
+        p.drawEllipse(int(cx - center_r), int(cy - center_r),
+                       int(center_r * 2), int(center_r * 2))
+
+        # Checklist marks inside center (only if large enough)
+        if sz >= 32:
+            check_color = QColor("#a6e3a1")
+            line_color = QColor("#585b70")
+            row_h = center_r * 0.55
+            check_w = max(1, sz * 0.018)
+            line_w = max(1, sz * 0.012)
+            line_pen = QPen(line_color, line_w)
+            for row in range(3):
+                ry = cy + (row - 1) * row_h
+                # Checkmark
+                ck_x = cx - center_r * 0.55
+                ck_pen = QPen(check_color, check_w)
+                ck_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+                ck_pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+                p.setPen(ck_pen)
+                p.drawLine(int(ck_x), int(ry),
+                           int(ck_x + center_r * 0.15), int(ry + center_r * 0.18))
+                p.drawLine(int(ck_x + center_r * 0.15), int(ry + center_r * 0.18),
+                           int(ck_x + center_r * 0.38), int(ry - center_r * 0.15))
+                # Line placeholder
+                p.setPen(line_pen)
+                lx = cx - center_r * 0.1
+                p.drawLine(int(lx), int(ry),
+                           int(lx + center_r * 0.6), int(ry))
+        p.end()
+        icon.addPixmap(px)
+    return icon
+
+
 if __name__ == "__main__":
+    # Windows: set AppUserModelID so taskbar shows our icon, not Python's
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                "readyrig.editor")
+        except Exception:
+            pass
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     branch_dir = _generate_branch_images()
     _init_icons()
+    # Load app icon from PNG alongside script, fall back to runtime-generated
+    _script_dir = os.path.dirname(os.path.abspath(__file__))
+    _icon_path = os.path.join(_script_dir, "ems_editor_icon.png")
+    if os.path.isfile(_icon_path):
+        app_icon = QIcon(_icon_path)
+    else:
+        app_icon = _generate_app_icon()
+    app.setWindowIcon(app_icon)
     # Paths for stylesheet (forward slashes for Qt CSS on all platforms)
     bp = branch_dir.replace("\\", "/")
     # Dark palette so Fusion draws widgets in dark colors
@@ -7343,6 +7433,19 @@ if __name__ == "__main__":
         }
     """)
     window = App()
+    window.setWindowIcon(app_icon)
+    # macOS: set dock icon (requires pyobjc, available via pip install pyobjc)
+    if sys.platform == "darwin" and os.path.isfile(_icon_path):
+        try:
+            from Foundation import NSData
+            from AppKit import NSImage, NSApp
+            with open(_icon_path, 'rb') as f:
+                icon_data = f.read()
+            ns_data = NSData.dataWithBytes_length_(icon_data, len(icon_data))
+            ns_img = NSImage.alloc().initWithData_(ns_data)
+            NSApp.setApplicationIconImage_(ns_img)
+        except ImportError:
+            pass
     window.show()
     window.raise_()
     window.activateWindow()
