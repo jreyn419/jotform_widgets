@@ -678,11 +678,13 @@
           },
           {
             "name": "12-lead cables",
-            "qty": 1
+            "qty": 1,
+            "group": "Cables"
           },
           {
             "name": "4-lead cables",
-            "qty": 1
+            "qty": 1,
+            "group": "Cables"
           },
           {
             "name": "SpO2 Monitoring Cable",

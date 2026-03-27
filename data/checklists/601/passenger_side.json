@@ -256,7 +256,8 @@
           },
           {
             "name": "4-lead cord",
-            "qty": 1
+            "qty": 1,
+            "group": "Cables"
           },
           {
             "name": "BP cuff connector tubing (short, bifurcated tubing)",

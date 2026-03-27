@@ -54,6 +54,21 @@ except ImportError:
     HAS_WEBENGINE = False
 
 
+def _natural_sort_key(text):
+    """Sort key: symbols first, then numbers (smallest to largest), then alphabetical.
+    Splits text into numeric and non-numeric parts for natural ordering."""
+    parts = re.split(r'(\d+)', text.lower())
+    result = []
+    for part in parts:
+        if part.isdigit():
+            result.append((1, int(part), part))  # numbers second
+        elif part and not part[0].isalpha():
+            result.append((0, 0, part))  # symbols first
+        else:
+            result.append((2, 0, part))  # alpha last
+    return result
+
+
 def _emoji_icon(char, size=16):
     """Render an emoji character to a QIcon."""
     px = QPixmap(size, size)
@@ -1018,10 +1033,11 @@ class MasterItem:
         self.group = group
 
 class MasterCategory:
-    __slots__ = ("name", "items")
-    def __init__(self, name):
+    __slots__ = ("name", "items", "child_of")
+    def __init__(self, name, child_of=None):
         self.name = name
         self.items = []
+        self.child_of = child_of
 
 class MasterList:
     def __init__(self, path):
@@ -1034,7 +1050,7 @@ class MasterList:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         for cat_obj in data.get("categories", []):
-            cat = MasterCategory(cat_obj.get("name", "Uncategorized"))
+            cat = MasterCategory(cat_obj.get("name", "Uncategorized"), cat_obj.get("child_of"))
             for item_obj in cat_obj.get("items", []):
                 cat.items.append(MasterItem(
                     item_obj.get("name", ""),
@@ -1053,7 +1069,10 @@ class MasterList:
                 if it.group:
                     item_obj["group"] = it.group
                 items.append(item_obj)
-            result["categories"].append({"name": cat.name, "items": items})
+            cat_obj = {"name": cat.name, "items": items}
+            if cat.child_of:
+                cat_obj["child_of"] = cat.child_of
+            result["categories"].append(cat_obj)
         return result
 
     def save(self):
@@ -3161,15 +3180,20 @@ class App(QMainWindow):
         q = self._m_search.text().strip().lower()
         CN = DragDropTree.ROLE_CLEAN_NAME
 
-        for ci, cat in enumerate(self.master_list.categories):
+        cat_nodes = {}  # ci -> QTreeWidgetItem
+        child_cats = []  # [(ci, cat)] — deferred until parents exist
+
+        def _build_cat_content(cat_item, ci, cat):
+            """Populate a category node with groups and items. Returns True if has content."""
             cat_match = q and q in cat.name.lower()
             show = [(ii, it) for ii, it in enumerate(cat.items) if not q or cat_match
                     or q in it.name.lower()
                     or (it.group and q in it.group.lower())]
-            if not show and q: continue
+            if not show and q:
+                return False
 
             # Separate into groups and ungrouped
-            groups = {}  # group_name -> [(ii, item)]
+            groups = {}
             ungrouped = []
             for ii, it in show:
                 if it.group:
@@ -3178,17 +3202,11 @@ class App(QMainWindow):
                     ungrouped.append((ii, it))
 
             total = len(show)
-            cat_item = QTreeWidgetItem([cat.name])
+            cat_item.setText(0, cat.name)
             cat_item.setText(1, f"({total})")
-            cat_item.setIcon(0, _ICONS["cat"])
-            cat_item.setData(0, Qt.ItemDataRole.UserRole, ("cat", ci))
-            cat_item.setData(0, CN, cat.name)
-            self._m_tree.addTopLevelItem(cat_item)
-            if q:
-                cat_item.setExpanded(True)
 
-            # Group nodes
-            for group_name in sorted(groups.keys(), key=str.lower):
+            # Group nodes (sorted naturally)
+            for group_name in sorted(groups.keys(), key=_natural_sort_key):
                 members = groups[group_name]
                 g_item = QTreeWidgetItem([group_name])
                 g_item.setText(1, f"({len(members)})")
@@ -3197,20 +3215,59 @@ class App(QMainWindow):
                 g_item.setData(0, CN, group_name)
                 cat_item.addChild(g_item)
                 if q: g_item.setExpanded(True)
-                for ii, it in members:
+                # Sort items within group naturally
+                for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
                     i_item = QTreeWidgetItem([it.name])
                     i_item.setText(1, f"min {it.emsa_min}")
                     i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ci, ii))
                     i_item.setData(0, CN, it.name)
                     g_item.addChild(i_item)
 
-            # Ungrouped items
-            for ii, it in sorted(ungrouped, key=lambda x: x[1].name.lower()):
+            # Ungrouped items (sorted naturally)
+            for ii, it in sorted(ungrouped, key=lambda x: _natural_sort_key(x[1].name)):
                 i_item = QTreeWidgetItem([it.name])
                 i_item.setText(1, f"min {it.emsa_min}")
                 i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ci, ii))
                 i_item.setData(0, CN, it.name)
                 cat_item.addChild(i_item)
+
+            return True
+
+        # First pass: create all category nodes (sorted naturally)
+        sorted_cats = sorted(enumerate(self.master_list.categories),
+                             key=lambda x: _natural_sort_key(x[1].name))
+        for ci, cat in sorted_cats:
+            cat_item = QTreeWidgetItem()
+            cat_item.setIcon(0, _ICONS["cat"])
+            cat_item.setData(0, Qt.ItemDataRole.UserRole, ("cat", ci))
+            cat_item.setData(0, CN, cat.name)
+            has_content = _build_cat_content(cat_item, ci, cat)
+
+            if not has_content and q and not (q in cat.name.lower()):
+                continue
+
+            cat_nodes[ci] = cat_item
+            if cat.child_of:
+                child_cats.append((ci, cat))
+            else:
+                self._m_tree.addTopLevelItem(cat_item)
+                if q: cat_item.setExpanded(True)
+
+        # Second pass: nest child categories under parents
+        for ci, cat in child_cats:
+            parent_node = None
+            for pci, pcat in enumerate(self.master_list.categories):
+                if pcat.name == cat.child_of and pci in cat_nodes:
+                    parent_node = cat_nodes[pci]
+                    break
+            if parent_node:
+                parent_node.addChild(cat_nodes[ci])
+                if q: parent_node.setExpanded(True)
+            else:
+                # Parent not found — add as top-level
+                self._m_tree.addTopLevelItem(cat_nodes[ci])
+            if q and ci in cat_nodes:
+                cat_nodes[ci].setExpanded(True)
 
         self._m_tree.endRebuild(saved)
 
@@ -3256,7 +3313,13 @@ class App(QMainWindow):
             self.dirty_master = True
             self._update_save_state()
         elif kind == "cat":
+            old_name = cat.name
             cat.name = new_text
+            # Propagate to child_of references
+            if old_name != new_text:
+                for c in self.master_list.categories:
+                    if c.child_of == old_name:
+                        c.child_of = new_text
             self.dirty_master = True
             self._update_save_state()
         self._rebuild_master_tree()
@@ -3409,6 +3472,18 @@ class App(QMainWindow):
         form = QFormLayout()
         name_edit = QLineEdit(cat.name)
         form.addRow("Name:", name_edit)
+        # Parent category selector
+        parent_combo = QComboBox()
+        parent_combo.setEditable(False)
+        parent_combo.addItem("(top level)")
+        for c in self.master_list.categories:
+            if c is not cat:
+                parent_combo.addItem(c.name)
+        if cat.child_of:
+            idx = parent_combo.findText(cat.child_of)
+            if idx >= 0:
+                parent_combo.setCurrentIndex(idx)
+        form.addRow("Parent:", parent_combo)
         form.addRow("Items:", QLabel(str(len(cat.items))))
         groups = {it.group for it in cat.items if it.group}
         if groups:
@@ -3418,7 +3493,20 @@ class App(QMainWindow):
         def _apply():
             n = name_edit.text().strip()
             if n:
+                old_name = cat.name
                 cat.name = n
+                # Propagate to child_of references
+                if old_name != n:
+                    for c in self.master_list.categories:
+                        if c.child_of == old_name:
+                            c.child_of = n
+                # Update parent
+                parent_text = parent_combo.currentText()
+                if parent_text == "(top level)":
+                    cat.child_of = None
+                else:
+                    if not self._is_master_cat_descendant(parent_text, cat.name):
+                        cat.child_of = parent_text
                 self.dirty_master = True
                 self._update_save_state()
                 self._rebuild_master_tree()
@@ -3463,7 +3551,7 @@ class App(QMainWindow):
             menu.addAction("Add New Category…", self._add_master_cat)
             menu.addSeparator()
             paste_action = menu.addAction("Paste\tCtrl+V", self._do_paste)
-            paste_action.setEnabled(bool(self._clipboard and self._clipboard.get("items")))
+            paste_action.setEnabled(self._has_clipboard())
             menu.exec(self._m_tree.viewport().mapToGlobal(pos))
             return
 
@@ -3522,6 +3610,9 @@ class App(QMainWindow):
             elif kind == "cat" and len(selected_cats) <= 1:
                 menu.addAction("Add Item…", lambda: self._qadd_master_item(cat))
                 menu.addAction("Add Group…", lambda: self._qadd_master_group(cat))
+                if cat.child_of:
+                    menu.addAction("Move to Top Level",
+                        lambda c=cat: self._master_cat_to_top_level(c))
                 menu.addSeparator()
 
         # --- Rename / Copy / Cut ---
@@ -3529,12 +3620,18 @@ class App(QMainWindow):
             menu.addAction("Rename\tCtrl+R", self._do_rename)
         menu.addAction("Copy\tCtrl+C", self._do_copy)
         menu.addAction("Cut\tCtrl+X", self._do_cut)
-        has_clip = bool(self._clipboard and self._clipboard.get("items"))
+        has_clip = self._has_clipboard()
         if has_clip:
-            n = len(self._clipboard["items"])
+            n_items = len(self._clipboard.get("items", []))
+            n_cats = len(self._clipboard.get("cats", []))
             mode = self._clipboard["mode"]
-            paste_action = menu.addAction(
-                f"Paste ({n} item{'s' if n > 1 else ''}, {mode})\tCtrl+V", self._do_paste)
+            parts = []
+            if n_items:
+                parts.append(f"{n_items} item{'s' if n_items > 1 else ''}")
+            if n_cats:
+                parts.append(f"{n_cats} cat{'s' if n_cats > 1 else ''}")
+            label = f"Paste ({', '.join(parts)}, {mode})\tCtrl+V"
+            paste_action = menu.addAction(label, self._do_paste)
         else:
             paste_action = menu.addAction("Paste\tCtrl+V", self._do_paste)
             paste_action.setEnabled(False)
@@ -3550,6 +3647,11 @@ class App(QMainWindow):
                 dup_menu = menu.addMenu("Duplicate")
                 dup_menu.addAction("To Category…\tCtrl+D", self._do_duplicate_to_category)
                 dup_menu.addAction("To Group…\tCtrl+Shift+D", self._do_duplicate_to_group)
+            menu.addSeparator()
+
+        # --- Category nesting ---
+        if selected_cats and not selected_items and not selected_groups:
+            menu.addAction("Move to Category…\tCtrl+M", self._do_nest_categories)
             menu.addSeparator()
 
         # --- Delete ---
@@ -3810,6 +3912,31 @@ class App(QMainWindow):
         if target_ci >= len(self.master_list.categories):
             return
         target_cat = self.master_list.categories[target_ci]
+
+        # Category-on-category: set child_of (nesting)
+        src_cats = [sd for sd in source_data_list if sd and sd[0] == "cat"]
+        if src_cats and target_kind == "cat":
+            nested = 0
+            for sd in src_cats:
+                src_ci = sd[1]
+                if src_ci >= len(self.master_list.categories):
+                    continue
+                src_cat = self.master_list.categories[src_ci]
+                if src_cat is target_cat:
+                    continue
+                # Prevent circular: target can't be a descendant of source
+                if self._is_master_cat_descendant(target_cat.name, src_cat.name):
+                    continue
+                src_cat.child_of = target_cat.name
+                nested += 1
+            if nested:
+                self.dirty_master = True
+                self._update_save_state()
+                self._rebuild_master_tree()
+                self._status.showMessage(
+                    f"Nested {nested} category(ies) under '{target_cat.name}'")
+            return
+
         target_group = target_data[2] if target_kind == "group" else None
 
         # Check for group-to-group merge
@@ -3864,6 +3991,27 @@ class App(QMainWindow):
             self._rebuild_master_tree()
             self._status.showMessage(f"Moved {moved} item(s) to '{target_cat.name}'")
 
+    def _is_master_cat_descendant(self, name, ancestor_name):
+        """Check if 'name' is a descendant of 'ancestor_name' via child_of chain."""
+        visited = set()
+        current = name
+        while current:
+            if current in visited:
+                break  # circular ref protection
+            if current == ancestor_name:
+                return True
+            visited.add(current)
+            # Find the category with this name and check its child_of
+            found = False
+            for cat in self.master_list.categories:
+                if cat.name == current:
+                    current = cat.child_of
+                    found = True
+                    break
+            if not found:
+                break
+        return False
+
     def _add_master_cat(self):
         if not self.master_list: return
         n, ok = QInputDialog.getText(self, "Add Category", "Category name:")
@@ -3872,6 +4020,51 @@ class App(QMainWindow):
             self.dirty_master = True
             self._update_save_state()
             self._rebuild_master_tree()
+
+    def _do_nest_categories(self):
+        """Move selected categories under a parent category."""
+        if not self.master_list:
+            return
+        tree = self._m_tree
+        selected_cats = []
+        for sel in tree.selectedItems():
+            d = sel.data(0, Qt.ItemDataRole.UserRole)
+            if d and d[0] == "cat":
+                selected_cats.append(self.master_list.categories[d[1]])
+        if not selected_cats:
+            return
+        # Exclude selected categories from target list
+        excluded = {cat.name for cat in selected_cats}
+        cat_names = [c.name for c in self.master_list.categories if c.name not in excluded]
+        if not cat_names:
+            self._status.showMessage("No categories available as parent")
+            return
+        dlg = MoveToCategoryDialog(cat_names, self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            parent_name = dlg.selected_category()
+            if parent_name:
+                nested = 0
+                for cat in selected_cats:
+                    if cat.name == parent_name:
+                        continue
+                    if self._is_master_cat_descendant(parent_name, cat.name):
+                        continue
+                    cat.child_of = parent_name
+                    nested += 1
+                if nested:
+                    self.dirty_master = True
+                    self._update_save_state()
+                    self._rebuild_master_tree()
+                    self._status.showMessage(
+                        f"Nested {nested} category(ies) under '{parent_name}'")
+
+    def _master_cat_to_top_level(self, cat):
+        """Remove child_of from a category, making it top-level."""
+        cat.child_of = None
+        self.dirty_master = True
+        self._update_save_state()
+        self._rebuild_master_tree()
+        self._status.showMessage(f"'{cat.name}' moved to top level")
 
     def _qadd_master_item(self, cat):
         n, ok = QInputDialog.getText(self, "Add Item", "Item name:")
@@ -3954,7 +4147,10 @@ class App(QMainWindow):
         def _build_area_content(area_item, ai, area):
             """Populate an area node with categories, groups, and items."""
             area_match = q and q in area.name.lower()
-            for ci, cat in enumerate(area.categories):
+            # Sort categories naturally within each area
+            sorted_area_cats = sorted(enumerate(area.categories),
+                                      key=lambda x: _natural_sort_key(x[1].name))
+            for ci, cat in sorted_area_cats:
                 cat_match = q and q in cat.name.lower()
                 matches = [(ii, it) for ii, it in enumerate(cat.items)
                            if not q or area_match or cat_match
@@ -3979,8 +4175,8 @@ class App(QMainWindow):
                     else:
                         ungrouped.append((ii, it))
 
-                # Group nodes
-                for group_name in sorted(groups.keys(), key=str.lower):
+                # Group nodes (sorted naturally)
+                for group_name in sorted(groups.keys(), key=_natural_sort_key):
                     members = groups[group_name]
                     g_item = QTreeWidgetItem([group_name])
                     g_item.setText(1, f"({len(members)})")
@@ -3989,7 +4185,8 @@ class App(QMainWindow):
                     g_item.setData(0, CN, group_name)
                     cat_item.addChild(g_item)
                     if q: g_item.setExpanded(True)
-                    for ii, it in members:
+                    # Sort items within group naturally
+                    for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
                         ok = it.name in mn
                         flag = "" if ok else "  ⚠"
                         i_item = QTreeWidgetItem([it.name])
@@ -4001,8 +4198,8 @@ class App(QMainWindow):
                             i_item.setForeground(1, QBrush(QColor("#f38ba8")))
                         g_item.addChild(i_item)
 
-                # Ungrouped items
-                for ii, it in ungrouped:
+                # Ungrouped items (sorted naturally)
+                for ii, it in sorted(ungrouped, key=lambda x: _natural_sort_key(x[1].name)):
                     ok = it.name in mn
                     flag = "" if ok else "  ⚠"
                     i_item = QTreeWidgetItem([it.name])
@@ -4333,7 +4530,7 @@ class App(QMainWindow):
             menu.addAction("Add Area…", self._add_rig_area)
             menu.addSeparator()
             paste_action = menu.addAction("Paste\tCtrl+V", self._do_paste)
-            paste_action.setEnabled(bool(self._clipboard and self._clipboard.get("items")))
+            paste_action.setEnabled(self._has_clipboard())
             menu.exec(self._r_tree.viewport().mapToGlobal(pos))
             return
 
@@ -4415,12 +4612,18 @@ class App(QMainWindow):
             menu.addAction("Rename\tCtrl+R", self._do_rename)
         menu.addAction("Copy\tCtrl+C", self._do_copy)
         menu.addAction("Cut\tCtrl+X", self._do_cut)
-        has_clip = bool(self._clipboard and self._clipboard.get("items"))
+        has_clip = self._has_clipboard()
         if has_clip:
-            n = len(self._clipboard["items"])
+            n_items = len(self._clipboard.get("items", []))
+            n_cats = len(self._clipboard.get("cats", []))
             mode = self._clipboard["mode"]
-            paste_action = menu.addAction(
-                f"Paste ({n} item{'s' if n > 1 else ''}, {mode})\tCtrl+V", self._do_paste)
+            parts = []
+            if n_items:
+                parts.append(f"{n_items} item{'s' if n_items > 1 else ''}")
+            if n_cats:
+                parts.append(f"{n_cats} cat{'s' if n_cats > 1 else ''}")
+            label = f"Paste ({', '.join(parts)}, {mode})\tCtrl+V"
+            paste_action = menu.addAction(label, self._do_paste)
         else:
             paste_action = menu.addAction("Paste\tCtrl+V", self._do_paste)
             paste_action.setEnabled(False)
@@ -4685,7 +4888,7 @@ class App(QMainWindow):
         data = json.loads(snap)
         self.master_list.categories = []
         for cat_obj in data.get("categories", []):
-            cat = MasterCategory(cat_obj.get("name", "Uncategorized"))
+            cat = MasterCategory(cat_obj.get("name", "Uncategorized"), cat_obj.get("child_of"))
             for item_obj in cat_obj.get("items", []):
                 cat.items.append(MasterItem(
                     item_obj.get("name", ""),
@@ -4711,7 +4914,7 @@ class App(QMainWindow):
         data = json.loads(snap)
         self.master_list.categories = []
         for cat_obj in data.get("categories", []):
-            cat = MasterCategory(cat_obj.get("name", "Uncategorized"))
+            cat = MasterCategory(cat_obj.get("name", "Uncategorized"), cat_obj.get("child_of"))
             for item_obj in cat_obj.get("items", []):
                 cat.items.append(MasterItem(
                     item_obj.get("name", ""),
@@ -4774,29 +4977,92 @@ class App(QMainWindow):
         if item:
             tree._startRename(item)
 
+    def _has_clipboard(self):
+        """Return True if clipboard has items or categories."""
+        if not self._clipboard:
+            return False
+        return bool(self._clipboard.get("items") or self._clipboard.get("cats"))
+
     def _do_copy(self):
         ft = self._focused_tree()
         tree = self._r_tree if ft == "rig" else self._m_tree
         items = self._serialize_selected(tree, ft)
-        if items:
-            self._clipboard = {"items": items, "mode": "copy", "source": ft}
-            self._status.showMessage(f"Copied {len(items)} item(s)")
+        cats = self._serialize_selected_cats(tree, ft)
+        if items or cats:
+            self._clipboard = {"items": items, "cats": cats,
+                               "mode": "copy", "source": ft}
+            total = len(items) + len(cats)
+            self._status.showMessage(f"Copied {total} node(s)")
 
     def _do_cut(self):
         ft = self._focused_tree()
         tree = self._r_tree if ft == "rig" else self._m_tree
         items = self._serialize_selected(tree, ft)
-        if items:
-            self._clipboard = {"items": items, "mode": "cut", "source": ft}
-            self._status.showMessage(f"Cut {len(items)} item(s) — paste to move")
+        cats = self._serialize_selected_cats(tree, ft)
+        if items or cats:
+            self._clipboard = {"items": items, "cats": cats,
+                               "mode": "cut", "source": ft}
+            total = len(items) + len(cats)
+            self._status.showMessage(f"Cut {total} node(s) — paste to move")
+
+    def _serialize_selected_cats(self, tree, tree_type):
+        """Serialize selected category nodes for clipboard (master only)."""
+        cats = []
+        if tree_type != "master" or not self.master_list:
+            return cats
+        for sel in tree.selectedItems():
+            data = sel.data(0, Qt.ItemDataRole.UserRole)
+            if not data or data[0] != "cat":
+                continue
+            ci = data[1]
+            cat = self.master_list.categories[ci]
+            cats.append({"name": cat.name, "_src_ci": ci})
+        return cats
 
     def _do_paste(self):
-        if not self._clipboard or not self._clipboard["items"]:
+        has_items = bool(self._clipboard and self._clipboard.get("items"))
+        has_cats = bool(self._clipboard and self._clipboard.get("cats"))
+        if not has_items and not has_cats:
             self._status.showMessage("Nothing to paste")
             return
         ft = self._focused_tree()
         tree = self._r_tree if ft == "rig" else self._m_tree
         sel = tree.currentItem()
+
+        # Category nesting: paste categories onto a category target (master only)
+        if has_cats and ft == "master" and self.master_list and sel:
+            target_data = sel.data(0, Qt.ItemDataRole.UserRole)
+            if target_data and target_data[0] == "cat":
+                target_ci = target_data[1]
+                target_cat = self.master_list.categories[target_ci]
+                clip_cats = self._clipboard["cats"]
+                is_cut = self._clipboard["mode"] == "cut"
+                nested = 0
+                for cc in clip_cats:
+                    src_ci = cc.get("_src_ci")
+                    if src_ci is None or src_ci >= len(self.master_list.categories):
+                        continue
+                    src_cat = self.master_list.categories[src_ci]
+                    if src_cat is target_cat:
+                        continue
+                    if self._is_master_cat_descendant(target_cat.name, src_cat.name):
+                        continue
+                    src_cat.child_of = target_cat.name
+                    nested += 1
+                if nested:
+                    if is_cut:
+                        self._clipboard = None
+                    self.dirty_master = True
+                    self._update_save_state()
+                    self._rebuild_master_tree()
+                    self._status.showMessage(
+                        f"Nested {nested} category(ies) under '{target_cat.name}'")
+                return
+
+        # Standard item paste
+        if not has_items:
+            self._status.showMessage("Nothing to paste")
+            return
 
         # Determine target container
         target_cat = None
@@ -4993,10 +5259,19 @@ class App(QMainWindow):
             self._status.showMessage(f"Moved {moved} item(s) to '{cat_name}'")
 
     def _do_move_to_category(self):
-        """Ctrl+M — move selected items/groups to a category (creates new if typed)."""
+        """Ctrl+M — move selected items/groups to a category, or nest categories."""
         ft = self._focused_tree()
         tree = self._r_tree if ft == "rig" else self._m_tree
         items_list, groups_list = self._classify_tree_selection(tree, ft)
+        # Check if only categories are selected (master tree)
+        if not items_list and not groups_list and ft == "master":
+            has_cats = any(
+                (d := sel.data(0, Qt.ItemDataRole.UserRole)) and d[0] == "cat"
+                for sel in tree.selectedItems()
+            )
+            if has_cats:
+                self._do_nest_categories()
+                return
         if not items_list and not groups_list:
             self._status.showMessage("Select items or groups to move")
             return
@@ -6954,72 +7229,6 @@ def _generate_branch_images():
     return d
 
 
-def _generate_app_icon():
-    """Render the Star of Life + checklist logo as a multi-size QIcon."""
-    icon = QIcon()
-    for sz in (16, 32, 48, 64, 128, 256):
-        px = QPixmap(sz, sz)
-        px.fill(QColor(0, 0, 0, 0))
-        p = QPainter(px)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-        cx, cy = sz / 2, sz / 2
-        # Scale all dimensions relative to icon size
-        arm_w = sz * 0.15
-        arm_h = sz * 0.38
-        arm_r = sz * 0.02
-        center_r = sz * 0.22
-
-        # Draw 6 arms of Star of Life
-        star_color = QColor("#89b4fa")
-        p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(QBrush(star_color))
-        for i in range(6):
-            angle = i * 60
-            p.save()
-            p.translate(cx, cy)
-            p.rotate(angle)
-            p.drawRoundedRect(
-                int(-arm_w / 2), int(-sz * 0.48),
-                int(arm_w), int(arm_h),
-                arm_r, arm_r)
-            p.restore()
-
-        # Center circle (dark fill)
-        p.setBrush(QBrush(QColor("#1e1e2e")))
-        p.setPen(QPen(star_color, max(1, sz * 0.012)))
-        p.drawEllipse(int(cx - center_r), int(cy - center_r),
-                       int(center_r * 2), int(center_r * 2))
-
-        # Checklist marks inside center (only if large enough)
-        if sz >= 32:
-            check_color = QColor("#a6e3a1")
-            line_color = QColor("#585b70")
-            row_h = center_r * 0.55
-            check_w = max(1, sz * 0.018)
-            line_w = max(1, sz * 0.012)
-            line_pen = QPen(line_color, line_w)
-            for row in range(3):
-                ry = cy + (row - 1) * row_h
-                # Checkmark
-                ck_x = cx - center_r * 0.55
-                ck_pen = QPen(check_color, check_w)
-                ck_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-                ck_pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
-                p.setPen(ck_pen)
-                p.drawLine(int(ck_x), int(ry),
-                           int(ck_x + center_r * 0.15), int(ry + center_r * 0.18))
-                p.drawLine(int(ck_x + center_r * 0.15), int(ry + center_r * 0.18),
-                           int(ck_x + center_r * 0.38), int(ry - center_r * 0.15))
-                # Line placeholder
-                p.setPen(line_pen)
-                lx = cx - center_r * 0.1
-                p.drawLine(int(lx), int(ry),
-                           int(lx + center_r * 0.6), int(ry))
-        p.end()
-        icon.addPixmap(px)
-    return icon
-
-
 if __name__ == "__main__":
     # Windows: set AppUserModelID so taskbar shows our icon, not Python's
     if sys.platform == "win32":
@@ -7029,18 +7238,28 @@ if __name__ == "__main__":
                 "readyrig.editor")
         except Exception:
             pass
+    # macOS: set app name in menu bar (must happen before QApplication)
+    if sys.platform == "darwin":
+        try:
+            from Foundation import NSBundle
+            bundle = NSBundle.mainBundle()
+            info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
+            info["CFBundleName"] = "ReadyRig"
+        except ImportError:
+            pass
     app = QApplication(sys.argv)
+    app.setApplicationName("ReadyRig")
     app.setStyle("Fusion")
     branch_dir = _generate_branch_images()
     _init_icons()
-    # Load app icon from PNG alongside script, fall back to runtime-generated
+    # Load app icon from PNG alongside script
     _script_dir = os.path.dirname(os.path.abspath(__file__))
     _icon_path = os.path.join(_script_dir, "ems_editor_icon.png")
     if os.path.isfile(_icon_path):
         app_icon = QIcon(_icon_path)
+        app.setWindowIcon(app_icon)
     else:
-        app_icon = _generate_app_icon()
-    app.setWindowIcon(app_icon)
+        app_icon = None
     # Paths for stylesheet (forward slashes for Qt CSS on all platforms)
     bp = branch_dir.replace("\\", "/")
     # Dark palette so Fusion draws widgets in dark colors
@@ -7433,7 +7652,8 @@ if __name__ == "__main__":
         }
     """)
     window = App()
-    window.setWindowIcon(app_icon)
+    if app_icon:
+        window.setWindowIcon(app_icon)
     # macOS: set dock icon (requires pyobjc, available via pip install pyobjc)
     if sys.platform == "darwin" and os.path.isfile(_icon_path):
         try:

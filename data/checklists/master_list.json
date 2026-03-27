@@ -1727,7 +1727,8 @@
       "items": [
         {
           "name": "12-lead cables",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "Cables"
         },
         {
           "name": "Zoll Monitor",
@@ -1735,13 +1736,16 @@
         },
         {
           "name": "4-lead cables",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "Cables"
         },
         {
           "name": "4-lead cord",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "Cables"
         }
-      ]
+      ],
+      "child_of": "Electronics"
     },
     {
       "name": "Infusion Pump Equipment",
@@ -1775,6 +1779,10 @@
           "group": "Bracket, Sapphire"
         }
       ]
+    },
+    {
+      "name": "Electronics",
+      "items": []
     }
   ]
 }
