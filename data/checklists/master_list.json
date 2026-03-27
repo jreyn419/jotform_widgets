@@ -4,88 +4,16 @@
       "name": "Uncategorized",
       "items": [
         {
-          "name": "1 mL Syringe (Luer-Lock Tip, Without Needle)",
-          "emsa_min": 3
-        },
-        {
-          "name": "1\" Tape (Cloth/Synthetic)",
-          "emsa_min": 2
-        },
-        {
-          "name": "10 mL Syringe (Luer-Lock Tip, Without Needle)",
-          "emsa_min": 3
-        },
-        {
           "name": "10-Drop Set",
           "emsa_min": 4
-        },
-        {
-          "name": "10mL Syringe, Luer-Lock tip, Without Needle",
-          "emsa_min": 2
-        },
-        {
-          "name": "12-lead cables",
-          "emsa_min": 1
-        },
-        {
-          "name": "18G Filter Needle",
-          "emsa_min": 2
-        },
-        {
-          "name": "1mL Syringe, Luer-Lock tip, Without Needle",
-          "emsa_min": 4
-        },
-        {
-          "name": "2\" Tape (Cloth/Synthetic)",
-          "emsa_min": 2
-        },
-        {
-          "name": "2\"x2\" Sterile Sponge",
-          "emsa_min": 10
-        },
-        {
-          "name": "20 mL Syringe (Luer-Lock Tip, Without Needle)",
-          "emsa_min": 1
-        },
-        {
-          "name": "22G Safety Needle",
-          "emsa_min": 4
-        },
-        {
-          "name": "25G Safety Needle",
-          "emsa_min": 4
-        },
-        {
-          "name": "3 mL Syringe (Luer-Lock Tip, Without Needle)",
-          "emsa_min": 3
         },
         {
           "name": "3-Way Stopcock",
           "emsa_min": 2
         },
         {
-          "name": "3.0 mm",
-          "emsa_min": 1
-        },
-        {
-          "name": "3.5 mm",
-          "emsa_min": 1
-        },
-        {
-          "name": "3mL Syringe (With BD TwinPak)",
-          "emsa_min": 8
-        },
-        {
-          "name": "3mL Syringe, With Twinpak",
-          "emsa_min": 4
-        },
-        {
           "name": "4\"x4\" Quickclot Dressing",
           "emsa_min": 3
-        },
-        {
-          "name": "4\"x4\" Sterile Sponge",
-          "emsa_min": 10
         },
         {
           "name": "4-lead cables",
@@ -96,24 +24,12 @@
           "emsa_min": 1
         },
         {
-          "name": "5 mL Syringe (Luer-Lock Tip, Without Needle)",
-          "emsa_min": 3
-        },
-        {
-          "name": "5mL Syringe, Luer-Lock tip, Without Needle",
-          "emsa_min": 2
-        },
-        {
           "name": "60 mL Syringe, Catheter Tip",
           "emsa_min": 1
         },
         {
           "name": "60-Drop Set",
           "emsa_min": 4
-        },
-        {
-          "name": "60mL Syringe (Luer-Lock Tip)",
-          "emsa_min": 2
         },
         {
           "name": "AA - Cell Battery",
@@ -314,10 +230,6 @@
         {
           "name": "Charger Adapter Kit",
           "emsa_min": 1
-        },
-        {
-          "name": "Chest Decompression Needle",
-          "emsa_min": 3
         },
         {
           "name": "Chest Seal",
@@ -756,11 +668,6 @@
           "emsa_min": 1
         },
         {
-          "name": "Medical Group Supervisor Vest",
-          "emsa_min": 1,
-          "group": "MCI Bag"
-        },
-        {
           "name": "Medication Labels",
           "emsa_min": 6
         },
@@ -869,14 +776,6 @@
           "emsa_min": 2
         },
         {
-          "name": "Non-Sterile 2\"x2\" Gauze Sponges Sleeve",
-          "emsa_min": 1
-        },
-        {
-          "name": "Non-Sterile 4\"x4\" Gauze Sponges Sleeve",
-          "emsa_min": 1
-        },
-        {
           "name": "Norepinephrine 4mg/4mL",
           "emsa_min": 2
         },
@@ -979,10 +878,6 @@
         {
           "name": "Pediatric Defibrillation Pad",
           "emsa_min": 2
-        },
-        {
-          "name": "Pediatric Emergency Tape",
-          "emsa_min": 1
         },
         {
           "name": "Pediatric EtCO2 Nasal Cannula",
@@ -1113,10 +1008,6 @@
           "emsa_min": 1
         },
         {
-          "name": "Standalone Twinpaks",
-          "emsa_min": 6
-        },
-        {
           "name": "Sterile 4x4",
           "emsa_min": 6
         },
@@ -1185,10 +1076,6 @@
           "emsa_min": 1
         },
         {
-          "name": "Tape, 1\"",
-          "emsa_min": 2
-        },
-        {
           "name": "Tegaderm",
           "emsa_min": 6
         },
@@ -1225,22 +1112,8 @@
           "emsa_min": 4
         },
         {
-          "name": "Triage Tags",
-          "emsa_min": 50,
-          "group": "MCI Bag"
-        },
-        {
-          "name": "Triage Unit Leader Vest",
-          "emsa_min": 1,
-          "group": "MCI Bag"
-        },
-        {
           "name": "Triangular Bandage",
           "emsa_min": 4
-        },
-        {
-          "name": "Twinpak (Or blunt needle)",
-          "emsa_min": 5
         },
         {
           "name": "Unused Suction Container",
@@ -1285,10 +1158,6 @@
         {
           "name": "Yellow Tags",
           "emsa_min": 20
-        },
-        {
-          "name": "Zoll Monitor",
-          "emsa_min": 1
         }
       ]
     },
@@ -1569,6 +1438,16 @@
           "name": "9.0 mm",
           "emsa_min": 2,
           "group": "ET Tube"
+        },
+        {
+          "name": "3.0 mm",
+          "emsa_min": 1,
+          "group": "ET Tube"
+        },
+        {
+          "name": "3.5 mm",
+          "emsa_min": 1,
+          "group": "ET Tube"
         }
       ]
     },
@@ -1589,6 +1468,10 @@
           "name": "S",
           "emsa_min": 1,
           "group": "Soft Collars"
+        },
+        {
+          "name": "Chest Decompression Needle",
+          "emsa_min": 3
         }
       ]
     },
@@ -1649,12 +1532,102 @@
           "name": "I/O stabilizer",
           "emsa_min": 1,
           "group": "IO Drill Kit"
+        },
+        {
+          "name": "1 mL",
+          "emsa_min": 3,
+          "group": "Syringe, Luer Lock, Needle-less"
+        },
+        {
+          "name": "10 mL",
+          "emsa_min": 3,
+          "group": "Syringe, Luer Lock, Needle-less"
+        },
+        {
+          "name": "20 mL",
+          "emsa_min": 1,
+          "group": "Syringe, Luer Lock, Needle-less"
+        },
+        {
+          "name": "3 mL",
+          "emsa_min": 3,
+          "group": "Syringe, Luer Lock, Needle-less"
+        },
+        {
+          "name": "5 mL",
+          "emsa_min": 3,
+          "group": "Syringe, Luer Lock, Needle-less"
+        },
+        {
+          "name": "60mL",
+          "emsa_min": 2,
+          "group": "Syringe, Luer Lock, Needle-less"
+        },
+        {
+          "name": "2\" x 2\", Sterile",
+          "emsa_min": 10,
+          "group": "Sponges"
+        },
+        {
+          "name": "4\" x 4\", Sterile",
+          "emsa_min": 10,
+          "group": "Sponges"
+        },
+        {
+          "name": "2\"x2\", Non-Sterile (Sleeve)",
+          "emsa_min": 1,
+          "group": "Sponges"
+        },
+        {
+          "name": "4\"x4\", Non-Sterile (Sleeve)",
+          "emsa_min": 1,
+          "group": "Sponges"
+        },
+        {
+          "name": "1\"",
+          "emsa_min": 2,
+          "group": "Tape (Cloth/Synthetic)"
+        },
+        {
+          "name": "2\"",
+          "emsa_min": 2,
+          "group": "Tape (Cloth/Synthetic)"
+        },
+        {
+          "name": "18 ga, Filter",
+          "emsa_min": 2,
+          "group": "Needle"
+        },
+        {
+          "name": "22 ga",
+          "emsa_min": 4,
+          "group": "Needle"
+        },
+        {
+          "name": "25 ga",
+          "emsa_min": 4,
+          "group": "Needle"
+        },
+        {
+          "name": "Twinpak",
+          "emsa_min": 6,
+          "group": "Needle"
+        },
+        {
+          "name": "3mL",
+          "emsa_min": 4,
+          "group": "Syringe, Twinpak"
         }
       ]
     },
     {
       "name": "Medications",
-      "items": []
+      "items": [
+        {
+          "name": "Pediatric Emergency Tape",
+          "emsa_min": 1
+        }
+      ]
     },
     {
       "name": "BCPAP",
@@ -1677,7 +1650,7 @@
       ]
     },
     {
-      "name": "Assessment",
+      "name": "Patient Assessment",
       "items": [
         {
           "name": "10",
@@ -1768,6 +1741,36 @@
           "name": "Thigh",
           "emsa_min": 1,
           "group": "Manual BP Cuff"
+        }
+      ]
+    },
+    {
+      "name": "MCI",
+      "items": [
+        {
+          "name": "Medical Group Supervisor Vest",
+          "emsa_min": 1
+        },
+        {
+          "name": "Triage Tags",
+          "emsa_min": 50
+        },
+        {
+          "name": "Triage Unit Leader Vest",
+          "emsa_min": 1
+        }
+      ]
+    },
+    {
+      "name": "Zoll",
+      "items": [
+        {
+          "name": "12-lead cables",
+          "emsa_min": 1
+        },
+        {
+          "name": "Zoll Monitor",
+          "emsa_min": 1
         }
       ]
     }

@@ -22,12 +22,14 @@
             "qty": 1
           },
           {
-            "name": "1\" Tape (Cloth/Synthetic)",
-            "qty": 2
+            "name": "1\"",
+            "qty": 2,
+            "group": "Tape (Cloth/Synthetic)"
           },
           {
-            "name": "2\" Tape (Cloth/Synthetic)",
-            "qty": 2
+            "name": "2\"",
+            "qty": 2,
+            "group": "Tape (Cloth/Synthetic)"
           },
           {
             "name": "Nose Clamp",
@@ -50,12 +52,14 @@
             "qty": 2
           },
           {
-            "name": "2\"x2\" Sterile Sponge",
-            "qty": 10
+            "name": "2\" x 2\", Sterile",
+            "qty": 10,
+            "group": "Sponges"
           },
           {
-            "name": "4\"x4\" Sterile Sponge",
-            "qty": 10
+            "name": "4\" x 4\", Sterile",
+            "qty": 10,
+            "group": "Sponges"
           },
           {
             "name": "Gauze Rolls",
@@ -74,12 +78,14 @@
             "qty": 3
           },
           {
-            "name": "Non-Sterile 2\"x2\" Gauze Sponges Sleeve",
-            "qty": 1
+            "name": "2\"x2\", Non-Sterile (Sleeve)",
+            "qty": 1,
+            "group": "Sponges"
           },
           {
-            "name": "Non-Sterile 4\"x4\" Gauze Sponges Sleeve",
-            "qty": 1
+            "name": "4\"x4\", Non-Sterile (Sleeve)",
+            "qty": 1,
+            "group": "Sponges"
           },
           {
             "name": "Trauma Tourniquet",

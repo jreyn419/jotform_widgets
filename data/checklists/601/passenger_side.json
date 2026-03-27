@@ -388,12 +388,14 @@
             "qty": 1
           },
           {
-            "name": "20 mL Syringe (Luer-Lock Tip, Without Needle)",
-            "qty": 1
+            "name": "20 mL",
+            "qty": 1,
+            "group": "Syringe, Luer Lock Tip"
           },
           {
-            "name": "60mL Syringe (Luer-Lock Tip)",
-            "qty": 2
+            "name": "60mL",
+            "qty": 2,
+            "group": "Syringe, Luer Lock Tip"
           },
           {
             "name": "NS Flush",
@@ -413,20 +415,24 @@
         "name": "Syringe Storage",
         "items": [
           {
-            "name": "1 mL Syringe (Luer-Lock Tip, Without Needle)",
-            "qty": 3
+            "name": "1 mL",
+            "qty": 3,
+            "group": "Syringe, Luer Lock Tip"
           },
           {
-            "name": "3 mL Syringe (Luer-Lock Tip, Without Needle)",
-            "qty": 3
+            "name": "3 mL",
+            "qty": 3,
+            "group": "Syringe, Luer Lock Tip"
           },
           {
-            "name": "5 mL Syringe (Luer-Lock Tip, Without Needle)",
-            "qty": 3
+            "name": "5 mL",
+            "qty": 3,
+            "group": "Syringe, Luer Lock Tip"
           },
           {
-            "name": "10 mL Syringe (Luer-Lock Tip, Without Needle)",
-            "qty": 3
+            "name": "10 mL",
+            "qty": 3,
+            "group": "Syringe, Luer Lock Tip"
           },
           {
             "name": "3-Way Stopcock",
@@ -450,16 +456,19 @@
             "qty": 10
           },
           {
-            "name": "22G Safety Needle",
-            "qty": 4
+            "name": "22 ga",
+            "qty": 4,
+            "group": "Needle"
           },
           {
-            "name": "25G Safety Needle",
-            "qty": 4
+            "name": "25 ga",
+            "qty": 4,
+            "group": "Needle"
           },
           {
-            "name": "18G Filter Needle",
-            "qty": 2
+            "name": "18 ga, Filter",
+            "qty": 2,
+            "group": "Needle"
           },
           {
             "name": "Twinpak (Or blunt needle)",

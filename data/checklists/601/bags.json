@@ -263,10 +263,11 @@
           },
           {
             "name": "5mL Syringe, Luer-Lock tip, Without Needle",
-            "qty": 2
+            "qty": 2,
+            "group": "Syringe, Luer Lock Tip"
           },
           {
-            "name": "3mL Syringe, With Twinpak",
+            "name": "3mL",
             "qty": 4
           },
           {
@@ -274,7 +275,7 @@
             "qty": 4
           },
           {
-            "name": "Standalone Twinpaks",
+            "name": "Twinpak",
             "qty": 6
           }
         ]
@@ -549,7 +550,7 @@
         "name": "Pockets Opposite Blades",
         "items": [
           {
-            "name": "10 mL Syringe",
+            "name": "10 mL",
             "qty": 3
           },
           {
