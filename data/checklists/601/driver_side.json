@@ -233,16 +233,19 @@
             "qty": 3
           },
           {
-            "name": "NS Bag 1000mL",
-            "qty": 6
+            "name": "1000 mL, Bag",
+            "qty": 6,
+            "group": "Fluids"
           },
           {
-            "name": "NS Bag 250mL",
-            "qty": 2
+            "name": "250 mL, Bag",
+            "qty": 2,
+            "group": "Fluids"
           },
           {
-            "name": "NS Bag 100 mL",
-            "qty": 5
+            "name": "100 mL, Bag",
+            "qty": 5,
+            "group": "Fluids"
           },
           {
             "name": "Pressure Infusion Bag",
@@ -258,11 +261,13 @@
           },
           {
             "name": "10-Drop Set",
-            "qty": 4
+            "qty": 4,
+            "group": "Infusion Sets"
           },
           {
             "name": "60-Drop Set",
-            "qty": 4
+            "qty": 4,
+            "group": "Infusion Sets"
           },
           {
             "name": "Invasive BP Clamp Mount",
@@ -282,7 +287,8 @@
           },
           {
             "name": "Calcium Chloride Preload 1g/10mL",
-            "qty": 4
+            "qty": 4,
+            "group": "Calcium"
           },
           {
             "name": "Naloxone Hydrochloride Preload 2mg/2mL",
@@ -319,11 +325,11 @@
             "qty": 1
           },
           {
-            "name": "Medium Gloves",
+            "name": "Medium",
             "qty": 1
           },
           {
-            "name": "Large Gloves",
+            "name": "Large",
             "qty": 1
           },
           {
@@ -428,8 +434,9 @@
             "qty": 2
           },
           {
-            "name": "Oxygen Cylinder, Type D",
-            "qty": 3
+            "name": "Type D",
+            "qty": 3,
+            "group": "Oxygen"
           }
         ]
       }
@@ -560,11 +567,13 @@
           },
           {
             "name": "Getac",
-            "qty": 1
+            "qty": 1,
+            "group": "Getac"
           },
           {
-            "name": "Getac Charger",
-            "qty": 1
+            "name": "Charger",
+            "qty": 1,
+            "group": "Getac"
           },
           {
             "name": "Monitor Charger",
@@ -681,12 +690,14 @@
             "qty": 1
           },
           {
-            "name": "Long Cardboard Splint",
-            "qty": 2
+            "name": "Long Cardboard",
+            "qty": 2,
+            "group": "Splint"
           },
           {
-            "name": "Short Cardboard Splint",
-            "qty": 2
+            "name": "Short Cardboard",
+            "qty": 2,
+            "group": "Splint"
           }
         ]
       }

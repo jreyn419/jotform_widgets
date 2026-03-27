@@ -134,7 +134,8 @@
           },
           {
             "name": "Nebulizer (inline)",
-            "qty": 3
+            "qty": 3,
+            "group": "Nebulizer"
           },
           {
             "name": "Full Sets",
@@ -155,12 +156,14 @@
         "name": "General",
         "items": [
           {
-            "name": "Suction Canister",
-            "qty": 3
+            "name": "Canister",
+            "qty": 3,
+            "group": "Suction Container"
           },
           {
-            "name": "Suction Lid",
-            "qty": 3
+            "name": "Lid",
+            "qty": 3,
+            "group": "Suction Container"
           },
           {
             "name": "Manual Suction Device",
@@ -172,7 +175,8 @@
           },
           {
             "name": "DuCanto Suction Tip",
-            "qty": 1
+            "qty": 1,
+            "group": "Suction Tips"
           },
           {
             "name": "Infant",
@@ -243,7 +247,7 @@
         "name": "Large Box",
         "items": [
           {
-            "name": "SpO2 Sensor, Clip",
+            "name": "Clip",
             "qty": 1
           },
           {
@@ -277,11 +281,11 @@
         "name": "Small Box",
         "items": [
           {
-            "name": "Adult/Neonatal Adhesive SpO2 Sensor",
+            "name": "Adult/Neonatal Adhesive",
             "qty": 3
           },
           {
-            "name": "Infant Adhesive SpO2 Sensor",
+            "name": "Infant Adhesive",
             "qty": 3
           },
           {
@@ -540,7 +544,8 @@
         "items": [
           {
             "name": "Extra Small",
-            "qty": 1
+            "qty": 1,
+            "group": "Gloves"
           },
           {
             "name": "Small",
@@ -548,7 +553,8 @@
           },
           {
             "name": "Extra Large",
-            "qty": 1
+            "qty": 1,
+            "group": "Gloves"
           }
         ]
       },

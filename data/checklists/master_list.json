@@ -1,1123 +1,6 @@
 {
   "categories": [
     {
-      "name": "Uncategorized",
-      "items": [
-        {
-          "name": "10-Drop Set",
-          "emsa_min": 4
-        },
-        {
-          "name": "3-Way Stopcock",
-          "emsa_min": 2
-        },
-        {
-          "name": "4\"x4\" Quickclot Dressing",
-          "emsa_min": 3
-        },
-        {
-          "name": "60-Drop Set",
-          "emsa_min": 4
-        },
-        {
-          "name": "AA - Cell Battery",
-          "emsa_min": 2
-        },
-        {
-          "name": "Acetaminophen Bag 1000mg/100mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Activated Charcoal 25g/120mL",
-          "emsa_min": 1
-        },
-        {
-          "name": "Adenosine 6mg/2mL",
-          "emsa_min": 3
-        },
-        {
-          "name": "Adhesive SpO2 Sensor - Adult/Neonatal",
-          "emsa_min": 1
-        },
-        {
-          "name": "Adhesive SpO2 Sensor – Infant",
-          "emsa_min": 1
-        },
-        {
-          "name": "Adult Bougie-To-Go (left of cells)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Adult BVM",
-          "emsa_min": 2
-        },
-        {
-          "name": "Adult C-Collar",
-          "emsa_min": 3
-        },
-        {
-          "name": "Adult Defibrillation Pad",
-          "emsa_min": 2
-        },
-        {
-          "name": "Adult EtCO2 Nasal Cannula",
-          "emsa_min": 3
-        },
-        {
-          "name": "Adult High-Flow Circuit",
-          "emsa_min": 3
-        },
-        {
-          "name": "Adult Nasal Cannula",
-          "emsa_min": 3
-        },
-        {
-          "name": "Adult Nebulizer Mask",
-          "emsa_min": 3
-        },
-        {
-          "name": "Adult NRB",
-          "emsa_min": 3
-        },
-        {
-          "name": "Adult XCollar",
-          "emsa_min": 4
-        },
-        {
-          "name": "Adult/Child Defib Pads",
-          "emsa_min": 1
-        },
-        {
-          "name": "Adult/Neonatal Adhesive SpO2 Sensor",
-          "emsa_min": 3
-        },
-        {
-          "name": "adult/neonate adhesive pulse ox",
-          "emsa_min": 1
-        },
-        {
-          "name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
-          "emsa_min": 6
-        },
-        {
-          "name": "Alcohol Prep Pads Box",
-          "emsa_min": 1
-        },
-        {
-          "name": "Amiodarone 150mg/3mL",
-          "emsa_min": 6
-        },
-        {
-          "name": "Arm Board (Long)",
-          "emsa_min": 2
-        },
-        {
-          "name": "Arm Board (Short)",
-          "emsa_min": 2
-        },
-        {
-          "name": "Aspirin Bottle 81 mg/tablet",
-          "emsa_min": 2
-        },
-        {
-          "name": "Atropine Sulfate 1mg/1mL",
-          "emsa_min": 4
-        },
-        {
-          "name": "Atropine Sulfate Preload",
-          "emsa_min": 1
-        },
-        {
-          "name": "Atropine Sulfate Preload 1mg/10mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Baby Cap (if not included in OB kit)",
-          "emsa_min": 2
-        },
-        {
-          "name": "Backboard",
-          "emsa_min": 2
-        },
-        {
-          "name": "Bedpans",
-          "emsa_min": 3
-        },
-        {
-          "name": "Betadine Pads",
-          "emsa_min": 4
-        },
-        {
-          "name": "Biohazard Bags",
-          "emsa_min": 2
-        },
-        {
-          "name": "Blanket",
-          "emsa_min": 6
-        },
-        {
-          "name": "Bleach Wipes Container",
-          "emsa_min": 1
-        },
-        {
-          "name": "Boxes of Oral/Axillary Temp Probe Sheaths",
-          "emsa_min": 2
-        },
-        {
-          "name": "BP cuff connector tubing (short, bifurcated tubing)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Breakaway Stretcher",
-          "emsa_min": 1
-        },
-        {
-          "name": "Bubbler",
-          "emsa_min": 2
-        },
-        {
-          "name": "Bulb Syringe",
-          "emsa_min": 1
-        },
-        {
-          "name": "C - Cell Battery",
-          "emsa_min": 2
-        },
-        {
-          "name": "Calcium Chloride 10% Preload",
-          "emsa_min": 1
-        },
-        {
-          "name": "Calcium Chloride Preload 1g/10mL",
-          "emsa_min": 4
-        },
-        {
-          "name": "Calcium Gluconate 1g/10mL",
-          "emsa_min": 1
-        },
-        {
-          "name": "Cavicide Spray Bottle",
-          "emsa_min": 1
-        },
-        {
-          "name": "Cavicide Wipes Container",
-          "emsa_min": 1
-        },
-        {
-          "name": "Center Punch Tool",
-          "emsa_min": 1
-        },
-        {
-          "name": "Charger Adapter Kit",
-          "emsa_min": 1
-        },
-        {
-          "name": "Chest Seal",
-          "emsa_min": 2
-        },
-        {
-          "name": "Chlorhexidine Swabs Box",
-          "emsa_min": 1
-        },
-        {
-          "name": "Coban",
-          "emsa_min": 6
-        },
-        {
-          "name": "Cold Pack",
-          "emsa_min": 4
-        },
-        {
-          "name": "Colorimetric CO2 Detector",
-          "emsa_min": 1
-        },
-        {
-          "name": "Cricothyrotomy Kit",
-          "emsa_min": 1
-        },
-        {
-          "name": "Cuff cable",
-          "emsa_min": 1
-        },
-        {
-          "name": "Curad Adhesive Bandages Box",
-          "emsa_min": 1
-        },
-        {
-          "name": "Curos Strips",
-          "emsa_min": 3
-        },
-        {
-          "name": "D50W Preload",
-          "emsa_min": 1
-        },
-        {
-          "name": "Defib cable",
-          "emsa_min": 1
-        },
-        {
-          "name": "Dextrose 25g/250mL",
-          "emsa_min": 3
-        },
-        {
-          "name": "Dextrose Preload 25g/50mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Diphenhydramine 50mg/1mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Diphenhydramine 50mg/mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Diphenhydramine PO 25mg/10mL",
-          "emsa_min": 4
-        },
-        {
-          "name": "Disposable Temperature Monitoring Sensor - Neonate/Infant",
-          "emsa_min": 3
-        },
-        {
-          "name": "Dopamine Vial 400mg/10mL",
-          "emsa_min": 1
-        },
-        {
-          "name": "Doppler",
-          "emsa_min": 1
-        },
-        {
-          "name": "DuCanto Suction Tip",
-          "emsa_min": 1
-        },
-        {
-          "name": "EKG razors",
-          "emsa_min": 3
-        },
-        {
-          "name": "Elastic Bandage Roll (Dukal)",
-          "emsa_min": 2
-        },
-        {
-          "name": "Elastic Tourniquet",
-          "emsa_min": 6
-        },
-        {
-          "name": "Electrode Bag",
-          "emsa_min": 1
-        },
-        {
-          "name": "Electrode Bag (At least half full)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Emergency Blanket",
-          "emsa_min": 2
-        },
-        {
-          "name": "Empty Trash Can",
-          "emsa_min": 1
-        },
-        {
-          "name": "Epinephrine 1mg/1mL",
-          "emsa_min": 5
-        },
-        {
-          "name": "Epinephrine Preload",
-          "emsa_min": 1
-        },
-        {
-          "name": "Epinephrine Preload 1mg/10mL",
-          "emsa_min": 8
-        },
-        {
-          "name": "Equipment Mount - Aluminum",
-          "emsa_min": 1
-        },
-        {
-          "name": "Equipment Mount – Aluminum",
-          "emsa_min": 1
-        },
-        {
-          "name": "EtCO2 Nasal Cannula - Adult",
-          "emsa_min": 1
-        },
-        {
-          "name": "EtCO2 Nasal Cannula – Pediatric",
-          "emsa_min": 1
-        },
-        {
-          "name": "Extra Large",
-          "emsa_min": 1
-        },
-        {
-          "name": "Extra Small",
-          "emsa_min": 1
-        },
-        {
-          "name": "Extrication Collars Bag",
-          "emsa_min": 1
-        },
-        {
-          "name": "Face Shield",
-          "emsa_min": 3
-        },
-        {
-          "name": "finger clip pulse ox",
-          "emsa_min": 1
-        },
-        {
-          "name": "Fire Extinguisher",
-          "emsa_min": 1
-        },
-        {
-          "name": "Gauze Rolls",
-          "emsa_min": 3
-        },
-        {
-          "name": "Getac",
-          "emsa_min": 1
-        },
-        {
-          "name": "Getac Charger",
-          "emsa_min": 1
-        },
-        {
-          "name": "Glidescope Charger",
-          "emsa_min": 1
-        },
-        {
-          "name": "Glidescope Go 2",
-          "emsa_min": 1
-        },
-        {
-          "name": "Glucagon Injection Kits 1mg/1mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Glucose Oral Gel 15 mg",
-          "emsa_min": 2
-        },
-        {
-          "name": "Goggles",
-          "emsa_min": 3
-        },
-        {
-          "name": "Hamilton Adapter Bag",
-          "emsa_min": 2
-        },
-        {
-          "name": "Hamilton Humidifier",
-          "emsa_min": 1
-        },
-        {
-          "name": "Hand Sanitizer",
-          "emsa_min": 1
-        },
-        {
-          "name": "Handheld Nebulizer Kit",
-          "emsa_min": 3
-        },
-        {
-          "name": "Head Bed + Triangles",
-          "emsa_min": 3
-        },
-        {
-          "name": "Heat Pack",
-          "emsa_min": 4
-        },
-        {
-          "name": "HFNC Cell",
-          "emsa_min": 1
-        },
-        {
-          "name": "HME Filter",
-          "emsa_min": 2
-        },
-        {
-          "name": "Hydralazine 20mg/1mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Hyperangle S3",
-          "emsa_min": 1
-        },
-        {
-          "name": "Hyperangle S4",
-          "emsa_min": 1
-        },
-        {
-          "name": "Hyperangulated Stylets",
-          "emsa_min": 2
-        },
-        {
-          "name": "Ibuprofen Oral Suspension",
-          "emsa_min": 4
-        },
-        {
-          "name": "infant adhesive pulse ox",
-          "emsa_min": 1
-        },
-        {
-          "name": "Infant Adhesive SpO2 Sensor",
-          "emsa_min": 3
-        },
-        {
-          "name": "Infant Board (green)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Infant BVM",
-          "emsa_min": 2
-        },
-        {
-          "name": "Infant ETT Securement Device",
-          "emsa_min": 2
-        },
-        {
-          "name": "Infant/Pediatric Defib Pads",
-          "emsa_min": 1
-        },
-        {
-          "name": "Infant/Pediatric High-Flow Circuit",
-          "emsa_min": 3
-        },
-        {
-          "name": "Infectious control cleanup kit",
-          "emsa_min": 1
-        },
-        {
-          "name": "Inline EtCO2",
-          "emsa_min": 3
-        },
-        {
-          "name": "Inline Nebulizer Kit",
-          "emsa_min": 1
-        },
-        {
-          "name": "Invasive BP Clamp Mount",
-          "emsa_min": 1
-        },
-        {
-          "name": "Invasive Monitoring Cable - Oval Port",
-          "emsa_min": 2
-        },
-        {
-          "name": "Invasive Monitoring Cable - Square Port",
-          "emsa_min": 1
-        },
-        {
-          "name": "Ipratropium Bromide Inhalation Solution 0.5mg/2.5mL",
-          "emsa_min": 6
-        },
-        {
-          "name": "Isolation Gown",
-          "emsa_min": 10
-        },
-        {
-          "name": "Israeli Bandage",
-          "emsa_min": 2
-        },
-        {
-          "name": "IV Extension Set",
-          "emsa_min": 6
-        },
-        {
-          "name": "IV Fluid Warmer",
-          "emsa_min": 1
-        },
-        {
-          "name": "IV start kits",
-          "emsa_min": 4
-        },
-        {
-          "name": "Jackery + charger",
-          "emsa_min": 1
-        },
-        {
-          "name": "Ketorolac 30mg/mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Labetalol 100mg/20mL",
-          "emsa_min": 4
-        },
-        {
-          "name": "Large Adult CPAP Mask",
-          "emsa_min": 2
-        },
-        {
-          "name": "Large Gloves",
-          "emsa_min": 1
-        },
-        {
-          "name": "Large Sharps Container",
-          "emsa_min": 1
-        },
-        {
-          "name": "Laryngoscope Handle - Adult",
-          "emsa_min": 1
-        },
-        {
-          "name": "Laryngoscope Handle – Pediatric",
-          "emsa_min": 1
-        },
-        {
-          "name": "Laryngoscope Light",
-          "emsa_min": 2
-        },
-        {
-          "name": "Lidocaine 100mg/5mL",
-          "emsa_min": 5
-        },
-        {
-          "name": "Lidocaine HCl Preload",
-          "emsa_min": 1
-        },
-        {
-          "name": "Lidocaine HCl Preload 100mg/5mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Long Cardboard Splint",
-          "emsa_min": 2
-        },
-        {
-          "name": "Lubricant Packet",
-          "emsa_min": 6
-        },
-        {
-          "name": "MAC S3",
-          "emsa_min": 1
-        },
-        {
-          "name": "MAC S4",
-          "emsa_min": 1
-        },
-        {
-          "name": "MAD",
-          "emsa_min": 4
-        },
-        {
-          "name": "MADs",
-          "emsa_min": 2
-        },
-        {
-          "name": "Magill Forceps – Adult",
-          "emsa_min": 1
-        },
-        {
-          "name": "Magill Forceps – Pediatric",
-          "emsa_min": 1
-        },
-        {
-          "name": "Magnesium Sulfate 5g/10mL",
-          "emsa_min": 1
-        },
-        {
-          "name": "Manual Jet Ventilator",
-          "emsa_min": 1
-        },
-        {
-          "name": "Manual Suction Device",
-          "emsa_min": 1
-        },
-        {
-          "name": "Medication Labels",
-          "emsa_min": 6
-        },
-        {
-          "name": "Medium Gloves",
-          "emsa_min": 1
-        },
-        {
-          "name": "Medium/Small Adult CPAP Mask",
-          "emsa_min": 2
-        },
-        {
-          "name": "Medslinger Bag",
-          "emsa_min": 1
-        },
-        {
-          "name": "Microdot Glucometer Test Strip Containers",
-          "emsa_min": 2
-        },
-        {
-          "name": "Miller S0",
-          "emsa_min": 1
-        },
-        {
-          "name": "Miller S1",
-          "emsa_min": 1
-        },
-        {
-          "name": "Minifoam",
-          "emsa_min": 1
-        },
-        {
-          "name": "Monitor Battery (charged)",
-          "emsa_min": 2
-        },
-        {
-          "name": "Monitor Charger",
-          "emsa_min": 1
-        },
-        {
-          "name": "Monitor Printer Paper Rolls",
-          "emsa_min": 2
-        },
-        {
-          "name": "Monitor-to-SpO2 Cable",
-          "emsa_min": 1
-        },
-        {
-          "name": "Montor-to-BP-cuff connector",
-          "emsa_min": 1
-        },
-        {
-          "name": "N95 Mask",
-          "emsa_min": 6
-        },
-        {
-          "name": "Nail Polish Remover",
-          "emsa_min": 10
-        },
-        {
-          "name": "Nail Polish Remover Box",
-          "emsa_min": 1
-        },
-        {
-          "name": "Naloxone Hydrochloride Preload",
-          "emsa_min": 1
-        },
-        {
-          "name": "Naloxone Hydrochloride Preload 2mg/2mL",
-          "emsa_min": 4
-        },
-        {
-          "name": "NC - Adult",
-          "emsa_min": 1
-        },
-        {
-          "name": "NC - Pediatric",
-          "emsa_min": 1
-        },
-        {
-          "name": "nCPAP Generator",
-          "emsa_min": 2
-        },
-        {
-          "name": "Nebulizer (inline)",
-          "emsa_min": 3
-        },
-        {
-          "name": "Nebulizer Mask - Adult",
-          "emsa_min": 1
-        },
-        {
-          "name": "Nebulizer Mask - Pediatric",
-          "emsa_min": 1
-        },
-        {
-          "name": "Nitroglycerin Ointment 1g/in.",
-          "emsa_min": 5
-        },
-        {
-          "name": "Nitroglycerin Ointment Paper",
-          "emsa_min": 5
-        },
-        {
-          "name": "Nitroglycerin Vial 0.4mg/tablet",
-          "emsa_min": 2
-        },
-        {
-          "name": "Norepinephrine 4mg/4mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Norepinephrine Bitartrate 4mg/4mL",
-          "emsa_min": 3
-        },
-        {
-          "name": "Nose Clamp",
-          "emsa_min": 5
-        },
-        {
-          "name": "NRB - Adult",
-          "emsa_min": 1
-        },
-        {
-          "name": "NRB – Pediatric",
-          "emsa_min": 1
-        },
-        {
-          "name": "NS Bag 100 mL",
-          "emsa_min": 5
-        },
-        {
-          "name": "NS Bag 1000mL",
-          "emsa_min": 6
-        },
-        {
-          "name": "NS Bag 100mL",
-          "emsa_min": 1
-        },
-        {
-          "name": "NS Bag 250mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "NS Flush",
-          "emsa_min": 10
-        },
-        {
-          "name": "NS flushes",
-          "emsa_min": 5
-        },
-        {
-          "name": "NS Flushes 10mL",
-          "emsa_min": 5
-        },
-        {
-          "name": "Obstetrical Kit",
-          "emsa_min": 2
-        },
-        {
-          "name": "Omni-Flex",
-          "emsa_min": 2
-        },
-        {
-          "name": "Omniflex",
-          "emsa_min": 3
-        },
-        {
-          "name": "Ondansetron 4mg/2mL",
-          "emsa_min": 3
-        },
-        {
-          "name": "Ondansetron Orally Disintegrating Tablets 4mg",
-          "emsa_min": 4
-        },
-        {
-          "name": "Oxygen Cylinder, Type D",
-          "emsa_min": 3
-        },
-        {
-          "name": "Paper Towels, roll (or stack of napkins)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Pedi-Mate",
-          "emsa_min": 1
-        },
-        {
-          "name": "pediatric adhesive pulse ox",
-          "emsa_min": 1
-        },
-        {
-          "name": "Pediatric Board (orange)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Pediatric Bougie-To-Go (left of cells)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Pediatric BVM",
-          "emsa_min": 2
-        },
-        {
-          "name": "Pediatric C-Collar",
-          "emsa_min": 3
-        },
-        {
-          "name": "Pediatric Defibrillation Pad",
-          "emsa_min": 2
-        },
-        {
-          "name": "Pediatric EtCO2 Nasal Cannula",
-          "emsa_min": 3
-        },
-        {
-          "name": "Pediatric Nasal Cannula",
-          "emsa_min": 3
-        },
-        {
-          "name": "Pediatric Nebulizer Mask",
-          "emsa_min": 3
-        },
-        {
-          "name": "Pediatric NRB",
-          "emsa_min": 3
-        },
-        {
-          "name": "PEEP Valve",
-          "emsa_min": 3
-        },
-        {
-          "name": "Pelvic Sling",
-          "emsa_min": 1
-        },
-        {
-          "name": "Pen",
-          "emsa_min": 1
-        },
-        {
-          "name": "Pen light",
-          "emsa_min": 2
-        },
-        {
-          "name": "Petrolatum Dressing",
-          "emsa_min": 2
-        },
-        {
-          "name": "Pillow",
-          "emsa_min": 3
-        },
-        {
-          "name": "Pillow case (disposable)",
-          "emsa_min": 3
-        },
-        {
-          "name": "pinna clip pulse ox",
-          "emsa_min": 1
-        },
-        {
-          "name": "PO aspirin",
-          "emsa_min": 1
-        },
-        {
-          "name": "Portable Suction + charger",
-          "emsa_min": 1
-        },
-        {
-          "name": "Posey restraints (blue-wrist)",
-          "emsa_min": 2
-        },
-        {
-          "name": "Posey restraints (red-ankle)",
-          "emsa_min": 2
-        },
-        {
-          "name": "Posey Soft Restraints",
-          "emsa_min": 3
-        },
-        {
-          "name": "Power Strip",
-          "emsa_min": 1
-        },
-        {
-          "name": "Pressure Infusion Bag",
-          "emsa_min": 2
-        },
-        {
-          "name": "Razors (For EKG Prep)",
-          "emsa_min": 2
-        },
-        {
-          "name": "Responder Bag",
-          "emsa_min": 1
-        },
-        {
-          "name": "Ring Cutter",
-          "emsa_min": 1
-        },
-        {
-          "name": "Scoop Stretcher",
-          "emsa_min": 1
-        },
-        {
-          "name": "Shears",
-          "emsa_min": 1
-        },
-        {
-          "name": "Short Cardboard Splint",
-          "emsa_min": 2
-        },
-        {
-          "name": "SL nitroglycerin",
-          "emsa_min": 1
-        },
-        {
-          "name": "Small",
-          "emsa_min": 1
-        },
-        {
-          "name": "Sodium Bicarbonate Preload 50mEq/50mL",
-          "emsa_min": 1
-        },
-        {
-          "name": "Sodium Bicarbonate Vial 50mEq/50mL",
-          "emsa_min": 1
-        },
-        {
-          "name": "Spit Hoods",
-          "emsa_min": 3
-        },
-        {
-          "name": "SpO2 Monitoring Cable",
-          "emsa_min": 1
-        },
-        {
-          "name": "SpO2 Sensor, Clip",
-          "emsa_min": 1
-        },
-        {
-          "name": "Sterile 4x4",
-          "emsa_min": 6
-        },
-        {
-          "name": "Sterile Burn Sheet",
-          "emsa_min": 2
-        },
-        {
-          "name": "Sterile Distilled Water for Irrigation Box 500mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Sterile NS Water for Irrigation Box 500mL",
-          "emsa_min": 2
-        },
-        {
-          "name": "Sterile Water for Inhalation Bag 1000mL",
-          "emsa_min": 3
-        },
-        {
-          "name": "Stethoscope",
-          "emsa_min": 1
-        },
-        {
-          "name": "Stretcher Battery",
-          "emsa_min": 1
-        },
-        {
-          "name": "Stretcher Charger",
-          "emsa_min": 1
-        },
-        {
-          "name": "Stylet - 10 Fr. (right of cells)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Stylet - 12 Fr. (right of cells)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Stylet - 6 Fr. (right of cells)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Stylet - 8 Fr. (right of cells)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Suction Canister",
-          "emsa_min": 3
-        },
-        {
-          "name": "Suction Lid",
-          "emsa_min": 3
-        },
-        {
-          "name": "Surgical Mask",
-          "emsa_min": 10
-        },
-        {
-          "name": "Surgical Masks Box",
-          "emsa_min": 1
-        },
-        {
-          "name": "Swivel Y-piece",
-          "emsa_min": 1
-        },
-        {
-          "name": "Tegaderm",
-          "emsa_min": 6
-        },
-        {
-          "name": "Temperature Monitoring Cable",
-          "emsa_min": 1
-        },
-        {
-          "name": "Temporal Thermometer",
-          "emsa_min": 1
-        },
-        {
-          "name": "Thomas Tube Holder - Adult",
-          "emsa_min": 1
-        },
-        {
-          "name": "Thomas Tube Holder - Pediatric",
-          "emsa_min": 1
-        },
-        {
-          "name": "Traction Splint",
-          "emsa_min": 2
-        },
-        {
-          "name": "Tranexamic Acid 1000mg/10mL",
-          "emsa_min": 4
-        },
-        {
-          "name": "Trauma Dressing",
-          "emsa_min": 2
-        },
-        {
-          "name": "Trauma Tourniquet",
-          "emsa_min": 4
-        },
-        {
-          "name": "Triangular Bandage",
-          "emsa_min": 4
-        },
-        {
-          "name": "Unused Suction Container",
-          "emsa_min": 1
-        },
-        {
-          "name": "Unused Suction Tubing & Suction Tip",
-          "emsa_min": 1
-        },
-        {
-          "name": "Urinals",
-          "emsa_min": 3
-        },
-        {
-          "name": "Ventilator",
-          "emsa_min": 1
-        },
-        {
-          "name": "Ventilator Circuit",
-          "emsa_min": 3
-        },
-        {
-          "name": "Ventilator Circuit w/ Exhaust Valve",
-          "emsa_min": 1
-        },
-        {
-          "name": "Ventilator filters",
-          "emsa_min": 3
-        },
-        {
-          "name": "White Tags",
-          "emsa_min": 5
-        },
-        {
-          "name": "Yankauer Suction Tip + Tubing",
-          "emsa_min": 3
-        },
-        {
-          "name": "Yellow Table",
-          "emsa_min": 1
-        },
-        {
-          "name": "Yellow Tags",
-          "emsa_min": 20
-        }
-      ]
-    },
-    {
       "name": "Airway Management",
       "items": [
         {
@@ -1404,29 +287,116 @@
           "name": "3.5 mm",
           "emsa_min": 1,
           "group": "ET Tube"
-        }
-      ]
-    },
-    {
-      "name": "Trauma",
-      "items": [
-        {
-          "name": "L",
-          "emsa_min": 2,
-          "group": "Soft Collars"
         },
         {
-          "name": "M",
+          "name": "Adult Bougie-To-Go (left of cells)",
+          "emsa_min": 1
+        },
+        {
+          "name": "Cricothyrotomy Kit",
+          "emsa_min": 1
+        },
+        {
+          "name": "DuCanto Suction Tip",
           "emsa_min": 1,
-          "group": "Soft Collars"
+          "group": "Suction Tips"
         },
         {
-          "name": "S",
+          "name": "Hyperangulated Stylets",
+          "emsa_min": 2
+        },
+        {
+          "name": "Adult",
           "emsa_min": 1,
-          "group": "Soft Collars"
+          "group": "Laryngoscope Handle"
         },
         {
-          "name": "Chest Decompression Needle",
+          "name": "Pediatric",
+          "emsa_min": 1,
+          "group": "Laryngoscope Handle"
+        },
+        {
+          "name": "Laryngoscope Light",
+          "emsa_min": 2
+        },
+        {
+          "name": "Lubricant Packet",
+          "emsa_min": 6
+        },
+        {
+          "name": "Adult",
+          "emsa_min": 1,
+          "group": "Magill Forceps"
+        },
+        {
+          "name": "Pediatric",
+          "emsa_min": 1,
+          "group": "Magill Forceps"
+        },
+        {
+          "name": "Manual Jet Ventilator",
+          "emsa_min": 1
+        },
+        {
+          "name": "Manual Suction Device",
+          "emsa_min": 1
+        },
+        {
+          "name": "Pediatric Bougie-To-Go (left of cells)",
+          "emsa_min": 1
+        },
+        {
+          "name": "10 Fr.",
+          "emsa_min": 1,
+          "group": "Stylet"
+        },
+        {
+          "name": "12 Fr.",
+          "emsa_min": 1,
+          "group": "Stylet"
+        },
+        {
+          "name": "6 Fr.",
+          "emsa_min": 1,
+          "group": "Stylet"
+        },
+        {
+          "name": "8 Fr.",
+          "emsa_min": 1,
+          "group": "Stylet"
+        },
+        {
+          "name": "Canister",
+          "emsa_min": 3,
+          "group": "Suction Container"
+        },
+        {
+          "name": "Lid",
+          "emsa_min": 3,
+          "group": "Suction Container"
+        },
+        {
+          "name": "Swivel Y-piece",
+          "emsa_min": 1
+        },
+        {
+          "name": "Thomas Tube Holder - Adult",
+          "emsa_min": 1
+        },
+        {
+          "name": "Thomas Tube Holder - Pediatric",
+          "emsa_min": 1
+        },
+        {
+          "name": "Unused Suction Container",
+          "emsa_min": 1
+        },
+        {
+          "name": "Unused Suction Tubing & Suction Tip",
+          "emsa_min": 1
+        },
+        {
+          "name": "Yankauer Suction Tip + Tubing",
           "emsa_min": 3
         }
       ]
@@ -1578,6 +548,24 @@
           "name": "60 mL Syringe, Catheter Tip",
           "emsa_min": 1,
           "group": "Syringe, Luer Lock, Needle-less"
+        },
+        {
+          "name": "10-Drop Set",
+          "emsa_min": 4,
+          "group": "Infusion Sets"
+        },
+        {
+          "name": "3-Way Stopcock",
+          "emsa_min": 2
+        },
+        {
+          "name": "60-Drop Set",
+          "emsa_min": 4,
+          "group": "Infusion Sets"
+        },
+        {
+          "name": "Elastic Tourniquet",
+          "emsa_min": 6
         }
       ]
     },
@@ -1585,7 +573,107 @@
       "name": "Medications",
       "items": [
         {
-          "name": "Pediatric Emergency Tape",
+          "name": "Acetaminophen Bag 1000mg/100mL",
+          "emsa_min": 2
+        },
+        {
+          "name": "Activated Charcoal 25g/120mL",
+          "emsa_min": 1
+        },
+        {
+          "name": "Adenosine 6mg/2mL",
+          "emsa_min": 3
+        },
+        {
+          "name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
+          "emsa_min": 6
+        },
+        {
+          "name": "Aspirin Bottle 81 mg/tablet",
+          "emsa_min": 2
+        },
+        {
+          "name": "Dopamine Vial 400mg/10mL",
+          "emsa_min": 1
+        },
+        {
+          "name": "Ibuprofen Oral Suspension",
+          "emsa_min": 4
+        },
+        {
+          "name": "Hydralazine 20mg/1mL",
+          "emsa_min": 2
+        },
+        {
+          "name": "Ipratropium Bromide Inhalation Solution 0.5mg/2.5mL",
+          "emsa_min": 6
+        },
+        {
+          "name": "Ketorolac 30mg/mL",
+          "emsa_min": 2
+        },
+        {
+          "name": "Labetalol 100mg/20mL",
+          "emsa_min": 4
+        },
+        {
+          "name": "Tranexamic Acid 1000mg/10mL",
+          "emsa_min": 4
+        },
+        {
+          "name": "Amiodarone 150mg/3mL",
+          "emsa_min": 6
+        },
+        {
+          "name": "Nitroglycerin Ointment 1g/in.",
+          "emsa_min": 5
+        },
+        {
+          "name": "Nitroglycerin Ointment Paper",
+          "emsa_min": 5
+        },
+        {
+          "name": "Nitroglycerin Vial 0.4mg/tablet",
+          "emsa_min": 2
+        },
+        {
+          "name": "Norepinephrine 4mg/4mL",
+          "emsa_min": 2
+        },
+        {
+          "name": "Norepinephrine Bitartrate 4mg/4mL",
+          "emsa_min": 3
+        },
+        {
+          "name": "PO aspirin",
+          "emsa_min": 1
+        },
+        {
+          "name": "Naloxone Hydrochloride Preload",
+          "emsa_min": 1
+        },
+        {
+          "name": "Naloxone Hydrochloride Preload 2mg/2mL",
+          "emsa_min": 4
+        },
+        {
+          "name": "Magnesium Sulfate 5g/10mL",
+          "emsa_min": 1
+        },
+        {
+          "name": "Glucose Oral Gel 15 mg",
+          "emsa_min": 2
+        },
+        {
+          "name": "SL nitroglycerin",
+          "emsa_min": 1
+        },
+        {
+          "name": "Glucagon Injection Kits 1mg/1mL",
+          "emsa_min": 2
+        },
+        {
+          "name": "Medslinger Bag",
           "emsa_min": 1
         }
       ]
@@ -1607,6 +695,18 @@
           "name": "LW",
           "emsa_min": 1,
           "group": "nCPAP Prongs"
+        },
+        {
+          "name": "Bubbler",
+          "emsa_min": 2
+        },
+        {
+          "name": "nCPAP Generator",
+          "emsa_min": 2
+        },
+        {
+          "name": "Minifoam",
+          "emsa_min": 1
         }
       ]
     },
@@ -1702,6 +802,38 @@
           "name": "Thigh",
           "emsa_min": 1,
           "group": "Manual BP Cuff"
+        },
+        {
+          "name": "Stethoscope",
+          "emsa_min": 1
+        },
+        {
+          "name": "Pen light",
+          "emsa_min": 2
+        },
+        {
+          "name": "Boxes of Oral/Axillary Temp Probe Sheaths",
+          "emsa_min": 2
+        },
+        {
+          "name": "Disposable Temperature Monitoring Sensor - Neonate/Infant",
+          "emsa_min": 3
+        },
+        {
+          "name": "Microdot Glucometer Test Strip Containers",
+          "emsa_min": 2
+        },
+        {
+          "name": "Nail Polish Remover",
+          "emsa_min": 10
+        },
+        {
+          "name": "Temporal Thermometer",
+          "emsa_min": 1
+        },
+        {
+          "name": "Pediatric Emergency Tape",
+          "emsa_min": 1
         }
       ]
     },
@@ -1719,6 +851,18 @@
         {
           "name": "Triage Unit Leader Vest",
           "emsa_min": 1
+        },
+        {
+          "name": "White Tags",
+          "emsa_min": 5
+        },
+        {
+          "name": "Yellow Table",
+          "emsa_min": 1
+        },
+        {
+          "name": "Yellow Tags",
+          "emsa_min": 20
         }
       ]
     },
@@ -1743,6 +887,78 @@
           "name": "4-lead cord",
           "emsa_min": 1,
           "group": "Cables"
+        },
+        {
+          "name": "Cuff cable",
+          "emsa_min": 1
+        },
+        {
+          "name": "Defibrillation Cable",
+          "emsa_min": 1
+        },
+        {
+          "name": "Electrode Bag",
+          "emsa_min": 1
+        },
+        {
+          "name": "EKG razors",
+          "emsa_min": 3
+        },
+        {
+          "name": "finger clip pulse ox",
+          "emsa_min": 1
+        },
+        {
+          "name": "Monitor-to-SpO2 Cable",
+          "emsa_min": 1
+        },
+        {
+          "name": "Invasive Monitoring Cable - Oval Port",
+          "emsa_min": 2
+        },
+        {
+          "name": "Invasive Monitoring Cable - Square Port",
+          "emsa_min": 1
+        },
+        {
+          "name": "Temperature Monitoring Cable",
+          "emsa_min": 1
+        },
+        {
+          "name": "Monitor Charger",
+          "emsa_min": 1
+        },
+        {
+          "name": "Monitor Battery (charged)",
+          "emsa_min": 2
+        },
+        {
+          "name": "Invasive BP Clamp Mount",
+          "emsa_min": 1
+        },
+        {
+          "name": "BP cuff connector tubing (short, bifurcated tubing)",
+          "emsa_min": 1
+        },
+        {
+          "name": "Monitor Printer Paper Rolls",
+          "emsa_min": 2
+        },
+        {
+          "name": "Montor-to-BP-cuff connector",
+          "emsa_min": 1
+        },
+        {
+          "name": "Pediatric Defibrillation Pad",
+          "emsa_min": 2
+        },
+        {
+          "name": "Adult Defibrillation Pad",
+          "emsa_min": 2
+        },
+        {
+          "name": "Adult/Child Defib Pads",
+          "emsa_min": 1
         }
       ],
       "child_of": "Electronics"
@@ -1782,7 +998,835 @@
     },
     {
       "name": "Electronics",
-      "items": []
+      "items": [
+        {
+          "name": "Doppler",
+          "emsa_min": 1
+        },
+        {
+          "name": "Hamilton Humidifier",
+          "emsa_min": 1
+        },
+        {
+          "name": "Jackery + charger",
+          "emsa_min": 1
+        },
+        {
+          "name": "Ventilator",
+          "emsa_min": 1
+        },
+        {
+          "name": "Portable Suction + charger",
+          "emsa_min": 1
+        },
+        {
+          "name": "AA",
+          "emsa_min": 2,
+          "group": "Batteries"
+        },
+        {
+          "name": "C",
+          "emsa_min": 2,
+          "group": "Batteries"
+        },
+        {
+          "name": "Charger Adapter Kit",
+          "emsa_min": 1
+        },
+        {
+          "name": "Equipment Mount - Aluminum",
+          "emsa_min": 1
+        },
+        {
+          "name": "Getac",
+          "emsa_min": 1,
+          "group": "Getac"
+        },
+        {
+          "name": "Charger",
+          "emsa_min": 1,
+          "group": "Getac"
+        },
+        {
+          "name": "Power Strip",
+          "emsa_min": 1
+        },
+        {
+          "name": "Stretcher Battery",
+          "emsa_min": 1
+        },
+        {
+          "name": "Stretcher Charger",
+          "emsa_min": 1
+        }
+      ]
+    },
+    {
+      "name": "Fluids",
+      "items": [
+        {
+          "name": "100 mL, Bag",
+          "emsa_min": 5,
+          "group": "NS"
+        },
+        {
+          "name": "250 mL, Bag",
+          "emsa_min": 2,
+          "group": "NS"
+        },
+        {
+          "name": "1000 mL, Bag",
+          "emsa_min": 6,
+          "group": "NS"
+        },
+        {
+          "name": "10 mL NS Flush",
+          "emsa_min": 5
+        },
+        {
+          "name": "Sterile Distilled Water for Irrigation Box 500mL",
+          "emsa_min": 2
+        },
+        {
+          "name": "Sterile NS Water for Irrigation Box 500mL",
+          "emsa_min": 2
+        },
+        {
+          "name": "Sterile Water for Inhalation Bag 1000mL",
+          "emsa_min": 3
+        }
+      ],
+      "child_of": "Medications"
+    },
+    {
+      "name": "Dextrose",
+      "items": [
+        {
+          "name": "25g/50mL, in water, D50W",
+          "emsa_min": 1,
+          "group": "Preload"
+        },
+        {
+          "name": "Dextrose 25g/250mL",
+          "emsa_min": 3
+        }
+      ],
+      "child_of": "Medications"
+    },
+    {
+      "name": "Atropine",
+      "items": [
+        {
+          "name": "Atropine Sulfate 1mg/1mL",
+          "emsa_min": 4
+        },
+        {
+          "name": "Atropine Sulfate Preload",
+          "emsa_min": 1
+        },
+        {
+          "name": "Atropine Sulfate Preload 1mg/10mL",
+          "emsa_min": 2
+        }
+      ],
+      "child_of": "Medications"
+    },
+    {
+      "name": "Lidocaine",
+      "items": [
+        {
+          "name": "Lidocaine 100mg/5mL",
+          "emsa_min": 5
+        },
+        {
+          "name": "Lidocaine HCl Preload",
+          "emsa_min": 1
+        },
+        {
+          "name": "Lidocaine HCl Preload 100mg/5mL",
+          "emsa_min": 2
+        }
+      ],
+      "child_of": "Medications"
+    },
+    {
+      "name": "Epinephrine",
+      "items": [
+        {
+          "name": "Epinephrine 1mg/1mL",
+          "emsa_min": 5
+        },
+        {
+          "name": "Epinephrine Preload",
+          "emsa_min": 1
+        },
+        {
+          "name": "Epinephrine Preload 1mg/10mL",
+          "emsa_min": 8
+        }
+      ],
+      "child_of": "Medications"
+    },
+    {
+      "name": "Sodium Bicarbonate",
+      "items": [
+        {
+          "name": "Sodium Bicarbonate Preload 50mEq/50mL",
+          "emsa_min": 1
+        },
+        {
+          "name": "Sodium Bicarbonate Vial 50mEq/50mL",
+          "emsa_min": 1
+        }
+      ],
+      "child_of": "Medications"
+    },
+    {
+      "name": "Ondansetron",
+      "items": [
+        {
+          "name": "Ondansetron 4mg/2mL",
+          "emsa_min": 3
+        },
+        {
+          "name": "Ondansetron Orally Disintegrating Tablets 4mg",
+          "emsa_min": 4
+        }
+      ],
+      "child_of": "Medications"
+    },
+    {
+      "name": "Diphenhydramine",
+      "items": [
+        {
+          "name": "Diphenhydramine 50mg/1mL",
+          "emsa_min": 2
+        },
+        {
+          "name": "Diphenhydramine PO 25mg/10mL",
+          "emsa_min": 4
+        }
+      ],
+      "child_of": "Medications"
+    },
+    {
+      "name": "Calcium",
+      "items": [
+        {
+          "name": "Calcium Chloride Preload 1g/10mL",
+          "emsa_min": 4
+        },
+        {
+          "name": "Calcium Gluconate 1g/10mL",
+          "emsa_min": 1
+        }
+      ],
+      "child_of": "Medications"
+    },
+    {
+      "name": "IV",
+      "items": [
+        {
+          "name": "Arm Board (Long)",
+          "emsa_min": 2
+        },
+        {
+          "name": "Arm Board (Short)",
+          "emsa_min": 2
+        },
+        {
+          "name": "Betadine Pads",
+          "emsa_min": 4
+        },
+        {
+          "name": "Tegaderm",
+          "emsa_min": 6
+        },
+        {
+          "name": "Curos Strips",
+          "emsa_min": 3
+        },
+        {
+          "name": "IV Extension Set",
+          "emsa_min": 6
+        },
+        {
+          "name": "IV Fluid Warmer",
+          "emsa_min": 1
+        },
+        {
+          "name": "IV start kits",
+          "emsa_min": 4
+        },
+        {
+          "name": "Pressure Infusion Bag",
+          "emsa_min": 2
+        }
+      ]
+    },
+    {
+      "name": "Prep",
+      "items": [
+        {
+          "name": "Chlorhexidine Swabs Box",
+          "emsa_min": 1
+        },
+        {
+          "name": "Alcohol Prep Pads Box",
+          "emsa_min": 1
+        }
+      ]
+    },
+    {
+      "name": "Decontamination",
+      "items": [
+        {
+          "name": "Bleach Wipes Container",
+          "emsa_min": 1
+        },
+        {
+          "name": "Cavicide Spray Bottle",
+          "emsa_min": 1
+        },
+        {
+          "name": "Cavicide Wipes Container",
+          "emsa_min": 1
+        },
+        {
+          "name": "Hand Sanitizer",
+          "emsa_min": 1
+        },
+        {
+          "name": "Biohazard Bags",
+          "emsa_min": 2
+        },
+        {
+          "name": "Infectious control cleanup kit",
+          "emsa_min": 1
+        }
+      ]
+    },
+    {
+      "name": "Patient Movement",
+      "items": [
+        {
+          "name": "Backboard",
+          "emsa_min": 2
+        },
+        {
+          "name": "Breakaway Stretcher",
+          "emsa_min": 1
+        },
+        {
+          "name": "Head Bed + Triangles",
+          "emsa_min": 3
+        },
+        {
+          "name": "Pedi-Mate",
+          "emsa_min": 1
+        },
+        {
+          "name": "Scoop Stretcher",
+          "emsa_min": 1
+        },
+        {
+          "name": "Adult C-Collar",
+          "emsa_min": 3
+        },
+        {
+          "name": "Adult XCollar",
+          "emsa_min": 4
+        },
+        {
+          "name": "Extrication Collars Bag",
+          "emsa_min": 1
+        },
+        {
+          "name": "Infant Board (green)",
+          "emsa_min": 1
+        },
+        {
+          "name": "Pediatric Board (orange)",
+          "emsa_min": 1
+        },
+        {
+          "name": "Pediatric C-Collar",
+          "emsa_min": 3
+        },
+        {
+          "name": "L",
+          "emsa_min": 2,
+          "group": "Soft Collars"
+        },
+        {
+          "name": "M",
+          "emsa_min": 1,
+          "group": "Soft Collars"
+        },
+        {
+          "name": "S",
+          "emsa_min": 1,
+          "group": "Soft Collars"
+        }
+      ]
+    },
+    {
+      "name": "Patient Hygiene",
+      "items": [
+        {
+          "name": "Bedpans",
+          "emsa_min": 3
+        },
+        {
+          "name": "Urinals",
+          "emsa_min": 3
+        }
+      ]
+    },
+    {
+      "name": "Oxygen Delivery",
+      "items": [
+        {
+          "name": "Adult Nasal Cannula",
+          "emsa_min": 3
+        },
+        {
+          "name": "Adult Nebulizer Mask",
+          "emsa_min": 3
+        },
+        {
+          "name": "Adult NRB",
+          "emsa_min": 3
+        },
+        {
+          "name": "Adult BVM",
+          "emsa_min": 2
+        },
+        {
+          "name": "Infant BVM",
+          "emsa_min": 2
+        },
+        {
+          "name": "Infant ETT Securement Device",
+          "emsa_min": 2
+        },
+        {
+          "name": "Adult High-Flow Circuit",
+          "emsa_min": 3
+        },
+        {
+          "name": "Large Adult CPAP Mask",
+          "emsa_min": 2
+        },
+        {
+          "name": "Pediatric BVM",
+          "emsa_min": 2
+        },
+        {
+          "name": "Pediatric NRB",
+          "emsa_min": 3
+        },
+        {
+          "name": "Pediatric EtCO2 Nasal Cannula",
+          "emsa_min": 3
+        },
+        {
+          "name": "Pediatric Nasal Cannula",
+          "emsa_min": 3
+        },
+        {
+          "name": "Medium/Small Adult CPAP Mask",
+          "emsa_min": 2
+        },
+        {
+          "name": "Adult EtCO2 Nasal Cannula",
+          "emsa_min": 3
+        },
+        {
+          "name": "Handheld Nebulizer Kit",
+          "emsa_min": 3
+        },
+        {
+          "name": "Infant/Pediatric High-Flow Circuit",
+          "emsa_min": 3
+        },
+        {
+          "name": "Inline Nebulizer Kit",
+          "emsa_min": 1
+        },
+        {
+          "name": "Nebulizer (inline)",
+          "emsa_min": 3,
+          "group": "Nebulizer"
+        },
+        {
+          "name": "Type D",
+          "emsa_min": 3,
+          "group": "Oxygen"
+        },
+        {
+          "name": "Pediatric Nebulizer Mask",
+          "emsa_min": 3
+        }
+      ]
+    },
+    {
+      "name": "PPE",
+      "items": [
+        {
+          "name": "Face Shield",
+          "emsa_min": 3
+        },
+        {
+          "name": "Goggles",
+          "emsa_min": 3
+        },
+        {
+          "name": "Isolation Gown",
+          "emsa_min": 10
+        },
+        {
+          "name": "N95 Mask",
+          "emsa_min": 6
+        },
+        {
+          "name": "Surgical Mask",
+          "emsa_min": 10
+        },
+        {
+          "name": "Extra Large",
+          "emsa_min": 1,
+          "group": "Gloves"
+        },
+        {
+          "name": "Extra Small",
+          "emsa_min": 1,
+          "group": "Gloves"
+        },
+        {
+          "name": "Medium",
+          "emsa_min": 1,
+          "group": "Gloves"
+        },
+        {
+          "name": "Spit Hoods",
+          "emsa_min": 3
+        },
+        {
+          "name": "Large",
+          "emsa_min": 1,
+          "group": "Gloves"
+        }
+      ]
+    },
+    {
+      "name": "Miscellaneous",
+      "items": [
+        {
+          "name": "Fire Extinguisher",
+          "emsa_min": 1
+        },
+        {
+          "name": "Blanket",
+          "emsa_min": 6
+        },
+        {
+          "name": "Emergency Blanket",
+          "emsa_min": 2
+        },
+        {
+          "name": "Empty Trash Can",
+          "emsa_min": 1
+        },
+        {
+          "name": "Large Sharps Container",
+          "emsa_min": 1
+        },
+        {
+          "name": "Nose Clamp",
+          "emsa_min": 5
+        },
+        {
+          "name": "Paper Towels, roll (or stack of napkins)",
+          "emsa_min": 1
+        },
+        {
+          "name": "Pen",
+          "emsa_min": 1
+        },
+        {
+          "name": "Pillow",
+          "emsa_min": 3
+        },
+        {
+          "name": "Pillow case (disposable)",
+          "emsa_min": 3
+        },
+        {
+          "name": "Posey restraints (blue-wrist)",
+          "emsa_min": 2
+        },
+        {
+          "name": "Posey restraints (red-ankle)",
+          "emsa_min": 2
+        },
+        {
+          "name": "Posey Soft Restraints",
+          "emsa_min": 3
+        }
+      ]
+    },
+    {
+      "name": "Medication Delivery",
+      "items": [
+        {
+          "name": "MAD",
+          "emsa_min": 4
+        },
+        {
+          "name": "Medication Labels",
+          "emsa_min": 6
+        }
+      ]
+    },
+    {
+      "name": "SpO2 Sensor",
+      "items": [
+        {
+          "name": "Adult/Neonatal Adhesive",
+          "emsa_min": 3
+        },
+        {
+          "name": "Infant Adhesive",
+          "emsa_min": 3
+        },
+        {
+          "name": "Clip",
+          "emsa_min": 1
+        },
+        {
+          "name": "pinna clip pulse ox",
+          "emsa_min": 1
+        },
+        {
+          "name": "pediatric adhesive pulse ox",
+          "emsa_min": 1
+        }
+      ]
+    },
+    {
+      "name": "Temperature Management",
+      "items": [
+        {
+          "name": "Cold Pack",
+          "emsa_min": 4
+        },
+        {
+          "name": "Heat Pack",
+          "emsa_min": 4
+        }
+      ]
+    },
+    {
+      "name": "Extrication",
+      "items": [
+        {
+          "name": "Center Punch Tool",
+          "emsa_min": 1
+        },
+        {
+          "name": "Ring Cutter",
+          "emsa_min": 1
+        },
+        {
+          "name": "Shears",
+          "emsa_min": 1
+        }
+      ]
+    },
+    {
+      "name": "Advanced Airway Attachments",
+      "items": [
+        {
+          "name": "HME Filter",
+          "emsa_min": 2
+        },
+        {
+          "name": "Inline EtCO2",
+          "emsa_min": 3
+        },
+        {
+          "name": "PEEP Valve",
+          "emsa_min": 3
+        },
+        {
+          "name": "Colorimetric CO2 Detector",
+          "emsa_min": 1
+        },
+        {
+          "name": "Hamilton Adapter Bag",
+          "emsa_min": 2
+        },
+        {
+          "name": "Omni-Flex",
+          "emsa_min": 2
+        },
+        {
+          "name": "Ventilator Circuit",
+          "emsa_min": 3
+        },
+        {
+          "name": "Ventilator Circuit w/ Exhaust Valve",
+          "emsa_min": 1
+        },
+        {
+          "name": "Ventilator filters",
+          "emsa_min": 3
+        }
+      ]
+    },
+    {
+      "name": "Wound Care",
+      "items": [
+        {
+          "name": "4\"x4\" Quickclot Dressing",
+          "emsa_min": 3
+        },
+        {
+          "name": "Chest Seal",
+          "emsa_min": 2
+        },
+        {
+          "name": "Coban",
+          "emsa_min": 6
+        },
+        {
+          "name": "Curad Adhesive Bandages Box",
+          "emsa_min": 1
+        },
+        {
+          "name": "Elastic Bandage Roll (Dukal)",
+          "emsa_min": 2
+        },
+        {
+          "name": "Gauze Rolls",
+          "emsa_min": 3
+        },
+        {
+          "name": "Israeli Bandage",
+          "emsa_min": 2
+        },
+        {
+          "name": "Petrolatum Dressing",
+          "emsa_min": 2
+        },
+        {
+          "name": "Sterile Burn Sheet",
+          "emsa_min": 2
+        },
+        {
+          "name": "Trauma Dressing",
+          "emsa_min": 2
+        },
+        {
+          "name": "Trauma Tourniquet",
+          "emsa_min": 4
+        },
+        {
+          "name": "Triangular Bandage",
+          "emsa_min": 4
+        },
+        {
+          "name": "Chest Decompression Needle",
+          "emsa_min": 3
+        }
+      ]
+    },
+    {
+      "name": "OB",
+      "items": [
+        {
+          "name": "Baby Cap (if not included in OB kit)",
+          "emsa_min": 2
+        },
+        {
+          "name": "Bulb Syringe",
+          "emsa_min": 1
+        },
+        {
+          "name": "Obstetrical Kit",
+          "emsa_min": 2
+        }
+      ]
+    },
+    {
+      "name": "Splints",
+      "items": [
+        {
+          "name": "Long Cardboard",
+          "emsa_min": 2,
+          "group": "Splint"
+        },
+        {
+          "name": "Pelvic Sling",
+          "emsa_min": 1
+        },
+        {
+          "name": "Short Cardboard",
+          "emsa_min": 2,
+          "group": "Splint"
+        },
+        {
+          "name": "Traction Splint",
+          "emsa_min": 2
+        }
+      ]
+    },
+    {
+      "name": "Glidescope",
+      "items": [
+        {
+          "name": "Charger",
+          "emsa_min": 1,
+          "group": "Glidescope"
+        },
+        {
+          "name": "Glidescope Go 2",
+          "emsa_min": 1,
+          "group": "Glidescope"
+        },
+        {
+          "name": "MAC S3",
+          "emsa_min": 1,
+          "group": "Glidescope"
+        },
+        {
+          "name": "MAC S4",
+          "emsa_min": 1,
+          "group": "Glidescope"
+        },
+        {
+          "name": "Hyperangle S3",
+          "emsa_min": 1,
+          "group": "Glidescope"
+        },
+        {
+          "name": "Hyperangle S4",
+          "emsa_min": 1,
+          "group": "Glidescope"
+        },
+        {
+          "name": "Miller S0",
+          "emsa_min": 1,
+          "group": "Glidescope"
+        },
+        {
+          "name": "Miller S1",
+          "emsa_min": 1,
+          "group": "Glidescope"
+        }
+      ],
+      "child_of": "Electronics"
     }
   ]
 }

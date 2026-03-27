@@ -66,12 +66,14 @@
             "qty": 1
           },
           {
-            "name": "EtCO2 Nasal Cannula - Adult",
-            "qty": 1
+            "name": "Adult",
+            "qty": 1,
+            "group": "EtCO2 Nasal Cannula"
           },
           {
-            "name": "EtCO2 Nasal Cannula – Pediatric",
-            "qty": 1
+            "name": "Pediatric",
+            "qty": 1,
+            "group": "EtCO2 Nasal Cannula"
           }
         ]
       },
@@ -132,20 +134,24 @@
             "qty": 1
           },
           {
-            "name": "Stylet - 12 Fr. (right of cells)",
-            "qty": 1
+            "name": "12 Fr.",
+            "qty": 1,
+            "group": "Stylet"
           },
           {
-            "name": "Stylet - 10 Fr. (right of cells)",
-            "qty": 1
+            "name": "10 Fr.",
+            "qty": 1,
+            "group": "Stylet"
           },
           {
-            "name": "Stylet - 8 Fr. (right of cells)",
-            "qty": 1
+            "name": "8 Fr.",
+            "qty": 1,
+            "group": "Stylet"
           },
           {
-            "name": "Stylet - 6 Fr. (right of cells)",
-            "qty": 1
+            "name": "6 Fr.",
+            "qty": 1,
+            "group": "Stylet"
           }
         ]
       },
@@ -187,7 +193,8 @@
         "items": [
           {
             "name": "DuCanto Suction Tip",
-            "qty": 1
+            "qty": 1,
+            "group": "Suction Tips"
           },
           {
             "name": "60 mL Syringe, Catheter Tip",
@@ -216,7 +223,8 @@
           },
           {
             "name": "Nebulizer Mask - Adult",
-            "qty": 1
+            "qty": 1,
+            "group": "Nebulizer"
           },
           {
             "name": "NRB - Adult",
@@ -232,7 +240,8 @@
           },
           {
             "name": "Nebulizer Mask - Pediatric",
-            "qty": 1
+            "qty": 1,
+            "group": "Nebulizer"
           },
           {
             "name": "NRB – Pediatric",
@@ -294,8 +303,9 @@
             "qty": 1
           },
           {
-            "name": "D50W Preload",
-            "qty": 1
+            "name": "25g/50mL, in water, D50W",
+            "qty": 1,
+            "group": "Preload"
           },
           {
             "name": "Lidocaine HCl Preload",
@@ -311,15 +321,18 @@
           },
           {
             "name": "NS Bag 100mL",
-            "qty": 1
+            "qty": 1,
+            "group": "Fluids"
           },
           {
-            "name": "NS Bag 250mL",
-            "qty": 1
+            "name": "250 mL, Bag",
+            "qty": 1,
+            "group": "Fluids"
           },
           {
             "name": "Calcium Gluconate 1g/10mL",
-            "qty": 1
+            "qty": 1,
+            "group": "Calcium"
           },
           {
             "name": "Labetalol 100mg/20mL",
@@ -535,12 +548,14 @@
         "name": "Transparent Zippered Pocket",
         "items": [
           {
-            "name": "C - Cell Battery",
-            "qty": 2
+            "name": "C",
+            "qty": 2,
+            "group": "Batteries"
           },
           {
-            "name": "AA - Cell Battery",
-            "qty": 2
+            "name": "AA",
+            "qty": 2,
+            "group": "Batteries"
           },
           {
             "name": "Laryngoscope Light",
@@ -560,20 +575,24 @@
             "qty": 2
           },
           {
-            "name": "Laryngoscope Handle - Adult",
-            "qty": 1
+            "name": "Adult",
+            "qty": 1,
+            "group": "Laryngoscope"
           },
           {
-            "name": "Laryngoscope Handle – Pediatric",
-            "qty": 1
+            "name": "Pediatric",
+            "qty": 1,
+            "group": "Laryngoscope"
           },
           {
-            "name": "Magill Forceps – Adult",
-            "qty": 1
+            "name": "Adult",
+            "qty": 1,
+            "group": "Magill Forceps"
           },
           {
-            "name": "Magill Forceps – Pediatric",
-            "qty": 1
+            "name": "Pediatric",
+            "qty": 1,
+            "group": "Magill Forceps"
           }
         ]
       }
@@ -618,11 +637,13 @@
         "items": [
           {
             "name": "Glidescope Go 2",
-            "qty": 1
+            "qty": 1,
+            "group": "Glidescope"
           },
           {
-            "name": "Glidescope Charger",
-            "qty": 1
+            "name": "Charger",
+            "qty": 1,
+            "group": "Glidescope"
           },
           {
             "name": "Charger Adapter Kit",
@@ -700,7 +721,7 @@
             "qty": 3
           },
           {
-            "name": "Defib cable",
+            "name": "Defibrillation Cable",
             "qty": 1
           },
           {
@@ -717,7 +738,7 @@
         "name": "Right Bag: Right Zippered Pocket",
         "items": [
           {
-            "name": "NS flushes",
+            "name": "10 mL NS Flush",
             "qty": 5
           },
           {
