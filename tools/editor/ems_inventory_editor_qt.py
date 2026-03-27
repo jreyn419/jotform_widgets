@@ -93,6 +93,7 @@ def _init_icons():
         "group": _emoji_icon("\U0001f4c1"),
         "seal": _emoji_icon("\U0001f512"),
         "warn": _emoji_icon("\u26a0"),
+        "uncat": _emoji_icon("\U0001f4e5"),
     }
 
 
@@ -3233,10 +3234,45 @@ class App(QMainWindow):
 
             return True
 
-        # First pass: create all category nodes (sorted naturally)
+        # First pass: create all category nodes
+        # Separate Uncategorized to pin at top
+        _dim_color = QColor("#6c7086")
+        _dim_brush = QBrush(_dim_color)
         sorted_cats = sorted(enumerate(self.master_list.categories),
                              key=lambda x: _natural_sort_key(x[1].name))
-        for ci, cat in sorted_cats:
+        uncat_entries = [(ci, cat) for ci, cat in sorted_cats
+                         if cat.name.lower() == "uncategorized"]
+        regular_entries = [(ci, cat) for ci, cat in sorted_cats
+                           if cat.name.lower() != "uncategorized"]
+
+        def _style_uncat(cat_item):
+            """Apply Uncategorized visual styling: italic, dim, inbox icon."""
+            cat_item.setIcon(0, _ICONS["uncat"])
+            cat_item.setForeground(0, _dim_brush)
+            cat_item.setForeground(1, _dim_brush)
+            font = cat_item.font(0)
+            font.setItalic(True)
+            cat_item.setFont(0, font)
+            cat_item.setFont(1, font)
+
+        # Add Uncategorized first (pinned at top, only if it has items)
+        for ci, cat in uncat_entries:
+            cat_item = QTreeWidgetItem()
+            cat_item.setData(0, Qt.ItemDataRole.UserRole, ("cat", ci))
+            cat_item.setData(0, CN, cat.name)
+            has_content = _build_cat_content(cat_item, ci, cat)
+            if not has_content:
+                continue
+            _style_uncat(cat_item)
+            cat_nodes[ci] = cat_item
+            if cat.child_of:
+                child_cats.append((ci, cat))
+            else:
+                self._m_tree.addTopLevelItem(cat_item)
+                if q: cat_item.setExpanded(True)
+
+        # Add remaining categories (sorted naturally)
+        for ci, cat in regular_entries:
             cat_item = QTreeWidgetItem()
             cat_item.setIcon(0, _ICONS["cat"])
             cat_item.setData(0, Qt.ItemDataRole.UserRole, ("cat", ci))
@@ -3613,6 +3649,9 @@ class App(QMainWindow):
                 if cat.child_of:
                     menu.addAction("Move to Top Level",
                         lambda c=cat: self._master_cat_to_top_level(c))
+                if cat.name.lower() != "uncategorized":
+                    menu.addAction("Remove Category",
+                        lambda c=cat: self._remove_master_cat(c))
                 menu.addSeparator()
 
         # --- Rename / Copy / Cut ---
@@ -4066,6 +4105,40 @@ class App(QMainWindow):
         self._rebuild_master_tree()
         self._status.showMessage(f"'{cat.name}' moved to top level")
 
+    def _remove_master_cat(self, cat):
+        """Remove a category, moving its items to Uncategorized and children to top level."""
+        if cat.name.lower() == "uncategorized":
+            return
+        if not ConfirmDialog.confirm(self, "Remove Category",
+                f"Remove '{cat.name}'?\n\n"
+                f"Its {len(cat.items)} item(s) will move to Uncategorized.\n"
+                f"Child categories will become top-level."):
+            return
+        # Get or create Uncategorized
+        uncat = None
+        for c in self.master_list.categories:
+            if c.name.lower() == "uncategorized":
+                uncat = c
+                break
+        if not uncat:
+            uncat = MasterCategory("Uncategorized")
+            self.master_list.categories.insert(0, uncat)
+        # Move items to Uncategorized
+        for item in cat.items:
+            uncat.items.append(item)
+        # Move child categories to top level
+        for c in self.master_list.categories:
+            if c.child_of == cat.name:
+                c.child_of = None
+        # Remove the category
+        self.master_list.categories.remove(cat)
+        self.dirty_master = True
+        self._update_save_state()
+        self._rebuild_master_tree()
+        self._clear_editor(self._m_detail_title, self._m_editor_widget, self._m_editor_layout)
+        self._status.showMessage(
+            f"Removed '{cat.name}' — {len(cat.items)} item(s) moved to Uncategorized")
+
     def _qadd_master_item(self, cat):
         n, ok = QInputDialog.getText(self, "Add Item", "Item name:")
         if not ok or not n.strip(): return
@@ -4147,10 +4220,16 @@ class App(QMainWindow):
         def _build_area_content(area_item, ai, area):
             """Populate an area node with categories, groups, and items."""
             area_match = q and q in area.name.lower()
-            # Sort categories naturally within each area
+            _dim_brush = QBrush(QColor("#6c7086"))
+            # Sort categories naturally, but pin Uncategorized at top
             sorted_area_cats = sorted(enumerate(area.categories),
                                       key=lambda x: _natural_sort_key(x[1].name))
-            for ci, cat in sorted_area_cats:
+            uncat_cats = [(ci, cat) for ci, cat in sorted_area_cats
+                          if cat.name.lower() == "uncategorized"]
+            regular_cats = [(ci, cat) for ci, cat in sorted_area_cats
+                            if cat.name.lower() != "uncategorized"]
+
+            for ci, cat in uncat_cats + regular_cats:
                 cat_match = q and q in cat.name.lower()
                 matches = [(ii, it) for ii, it in enumerate(cat.items)
                            if not q or area_match or cat_match
@@ -4158,11 +4237,19 @@ class App(QMainWindow):
                 if not matches:
                     continue
 
+                is_uncat = cat.name.lower() == "uncategorized"
                 cat_item = QTreeWidgetItem([cat.name])
                 cat_item.setText(1, f"({len(matches)})")
-                cat_item.setIcon(0, _ICONS["cat"])
+                cat_item.setIcon(0, _ICONS["uncat"] if is_uncat else _ICONS["cat"])
                 cat_item.setData(0, Qt.ItemDataRole.UserRole, ("cat", ai, ci))
                 cat_item.setData(0, CN, cat.name)
+                if is_uncat:
+                    cat_item.setForeground(0, _dim_brush)
+                    cat_item.setForeground(1, _dim_brush)
+                    font = cat_item.font(0)
+                    font.setItalic(True)
+                    cat_item.setFont(0, font)
+                    cat_item.setFont(1, font)
                 area_item.addChild(cat_item)
                 if q: cat_item.setExpanded(True)
 
@@ -4600,6 +4687,9 @@ class App(QMainWindow):
                 ci = data[2]; cat = area.categories[ci]
                 menu.addAction("Add Item…", lambda: self._radd_item(cat))
                 menu.addAction("Add Group…", lambda: self._radd_group(cat))
+                if cat.name.lower() != "uncategorized":
+                    menu.addAction("Remove Category",
+                        lambda a=area, c=cat: self._remove_rig_cat(a, c))
                 menu.addSeparator()
 
             elif kind == "area" and len(selected_areas) <= 1:
@@ -5764,6 +5854,34 @@ class App(QMainWindow):
             area.categories.append(Category(n.strip()))
             self._set_dirty()
             self._rebuild_rig_tree()
+
+    def _remove_rig_cat(self, area, cat):
+        """Remove a rig category, moving its items to Uncategorized within the same area."""
+        if cat.name.lower() == "uncategorized":
+            return
+        if not ConfirmDialog.confirm(self, "Remove Category",
+                f"Remove '{cat.name}'?\n\n"
+                f"Its {len(cat.items)} item(s) will move to Uncategorized."):
+            return
+        # Get or create Uncategorized in same area
+        uncat = None
+        for c in area.categories:
+            if c.name.lower() == "uncategorized":
+                uncat = c
+                break
+        if not uncat:
+            uncat = Category("Uncategorized")
+            area.categories.insert(0, uncat)
+        # Move items
+        for item in cat.items:
+            uncat.items.append(item)
+        # Remove the category
+        area.categories.remove(cat)
+        self._set_dirty()
+        self._rebuild_rig_tree()
+        self._clear_editor(self._r_detail_title, self._r_editor_widget, self._r_editor_layout)
+        self._status.showMessage(
+            f"Removed '{cat.name}' — {len(cat.items)} item(s) moved to Uncategorized")
 
     def _radd_group(self, cat):
         """Add a new group to a rig category (creates first item with group tag)."""
@@ -7153,7 +7271,8 @@ def _generate_branch_images():
 
     def _dotted_pen():
         pen = QPen(line_color)
-        pen.setStyle(Qt.PenStyle.DotLine)
+        pen.setStyle(Qt.PenStyle.CustomDashLine)
+        pen.setDashPattern([1, 1])  # period=2 divides evenly into h=26
         pen.setWidth(1)
         return pen
 
@@ -7241,14 +7360,39 @@ if __name__ == "__main__":
     # macOS: set app name in menu bar (must happen before QApplication)
     if sys.platform == "darwin":
         try:
-            from Foundation import NSBundle
+            NSBundle = __import__("Foundation", fromlist=["NSBundle"]).NSBundle
             bundle = NSBundle.mainBundle()
             info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
             info["CFBundleName"] = "ReadyRig"
-        except ImportError:
-            pass
+        except (ImportError, AttributeError):
+            # Fallback: use ctypes to set the process name via Cocoa runtime
+            try:
+                import ctypes, ctypes.util
+                lib = ctypes.cdll.LoadLibrary(ctypes.util.find_library("objc"))
+                lib.objc_getClass.restype = ctypes.c_void_p
+                lib.sel_registerName.restype = ctypes.c_void_p
+                lib.objc_msgSend.restype = ctypes.c_void_p
+                lib.objc_msgSend.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+                NSBundle = lib.objc_getClass(b"NSBundle")
+                sel_main = lib.sel_registerName(b"mainBundle")
+                bundle = lib.objc_msgSend(NSBundle, sel_main)
+                sel_info = lib.sel_registerName(b"infoDictionary")
+                info = lib.objc_msgSend(bundle, sel_info)
+                sel_set = lib.sel_registerName(b"setObject:forKey:")
+                NSString = lib.objc_getClass(b"NSString")
+                sel_str = lib.sel_registerName(b"stringWithUTF8String:")
+                lib.objc_msgSend.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_char_p]
+                val = lib.objc_msgSend(NSString, sel_str, b"ReadyRig")
+                key = lib.objc_msgSend(NSString, sel_str, b"CFBundleName")
+                lib.objc_msgSend.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
+                                             ctypes.c_void_p, ctypes.c_void_p]
+                lib.objc_msgSend(info, sel_set, val, key)
+            except Exception:
+                pass
+    sys.argv[0] = "ReadyRig"
     app = QApplication(sys.argv)
     app.setApplicationName("ReadyRig")
+    app.setApplicationDisplayName("ReadyRig")
     app.setStyle("Fusion")
     branch_dir = _generate_branch_images()
     _init_icons()
@@ -7657,14 +7801,15 @@ if __name__ == "__main__":
     # macOS: set dock icon (requires pyobjc, available via pip install pyobjc)
     if sys.platform == "darwin" and os.path.isfile(_icon_path):
         try:
-            from Foundation import NSData
-            from AppKit import NSImage, NSApp
+            NSData = __import__("Foundation", fromlist=["NSData"]).NSData
+            _ak = __import__("AppKit", fromlist=["NSImage", "NSApp"])
+            NSImage, NSApp = _ak.NSImage, _ak.NSApp
             with open(_icon_path, 'rb') as f:
                 icon_data = f.read()
             ns_data = NSData.dataWithBytes_length_(icon_data, len(icon_data))
             ns_img = NSImage.alloc().initWithData_(ns_data)
             NSApp.setApplicationIconImage_(ns_img)
-        except ImportError:
+        except (ImportError, AttributeError):
             pass
     window.show()
     window.raise_()
