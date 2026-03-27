@@ -7260,7 +7260,7 @@ def _generate_branch_images():
     h = 26   # height matches row height (22px min-height + 4px padding)
     cx = w // 2   # horizontal center (10)
     cy = h // 2   # vertical center (13)
-    top = 3       # trim top of vertical lines
+    top = 0       # full height for seamless tiling between rows
     line_color = QColor("#585b70")
     arrow_color = QColor("#a6adc8")
 
@@ -7302,16 +7302,13 @@ def _generate_branch_images():
     p.end()
     px.save(os.path.join(d, "branch-end.png"))
 
-    # arrow-closed: [+] box with connector stub
+    # arrow-closed: [+] box (connector provided by border-image)
     px = _make_pixmap()
     p = QPainter(px)
     p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
     bsz = 12
     bx = (w - bsz) // 2    # center box horizontally
     by = (h - bsz) // 2    # center box vertically
-    # Connector stub from top to box
-    p.setPen(_dotted_pen())
-    p.drawLine(cx, top, cx, by)
     # Box
     box_pen = QPen(line_color)
     box_pen.setStyle(Qt.PenStyle.DotLine)
@@ -7329,13 +7326,10 @@ def _generate_branch_images():
     p.end()
     px.save(os.path.join(d, "arrow-closed.png"))
 
-    # arrow-open: [-] box with connector stub
+    # arrow-open: [-] box (connector provided by border-image)
     px = _make_pixmap()
     p = QPainter(px)
     p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
-    # Connector stub from top to box
-    p.setPen(_dotted_pen())
-    p.drawLine(cx, top, cx, by)
     # Box
     p.setPen(box_pen)
     p.drawRect(bx, by, bsz, bsz)
@@ -7593,6 +7587,10 @@ if __name__ == "__main__":
             border-image: url(""" + bp + """/branch-more.png) 0;
         }
         QTreeWidget::branch:!has-children:!has-siblings:adjoins-item {
+            border-image: url(""" + bp + """/branch-end.png) 0;
+        }
+        QTreeWidget::branch:has-children:!has-siblings:closed,
+        QTreeWidget::branch:has-children:!has-siblings:open {
             border-image: url(""" + bp + """/branch-end.png) 0;
         }
         QTreeWidget::branch:has-children:!has-siblings:closed,
