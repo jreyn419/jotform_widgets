@@ -166,7 +166,7 @@
     "page_url": "https://dhs.saccounty.gov/PUB/EMS/Pages/Policy%20Pages/GI-2000-EMS-SYSTEM.aspx",
     "link_text": "2030 Advanced Life Support Inventories\u200b",
     "last_hash": "f284ba5173c104e42f17a1f162650b3becc136dfc1d2eadc787578c84e76b8ff",
-    "last_checked": "2026-03-25 16:12",
+    "last_checked": "2026-03-28 09:13",
     "resolved_url": "https://dhs.saccounty.gov/PUB/EMS/Documents/PoliciesProceduresProtocols/2000/PP-2030%20Advanced%20Life%20Support%20Inventories.pdf",
     "acronym": "SCEMSA"
   },
@@ -202,7 +202,7 @@
     "page_url": "https://www.sjgov.org/department/ems/policies",
     "link_text": "4101 - EMS Response Vehicle Medication and Equipment",
     "last_hash": "abaaadc0c5f9d9b3d2c1788451d0d8c7627f27d0138f8110c2e711c6d7a9b25e",
-    "last_checked": "2026-03-25 16:12",
+    "last_checked": "2026-03-28 09:13",
     "resolved_url": "https://www.sjgov.org/docs/default-source/emergency-medical-services-documents/policies/section-4000-providers-and-facilities/4101---ems-response-vehicle-medication-and-equipment-effective-july-1-2025.pdf?sfvrsn=e7fdb179_7",
     "acronym": "SJCEMSA"
   },
@@ -256,7 +256,7 @@
     "page_url": "https://www.ssvems.com/section-vii/",
     "link_text": "701",
     "last_hash": "524dd034a4a0baad8ba7cc977155f2bed8e592700500e2b9ff3f1b117c407e19",
-    "last_checked": "2026-03-25 16:12",
+    "last_checked": "2026-03-28 09:13",
     "resolved_url": "https://www.ssvems.com/wp-content/uploads/2025/09/701.pdf",
     "acronym": "SSVEMSA"
   },
@@ -301,9 +301,459 @@
     "page_url": "https://www.yolocounty.gov/government/general-government-departments/health-human-services/providers-partners/yolo-emergency-medical-services-agency-yemsa/yemsa-policies-protocols/-folder-2482/-npage-2",
     "link_text": "YEMSA CRITICAL CARE TRANSPORT (CCT) AMBULANCE INVENTORY LIST",
     "last_hash": "1332159281859463659a14846ca5ddbfa90d1ca15fdd4a79edadf8140d10918c",
-    "last_checked": "2026-03-25 16:12",
+    "last_checked": "2026-03-28 09:13",
     "resolved_url": "https://www.yolocounty.gov/home/showpublisheddocument/59475/637813981920430000",
     "acronym": "YEMSA"
   },
-  "_download_dir": "/Users/jreyn877/Desktop/jotform_widgets/reference/lemsa"
+  "_download_dir": "/Users/jreyn877/Desktop/jotform_widgets/reference/lemsa",
+  "Alabama Office of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Alaska EMS Program": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Arizona Bureau of EMS & Trauma System": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Arkansas Dept. of Health \u2013 EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Colorado Dept. of Public Health & Environment \u2013 EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Connecticut Office of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Delaware Office of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "DC Fire & EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Florida Bureau of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Georgia Office of EMS & Trauma": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Hawaii EMS & Injury Prevention System Branch": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Idaho EMS Bureau": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Illinois Dept. of Public Health \u2013 EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Indiana Dept. of Homeland Security \u2013 EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Iowa Dept. of Public Health \u2013 Bureau of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Kansas Board of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Kentucky Board of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Louisiana Bureau of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Maine EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Maryland Institute for EMS Systems (MIEMSS)": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Massachusetts Dept. of Public Health \u2013 Office of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Michigan Dept. of Health & Human Services \u2013 EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Minnesota EMS Regulatory Board (EMSRB)": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Mississippi Bureau of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Missouri Bureau of EMS & Trauma": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Montana EMS & Trauma Systems": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Nebraska Dept. of Health & Human Services \u2013 EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Nevada Dept. of Health & Human Services \u2013 EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "New Hampshire Bureau of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "New Jersey Office of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "New Mexico EMS Bureau": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "New York Bureau of EMS & Trauma Systems": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "North Carolina Office of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "North Dakota Dept. of Health \u2013 EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Ohio Division of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Oklahoma Dept. of Health \u2013 EMS Division": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Oregon EMS & Trauma Systems": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Pennsylvania Bureau of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Rhode Island Division of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "South Carolina DHEC \u2013 Bureau of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "South Dakota EMS Program": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Tennessee Office of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Texas DSHS \u2013 EMS/Trauma Systems": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Utah Bureau of EMS & Preparedness": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Vermont EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Virginia Office of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Washington Dept. of Health \u2013 Office of Community Health Systems (EMS & Trauma)": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "West Virginia Office of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Wisconsin Dept. of Health Services \u2013 EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  },
+  "Wyoming Office of EMS": {
+    "tracked": false,
+    "page_url": "",
+    "link_text": "",
+    "last_hash": "",
+    "last_checked": "",
+    "resolved_url": "",
+    "acronym": ""
+  }
 }

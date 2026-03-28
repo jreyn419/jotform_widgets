@@ -1,140 +1,26 @@
 {
-  "triage tags": {
-    "master_name": "Triage Tags",
-    "master_qty": "50",
-    "category": "MCI",
-    "status": "N/A"
-  },
-  "trauma dressing": {
-    "master_name": "Trauma Dressing",
-    "master_qty": "2",
-    "category": "Trauma",
-    "status": "N/A"
-  },
-  "stethoscope": {
-    "master_name": "Stethoscope",
-    "master_qty": "1",
-    "category": "Patient Assessment",
-    "status": "N/A"
-  },
-  "scoop stretcher": {
-    "master_name": "Scoop Stretcher",
-    "master_qty": "1",
-    "category": "Patient Transportation",
-    "status": "N/A"
-  },
-  "pen light": {
-    "master_name": "Pen light",
-    "master_qty": "2",
-    "category": "Patient Assessment",
-    "status": "N/A"
-  },
-  "norepinephrine 4mg/4ml": {
-    "master_name": "Norepinephrine 4mg/4mL",
-    "master_qty": "2",
-    "category": "Medications",
-    "status": "N/A"
-  },
-  "iv start kits": {
-    "master_name": "IV start kits",
-    "master_qty": "4",
-    "category": "Vascular Access",
-    "status": "N/A"
-  },
-  "doppler": {
-    "master_name": "Doppler",
-    "master_qty": "1",
-    "category": "Patient Assessment",
-    "status": "N/A"
-  },
-  "calcium gluconate 1g/10ml": {
-    "master_name": "Calcium Gluconate 1g/10mL",
-    "master_qty": "1",
-    "category": "Medications",
-    "status": "N/A"
-  },
-  "3-way stopcock": {
-    "master_name": "3-Way Stopcock",
-    "master_qty": "2",
-    "category": "Vascular Access",
-    "status": "N/A"
-  },
-  "traction splint": {
-    "master_name": "Traction Splint",
-    "master_qty": "2",
-    "category": "Trauma",
-    "status": "N/A"
-  },
-  "ring cutter": {
-    "master_name": "Ring Cutter",
-    "master_qty": "1",
-    "category": "Trauma",
-    "status": "N/A"
-  },
-  "lancets": {
-    "master_name": "Lancets",
-    "master_qty": "10",
-    "category": "Patient Assessment",
-    "status": "N/A"
-  },
-  "labetalol 100mg/20ml": {
-    "master_name": "Labetalol 100mg/20mL",
-    "master_qty": "2",
-    "category": "Medications",
-    "status": "N/A"
-  },
-  "iv extension set": {
-    "master_name": "IV Extension Set",
-    "master_qty": "4",
-    "category": "Vascular Access",
-    "status": "N/A"
-  },
-  "coban": {
-    "master_name": "Coban",
-    "master_qty": "2",
-    "category": "Trauma",
-    "status": "N/A"
-  },
-  "x-collars\u2122": {
-    "master_name": "X-Collar",
-    "master_qty": "4",
-    "category": "Trauma",
+  "vial access cannula": {
+    "master_name": "Twinpak",
+    "master_qty": "6",
+    "category": "IV/IO/IM",
     "status": "Name Difference"
   },
-  "yankauer tonsil tip suction catheter": {
-    "master_name": "Yankauer Suction Tip + Tubing",
-    "master_qty": "1",
-    "category": "Uncategorized",
+  "0.2 micron filter": {
+    "master_name": "HME Filter",
+    "master_qty": "2",
+    "category": "Airway Attachments",
     "status": "Name Difference"
   },
-  "wall mounted suction device": {
-    "master_name": "Wall-Mounted Suction",
-    "master_qty": "1",
-    "category": "Ambulance Equipment",
-    "status": "New"
-  },
-  "water soluble lubricant": {
-    "master_name": "Lubricant Packet",
+  "1000 ml sterile irrigation solution": {
+    "master_name": "Sterile Distilled Water for Irrigation Box 500mL",
     "master_qty": "2",
-    "category": "Airway",
+    "category": "Fluids",
     "status": "Name Difference"
   },
-  "lubricant packet": {
-    "master_name": "Lubricant Packet",
+  "1000ml pressure infusion bag or equivalent": {
+    "master_name": "Pressure Infusion Bag",
     "master_qty": "2",
-    "category": "Medications",
-    "status": "N/A"
-  },
-  "yankauer suction tip + tubing": {
-    "master_name": "Yankauer Suction Tip + Tubing",
-    "master_qty": "3",
-    "category": "Airway",
-    "status": "N/A"
-  },
-  "zoll z series\u2122 ventilator with cpap and/or bipap*": {
-    "master_name": "Ventilator",
-    "master_qty": "1",
-    "category": "Uncategorized",
-    "status": "N/A"
+    "category": "Medication Delivery",
+    "status": "Name Difference"
   }
 }

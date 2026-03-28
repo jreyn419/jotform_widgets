@@ -688,8 +688,43 @@
           "name": "Left Bag: Left Zippered Pocket",
           "items": [
             {
-              "name": "Cuff cable",
+              "name": "Monitor-to-BP-cuff Tube",
               "qty": 1
+            },
+            {
+              "name": "10",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "11",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "11L",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "12",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "7",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "8",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "9",
+              "qty": 1,
+              "group": "BP Cuffs"
             }
           ]
         },
@@ -705,19 +740,6 @@
               "qty": 1
             },
             {
-              "name": "adult/neonate adhesive pulse ox",
-              "qty": 1
-            },
-            {
-              "name": "Pediatric",
-              "qty": 1,
-              "group": "Adhesive"
-            },
-            {
-              "name": "infant adhesive pulse ox",
-              "qty": 1
-            },
-            {
               "name": "12-lead cables",
               "qty": 1,
               "group": "Cables"
@@ -728,8 +750,24 @@
               "group": "Cables"
             },
             {
-              "name": "SpO2 Monitoring Cable",
-              "qty": 1
+              "name": "Adult/Neonatal",
+              "qty": 3,
+              "group": "Adhesive SpO2"
+            },
+            {
+              "name": "Infant",
+              "qty": 3,
+              "group": "Adhesive SpO2"
+            },
+            {
+              "name": "Pediatric",
+              "qty": 1,
+              "group": "Adhesive SpO2"
+            },
+            {
+              "name": "Monitor-to-SpO2 Cable",
+              "qty": 1,
+              "group": "Cables"
             }
           ]
         },
@@ -745,12 +783,14 @@
               "qty": 1
             },
             {
-              "name": "Adult Defibrillation Pad",
-              "qty": 2
+              "name": "Adult",
+              "qty": 2,
+              "group": "Defibrillation Pads"
             },
             {
-              "name": "Pediatric Defibrillation Pad",
-              "qty": 2
+              "name": "Pediatric",
+              "qty": 2,
+              "group": "Defibrillation Pads"
             }
           ]
         },
@@ -762,16 +802,46 @@
               "qty": 5
             },
             {
-              "name": "Electrode Bag (At least half full)",
-              "qty": 1
-            },
-            {
               "name": "PO aspirin",
               "qty": 1
             },
             {
               "name": "SL nitroglycerin",
               "qty": 1
+            },
+            {
+              "name": "Electrode Bag",
+              "qty": 1
+            },
+            {
+              "name": "Adhesive Bandages",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Alcohol Prep Pads",
+              "qty": 20,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Glucometer, operational",
+              "qty": 1,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Lancets",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Sterile 2x2",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Test Strip Vial (at least 6 strips)",
+              "qty": 1,
+              "group": "Glucometer kit"
             }
           ]
         }

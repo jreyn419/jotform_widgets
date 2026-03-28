@@ -469,16 +469,18 @@
           "emsa_min": 2
         },
         {
-          "name": "Monitor-to-BP-cuff connector",
+          "name": "Monitor-to-BP-cuff Tube",
           "emsa_min": 1
         },
         {
-          "name": "Pediatric Defibrillation Pad",
-          "emsa_min": 2
+          "name": "Pediatric",
+          "emsa_min": 2,
+          "group": "Defibrillation Pads"
         },
         {
-          "name": "Adult Defibrillation Pad",
-          "emsa_min": 2
+          "name": "Adult",
+          "emsa_min": 2,
+          "group": "Defibrillation Pads"
         },
         {
           "name": "Adult/Child Defib Pads",

@@ -4,21 +4,21 @@
     1018
   ],
   "master_splitter": [
-    379,
-    1048
+    459,
+    968
   ],
   "master_right_splitter": [
     251,
     518
   ],
   "rig_splitter": [
-    413,
-    477,
+    372,
+    518,
     526
   ],
   "rig_right_splitter": [
-    187,
-    480
+    0,
+    667
   ],
   "rig_panel_order": [
     "checklist",
