@@ -171,7 +171,13 @@
         },
         {
           "name": "Amiodarone 150mg/3mL",
-          "emsa_min": 6
+          "emsa_min": 6,
+          "aliases": [
+            {
+              "name": "Amiodarone (150 mg/3 mL)",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "Nitroglycerin Ointment 1g/in.",
@@ -442,7 +448,13 @@
         {
           "name": "Square Port",
           "emsa_min": 1,
-          "group": "Invasive Monitoring Cable"
+          "group": "Invasive Monitoring Cable",
+          "aliases": [
+            {
+              "name": "Abbott (square) invasive line cable",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         },
         {
           "name": "Temperature Monitoring Cable",
@@ -549,7 +561,13 @@
         },
         {
           "name": "Ventilator",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "aliases": [
+            {
+              "name": "Zoll Z series™ ventilator with CPAP and/or BiPAP*",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         },
         {
           "name": "Portable Suction + charger",
@@ -611,7 +629,13 @@
         },
         {
           "name": "Sterile Distilled Water for Irrigation Box 500mL",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "aliases": [
+            {
+              "name": "1000 mL Sterile Irrigation Solution",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "Sterile NS Water for Irrigation Box 500mL",
@@ -1188,7 +1212,13 @@
         {
           "name": "HME Filter",
           "emsa_min": 2,
-          "group": "Ventilator"
+          "group": "Ventilator",
+          "aliases": [
+            {
+              "name": "0.2 micron filter",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         },
         {
           "name": "Inline EtCO2",
@@ -1240,7 +1270,13 @@
         },
         {
           "name": "Gauze Rolls",
-          "emsa_min": 3
+          "emsa_min": 5,
+          "aliases": [
+            {
+              "name": "2”, 3” or 4” Kling/Kerlix Rolls",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "Israeli Bandage",
@@ -1423,8 +1459,14 @@
           "emsa_min": 3
         },
         {
-          "name": "X-Collar",
-          "emsa_min": 4
+          "name": "X-Collars™",
+          "emsa_min": 4,
+          "aliases": [
+            {
+              "name": "X-Collars™",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         },
         {
           "name": "L",

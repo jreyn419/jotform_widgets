@@ -1,26 +1,165 @@
 {
+  "x-collars\u2122": {
+    "master_name": "X-Collars\u2122",
+    "group": "",
+    "master_qty": "4",
+    "category": "C-Collars",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "X-Collars\u2122",
+      "lemsa": "San Joaquin EMS Agency"
+    }
+  },
   "vial access cannula": {
-    "master_name": "Twinpak",
+    "master_name": "Twinpak, Needle",
+    "group": "Needle",
     "master_qty": "6",
     "category": "IV/IO/IM",
-    "status": "Name Difference"
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Vial Access Cannula",
+      "lemsa": "Yolo County EMS Agency"
+    }
+  },
+  "vial access cannulas": {
+    "master_name": "Twinpak, Needle",
+    "group": "Needle",
+    "master_qty": "6",
+    "category": "IV/IO/IM",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Vial Access Cannulas",
+      "lemsa": "Sierra-Sacramento Valley EMS Agency"
+    }
+  },
+  "wall mounted suction device": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "warming mattress": {
+    "master_name": "Fluid Warmer",
+    "group": "",
+    "master_qty": "1",
+    "category": "Medication Delivery",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Warming mattress",
+      "lemsa": "San Joaquin EMS Agency"
+    }
+  },
+  "yankauer tonsil tip suction catheter": {
+    "master_name": "Yankauer Suction Tip + Tubing, Suction Tips",
+    "group": "Suction Tips",
+    "master_qty": "3",
+    "category": "Suction",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Yankauer Tonsil Tip Suction Catheter",
+      "lemsa": "San Joaquin EMS Agency"
+    }
+  },
+  "zoll z series\u2122 ventilator with cpap and/or bipap*": {
+    "master_name": "Ventilator",
+    "group": "",
+    "master_qty": "1",
+    "category": "Electronics",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Zoll Z series\u2122 ventilator with CPAP and/or BiPAP*",
+      "lemsa": "San Joaquin EMS Agency"
+    }
   },
   "0.2 micron filter": {
     "master_name": "HME Filter",
+    "group": "Ventilator",
     "master_qty": "2",
     "category": "Airway Attachments",
-    "status": "Name Difference"
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "0.2 micron filter",
+      "lemsa": "San Joaquin EMS Agency"
+    }
   },
   "1000 ml sterile irrigation solution": {
     "master_name": "Sterile Distilled Water for Irrigation Box 500mL",
+    "group": "",
     "master_qty": "2",
     "category": "Fluids",
-    "status": "Name Difference"
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "1000 mL Sterile Irrigation Solution",
+      "lemsa": "Sierra-Sacramento Valley EMS Agency"
+    }
   },
-  "1000ml pressure infusion bag or equivalent": {
-    "master_name": "Pressure Infusion Bag",
+  "4 x 4 gauze pads sterile": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": ""
+  },
+  "als provider agency inventory requirements": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "2\u201d adhesive tape rolls": {
+    "master_name": "2\"",
+    "group": "Tape (Cloth/Synthetic)",
     "master_qty": "2",
-    "category": "Medication Delivery",
-    "status": "Name Difference"
+    "category": "Securement",
+    "status": ""
+  },
+  "50 \u2013 60 ml syringe": {
+    "master_name": "60mL",
+    "group": "Luer Lock, Needle-less",
+    "master_qty": "2",
+    "category": "Syringe",
+    "status": ""
+  },
+  "abbott (square) invasive line cable": {
+    "master_name": "Square Port",
+    "group": "Invasive Monitoring Cable",
+    "master_qty": "1",
+    "category": "Zoll",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Abbott (square) invasive line cable",
+      "lemsa": "San Joaquin EMS Agency"
+    }
+  },
+  "ambulance cot & vehicle securing equipment": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "amiodarone (150 mg/3 ml)": {
+    "master_name": "Amiodarone 150mg/3mL",
+    "group": "",
+    "master_qty": "6",
+    "category": "Medications",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Amiodarone (150 mg/3 mL)",
+      "lemsa": "Sierra-Sacramento Valley EMS Agency"
+    }
+  },
+  "2\u201d, 3\u201d or 4\u201d kling/kerlix rolls": {
+    "master_name": "Gauze Rolls",
+    "group": "",
+    "master_qty": "5",
+    "category": "Wound Care",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "2\u201d, 3\u201d or 4\u201d Kling/Kerlix Rolls",
+      "lemsa": "Sierra-Sacramento Valley EMS Agency"
+    }
   }
 }

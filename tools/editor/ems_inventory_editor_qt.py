@@ -566,10 +566,10 @@ class MasterNameDelegate(QStyledItemDelegate):
     """Dropdown for Master Name column with visual group headers and separators.
 
     Shows items organized by group with:
-    - -----[Group Name]------ headers (grayed, not selectable)
+    - Group Name headers (grayed, not selectable)
     - Items listed by bare name under their group
-    - ──────────────── separator after groups if followed by ungrouped items
-    On commit, stores 'name, group' format for grouped items.
+    - Separator after groups if followed by ungrouped items
+    On commit, stores bare item name (group is tracked in separate column).
     """
     def __init__(self, get_items_fn, parent=None):
         super().__init__(parent)
@@ -666,46 +666,19 @@ class MasterNameDelegate(QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         val = index.data(Qt.ItemDataRole.DisplayRole) or ""
-        # Cell may contain "name, group" — strip group to find combo item
-        if ", " in val:
-            bare_name, expected_group = val.rsplit(", ", 1)
-        else:
-            bare_name, expected_group = val, None
 
         model = editor.model()
-        best = -1
         for i in range(model.rowCount()):
             si = model.item(i)
-            if si and si.text() == bare_name and (si.flags() & Qt.ItemFlag.ItemIsEnabled):
-                grp = si.data(Qt.ItemDataRole.UserRole)
-                if expected_group and grp == expected_group:
-                    editor.setCurrentIndex(i)
-                    if editor.lineEdit():
-                        editor.lineEdit().setText(bare_name)
-                    return
-                if best < 0:
-                    best = i
-        if best >= 0:
-            editor.setCurrentIndex(best)
-            if editor.lineEdit():
-                editor.lineEdit().setText(model.item(best).text())
-        else:
-            editor.setCurrentText(bare_name)
+            if si and si.text() == val and (si.flags() & Qt.ItemFlag.ItemIsEnabled):
+                editor.setCurrentIndex(i)
+                if editor.lineEdit():
+                    editor.lineEdit().setText(val)
+                return
+        editor.setCurrentText(val)
 
     def setModelData(self, editor, model, index):
         text = editor.currentText().strip()
-        if not text:
-            model.setData(index, "", Qt.ItemDataRole.EditRole)
-            return
-        # Look up group from combo model
-        combo_model = editor.model()
-        for i in range(combo_model.rowCount()):
-            si = combo_model.item(i)
-            if si and si.text() == text and (si.flags() & Qt.ItemFlag.ItemIsEnabled):
-                group = si.data(Qt.ItemDataRole.UserRole)
-                if group:
-                    text = f"{text}, {group}"
-                break
         model.setData(index, text, Qt.ItemDataRole.EditRole)
 
     def updateEditorGeometry(self, editor, option, index):
@@ -1258,15 +1231,7 @@ class MasterList:
         return {item.name for cat in self.categories for item in cat.items}
 
     def find_item(self, name):
-        # Handle "name, group" display format
-        if ", " in name:
-            bare, group = name.rsplit(", ", 1)
-            for cat in self.categories:
-                for item in cat.items:
-                    if item.name == bare and item.group == group:
-                        return cat, item
-            # Fall through to bare name search
-            name = bare
+        """Find item by name. Returns (category, item) or (None, None)."""
         for cat in self.categories:
             for item in cat.items:
                 if item.name == name:
@@ -1691,9 +1656,9 @@ class App(QMainWindow):
     COL_LEMSA = 1
     COL_NAME = 2
     COL_LEMSA_QTY = 3
-    COL_MASTER_NAME = 4
-    COL_GROUP = 5
-    COL_MASTER_QTY = 6
+    COL_MASTER_QTY = 4
+    COL_MASTER_NAME = 5
+    COL_GROUP = 6
     COL_CATEGORY = 7
     COL_STATUS = 8
 
@@ -2088,10 +2053,10 @@ class App(QMainWindow):
         self._m_all_table = ManagedTableWidget()
         self._m_all_table._suppress_popup = False
         self._m_all_table.setColumnCount(9)
-        # Column order: Type | Agency | Item Name | LEMSA Qty | Master Name | Group | Master Qty | Category | Status
+        # Column order: Type | Agency | Item Name | LEMSA Qty | Master Qty | Master Name | Group | Category | Status
         self._m_all_table.setHorizontalHeaderLabels(
-            ["Type", "Agency", "Item Name", "LEMSA Qty", "Master Name",
-             "Group", "Master Qty", "Category", "Status"])
+            ["Type", "Agency", "Item Name", "L.Qty", "M.Qty",
+             "Master Name", "Group", "Category", "Status"])
         hdr = self._m_all_table.horizontalHeader()
         hdr.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         hdr.setCascadingSectionResizes(False)
@@ -2099,10 +2064,10 @@ class App(QMainWindow):
         self._m_all_table.setColumnWidth(self.COL_TYPE, 70)
         self._m_all_table.setColumnWidth(self.COL_LEMSA, 80)
         self._m_all_table.setColumnWidth(self.COL_NAME, 180)
-        self._m_all_table.setColumnWidth(self.COL_LEMSA_QTY, 70)
+        self._m_all_table.setColumnWidth(self.COL_LEMSA_QTY, 44)
+        self._m_all_table.setColumnWidth(self.COL_MASTER_QTY, 44)
         self._m_all_table.setColumnWidth(self.COL_MASTER_NAME, 150)
         self._m_all_table.setColumnWidth(self.COL_GROUP, 110)
-        self._m_all_table.setColumnWidth(self.COL_MASTER_QTY, 70)
         self._m_all_table.setColumnWidth(self.COL_CATEGORY, 100)
         self._m_all_table.setColumnWidth(self.COL_STATUS, 110)
         self._m_all_table.setSortingEnabled(True)
@@ -2117,6 +2082,19 @@ class App(QMainWindow):
         self._m_all_table.viewport().installEventFilter(self)
         self._m_all_table.installEventFilter(self)
         self._m_all_table.editorClosed.connect(self._on_editor_closed)
+
+        # Hover "=" button between qty columns
+        self._qty_eq_btn = QPushButton("=", self._m_all_table.viewport())
+        self._qty_eq_btn.setFixedSize(18, 18)
+        self._qty_eq_btn.setStyleSheet(
+            "QPushButton { background: #45475a; color: #cdd6f4; border: 1px solid #585b70;"
+            " border-radius: 3px; font-size: 11px; font-weight: bold; padding: 0; }"
+            "QPushButton:hover { background: #585b70; }")
+        self._qty_eq_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._qty_eq_btn.setToolTip("Set master qty to match LEMSA qty")
+        self._qty_eq_btn.hide()
+        self._qty_eq_btn.clicked.connect(self._on_qty_eq_click)
+        self._qty_eq_hover_row = -1
 
         # Readonly columns: Type, Agency, Item Name, LEMSA Qty
         self._readonly_cols = {self.COL_TYPE, self.COL_LEMSA, self.COL_NAME, self.COL_LEMSA_QTY}
@@ -2526,9 +2504,7 @@ class App(QMainWindow):
 
     @staticmethod
     def _master_display_name(item):
-        """Format a master item name for display: 'name, group' if grouped."""
-        if item.group:
-            return f"{item.name}, {item.group}"
+        """Format a master item name for display."""
         return item.name
 
     def _get_master_items_for_dropdown(self):
@@ -2556,7 +2532,7 @@ class App(QMainWindow):
         sorted_groups = sorted(grouped.keys(), key=_natural_sort_key)
 
         for group_name in sorted_groups:
-            entries.append(("header", f"-----[{group_name}]------"))
+            entries.append(("header", f"⌐ {group_name}"))
             for name in sorted(grouped[group_name], key=_natural_sort_key):
                 entries.append(("item", name, group_name))
 
@@ -7045,6 +7021,10 @@ class App(QMainWindow):
         qty_color_equal = QColor("#55efc4")   # green: equal
         qty_color_above = QColor("#74b9ff")   # blue: master > lemsa
 
+        # Qty column backgrounds — subtle tint to distinguish from text columns
+        bg_qty_even = QBrush(QColor("#1e2030"))
+        bg_qty_odd = QBrush(QColor("#1a1c2c"))
+
         # Build source→acronym map for agency display
         source_map = self._build_source_acronym_map()
 
@@ -7075,15 +7055,15 @@ class App(QMainWindow):
                 QTableWidgetItem(acronym_display),           # COL_LEMSA
                 QTableWidgetItem(row["name"]),               # COL_NAME
                 QTableWidgetItem(str(row["lemsa_qty"])),     # COL_LEMSA_QTY
+                QTableWidgetItem(str(row["master_qty"])),    # COL_MASTER_QTY
                 QTableWidgetItem(row["master_name"]),        # COL_MASTER_NAME
                 QTableWidgetItem(row["group"]),              # COL_GROUP
-                QTableWidgetItem(str(row["master_qty"])),    # COL_MASTER_QTY
                 QTableWidgetItem(row["category"]),           # COL_CATEGORY
                 QTableWidgetItem(""),                        # COL_STATUS
             ]
-            # Match rows get locked N/A status
-            is_locked_status = row["status"] == "Match"
-            if is_locked_status:
+            # Match rows: lock Master Name, Group, Category, Status
+            is_match = row["status"] == "Match"
+            if is_match:
                 items[self.COL_STATUS].setText("N/A")
 
             # Overlay saved edits if present
@@ -7101,16 +7081,24 @@ class App(QMainWindow):
                         items[self.COL_MASTER_QTY].setText(edits["master_qty"])
                     if edits.get("category"):
                         items[self.COL_CATEGORY].setText(edits["category"])
-                # Don't overlay status for locked rows
-                if not is_locked_status and edits.get("status"):
+                # Don't overlay status for match rows
+                if not is_match and edits.get("status"):
                     items[self.COL_STATUS].setText(edits["status"])
 
             is_odd = i % 2 == 1
+            # Columns locked on Match rows
+            match_locked = {self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY, self.COL_STATUS}
             for col, ti in enumerate(items):
                 if col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY):
-                    ti.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                    ti.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
                 # Set background per cell
-                if col in self._readonly_cols:
+                is_ro = col in self._readonly_cols or (is_match and col in match_locked)
+                is_qty = col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY)
+                if is_qty:
+                    ti.setBackground(bg_qty_odd if is_odd else bg_qty_even)
+                    if is_ro:
+                        ti.setFlags(ti.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                elif is_ro:
                     ti.setFlags(ti.flags() & ~Qt.ItemFlag.ItemIsEditable)
                     ti.setBackground(bg_readonly_odd if is_odd else bg_readonly_even)
                 else:
@@ -7123,10 +7111,6 @@ class App(QMainWindow):
                 # Agency tooltip: full LEMSA name(s)
                 if col == self.COL_LEMSA and agency_tooltip:
                     ti.setToolTip(agency_tooltip)
-                # Lock status column for Match rows
-                if col == self.COL_STATUS and is_locked_status:
-                    ti.setFlags(ti.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                    ti.setBackground(bg_readonly_odd if is_odd else bg_readonly_even)
                 # Dynamic Master Qty coloring
                 if col == self.COL_MASTER_QTY:
                     try:
@@ -7426,21 +7410,61 @@ class App(QMainWindow):
                         search.setFocus()
                         return True
 
-        # Viewport: floating tooltip
+        # Viewport: floating tooltip (only when text is truncated) + qty equals button
         if hasattr(self, '_m_all_table') and obj == self._m_all_table.viewport():
             if event.type() == QEvent.Type.MouseMove:
                 pos = event.position().toPoint()
                 idx = self._m_all_table.indexAt(pos)
                 if idx.isValid():
-                    item = self._m_all_table.item(idx.row(), idx.column())
+                    hover_row = idx.row()
+                    # Position the "=" button between qty columns
+                    if hover_row != self._qty_eq_hover_row:
+                        self._qty_eq_hover_row = hover_row
+                        # Only show if both qty values exist and differ
+                        l_item = self._m_all_table.itemFromIndex(
+                            idx.sibling(idx.row(), self.COL_LEMSA_QTY))
+                        m_item = self._m_all_table.itemFromIndex(
+                            idx.sibling(idx.row(), self.COL_MASTER_QTY))
+                        l_text = l_item.text().strip() if l_item else ""
+                        m_text = m_item.text().strip() if m_item else ""
+                        show_eq = False
+                        if l_text and m_text:
+                            try:
+                                show_eq = int(l_text) != int(m_text)
+                            except ValueError:
+                                pass
+                        if show_eq:
+                            # Position at right edge of LEMSA Qty column
+                            x = self._m_all_table.columnViewportPosition(self.COL_LEMSA_QTY) + \
+                                self._m_all_table.columnWidth(self.COL_LEMSA_QTY) - 9
+                            rect = self._m_all_table.visualRect(
+                                idx.sibling(idx.row(), self.COL_LEMSA_QTY))
+                            y = rect.top() + (rect.height() - 18) // 2
+                            self._qty_eq_btn.move(x, y)
+                            self._qty_eq_btn.show()
+                            self._qty_eq_btn.raise_()
+                        else:
+                            self._qty_eq_btn.hide()
+
+                    item = self._m_all_table.itemFromIndex(idx)
                     if item:
-                        tip = item.toolTip() or item.text()
+                        # Prefer explicit tooltip (e.g. agency full names)
+                        tip = item.toolTip()
+                        if not tip:
+                            # Show cell text only if it's truncated
+                            col_width = self._m_all_table.columnWidth(idx.column())
+                            fm = self._m_all_table.fontMetrics()
+                            text_width = fm.horizontalAdvance(item.text()) + 12  # padding
+                            if text_width > col_width:
+                                tip = item.text()
                         if tip:
                             self._show_float_tip(tip, event.globalPosition().toPoint() + QPoint(12, 20))
                             return False
                 self._hide_float_tip()
             elif event.type() == QEvent.Type.Leave:
                 self._hide_float_tip()
+                self._qty_eq_btn.hide()
+                self._qty_eq_hover_row = -1
             elif event.type() == QEvent.Type.ToolTip:
                 return True  # suppress default tooltip
 
@@ -7648,6 +7672,18 @@ class App(QMainWindow):
             agency_item = self._m_all_table.item(row, self.COL_LEMSA)
             agency_text = agency_item.text() if agency_item else ""
             agency_tip = agency_item.toolTip() if agency_item else ""
+
+            # Find in Tree — only if master name is set
+            master_name_item = self._m_all_table.item(row, self.COL_MASTER_NAME)
+            master_name = master_name_item.text().strip() if master_name_item else ""
+            if master_name:
+                group_item = self._m_all_table.item(row, self.COL_GROUP)
+                group = group_item.text().strip() if group_item else ""
+                cat_item = self._m_all_table.item(row, self.COL_CATEGORY)
+                category = cat_item.text().strip() if cat_item else ""
+                menu.addAction("Find in Tree",
+                    lambda mn=master_name, g=group, c=category: self._find_in_master_tree(mn, g, c))
+
             menu.addAction(f"Split '{name}'…",
                 lambda: self._split_table_item(row, name, qty, agency_text, agency_tip))
             menu.addSeparator()
@@ -7692,6 +7728,62 @@ class App(QMainWindow):
             self._edit_guard = False
         self._status.showMessage(f"Set status '{status_value or '(clear)'}' on {len(rows)} row(s)")
 
+    def _find_in_master_tree(self, master_name, group, category):
+        """Find and highlight an item in the master tree by name, group, and category."""
+        if not self.master_list:
+            self._status.showMessage("No master list loaded.")
+            return
+
+        name = master_name
+
+        # Switch to Build Master List tab
+        self._tabs.setCurrentWidget(self._master_tab)
+
+        # Clear search so full tree is visible
+        self._m_search.clear()
+
+        # Walk tree to find matching item
+        def _walk(parent_item):
+            for i in range(parent_item.childCount()):
+                child = parent_item.child(i)
+                try:
+                    data = child.data(0, Qt.ItemDataRole.UserRole)
+                except RuntimeError:
+                    continue
+                if data and data[0] == "item":
+                    ci, ii = data[1], data[2]
+                    if ci < len(self.master_list.categories):
+                        cat = self.master_list.categories[ci]
+                        if ii < len(cat.items):
+                            item = cat.items[ii]
+                            if item.name == name:
+                                cat_match = not category or cat.name == category
+                                grp_match = not group or (item.group or "") == group
+                                if cat_match and grp_match:
+                                    return child
+                found = _walk(child)
+                if found:
+                    return found
+            return None
+
+        target = None
+        for i in range(self._m_tree.topLevelItemCount()):
+            target = _walk(self._m_tree.topLevelItem(i))
+            if target:
+                break
+
+        if target:
+            # Expand all ancestors
+            parent = target.parent()
+            while parent:
+                parent.setExpanded(True)
+                parent = parent.parent()
+            self._m_tree.setCurrentItem(target)
+            self._m_tree.scrollToItem(target, QAbstractItemView.ScrollHint.PositionAtCenter)
+            self._status.showMessage(f"Found '{name}' in master tree")
+        else:
+            self._status.showMessage(f"'{name}' not found in master tree")
+
     def _split_table_item(self, row, name, qty, agency_text="", agency_tip=""):
         """Open split dialog and persist the result."""
         dlg = SplitDialog(name, qty, self)
@@ -7729,9 +7821,9 @@ class App(QMainWindow):
                 agency_cell,                                       # Agency
                 QTableWidgetItem(item_data["name"]),               # Item Name
                 QTableWidgetItem(str(item_data["qty"])),           # LEMSA Qty
+                QTableWidgetItem(""),                              # Master Qty
                 QTableWidgetItem(""),                              # Master Name
                 QTableWidgetItem(""),                              # Group
-                QTableWidgetItem(""),                              # Master Qty
                 QTableWidgetItem(""),                              # Category
                 QTableWidgetItem(""),                              # Status
             ]
@@ -7740,10 +7832,16 @@ class App(QMainWindow):
             bg_ro_odd = QBrush(QColor("#1a1a28"))
             bg_ed_even = QBrush(QColor("#2a2a3c"))
             bg_ed_odd = QBrush(QColor("#252536"))
+            bg_q_even = QBrush(QColor("#1e2030"))
+            bg_q_odd = QBrush(QColor("#1a1c2c"))
             for col, ci in enumerate(cells):
-                if col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY):
-                    ci.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-                if col in self._readonly_cols:
+                is_qty = col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY)
+                if is_qty:
+                    ci.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+                    ci.setBackground(bg_q_odd if is_odd else bg_q_even)
+                    if col in self._readonly_cols:
+                        ci.setFlags(ci.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                elif col in self._readonly_cols:
                     ci.setFlags(ci.flags() & ~Qt.ItemFlag.ItemIsEditable)
                     ci.setBackground(bg_ro_odd if is_odd else bg_ro_even)
                 else:
@@ -7751,6 +7849,27 @@ class App(QMainWindow):
                 self._m_all_table.setItem(insert_at, col, ci)
 
         self._status.showMessage(f"Split '{name}' into {len(new_items)} items")
+
+    def _on_qty_eq_click(self):
+        """Copy LEMSA qty to Master qty for the hovered row."""
+        row = self._qty_eq_hover_row
+        if row < 0:
+            return
+        l_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
+        m_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
+        if not l_item:
+            return
+        if not m_item:
+            m_item = QTableWidgetItem("")
+            self._m_all_table.setItem(row, self.COL_MASTER_QTY, m_item)
+        self._edit_guard = True
+        try:
+            m_item.setText(l_item.text().strip())
+            self._apply_qty_color(m_item, l_item)
+            self._save_row_edit(row)
+        finally:
+            self._edit_guard = False
+        self._qty_eq_btn.hide()
 
     def _apply_qty_color(self, master_qty_item, lemsa_qty_item):
         """Apply dynamic text color to Master Qty based on comparison with LEMSA Qty."""
@@ -7770,21 +7889,28 @@ class App(QMainWindow):
             pass
 
     def _is_cell_editable(self, row, col):
-        """Check if a cell can be edited (respects readonly cols, exclude rows, locked status)."""
+        """Check if a cell can be edited (respects readonly cols, exclude rows, match rows, master-derived cols)."""
         if col in self._readonly_cols:
             return False
         if self._m_all_table.isRowHidden(row):
             return False
         # Exclude rows: only Status col is editable
-        if col in (self.COL_MASTER_NAME, self.COL_GROUP, self.COL_MASTER_QTY, self.COL_CATEGORY):
+        if col in (self.COL_MASTER_QTY, self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY):
             status_item = self._m_all_table.item(row, self.COL_STATUS)
             if status_item and status_item.text().strip() == "Exclude":
                 return False
-        # Match rows: Status col is locked to N/A
-        if col == self.COL_STATUS:
+        # Match rows: Master Name, Group, Category, Status are locked
+        if col in (self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY, self.COL_STATUS):
             type_item = self._m_all_table.item(row, self.COL_TYPE)
             if type_item and type_item.text().strip() == "Match":
                 return False
+        # No Match rows with a recognized master name: Group and Category are locked
+        if col in (self.COL_GROUP, self.COL_CATEGORY):
+            master_name_item = self._m_all_table.item(row, self.COL_MASTER_NAME)
+            if master_name_item and master_name_item.text().strip() and self.master_list:
+                _, mi = self.master_list.find_item(master_name_item.text().strip())
+                if mi:
+                    return False
         return True
 
     def _begin_cell_edit(self, row, col):
@@ -7866,24 +7992,30 @@ class App(QMainWindow):
                     if self.master_list:
                         cat_obj, master_item = self.master_list.find_item(selected_name)
                         if master_item and cat_obj:
-                            # Group
+                            is_odd = row % 2 == 1
+                            bg_ro = QBrush(QColor("#1a1a28") if is_odd else QColor("#1e1e2e"))
+                            # Group (locked — derived from master)
                             grp_item = self._m_all_table.item(row, self.COL_GROUP)
                             if not grp_item:
                                 grp_item = QTableWidgetItem("")
                                 self._m_all_table.setItem(row, self.COL_GROUP, grp_item)
                             grp_item.setText(master_item.group or "")
+                            grp_item.setFlags(grp_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                            grp_item.setBackground(bg_ro)
                             # Qty
                             qty_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
                             if not qty_item:
                                 qty_item = QTableWidgetItem("")
                                 self._m_all_table.setItem(row, self.COL_MASTER_QTY, qty_item)
                             qty_item.setText(str(master_item.emsa_min))
-                            # Category
+                            # Category (locked — derived from master)
                             cat_item = self._m_all_table.item(row, self.COL_CATEGORY)
                             if not cat_item:
                                 cat_item = QTableWidgetItem("")
                                 self._m_all_table.setItem(row, self.COL_CATEGORY, cat_item)
                             cat_item.setText(cat_obj.name)
+                            cat_item.setFlags(cat_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                            cat_item.setBackground(bg_ro)
                             # Apply dynamic qty coloring
                             lemsa_qty_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
                             self._apply_qty_color(qty_item, lemsa_qty_item)
@@ -7950,20 +8082,12 @@ class App(QMainWindow):
             empty_only = self._edit_scope == "empty"
 
             def _is_candidate(r, c):
-                if c in self._readonly_cols:
+                if not self._is_cell_editable(r, c):
                     return False
-                if self._m_all_table.isRowHidden(r):
-                    return False
-                # Skip editable data cols on Exclude rows
-                if c in (self.COL_MASTER_NAME, self.COL_GROUP, self.COL_MASTER_QTY, self.COL_CATEGORY):
-                    status_cell = self._m_all_table.item(r, self.COL_STATUS)
-                    if status_cell and status_cell.text().strip() == "Exclude":
-                        return False
-                # Skip Status col on Match rows (locked N/A)
-                if c == self.COL_STATUS:
-                    type_cell = self._m_all_table.item(r, self.COL_TYPE)
-                    if type_cell and type_cell.text().strip() == "Match":
-                        return False
+                if not empty_only:
+                    return True
+                cell = self._m_all_table.item(r, c)
+                return not cell or not cell.text().strip()
                 if not empty_only:
                     return True
                 cell = self._m_all_table.item(r, c)
