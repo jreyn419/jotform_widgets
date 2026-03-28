@@ -45,8 +45,8 @@ from PyQt6.QtWidgets import (
     QStyledItemDelegate, QCompleter, QDialog, QDialogButtonBox,
     QAbstractItemDelegate
 )
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl
-from PyQt6.QtGui import QAction, QShortcut, QKeySequence, QColor, QBrush, QPalette, QPainter, QPixmap, QPen, QIcon, QFont
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl, QMimeData, QPoint
+from PyQt6.QtGui import QAction, QShortcut, QKeySequence, QColor, QBrush, QPalette, QPainter, QPixmap, QPen, QIcon, QFont, QDrag
 
 try:
     from PyQt6.QtWebEngineWidgets import QWebEngineView
@@ -772,7 +772,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "5.0.0"
+VERSION = "5.3.0"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1438,6 +1438,119 @@ class ConfirmDialog(QDialog):
         return dlg._result
 
 
+class PanelGrip(QWidget):
+    """Draggable grip bar for reordering panels within a QSplitter."""
+    MIME_TYPE = "application/x-panel-key"
+
+    def __init__(self, title, panel_key, splitter, parent=None):
+        super().__init__(parent)
+        self._panel_key = panel_key
+        self._splitter = splitter
+        self._drag_start = None
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 2)
+        grip = QLabel("⠿")
+        grip.setStyleSheet("color: #585b70; font-size: 14px; padding: 0 4px;")
+        grip.setCursor(Qt.CursorShape.OpenHandCursor)
+        layout.addWidget(grip)
+        lbl = QLabel(title)
+        lbl.setStyleSheet("font-size: 14px; font-weight: bold;")
+        layout.addWidget(lbl)
+        layout.addStretch()
+        self.setFixedHeight(24)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._drag_start = event.position().toPoint()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._drag_start is None:
+            return
+        if (event.position().toPoint() - self._drag_start).manhattanLength() < 10:
+            return
+        drag = QDrag(self)
+        mime = QMimeData()
+        mime.setData(self.MIME_TYPE, self._panel_key.encode())
+        drag.setMimeData(mime)
+        drag.exec(Qt.DropAction.MoveAction)
+        self._drag_start = None
+
+    def mouseReleaseEvent(self, event):
+        self._drag_start = None
+        super().mouseReleaseEvent(event)
+
+
+class ReorderableSplitter(QSplitter):
+    """QSplitter that accepts panel grip drops to reorder its children."""
+    reordered = pyqtSignal()  # emitted after a panel is moved
+
+    def __init__(self, orientation, parent=None):
+        super().__init__(orientation, parent)
+        self.setAcceptDrops(True)
+        self._panel_keys = []  # ordered list of panel keys
+
+    def register_panel(self, key, widget):
+        self._panel_keys.append(key)
+        self.addWidget(widget)
+
+    def panel_order(self):
+        return list(self._panel_keys)
+
+    def restore_order(self, key_order):
+        """Reorder widgets to match key_order. Keys not in list stay in place."""
+        if sorted(key_order) != sorted(self._panel_keys):
+            return  # mismatch, skip
+        for target_idx, key in enumerate(key_order):
+            current_idx = self._panel_keys.index(key)
+            if current_idx != target_idx:
+                w = self.widget(current_idx)
+                self.insertWidget(target_idx, w)
+                self._panel_keys.remove(key)
+                self._panel_keys.insert(target_idx, key)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasFormat(PanelGrip.MIME_TYPE):
+            event.acceptProposedAction()
+        else:
+            super().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasFormat(PanelGrip.MIME_TYPE):
+            event.acceptProposedAction()
+        else:
+            super().dragMoveEvent(event)
+
+    def dropEvent(self, event):
+        if not event.mimeData().hasFormat(PanelGrip.MIME_TYPE):
+            super().dropEvent(event)
+            return
+        src_key = bytes(event.mimeData().data(PanelGrip.MIME_TYPE)).decode()
+        if src_key not in self._panel_keys:
+            event.ignore()
+            return
+        # Determine target index from drop position
+        pos = event.position().toPoint()
+        target_idx = self.count() - 1  # default: end
+        for i in range(self.count()):
+            w = self.widget(i)
+            center = w.x() + w.width() // 2
+            if pos.x() < center:
+                target_idx = i
+                break
+        src_idx = self._panel_keys.index(src_key)
+        if src_idx == target_idx:
+            event.ignore()
+            return
+        # Move widget
+        w = self.widget(src_idx)
+        self.insertWidget(target_idx, w)
+        self._panel_keys.remove(src_key)
+        self._panel_keys.insert(target_idx, src_key)
+        event.acceptProposedAction()
+        self.reordered.emit()
+
+
 # == Application (PyQt6) =====================================================
 
 class App(QMainWindow):
@@ -1740,6 +1853,8 @@ class App(QMainWindow):
         self._m_tree.itemRenamed.connect(self._on_master_renamed)
         self._m_tree._paired_search = '_m_search'
         self._m_tree.installEventFilter(self)
+        self._m_toggle_row, self._m_toggle_btn = self._make_toggle_all_row(self._m_tree)
+        left_layout.addLayout(self._m_toggle_row)
         left_layout.addWidget(self._m_tree)
 
         # Placeholder shown when no master list exists
@@ -1993,12 +2108,16 @@ class App(QMainWindow):
         file_row.addStretch()
         layout.addLayout(file_row)
 
-        self._rig_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self._rig_splitter = ReorderableSplitter(Qt.Orientation.Horizontal)
+        self._rig_splitter.reordered.connect(self._save_ui_state)
         layout.addWidget(self._rig_splitter)
 
         left = QWidget()
         left_layout = QVBoxLayout(left)
         left_layout.setContentsMargins(4, 4, 4, 4)
+
+        left_grip = PanelGrip("Checklist", "checklist", self._rig_splitter)
+        left_layout.addWidget(left_grip)
 
         sf = QHBoxLayout()
         sf.addWidget(QLabel("Search:"))
@@ -2026,13 +2145,18 @@ class App(QMainWindow):
         self._r_tree.itemRenamed.connect(self._on_rig_renamed)
         self._r_tree._paired_search = '_r_search'
         self._r_tree.installEventFilter(self)
+        self._r_toggle_row, self._r_toggle_btn = self._make_toggle_all_row(self._r_tree)
+        left_layout.addLayout(self._r_toggle_row)
         left_layout.addWidget(self._r_tree)
-        self._rig_splitter.addWidget(left)
+        self._rig_splitter.register_panel("checklist", left)
 
         # Right side: two panels with maximize toggles (mirrors master list tab)
         right = QWidget()
         right_layout = QVBoxLayout(right)
         right_layout.setContentsMargins(4, 4, 4, 4)
+
+        right_grip = PanelGrip("Editor / Preview", "editor_preview", self._rig_splitter)
+        right_layout.addWidget(right_grip)
 
         self._r_right_splitter = QSplitter(Qt.Orientation.Vertical)
 
@@ -2105,15 +2229,14 @@ class App(QMainWindow):
         self._r_preview_panel = preview_panel
 
         right_layout.addWidget(self._r_right_splitter)
-        self._rig_splitter.addWidget(right)
+        self._rig_splitter.register_panel("editor_preview", right)
 
         # Far right: Master list reference (read-only, drag source)
         master_ref = QWidget()
         mr_layout = QVBoxLayout(master_ref)
         mr_layout.setContentsMargins(4, 4, 4, 4)
-        mr_header = QLabel("Master List")
-        mr_header.setStyleSheet("font-size: 14px; font-weight: bold;")
-        mr_layout.addWidget(mr_header)
+        mr_grip = PanelGrip("Master List", "master_ref", self._rig_splitter)
+        mr_layout.addWidget(mr_grip)
         mr_sf = QHBoxLayout()
         mr_sf.addWidget(QLabel("Search:"))
         self._mr_search = QLineEdit()
@@ -2131,14 +2254,58 @@ class App(QMainWindow):
         self._mr_tree.setDragEnabled(True)
         self._mr_tree.setAcceptDrops(False)
         self._mr_tree.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
+        self._mr_toggle_row, self._mr_toggle_btn = self._make_toggle_all_row(self._mr_tree)
+        mr_layout.addLayout(self._mr_toggle_row)
         mr_layout.addWidget(self._mr_tree)
-        self._rig_splitter.addWidget(master_ref)
+        self._rig_splitter.register_panel("master_ref", master_ref)
         self._rig_splitter.setSizes([350, 400, 250])
 
         # Set up cross-tree drop handler
         self._r_tree._external_drop_handler = self._on_master_ref_drop
 
     # -- Helpers -------------------------------------------------------------
+
+    def _make_toggle_all_row(self, tree):
+        """Create a +/− Toggle All row for a tree widget. Returns (layout, button)."""
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 0, 0, 0)
+        btn = QPushButton("+")
+        btn.setFixedSize(18, 18)
+        btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #a6adc8;
+                border: 1px dotted #585b70;
+                font-size: 12px;
+                font-weight: bold;
+                padding: 0px;
+            }
+            QPushButton:hover {
+                background-color: #313244;
+                color: #cdd6f4;
+            }
+        """)
+        btn.setToolTip("Expand/collapse all")
+        lbl = QLabel("Toggle All")
+        lbl.setStyleSheet("color: #a6adc8; font-size: 12px;")
+        lbl.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        def _toggle():
+            expanding = btn.text() == "+"
+            def _set_all(item, expand):
+                item.setExpanded(expand)
+                for i in range(item.childCount()):
+                    _set_all(item.child(i), expand)
+            for i in range(tree.topLevelItemCount()):
+                _set_all(tree.topLevelItem(i), expanding)
+            btn.setText("−" if expanding else "+")
+
+        btn.clicked.connect(_toggle)
+        lbl.mousePressEvent = lambda e: _toggle()
+        row.addWidget(btn)
+        row.addWidget(lbl)
+        row.addStretch()
+        return row, btn
 
     def _clear_layout(self, layout):
         """Remove all widgets from a layout."""
@@ -2213,6 +2380,7 @@ class App(QMainWindow):
             "master_right_splitter": self._m_right_splitter.sizes(),
             "rig_splitter": self._rig_splitter.sizes(),
             "rig_right_splitter": self._r_right_splitter.sizes(),
+            "rig_panel_order": self._rig_splitter.panel_order(),
             "maximized_panel": self._m_maximized_panel,
             "rig_maximized_panel": self._r_maximized_panel,
             "window_geometry": [self.x(), self.y(), self.width(), self.height()],
@@ -2245,6 +2413,8 @@ class App(QMainWindow):
             self._master_splitter.setSizes(state["master_splitter"])
         if "master_right_splitter" in state:
             self._m_right_splitter.setSizes(state["master_right_splitter"])
+        if "rig_panel_order" in state:
+            self._rig_splitter.restore_order(state["rig_panel_order"])
         if "rig_splitter" in state:
             saved = state["rig_splitter"]
             if len(saved) == self._rig_splitter.count():
