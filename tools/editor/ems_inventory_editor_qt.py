@@ -1238,6 +1238,15 @@ class MasterList:
                     return cat, item
         return None, None
 
+    def find_all_items(self, name):
+        """Find all items matching name. Returns list of (category, item)."""
+        results = []
+        for cat in self.categories:
+            for item in cat.items:
+                if item.name == name:
+                    results.append((cat, item))
+        return results
+
     def rename_item(self, old_name, new_name):
         for cat in self.categories:
             for item in cat.items:
@@ -2040,10 +2049,49 @@ class App(QMainWindow):
         lp_header.addWidget(self._m_lemsa_max_btn)
         lp_layout.addLayout(lp_header)
 
-        # Tab widget: All Items | Not in LEMSA
-        self._m_lemsa_tabs = QTabWidget()
+        # Filter bar for table views
+        filter_bar = QHBoxLayout()
+        filter_bar.setSpacing(0)
+        filter_bar.setContentsMargins(0, 0, 0, 0)
+        self._filter_buttons = []
+        self._active_filter = 0
+        for i, label in enumerate(["All Items", "Match", "No Match", "Qty Diff"]):
+            btn = QPushButton(label)
+            btn.setCheckable(True)
+            btn.setChecked(i == 0)
+            btn.setStyleSheet(
+                "QPushButton { padding: 4px 10px; border: 1px solid #45475a; border-bottom: none;"
+                " background: #1e1e2e; color: #6c7086; font-size: 11px; }"
+                "QPushButton:checked { background: #2a2a3c; color: #cdd6f4; font-weight: bold; }"
+                "QPushButton:hover:!checked { background: #252536; }")
+            btn.clicked.connect(lambda checked, idx=i: self._on_filter_tab_click(idx))
+            filter_bar.addWidget(btn)
+            self._filter_buttons.append(btn)
+        filter_bar.addStretch()
 
-        # Table styling now handled by global Catppuccin stylesheet
+        # Corner toolbar: find + edit-direction + edit-scope toggles
+        find_btn = QPushButton("🔍")
+        find_btn.setFixedSize(28, 22)
+        find_btn.setStyleSheet("padding: 2px;")
+        find_btn.setToolTip("Find (Ctrl+F)")
+        find_btn.clicked.connect(self._toggle_find_bar)
+        filter_bar.addWidget(find_btn)
+
+        self._edit_dir_btn = QPushButton("→")
+        self._edit_dir_btn.setFixedSize(28, 22)
+        self._edit_dir_btn.setStyleSheet("padding: 2px;")
+        self._edit_dir_btn.setToolTip("Edit direction: across (click to switch to down)")
+        self._edit_dir_btn.clicked.connect(self._toggle_edit_dir)
+        filter_bar.addWidget(self._edit_dir_btn)
+
+        self._edit_scope_btn = QPushButton("∅")
+        self._edit_scope_btn.setFixedSize(28, 22)
+        self._edit_scope_btn.setStyleSheet("padding: 2px;")
+        self._edit_scope_btn.setToolTip("Edit scope: empty cells only (click to switch to all cells)")
+        self._edit_scope_btn.clicked.connect(self._toggle_edit_scope)
+        filter_bar.addWidget(self._edit_scope_btn)
+
+        lp_layout.addLayout(filter_bar)
 
         # All Items table
         all_container = QWidget()
@@ -2116,24 +2164,7 @@ class App(QMainWindow):
         self._m_all_table.setItemDelegateForColumn(self.COL_CATEGORY, cat_delegate)
 
         all_container_layout.addWidget(self._m_all_table)
-        self._m_lemsa_tabs.addTab(all_container, "All Items")
-
-        # Not in LEMSA table
-        self._m_missing_table = QTableWidget()
-        self._m_missing_table.setColumnCount(2)
-        self._m_missing_table.setHorizontalHeaderLabels(["Item Name", "Category"])
-        mhdr = self._m_missing_table.horizontalHeader()
-        mhdr.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        mhdr.setCascadingSectionResizes(False)
-        mhdr.setStretchLastSection(True)
-        self._m_missing_table.setColumnWidth(0, 300)
-        self._m_missing_table.setSortingEnabled(True)
-        self._m_missing_table.setAlternatingRowColors(True)
-        self._m_missing_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self._m_missing_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self._m_lemsa_tabs.addTab(self._m_missing_table, "Not in LEMSA")
-
-        lp_layout.addWidget(self._m_lemsa_tabs)
+        lp_layout.addWidget(all_container)
 
         # Find bar (hidden by default)
         self._m_find_bar = QWidget()
@@ -2158,35 +2189,6 @@ class App(QMainWindow):
         self._apply_btn.setEnabled(False)
         self._apply_btn.clicked.connect(self._apply_changes_to_master)
         lp_layout.addWidget(self._apply_btn)
-
-        # Corner toolbar: find + edit-direction + edit-scope toggles
-        corner_widget = QWidget()
-        corner_layout = QHBoxLayout(corner_widget)
-        corner_layout.setContentsMargins(0, 0, 4, 0)
-        corner_layout.setSpacing(2)
-
-        find_btn = QPushButton("🔍")
-        find_btn.setFixedSize(28, 22)
-        find_btn.setStyleSheet("padding: 2px;")
-        find_btn.setToolTip("Find (Ctrl+F)")
-        find_btn.clicked.connect(self._toggle_find_bar)
-        corner_layout.addWidget(find_btn)
-
-        self._edit_dir_btn = QPushButton("→")
-        self._edit_dir_btn.setFixedSize(28, 22)
-        self._edit_dir_btn.setStyleSheet("padding: 2px;")
-        self._edit_dir_btn.setToolTip("Edit direction: across (click to switch to down)")
-        self._edit_dir_btn.clicked.connect(self._toggle_edit_dir)
-        corner_layout.addWidget(self._edit_dir_btn)
-
-        self._edit_scope_btn = QPushButton("∅")
-        self._edit_scope_btn.setFixedSize(28, 22)
-        self._edit_scope_btn.setStyleSheet("padding: 2px;")
-        self._edit_scope_btn.setToolTip("Edit scope: empty cells only (click to switch to all cells)")
-        self._edit_scope_btn.clicked.connect(self._toggle_edit_scope)
-        corner_layout.addWidget(self._edit_scope_btn)
-
-        self._m_lemsa_tabs.setCornerWidget(corner_widget)
 
         self._m_right_splitter.addWidget(lemsa_panel)
 
@@ -5810,7 +5812,7 @@ class App(QMainWindow):
 
     def _smart_copy(self):
         try:
-            if self._m_all_table.hasFocus() or self._m_missing_table.hasFocus():
+            if self._m_all_table.hasFocus():
                 self._copy_cell()
                 return
         except (AttributeError, RuntimeError):
@@ -5822,7 +5824,7 @@ class App(QMainWindow):
 
     def _smart_paste(self):
         try:
-            if self._m_all_table.hasFocus() or self._m_missing_table.hasFocus():
+            if self._m_all_table.hasFocus():
                 self._paste_cell()
                 return
         except (AttributeError, RuntimeError):
@@ -7133,21 +7135,35 @@ class App(QMainWindow):
 
         nomatch_count = sum(1 for r in all_rows if r["status"] == "No Match")
         match_count = sum(1 for r in all_rows if r["status"] == "Match")
-        self._m_lemsa_tabs.setTabText(0,
-            f"All Items ({len(all_rows)}) — {nomatch_count} no match, {match_count} matched")
+        # Qty Diff = Match rows where LEMSA qty != Master qty
+        qty_diff_count = 0
+        for r in all_rows:
+            if r["status"] == "Match":
+                try:
+                    lq = int(r["lemsa_qty"]) if r["lemsa_qty"] != "" else None
+                    mq = int(r["master_qty"]) if r["master_qty"] != "" else None
+                    if lq is not None and mq is not None and lq != mq:
+                        qty_diff_count += 1
+                except (ValueError, TypeError):
+                    pass
 
-        # -- Not in LEMSA table --
-        self._m_missing_table.setSortingEnabled(False)
-        self._m_missing_table.setRowCount(len(missing_items))
-        for i, data in enumerate(sorted(missing_items, key=lambda d: d["name"].lower())):
-            self._m_missing_table.setItem(i, 0, QTableWidgetItem(data["name"]))
-            self._m_missing_table.setItem(i, 1, QTableWidgetItem(data["cat"]))
-        self._m_missing_table.setSortingEnabled(True)
-        self._m_lemsa_tabs.setTabText(1, f"Not in LEMSA ({len(missing_items)})")
+        # Update filter button labels
+        self._filter_counts = {
+            0: len(all_rows),
+            1: match_count,
+            2: nomatch_count,
+            3: qty_diff_count,
+        }
+        labels = ["All Items", "Match", "No Match", "Qty Diff"]
+        for i, btn in enumerate(self._filter_buttons):
+            btn.setText(f"{labels[i]} ({self._filter_counts[i]})")
+
+        # Apply current filter
+        self._apply_table_filter()
 
         self._status.showMessage(
             f"Comparison: {nomatch_count} no match, {match_count} matched, "
-            f"{len(missing_items)} not in LEMSA docs, {len(all_rows)} total items")
+            f"{qty_diff_count} qty diff, {len(all_rows)} total items")
 
     def _apply_changes_to_master(self):
         """Apply table edits to the master list, then refresh comparison."""
@@ -7339,26 +7355,55 @@ class App(QMainWindow):
             self._edit_scope_btn.setToolTip("Edit scope: empty cells only (click to switch to all cells)")
 
     def _filter_lemsa_tables(self, text):
-        """Filter both tables to show only rows matching the search text."""
-        query = text.strip().lower()
+        """Filter table to show only rows matching the search text, combined with active filter."""
+        self._apply_table_filter()
+
+    def _on_filter_tab_click(self, idx):
+        """Handle filter button click."""
+        self._active_filter = idx
+        for i, btn in enumerate(self._filter_buttons):
+            btn.setChecked(i == idx)
+        self._apply_table_filter()
+
+    def _apply_table_filter(self):
+        """Apply both search text and tab filter to the table."""
+        query = self._m_find_edit.text().strip().lower() if hasattr(self, '_m_find_edit') else ""
+        active = self._active_filter  # 0=All, 1=Match, 2=No Match, 3=Qty Diff
+
         for row in range(self._m_all_table.rowCount()):
-            match = not query
-            if not match:
+            # Text search filter
+            text_match = not query
+            if not text_match:
                 for col in range(self._m_all_table.columnCount()):
                     cell = self._m_all_table.item(row, col)
                     if cell and query in cell.text().lower():
-                        match = True
+                        text_match = True
                         break
-            self._m_all_table.setRowHidden(row, not match)
-        for row in range(self._m_missing_table.rowCount()):
-            match = not query
-            if not match:
-                for col in range(self._m_missing_table.columnCount()):
-                    cell = self._m_missing_table.item(row, col)
-                    if cell and query in cell.text().lower():
-                        match = True
-                        break
-            self._m_missing_table.setRowHidden(row, not match)
+
+            # Tab filter
+            tab_match = True
+            if active != 0:
+                type_item = self._m_all_table.item(row, self.COL_TYPE)
+                row_type = type_item.text().strip() if type_item else ""
+                if active == 1:
+                    tab_match = row_type == "Match"
+                elif active == 2:
+                    tab_match = row_type == "No Match"
+                elif active == 3:
+                    # Qty Diff: Match rows where quantities differ
+                    if row_type != "Match":
+                        tab_match = False
+                    else:
+                        l_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
+                        m_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
+                        try:
+                            lq = int(l_item.text().strip()) if l_item and l_item.text().strip() else None
+                            mq = int(m_item.text().strip()) if m_item and m_item.text().strip() else None
+                            tab_match = lq is not None and mq is not None and lq != mq
+                        except ValueError:
+                            tab_match = False
+
+            self._m_all_table.setRowHidden(row, not (text_match and tab_match))
 
     def _lock_exclude_row(self, row_idx):
         """Clear and lock editable data cols for an Exclude row."""
@@ -7532,6 +7577,11 @@ class App(QMainWindow):
                 idx = key - Qt.Key.Key_1 + 1
                 if idx < len(status_options) and self._is_cell_editable(row, col):
                     self._set_status_for_rows([row], status_options[idx])
+                    # Advance to Master Name on next visible row
+                    for nr in range(row + 1, total_rows):
+                        if not self._m_all_table.isRowHidden(nr):
+                            self._m_all_table.setCurrentCell(nr, self.COL_MASTER_NAME)
+                            break
                 return True
 
             elif event.text() and event.text().isprintable() and not event.modifiers() & (
@@ -7904,13 +7954,21 @@ class App(QMainWindow):
             type_item = self._m_all_table.item(row, self.COL_TYPE)
             if type_item and type_item.text().strip() == "Match":
                 return False
-        # No Match rows with a recognized master name: Group and Category are locked
+        # No Match rows with a recognized master name: Group/Category locked unless multi-match
         if col in (self.COL_GROUP, self.COL_CATEGORY):
             master_name_item = self._m_all_table.item(row, self.COL_MASTER_NAME)
             if master_name_item and master_name_item.text().strip() and self.master_list:
-                _, mi = self.master_list.find_item(master_name_item.text().strip())
-                if mi:
+                matches = self.master_list.find_all_items(master_name_item.text().strip())
+                if len(matches) == 1:
                     return False
+                if len(matches) > 1:
+                    # Multi-match: Group is editable if groups differ, Category if cats differ
+                    groups = {(mi.group or "") for _, mi in matches}
+                    cats = {cat.name for cat, _ in matches}
+                    if col == self.COL_GROUP and len(groups) <= 1:
+                        return False
+                    if col == self.COL_CATEGORY and len(cats) <= 1:
+                        return False
         return True
 
     def _begin_cell_edit(self, row, col):
@@ -7990,32 +8048,52 @@ class App(QMainWindow):
                     filled = False
                     # Try master list first
                     if self.master_list:
-                        cat_obj, master_item = self.master_list.find_item(selected_name)
-                        if master_item and cat_obj:
+                        matches = self.master_list.find_all_items(selected_name)
+                        if matches:
+                            cat_obj, master_item = matches[0]  # first match
                             is_odd = row % 2 == 1
                             bg_ro = QBrush(QColor("#1a1a28") if is_odd else QColor("#1e1e2e"))
-                            # Group (locked — derived from master)
+                            bg_ed = QBrush(QColor("#252536") if is_odd else QColor("#2a2a3c"))
+
+                            # Determine if groups/categories differ across matches
+                            groups = {(mi.group or "") for _, mi in matches}
+                            cats = {cat.name for cat, _ in matches}
+                            multi_group = len(groups) > 1
+                            multi_cat = len(cats) > 1
+
+                            # Group
                             grp_item = self._m_all_table.item(row, self.COL_GROUP)
                             if not grp_item:
                                 grp_item = QTableWidgetItem("")
                                 self._m_all_table.setItem(row, self.COL_GROUP, grp_item)
                             grp_item.setText(master_item.group or "")
-                            grp_item.setFlags(grp_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                            grp_item.setBackground(bg_ro)
+                            if multi_group:
+                                grp_item.setFlags(grp_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                                grp_item.setBackground(bg_ed)
+                            else:
+                                grp_item.setFlags(grp_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                                grp_item.setBackground(bg_ro)
+
                             # Qty
                             qty_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
                             if not qty_item:
                                 qty_item = QTableWidgetItem("")
                                 self._m_all_table.setItem(row, self.COL_MASTER_QTY, qty_item)
                             qty_item.setText(str(master_item.emsa_min))
-                            # Category (locked — derived from master)
+
+                            # Category
                             cat_item = self._m_all_table.item(row, self.COL_CATEGORY)
                             if not cat_item:
                                 cat_item = QTableWidgetItem("")
                                 self._m_all_table.setItem(row, self.COL_CATEGORY, cat_item)
                             cat_item.setText(cat_obj.name)
-                            cat_item.setFlags(cat_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                            cat_item.setBackground(bg_ro)
+                            if multi_cat:
+                                cat_item.setFlags(cat_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                                cat_item.setBackground(bg_ed)
+                            else:
+                                cat_item.setFlags(cat_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                                cat_item.setBackground(bg_ro)
+
                             # Apply dynamic qty coloring
                             lemsa_qty_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
                             self._apply_qty_color(qty_item, lemsa_qty_item)
@@ -8088,10 +8166,6 @@ class App(QMainWindow):
                     return True
                 cell = self._m_all_table.item(r, c)
                 return not cell or not cell.text().strip()
-                if not empty_only:
-                    return True
-                cell = self._m_all_table.item(r, c)
-                return not cell or not cell.text().strip()
 
             def _row_is_complete(r):
                 """Check if all editable cells in a row are filled."""
@@ -8109,7 +8183,18 @@ class App(QMainWindow):
             skip_scroll = status_text in ("Exclude", "Optional", "N/A")
             edited_row_complete = skip_scroll or _row_is_complete(row)
 
-            if edited_row_complete:
+            # Special case: after setting Status, always jump to Master Name on next row
+            if col == self.COL_STATUS:
+                target = None
+                for nr in range(original_row + 1, total_rows):
+                    if not self._m_all_table.isRowHidden(nr):
+                        if self._is_cell_editable(nr, self.COL_MASTER_NAME):
+                            target = (nr, self.COL_MASTER_NAME)
+                        else:
+                            # Match row — just move cursor without editing
+                            self._m_all_table.setCurrentCell(nr, self.COL_MASTER_NAME)
+                        break
+            elif edited_row_complete:
                 # Row is done — focus the item now at the original position
                 # (this is the row that slid into the sorted-away slot)
                 advance_from_row = original_row
