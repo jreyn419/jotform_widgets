@@ -19,166 +19,6 @@
           "group": "Adult HFNCs"
         },
         {
-          "name": "100mm PINK",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "110mm ORANGE",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "40mm PINK",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "50mm BLUE",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "60mm GRAY",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "70mm WHITE",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "80mm GREEN",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "90mm YELLOW",
-          "emsa_min": 1,
-          "group": "OPAs"
-        },
-        {
-          "name": "14 Fr.",
-          "emsa_min": 2,
-          "group": "NPAs"
-        },
-        {
-          "name": "16 Fr.",
-          "emsa_min": 2,
-          "group": "NPAs"
-        },
-        {
-          "name": "18 Fr.",
-          "emsa_min": 2,
-          "group": "NPAs"
-        },
-        {
-          "name": "20 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "22 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "24 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "26 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "28 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "30 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "32 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "34 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "36 Fr.",
-          "emsa_min": 1,
-          "group": "NPAs"
-        },
-        {
-          "name": "#4",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#3",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#2",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#1",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "#0",
-          "emsa_min": 1,
-          "group": "Miller Blades"
-        },
-        {
-          "name": "10-25 kg GRAY",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
-          "name": "2-5 kg PINK",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
-          "name": "25-35 kg WHITE",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
-          "name": "30-60 kg YELLOW",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
-          "name": "5-12 kg BLUE",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
-          "name": "50-90 kg GREEN",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
-          "name": "90 kg ORANGE",
-          "emsa_min": 1,
-          "group": "iGels"
-        },
-        {
           "name": "10 Fr.",
           "emsa_min": 2,
           "group": "OGTs/NGTs"
@@ -197,127 +37,6 @@
           "name": "8 Fr.",
           "emsa_min": 2,
           "group": "OGTs/NGTs"
-        },
-        {
-          "name": "#0",
-          "emsa_min": 1,
-          "group": "Mac Blades"
-        },
-        {
-          "name": "#1",
-          "emsa_min": 1,
-          "group": "Mac Blades"
-        },
-        {
-          "name": "#2",
-          "emsa_min": 1,
-          "group": "Mac Blades"
-        },
-        {
-          "name": "#3",
-          "emsa_min": 1,
-          "group": "Mac Blades"
-        },
-        {
-          "name": "#4",
-          "emsa_min": 1,
-          "group": "Mac Blades"
-        },
-        {
-          "name": "4.0 mm",
-          "emsa_min": 1,
-          "group": "ET Tube"
-        },
-        {
-          "name": "4.5 mm",
-          "emsa_min": 1,
-          "group": "ET Tube"
-        },
-        {
-          "name": "5.0 mm",
-          "emsa_min": 2,
-          "group": "ET Tube"
-        },
-        {
-          "name": "5.5 mm",
-          "emsa_min": 2,
-          "group": "ET Tube"
-        },
-        {
-          "name": "6.0 mm",
-          "emsa_min": 2,
-          "group": "ET Tube"
-        },
-        {
-          "name": "6.5 mm",
-          "emsa_min": 2,
-          "group": "ET Tube"
-        },
-        {
-          "name": "7.0 mm",
-          "emsa_min": 2,
-          "group": "ET Tube"
-        },
-        {
-          "name": "7.5 mm",
-          "emsa_min": 2,
-          "group": "ET Tube"
-        },
-        {
-          "name": "8.0 mm",
-          "emsa_min": 2,
-          "group": "ET Tube"
-        },
-        {
-          "name": "8.5 mm",
-          "emsa_min": 2,
-          "group": "ET Tube"
-        },
-        {
-          "name": "9.0 mm",
-          "emsa_min": 2,
-          "group": "ET Tube"
-        },
-        {
-          "name": "3.0 mm",
-          "emsa_min": 1,
-          "group": "ET Tube"
-        },
-        {
-          "name": "3.5 mm",
-          "emsa_min": 1,
-          "group": "ET Tube"
-        },
-        {
-          "name": "Adult Bougie-To-Go (left of cells)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Cricothyrotomy Kit",
-          "emsa_min": 1
-        },
-        {
-          "name": "DuCanto Suction Tip",
-          "emsa_min": 1,
-          "group": "Suction Tips"
-        },
-        {
-          "name": "Hyperangulated Stylets",
-          "emsa_min": 2
-        },
-        {
-          "name": "Adult",
-          "emsa_min": 1,
-          "group": "Laryngoscope Handle"
-        },
-        {
-          "name": "Pediatric",
-          "emsa_min": 1,
-          "group": "Laryngoscope Handle"
-        },
-        {
-          "name": "Laryngoscope Light",
-          "emsa_min": 2
         },
         {
           "name": "Lubricant Packet",
@@ -332,72 +51,6 @@
           "name": "Pediatric",
           "emsa_min": 1,
           "group": "Magill Forceps"
-        },
-        {
-          "name": "Manual Jet Ventilator",
-          "emsa_min": 1
-        },
-        {
-          "name": "Manual Suction Device",
-          "emsa_min": 1
-        },
-        {
-          "name": "Pediatric Bougie-To-Go (left of cells)",
-          "emsa_min": 1
-        },
-        {
-          "name": "10 Fr.",
-          "emsa_min": 1,
-          "group": "Stylet"
-        },
-        {
-          "name": "12 Fr.",
-          "emsa_min": 1,
-          "group": "Stylet"
-        },
-        {
-          "name": "6 Fr.",
-          "emsa_min": 1,
-          "group": "Stylet"
-        },
-        {
-          "name": "8 Fr.",
-          "emsa_min": 1,
-          "group": "Stylet"
-        },
-        {
-          "name": "Canister",
-          "emsa_min": 3,
-          "group": "Suction Container"
-        },
-        {
-          "name": "Lid",
-          "emsa_min": 3,
-          "group": "Suction Container"
-        },
-        {
-          "name": "Swivel Y-piece",
-          "emsa_min": 1
-        },
-        {
-          "name": "Thomas Tube Holder - Adult",
-          "emsa_min": 1
-        },
-        {
-          "name": "Thomas Tube Holder - Pediatric",
-          "emsa_min": 1
-        },
-        {
-          "name": "Unused Suction Container",
-          "emsa_min": 1
-        },
-        {
-          "name": "Unused Suction Tubing & Suction Tip",
-          "emsa_min": 1
-        },
-        {
-          "name": "Yankauer Suction Tip + Tubing",
-          "emsa_min": 3
         }
       ]
     },
@@ -405,119 +58,29 @@
       "name": "IV/IO/IM",
       "items": [
         {
-          "name": "14 ga ORANGE",
-          "emsa_min": 6,
-          "group": "IV Catheter"
-        },
-        {
-          "name": "16 ga GRAY",
-          "emsa_min": 6,
-          "group": "IV Catheter"
-        },
-        {
-          "name": "18 ga GREEN",
-          "emsa_min": 6,
-          "group": "IV Catheter"
-        },
-        {
-          "name": "20 ga PINK",
-          "emsa_min": 6,
-          "group": "IV Catheter"
-        },
-        {
-          "name": "22 ga BLUE",
-          "emsa_min": 4,
-          "group": "IV Catheter"
-        },
-        {
-          "name": "24 ga YELLOW",
-          "emsa_min": 4,
-          "group": "IV Catheter"
-        },
-        {
           "name": "15mm I/O needle",
           "emsa_min": 1,
-          "group": "IO Drill Kit"
+          "group": "IO Drill"
         },
         {
           "name": "25mm I/O needle",
           "emsa_min": 1,
-          "group": "IO Drill Kit"
+          "group": "IO Drill"
         },
         {
           "name": "45mm I/O needle",
           "emsa_min": 1,
-          "group": "IO Drill Kit"
+          "group": "IO Drill"
         },
         {
           "name": "I/O drill",
           "emsa_min": 1,
-          "group": "IO Drill Kit"
+          "group": "IO Drill"
         },
         {
           "name": "I/O stabilizer",
           "emsa_min": 1,
-          "group": "IO Drill Kit"
-        },
-        {
-          "name": "1 mL",
-          "emsa_min": 3,
-          "group": "Syringe, Luer Lock, Needle-less"
-        },
-        {
-          "name": "10 mL",
-          "emsa_min": 3,
-          "group": "Syringe, Luer Lock, Needle-less"
-        },
-        {
-          "name": "20 mL",
-          "emsa_min": 1,
-          "group": "Syringe, Luer Lock, Needle-less"
-        },
-        {
-          "name": "3 mL",
-          "emsa_min": 3,
-          "group": "Syringe, Luer Lock, Needle-less"
-        },
-        {
-          "name": "5 mL",
-          "emsa_min": 3,
-          "group": "Syringe, Luer Lock, Needle-less"
-        },
-        {
-          "name": "60mL",
-          "emsa_min": 2,
-          "group": "Syringe, Luer Lock, Needle-less"
-        },
-        {
-          "name": "2\" x 2\", Sterile",
-          "emsa_min": 10,
-          "group": "Sponges"
-        },
-        {
-          "name": "4\" x 4\", Sterile",
-          "emsa_min": 10,
-          "group": "Sponges"
-        },
-        {
-          "name": "2\"x2\", Non-Sterile (Sleeve)",
-          "emsa_min": 1,
-          "group": "Sponges"
-        },
-        {
-          "name": "4\"x4\", Non-Sterile (Sleeve)",
-          "emsa_min": 1,
-          "group": "Sponges"
-        },
-        {
-          "name": "1\"",
-          "emsa_min": 2,
-          "group": "Tape (Cloth/Synthetic)"
-        },
-        {
-          "name": "2\"",
-          "emsa_min": 2,
-          "group": "Tape (Cloth/Synthetic)"
+          "group": "IO Drill"
         },
         {
           "name": "18 ga, Filter",
@@ -540,16 +103,6 @@
           "group": "Needle"
         },
         {
-          "name": "3mL",
-          "emsa_min": 4,
-          "group": "Syringe, Twinpak"
-        },
-        {
-          "name": "60 mL Syringe, Catheter Tip",
-          "emsa_min": 1,
-          "group": "Syringe, Luer Lock, Needle-less"
-        },
-        {
           "name": "10-Drop Set",
           "emsa_min": 4,
           "group": "Infusion Sets"
@@ -562,10 +115,6 @@
           "name": "60-Drop Set",
           "emsa_min": 4,
           "group": "Infusion Sets"
-        },
-        {
-          "name": "Elastic Tourniquet",
-          "emsa_min": 6
         }
       ]
     },
@@ -707,8 +256,13 @@
         {
           "name": "Minifoam",
           "emsa_min": 1
+        },
+        {
+          "name": "Swivel Y-piece",
+          "emsa_min": 1
         }
-      ]
+      ],
+      "child_of": "Oxygen Delivery"
     },
     {
       "name": "Patient Assessment",
@@ -816,20 +370,12 @@
           "emsa_min": 2
         },
         {
-          "name": "Disposable Temperature Monitoring Sensor - Neonate/Infant",
-          "emsa_min": 3
-        },
-        {
           "name": "Microdot Glucometer Test Strip Containers",
           "emsa_min": 2
         },
         {
           "name": "Nail Polish Remover",
           "emsa_min": 10
-        },
-        {
-          "name": "Temporal Thermometer",
-          "emsa_min": 1
         },
         {
           "name": "Pediatric Emergency Tape",
@@ -853,16 +399,8 @@
           "emsa_min": 1
         },
         {
-          "name": "White Tags",
-          "emsa_min": 5
-        },
-        {
           "name": "Yellow Table",
           "emsa_min": 1
-        },
-        {
-          "name": "Yellow Tags",
-          "emsa_min": 20
         }
       ]
     },
@@ -875,7 +413,7 @@
           "group": "Cables"
         },
         {
-          "name": "Zoll Monitor",
+          "name": "Monitor",
           "emsa_min": 1
         },
         {
@@ -889,14 +427,6 @@
           "group": "Cables"
         },
         {
-          "name": "Cuff cable",
-          "emsa_min": 1
-        },
-        {
-          "name": "Defibrillation Cable",
-          "emsa_min": 1
-        },
-        {
           "name": "Electrode Bag",
           "emsa_min": 1
         },
@@ -905,31 +435,25 @@
           "emsa_min": 3
         },
         {
-          "name": "finger clip pulse ox",
-          "emsa_min": 1
+          "name": "Oval Port",
+          "emsa_min": 2,
+          "group": "Invasive Monitoring Cable"
         },
         {
-          "name": "Monitor-to-SpO2 Cable",
-          "emsa_min": 1
-        },
-        {
-          "name": "Invasive Monitoring Cable - Oval Port",
-          "emsa_min": 2
-        },
-        {
-          "name": "Invasive Monitoring Cable - Square Port",
-          "emsa_min": 1
+          "name": "Square Port",
+          "emsa_min": 1,
+          "group": "Invasive Monitoring Cable"
         },
         {
           "name": "Temperature Monitoring Cable",
           "emsa_min": 1
         },
         {
-          "name": "Monitor Charger",
+          "name": "Charger",
           "emsa_min": 1
         },
         {
-          "name": "Monitor Battery (charged)",
+          "name": "Battery",
           "emsa_min": 2
         },
         {
@@ -941,11 +465,11 @@
           "emsa_min": 1
         },
         {
-          "name": "Monitor Printer Paper Rolls",
+          "name": "Printer Paper Roll",
           "emsa_min": 2
         },
         {
-          "name": "Montor-to-BP-cuff connector",
+          "name": "Monitor-to-BP-cuff connector",
           "emsa_min": 1
         },
         {
@@ -959,6 +483,16 @@
         {
           "name": "Adult/Child Defib Pads",
           "emsa_min": 1
+        },
+        {
+          "name": "Defibrillation Cable",
+          "emsa_min": 1,
+          "group": "Cables"
+        },
+        {
+          "name": "Monitor-to-SpO2 Cable",
+          "emsa_min": 1,
+          "group": "Cables"
         }
       ],
       "child_of": "Electronics"
@@ -1020,21 +554,11 @@
           "emsa_min": 1
         },
         {
-          "name": "AA",
-          "emsa_min": 2,
-          "group": "Batteries"
-        },
-        {
-          "name": "C",
-          "emsa_min": 2,
-          "group": "Batteries"
-        },
-        {
           "name": "Charger Adapter Kit",
           "emsa_min": 1
         },
         {
-          "name": "Equipment Mount - Aluminum",
+          "name": "Equipment Mount",
           "emsa_min": 1
         },
         {
@@ -1224,19 +748,17 @@
       "child_of": "Medications"
     },
     {
-      "name": "IV",
+      "name": "IV Prep",
       "items": [
         {
-          "name": "Arm Board (Long)",
-          "emsa_min": 2
+          "name": "Long",
+          "emsa_min": 2,
+          "group": "Arm Board"
         },
         {
-          "name": "Arm Board (Short)",
-          "emsa_min": 2
-        },
-        {
-          "name": "Betadine Pads",
-          "emsa_min": 4
+          "name": "Short",
+          "emsa_min": 2,
+          "group": "Arm Board"
         },
         {
           "name": "Tegaderm",
@@ -1251,31 +773,82 @@
           "emsa_min": 6
         },
         {
-          "name": "IV Fluid Warmer",
-          "emsa_min": 1
+          "name": "14 ga ORANGE",
+          "emsa_min": 6,
+          "group": "Needle Catheter"
         },
         {
-          "name": "IV start kits",
-          "emsa_min": 4
+          "name": "16 ga GRAY",
+          "emsa_min": 6,
+          "group": "Needle Catheter"
         },
         {
-          "name": "Pressure Infusion Bag",
-          "emsa_min": 2
+          "name": "18 ga GREEN",
+          "emsa_min": 6,
+          "group": "Needle Catheter"
+        },
+        {
+          "name": "20 ga PINK",
+          "emsa_min": 6,
+          "group": "Needle Catheter"
+        },
+        {
+          "name": "22 ga BLUE",
+          "emsa_min": 4,
+          "group": "Needle Catheter"
+        },
+        {
+          "name": "24 ga YELLOW",
+          "emsa_min": 4,
+          "group": "Needle Catheter"
+        },
+        {
+          "name": "Elastic Tourniquet",
+          "emsa_min": 6
         }
-      ]
+      ],
+      "child_of": "IV/IO/IM"
     },
     {
       "name": "Prep",
       "items": [
         {
           "name": "Chlorhexidine Swabs Box",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "Disinfectant"
         },
         {
           "name": "Alcohol Prep Pads Box",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "group": "Disinfectant"
+        },
+        {
+          "name": "2\" x 2\", Sterile",
+          "emsa_min": 10,
+          "group": "Sponges"
+        },
+        {
+          "name": "4\" x 4\", Sterile",
+          "emsa_min": 10,
+          "group": "Sponges"
+        },
+        {
+          "name": "2\"x2\", Non-Sterile (Sleeve)",
+          "emsa_min": 1,
+          "group": "Sponges"
+        },
+        {
+          "name": "4\"x4\", Non-Sterile (Sleeve)",
+          "emsa_min": 1,
+          "group": "Sponges"
+        },
+        {
+          "name": "Betadine Pads",
+          "emsa_min": 4,
+          "group": "Disinfectant"
         }
-      ]
+      ],
+      "child_of": "IV/IO/IM"
     },
     {
       "name": "Decontamination",
@@ -1295,10 +868,6 @@
         {
           "name": "Hand Sanitizer",
           "emsa_min": 1
-        },
-        {
-          "name": "Biohazard Bags",
-          "emsa_min": 2
         },
         {
           "name": "Infectious control cleanup kit",
@@ -1330,43 +899,12 @@
           "emsa_min": 1
         },
         {
-          "name": "Adult C-Collar",
-          "emsa_min": 3
-        },
-        {
-          "name": "Adult XCollar",
-          "emsa_min": 4
-        },
-        {
-          "name": "Extrication Collars Bag",
+          "name": "Infant Board",
           "emsa_min": 1
         },
         {
-          "name": "Infant Board (green)",
+          "name": "Pediatric Board",
           "emsa_min": 1
-        },
-        {
-          "name": "Pediatric Board (orange)",
-          "emsa_min": 1
-        },
-        {
-          "name": "Pediatric C-Collar",
-          "emsa_min": 3
-        },
-        {
-          "name": "L",
-          "emsa_min": 2,
-          "group": "Soft Collars"
-        },
-        {
-          "name": "M",
-          "emsa_min": 1,
-          "group": "Soft Collars"
-        },
-        {
-          "name": "S",
-          "emsa_min": 1,
-          "group": "Soft Collars"
         }
       ]
     },
@@ -1404,10 +942,6 @@
         },
         {
           "name": "Infant BVM",
-          "emsa_min": 2
-        },
-        {
-          "name": "Infant ETT Securement Device",
           "emsa_min": 2
         },
         {
@@ -1527,22 +1061,6 @@
           "emsa_min": 1
         },
         {
-          "name": "Blanket",
-          "emsa_min": 6
-        },
-        {
-          "name": "Emergency Blanket",
-          "emsa_min": 2
-        },
-        {
-          "name": "Empty Trash Can",
-          "emsa_min": 1
-        },
-        {
-          "name": "Large Sharps Container",
-          "emsa_min": 1
-        },
-        {
           "name": "Nose Clamp",
           "emsa_min": 5
         },
@@ -1563,16 +1081,19 @@
           "emsa_min": 3
         },
         {
-          "name": "Posey restraints (blue-wrist)",
-          "emsa_min": 2
+          "name": "Blue, Wrist",
+          "emsa_min": 2,
+          "group": "Posey Restraints"
         },
         {
-          "name": "Posey restraints (red-ankle)",
-          "emsa_min": 2
+          "name": "Red, Ankle",
+          "emsa_min": 2,
+          "group": "Posey Restraints"
         },
         {
-          "name": "Posey Soft Restraints",
-          "emsa_min": 3
+          "name": "Soft",
+          "emsa_min": 3,
+          "group": "Posey Restraints"
         }
       ]
     },
@@ -1584,8 +1105,12 @@
           "emsa_min": 4
         },
         {
-          "name": "Medication Labels",
-          "emsa_min": 6
+          "name": "Pressure Infusion Bag",
+          "emsa_min": 2
+        },
+        {
+          "name": "Fluid Warmer",
+          "emsa_min": 1
         }
       ]
     },
@@ -1593,23 +1118,26 @@
       "name": "SpO2 Sensor",
       "items": [
         {
-          "name": "Adult/Neonatal Adhesive",
-          "emsa_min": 3
+          "name": "Adult/Neonatal",
+          "emsa_min": 3,
+          "group": "Adhesive"
         },
         {
-          "name": "Infant Adhesive",
-          "emsa_min": 3
+          "name": "Infant",
+          "emsa_min": 3,
+          "group": "Adhesive"
         },
         {
-          "name": "Clip",
+          "name": "Pinna clip",
           "emsa_min": 1
         },
         {
-          "name": "pinna clip pulse ox",
-          "emsa_min": 1
+          "name": "Pediatric",
+          "emsa_min": 1,
+          "group": "Adhesive"
         },
         {
-          "name": "pediatric adhesive pulse ox",
+          "name": "Finger clip",
           "emsa_min": 1
         }
       ]
@@ -1624,6 +1152,14 @@
         {
           "name": "Heat Pack",
           "emsa_min": 4
+        },
+        {
+          "name": "Blanket",
+          "emsa_min": 6
+        },
+        {
+          "name": "Emergency Blanket",
+          "emsa_min": 2
         }
       ]
     },
@@ -1645,15 +1181,17 @@
       ]
     },
     {
-      "name": "Advanced Airway Attachments",
+      "name": "Airway Attachments",
       "items": [
         {
           "name": "HME Filter",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "group": "Ventilator"
         },
         {
           "name": "Inline EtCO2",
-          "emsa_min": 3
+          "emsa_min": 3,
+          "group": "Ventilator"
         },
         {
           "name": "PEEP Valve",
@@ -1669,19 +1207,13 @@
         },
         {
           "name": "Omni-Flex",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "group": "Ventilator"
         },
         {
-          "name": "Ventilator Circuit",
-          "emsa_min": 3
-        },
-        {
-          "name": "Ventilator Circuit w/ Exhaust Valve",
-          "emsa_min": 1
-        },
-        {
-          "name": "Ventilator filters",
-          "emsa_min": 3
+          "name": "Circuit",
+          "emsa_min": 3,
+          "group": "Ventilator"
         }
       ]
     },
@@ -1695,10 +1227,6 @@
         {
           "name": "Chest Seal",
           "emsa_min": 2
-        },
-        {
-          "name": "Coban",
-          "emsa_min": 6
         },
         {
           "name": "Curad Adhesive Bandages Box",
@@ -1740,7 +1268,8 @@
           "name": "Chest Decompression Needle",
           "emsa_min": 3
         }
-      ]
+      ],
+      "child_of": "Trauma"
     },
     {
       "name": "OB",
@@ -1780,53 +1309,601 @@
           "name": "Traction Splint",
           "emsa_min": 2
         }
-      ]
+      ],
+      "child_of": "Trauma"
     },
     {
       "name": "Glidescope",
       "items": [
         {
           "name": "Charger",
-          "emsa_min": 1,
-          "group": "Glidescope"
+          "emsa_min": 1
         },
         {
           "name": "Glidescope Go 2",
-          "emsa_min": 1,
-          "group": "Glidescope"
+          "emsa_min": 1
         },
         {
           "name": "MAC S3",
           "emsa_min": 1,
-          "group": "Glidescope"
+          "group": "Blades"
         },
         {
           "name": "MAC S4",
           "emsa_min": 1,
-          "group": "Glidescope"
+          "group": "Blades"
         },
         {
           "name": "Hyperangle S3",
           "emsa_min": 1,
-          "group": "Glidescope"
+          "group": "Blades"
         },
         {
           "name": "Hyperangle S4",
           "emsa_min": 1,
-          "group": "Glidescope"
+          "group": "Blades"
         },
         {
           "name": "Miller S0",
           "emsa_min": 1,
-          "group": "Glidescope"
+          "group": "Blades"
         },
         {
           "name": "Miller S1",
           "emsa_min": 1,
-          "group": "Glidescope"
+          "group": "Blades"
+        },
+        {
+          "name": "Hyperangulated Stylet",
+          "emsa_min": 2
         }
       ],
       "child_of": "Electronics"
+    },
+    {
+      "name": "Trauma",
+      "items": []
+    },
+    {
+      "name": "Syringe",
+      "items": [
+        {
+          "name": "3mL",
+          "emsa_min": 4,
+          "group": "With Twinpak"
+        },
+        {
+          "name": "1 mL",
+          "emsa_min": 3,
+          "group": "Luer Lock, Needle-less"
+        },
+        {
+          "name": "10 mL",
+          "emsa_min": 3,
+          "group": "Luer Lock, Needle-less"
+        },
+        {
+          "name": "20 mL",
+          "emsa_min": 1,
+          "group": "Luer Lock, Needle-less"
+        },
+        {
+          "name": "3 mL",
+          "emsa_min": 3,
+          "group": "Luer Lock, Needle-less"
+        },
+        {
+          "name": "5 mL",
+          "emsa_min": 3,
+          "group": "Luer Lock, Needle-less"
+        },
+        {
+          "name": "60mL",
+          "emsa_min": 2,
+          "group": "Luer Lock, Needle-less"
+        },
+        {
+          "name": "60 mL Syringe, Catheter Tip",
+          "emsa_min": 1,
+          "group": "Luer Lock, Needle-less"
+        }
+      ]
+    },
+    {
+      "name": "C-Collars",
+      "items": [
+        {
+          "name": "Adult",
+          "emsa_min": 3
+        },
+        {
+          "name": "Pediatric",
+          "emsa_min": 3
+        },
+        {
+          "name": "X-Collar",
+          "emsa_min": 4
+        },
+        {
+          "name": "L",
+          "emsa_min": 2,
+          "group": "Soft Collars"
+        },
+        {
+          "name": "M",
+          "emsa_min": 1,
+          "group": "Soft Collars"
+        },
+        {
+          "name": "S",
+          "emsa_min": 1,
+          "group": "Soft Collars"
+        }
+      ],
+      "child_of": "Patient Movement"
+    },
+    {
+      "name": "Advanced Airway",
+      "items": [
+        {
+          "name": "10-25 kg GRAY",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "2-5 kg PINK",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "25-35 kg WHITE",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "30-60 kg YELLOW",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "5-12 kg BLUE",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "50-90 kg GREEN",
+          "emsa_min": 1,
+          "group": "iGels"
+        },
+        {
+          "name": "90 kg ORANGE",
+          "emsa_min": 1,
+          "group": "iGels"
+        }
+      ]
+    },
+    {
+      "name": "ET Tube Securement",
+      "items": [
+        {
+          "name": "Adult",
+          "emsa_min": 1,
+          "group": "Thomas Tube Holder"
+        },
+        {
+          "name": "Pediatric",
+          "emsa_min": 1,
+          "group": "Thomas Tube Holder"
+        },
+        {
+          "name": "Infant ETT Securement Device",
+          "emsa_min": 2
+        }
+      ],
+      "child_of": "Intubation"
+    },
+    {
+      "name": "Medication Management",
+      "items": [
+        {
+          "name": "Tags",
+          "emsa_min": 5
+        },
+        {
+          "name": "Medication Labels",
+          "emsa_min": 6
+        }
+      ]
+    },
+    {
+      "name": "Cricothyrotomy",
+      "items": [
+        {
+          "name": "Cricothyrotomy Kit",
+          "emsa_min": 1
+        },
+        {
+          "name": "Jet Instaflator",
+          "emsa_min": 1
+        }
+      ],
+      "child_of": "Advanced Airway"
+    },
+    {
+      "name": "Intubation Aids",
+      "items": [
+        {
+          "name": "Adult",
+          "emsa_min": 1,
+          "group": "Bougie-To-Go"
+        },
+        {
+          "name": "Pediatric",
+          "emsa_min": 1,
+          "group": "Bougie-To-Go"
+        },
+        {
+          "name": "10 Fr.",
+          "emsa_min": 1,
+          "group": "Stylet"
+        },
+        {
+          "name": "12 Fr.",
+          "emsa_min": 1,
+          "group": "Stylet"
+        },
+        {
+          "name": "6 Fr.",
+          "emsa_min": 1,
+          "group": "Stylet"
+        },
+        {
+          "name": "8 Fr.",
+          "emsa_min": 1,
+          "group": "Stylet"
+        }
+      ],
+      "child_of": "Intubation"
+    },
+    {
+      "name": "Airway Adjuncts",
+      "items": [
+        {
+          "name": "14 Fr.",
+          "emsa_min": 2,
+          "group": "NPAs"
+        },
+        {
+          "name": "16 Fr.",
+          "emsa_min": 2,
+          "group": "NPAs"
+        },
+        {
+          "name": "18 Fr.",
+          "emsa_min": 2,
+          "group": "NPAs"
+        },
+        {
+          "name": "20 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "22 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "24 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "26 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "28 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "30 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "32 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "34 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "36 Fr.",
+          "emsa_min": 1,
+          "group": "NPAs"
+        },
+        {
+          "name": "100mm PINK",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "110mm ORANGE",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "40mm PINK",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "50mm BLUE",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "60mm GRAY",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "70mm WHITE",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "80mm GREEN",
+          "emsa_min": 1,
+          "group": "OPAs"
+        },
+        {
+          "name": "90mm YELLOW",
+          "emsa_min": 1,
+          "group": "OPAs"
+        }
+      ]
+    },
+    {
+      "name": "Blades",
+      "items": [
+        {
+          "name": "#4",
+          "emsa_min": 1,
+          "group": "Miller"
+        },
+        {
+          "name": "#3",
+          "emsa_min": 1,
+          "group": "Miller"
+        },
+        {
+          "name": "#2",
+          "emsa_min": 1,
+          "group": "Miller"
+        },
+        {
+          "name": "#1",
+          "emsa_min": 1,
+          "group": "Miller"
+        },
+        {
+          "name": "#0",
+          "emsa_min": 1,
+          "group": "Miller"
+        },
+        {
+          "name": "#0",
+          "emsa_min": 1,
+          "group": "Mac"
+        },
+        {
+          "name": "#1",
+          "emsa_min": 1,
+          "group": "Mac"
+        },
+        {
+          "name": "#2",
+          "emsa_min": 1,
+          "group": "Mac"
+        },
+        {
+          "name": "#3",
+          "emsa_min": 1,
+          "group": "Mac"
+        },
+        {
+          "name": "#4",
+          "emsa_min": 1,
+          "group": "Mac"
+        }
+      ],
+      "child_of": "Laryngoscope"
+    },
+    {
+      "name": "Suction",
+      "items": [
+        {
+          "name": "Canister",
+          "emsa_min": 3,
+          "group": "Suction Container"
+        },
+        {
+          "name": "Lid",
+          "emsa_min": 3,
+          "group": "Suction Container"
+        },
+        {
+          "name": "DuCanto Suction Tip",
+          "emsa_min": 1,
+          "group": "Suction Tips"
+        },
+        {
+          "name": "Yankauer Suction Tip + Tubing",
+          "emsa_min": 3,
+          "group": "Suction Tips"
+        },
+        {
+          "name": "Manual Suction Device",
+          "emsa_min": 1
+        }
+      ]
+    },
+    {
+      "name": "Laryngoscope",
+      "items": [
+        {
+          "name": "Adult",
+          "emsa_min": 1,
+          "group": "Handles"
+        },
+        {
+          "name": "Pediatric",
+          "emsa_min": 1,
+          "group": "Handles"
+        },
+        {
+          "name": "Laryngoscope Light",
+          "emsa_min": 2
+        },
+        {
+          "name": "AA",
+          "emsa_min": 2,
+          "group": "Batteries"
+        },
+        {
+          "name": "C",
+          "emsa_min": 2,
+          "group": "Batteries"
+        }
+      ]
+    },
+    {
+      "name": "Waste Disposal",
+      "items": [
+        {
+          "name": "Large Sharps Container",
+          "emsa_min": 1
+        },
+        {
+          "name": "Empty Trash Can",
+          "emsa_min": 1
+        },
+        {
+          "name": "Biohazard Bags",
+          "emsa_min": 2
+        }
+      ]
+    },
+    {
+      "name": "Securement",
+      "items": [
+        {
+          "name": "1\"",
+          "emsa_min": 2,
+          "group": "Tape (Cloth/Synthetic)"
+        },
+        {
+          "name": "2\"",
+          "emsa_min": 2,
+          "group": "Tape (Cloth/Synthetic)"
+        },
+        {
+          "name": "Coban",
+          "emsa_min": 6
+        }
+      ]
+    },
+    {
+      "name": "Temperature Monitoring",
+      "items": [
+        {
+          "name": "Temporal Thermometer",
+          "emsa_min": 1
+        },
+        {
+          "name": "Disposable Sensor - Neonate/Infant",
+          "emsa_min": 3
+        }
+      ],
+      "child_of": "Patient Assessment"
+    },
+    {
+      "name": "Intubation",
+      "items": [
+        {
+          "name": "4.0 mm",
+          "emsa_min": 1,
+          "group": "ET Tube"
+        },
+        {
+          "name": "4.5 mm",
+          "emsa_min": 1,
+          "group": "ET Tube"
+        },
+        {
+          "name": "5.0 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "5.5 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "6.0 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "6.5 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "7.0 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "7.5 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "8.0 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "8.5 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "9.0 mm",
+          "emsa_min": 2,
+          "group": "ET Tube"
+        },
+        {
+          "name": "3.0 mm",
+          "emsa_min": 1,
+          "group": "ET Tube"
+        },
+        {
+          "name": "3.5 mm",
+          "emsa_min": 1,
+          "group": "ET Tube"
+        }
+      ],
+      "child_of": "Advanced Airway"
     }
   ]
 }

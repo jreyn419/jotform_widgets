@@ -95,7 +95,7 @@
         "name": "Lower Shelf",
         "items": [
           {
-            "name": "Ventilator Circuit",
+            "name": "Circuit",
             "qty": 3
           },
           {
@@ -255,7 +255,7 @@
             "qty": 1
           },
           {
-            "name": "Montor-to-BP-cuff connector",
+            "name": "Monitor-to-BP-cuff connector",
             "qty": 1
           },
           {
@@ -268,7 +268,7 @@
             "qty": 1
           },
           {
-            "name": "Monitor Battery (charged)",
+            "name": "Battery",
             "qty": 2
           },
           {
@@ -281,15 +281,17 @@
         "name": "Small Box",
         "items": [
           {
-            "name": "Adult/Neonatal Adhesive",
-            "qty": 3
+            "name": "Adult/Neonatal",
+            "qty": 3,
+            "group": "Adhesive"
           },
           {
-            "name": "Infant Adhesive",
-            "qty": 3
+            "name": "Infant",
+            "qty": 3,
+            "group": "Adhesive"
           },
           {
-            "name": "Monitor Printer Paper Rolls",
+            "name": "Printer Paper Roll",
             "qty": 2
           },
           {
@@ -340,15 +342,15 @@
             "qty": 3
           },
           {
-            "name": "Adult C-Collar",
+            "name": "Adult",
             "qty": 3
           },
           {
-            "name": "Pediatric C-Collar",
+            "name": "Pediatric",
             "qty": 3
           },
           {
-            "name": "Adult XCollar",
+            "name": "X-Collar",
             "qty": 4
           }
         ]
@@ -366,7 +368,7 @@
             "qty": 1
           },
           {
-            "name": "IV Fluid Warmer",
+            "name": "Fluid Warmer",
             "qty": 1
           }
         ]
@@ -384,7 +386,7 @@
             "qty": 20
           },
           {
-            "name": "White Tags",
+            "name": "Tags",
             "qty": 5
           },
           {

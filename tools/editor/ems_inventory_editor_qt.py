@@ -22,6 +22,7 @@ import json
 import threading
 import hashlib
 import base64
+import uuid
 import ssl
 import http.cookiejar
 import urllib.request
@@ -124,6 +125,7 @@ class DragDropTree(QTreeWidget):
         self._drag_hover_item = None
         self._editor_closed_at = 0  # monotonic timestamp
         self._pre_rename_expanded = None
+        self._external_drop_handler = None  # callback for cross-tree drops
         self.itemChanged.connect(self._on_item_changed)
         self.itemDoubleClicked.connect(self._on_double_click)
 
@@ -170,7 +172,11 @@ class DragDropTree(QTreeWidget):
     def dropEvent(self, event):
         self._clear_drag_highlight()
         if event.source() is not self:
-            event.ignore()
+            # Check for registered external drop handler
+            if hasattr(self, '_external_drop_handler') and self._external_drop_handler:
+                self._external_drop_handler(event)
+            else:
+                event.ignore()
             return
         target = self.itemAt(event.position().toPoint())
         if not target:
@@ -934,6 +940,7 @@ class InventoryFile:
     def __init__(self, path):
         self.path = path
         self.areas = []
+        self.display_name = ""
 
     @property
     def filename(self):
@@ -944,7 +951,15 @@ class InventoryFile:
         inv = cls(path)
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        inv.areas = cls._parse_json(data)
+        if isinstance(data, dict) and "areas" in data:
+            meta = data.get("_meta", {})
+            inv.display_name = meta.get("name", "")
+            inv.areas = cls._parse_json(data["areas"])
+        else:
+            inv.areas = cls._parse_json(data)
+        if not inv.display_name:
+            base = os.path.splitext(os.path.basename(path))[0]
+            inv.display_name = base.replace("_", " ").replace("-", " ").title()
         return inv
 
     @staticmethod
@@ -996,8 +1011,12 @@ class InventoryFile:
         return result
 
     def save(self):
+        file_data = {
+            "_meta": {"name": self.display_name},
+            "areas": self.to_json_data()
+        }
         with open(self.path, "w", encoding="utf-8") as f:
-            json.dump(self.to_json_data(), f, indent=2, ensure_ascii=False)
+            json.dump(file_data, f, indent=2, ensure_ascii=False)
             f.write("\n")
 
     def all_item_names(self):
@@ -1440,6 +1459,7 @@ class App(QMainWindow):
         self.dirty_master = False
         self.lemsa_config_path = os.path.join(self.repo_root, "reference", "lemsa_config.json")
         self.lemsa_directory_path = os.path.join(self.repo_root, "reference", "lemsa_directory.json")
+        self.lemsa_pdf_dir = os.path.join(self.repo_root, "reference", "lemsa_pdfs")
         self.lemsa_data = []
         self.lemsa_config = {}
         self._checking = False
@@ -1464,6 +1484,9 @@ class App(QMainWindow):
         # Clipboard
         self._clipboard = None  # {"items": [...], "mode": "copy"/"cut", "source": "rig"/"master"}
         self._last_focused_tree = "rig"  # track which tree was last focused
+        # Checklist-level undo/redo (file create/rename/delete)
+        self._cl_undo_stack = []
+        self._cl_redo_stack = []
 
         # Preview panel debounce timer
         self._preview_timer = QTimer()
@@ -1543,11 +1566,11 @@ class App(QMainWindow):
         self._build_lemsa_tab()
 
         self._master_tab = QWidget()
-        self._tabs.addTab(self._master_tab, "Master List")
+        self._tabs.addTab(self._master_tab, "Build Master List")
         self._build_master_tab()
 
         self._rig_tab = QWidget()
-        self._tabs.addTab(self._rig_tab, "Rig Files")
+        self._tabs.addTab(self._rig_tab, "Build Checklists")
         self._build_rig_tab()
 
         # Ctrl+1/2/3: quick tab navigation
@@ -1652,16 +1675,6 @@ class App(QMainWindow):
         ff.addStretch()
         left_layout.addLayout(ff)
 
-        # Download dir
-        df = QHBoxLayout()
-        df.addWidget(QLabel("Save PDFs to:"))
-        self._l_dl_dir = QLineEdit()
-        self._l_dl_dir.setPlaceholderText("Select a directory…")
-        df.addWidget(self._l_dl_dir)
-        dl_browse = QPushButton("Browse…")
-        dl_browse.clicked.connect(self._browse_lemsa_dl_dir)
-        df.addWidget(dl_browse)
-        left_layout.addLayout(df)
 
         # Tree
         self._l_tree = QTreeWidget()
@@ -1945,36 +1958,38 @@ class App(QMainWindow):
         layout = QVBoxLayout(self._rig_tab)
         layout.setContentsMargins(4, 4, 4, 0)
 
-        # Row 1: Dir + Rig selection
+        # Row 1: Rig selection
         dir_row = QHBoxLayout()
-        dir_row.addWidget(QLabel("Dir:"))
-        self._dir_edit = QLineEdit(self.checklists_dir)
-        self._dir_edit.setMinimumWidth(250)
-        dir_row.addWidget(self._dir_edit)
-        browse_btn = QPushButton("Browse…")
-        browse_btn.clicked.connect(self._browse_dir)
-        dir_row.addWidget(browse_btn)
-
-        sep1 = QFrame(); sep1.setFrameShape(QFrame.Shape.VLine); dir_row.addWidget(sep1)
-
         dir_row.addWidget(QLabel("Rig:"))
         self._rig_combo = QComboBox()
         self._rig_combo.setMinimumWidth(80)
         self._rig_combo.currentTextChanged.connect(self._on_rig_selected)
         dir_row.addWidget(self._rig_combo)
+        new_btn = QPushButton("New Rig…")
+        new_btn.clicked.connect(self._new_rig)
+        dir_row.addWidget(new_btn)
         dup_btn = QPushButton("Duplicate Rig…")
         dup_btn.clicked.connect(self._duplicate_rig)
         dir_row.addWidget(dup_btn)
         dir_row.addStretch()
         layout.addLayout(dir_row)
 
-        # Row 2: File selection
+        # Row 2: Checklist selection
         file_row = QHBoxLayout()
-        file_row.addWidget(QLabel("File:"))
+        file_row.addWidget(QLabel("Checklist:"))
         self._file_combo = QComboBox()
         self._file_combo.setMinimumWidth(180)
-        self._file_combo.currentTextChanged.connect(self._on_file_selected)
+        self._file_combo.currentIndexChanged.connect(lambda _: self._on_file_selected())
         file_row.addWidget(self._file_combo)
+        new_cl_btn = QPushButton("New…")
+        new_cl_btn.clicked.connect(self._new_checklist)
+        file_row.addWidget(new_cl_btn)
+        rename_cl_btn = QPushButton("Rename…")
+        rename_cl_btn.clicked.connect(self._rename_checklist)
+        file_row.addWidget(rename_cl_btn)
+        del_cl_btn = QPushButton("Delete…")
+        del_cl_btn.clicked.connect(self._delete_checklist)
+        file_row.addWidget(del_cl_btn)
         file_row.addStretch()
         layout.addLayout(file_row)
 
@@ -2091,7 +2106,37 @@ class App(QMainWindow):
 
         right_layout.addWidget(self._r_right_splitter)
         self._rig_splitter.addWidget(right)
-        self._rig_splitter.setSizes([400, 500])
+
+        # Far right: Master list reference (read-only, drag source)
+        master_ref = QWidget()
+        mr_layout = QVBoxLayout(master_ref)
+        mr_layout.setContentsMargins(4, 4, 4, 4)
+        mr_header = QLabel("Master List")
+        mr_header.setStyleSheet("font-size: 14px; font-weight: bold;")
+        mr_layout.addWidget(mr_header)
+        mr_sf = QHBoxLayout()
+        mr_sf.addWidget(QLabel("Search:"))
+        self._mr_search = QLineEdit()
+        self._mr_search.textChanged.connect(lambda: self._rebuild_master_ref_tree())
+        mr_sf.addWidget(self._mr_search)
+        mr_clear = QPushButton("✕")
+        mr_clear.setFixedWidth(30)
+        mr_clear.setStyleSheet("padding: 2px;")
+        mr_clear.clicked.connect(lambda: self._mr_search.setText(""))
+        mr_sf.addWidget(mr_clear)
+        mr_layout.addLayout(mr_sf)
+        self._mr_tree = DragDropTree()
+        self._mr_tree.setIndentation(20)
+        self._mr_tree.setRootIsDecorated(True)
+        self._mr_tree.setDragEnabled(True)
+        self._mr_tree.setAcceptDrops(False)
+        self._mr_tree.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
+        mr_layout.addWidget(self._mr_tree)
+        self._rig_splitter.addWidget(master_ref)
+        self._rig_splitter.setSizes([350, 400, 250])
+
+        # Set up cross-tree drop handler
+        self._r_tree._external_drop_handler = self._on_master_ref_drop
 
     # -- Helpers -------------------------------------------------------------
 
@@ -2304,14 +2349,25 @@ class App(QMainWindow):
 
     # -- Dir / rig / file management -----------------------------------------
 
-    def _browse_dir(self):
-        d = QFileDialog.getExistingDirectory(self, "Select Checklists Directory", self._dir_edit.text())
-        if d:
-            self._dir_edit.setText(d)
-            self.checklists_dir = d
-            self.master_list_path = os.path.join(d, "master_list.json")
-            self._load_master()
-            self._refresh_rigs()
+    def _new_rig(self):
+        new_name, ok = QInputDialog.getText(self, "New Rig", "Rig name:")
+        if not ok or not new_name.strip():
+            return
+        new_name = new_name.strip()
+        dst = os.path.join(self.checklists_dir, new_name)
+        if os.path.exists(dst):
+            self._status.showMessage(f"Rig '{new_name}' already exists.")
+            return
+        try:
+            os.makedirs(dst)
+        except Exception as e:
+            self._status.showMessage(f"Error: {e}")
+            return
+        self._refresh_rigs()
+        idx = self._rig_combo.findText(new_name)
+        if idx >= 0:
+            self._rig_combo.setCurrentIndex(idx)
+        self._status.showMessage(f"Created new rig: {new_name}")
 
     def _refresh_rigs(self):
         d = self.checklists_dir
@@ -2331,34 +2387,34 @@ class App(QMainWindow):
         if not rig:
             return
         self.current_rig = rig
+        self._cl_undo_stack.clear()
+        self._cl_redo_stack.clear()
         rig_dir = os.path.join(self.checklists_dir, rig)
         json_files = sorted([f for f in os.listdir(rig_dir) if f.endswith(".json")], key=str.lower)
         self._file_combo.blockSignals(True)
         self._file_combo.clear()
-        self._file_combo.addItems(json_files)
-        self._file_combo.blockSignals(False)
         self.rig_files = []
         for fn in json_files:
             try:
-                self.rig_files.append(InventoryFile.from_file(os.path.join(rig_dir, fn)))
+                inv = InventoryFile.from_file(os.path.join(rig_dir, fn))
+                self.rig_files.append(inv)
+                self._file_combo.addItem(inv.display_name, inv)
             except Exception:
                 pass
-        if json_files:
+        self._file_combo.blockSignals(False)
+        if self.rig_files:
             self._on_file_selected()
         else:
             self.current_file = None
             self._rebuild_rig_tree()
 
     def _on_file_selected(self):
-        fname = self._file_combo.currentText()
-        if not fname or not self.current_rig:
-            return
-        path = os.path.join(self.checklists_dir, self.current_rig, fname)
-        try:
-            self.current_file = InventoryFile.from_file(path)
-        except Exception as e:
+        inv = self._file_combo.currentData()
+        if not inv or not self.current_rig:
             self.current_file = None
-            self._status.showMessage(f"Parse error: {e}")
+            self._rebuild_rig_tree()
+            return
+        self.current_file = inv
         # Reset undo stacks for new file
         self._rig_undo_stack.clear()
         self._rig_redo_stack.clear()
@@ -2374,7 +2430,7 @@ class App(QMainWindow):
                           for i in c.items if i.name not in mn)
                 if nim:
                     flag = f", {nim} not in master"
-            self._status.showMessage(f"{fname} — {total} items{flag}")
+            self._status.showMessage(f"{self.current_file.display_name} — {total} items{flag}")
         self._refresh_preview()
 
     def _duplicate_rig(self):
@@ -2401,6 +2457,83 @@ class App(QMainWindow):
             self._rig_combo.setCurrentIndex(idx)
         self._status.showMessage(f"Duplicated {self.current_rig} → {new_name}")
 
+    def _new_checklist(self):
+        if not self.current_rig:
+            self._status.showMessage("Select a rig first.")
+            return
+        name, ok = QInputDialog.getText(self, "New Checklist", "Checklist name:")
+        if not ok or not name.strip():
+            return
+        name = name.strip()
+        # Check for duplicate display name
+        for i in range(self._file_combo.count()):
+            if self._file_combo.itemText(i).lower() == name.lower():
+                self._status.showMessage(f"Checklist '{name}' already exists.")
+                return
+        rig_dir = os.path.join(self.checklists_dir, self.current_rig)
+        fn = uuid.uuid4().hex[:12] + ".json"
+        path = os.path.join(rig_dir, fn)
+        inv = InventoryFile(path)
+        inv.display_name = name
+        inv.save()
+        self.rig_files.append(inv)
+        self._file_combo.blockSignals(True)
+        self._file_combo.addItem(inv.display_name, inv)
+        self._file_combo.blockSignals(False)
+        self._file_combo.setCurrentIndex(self._file_combo.count() - 1)
+        self._on_file_selected()
+        self.dirty = True
+        self._update_save_state()
+        self._cl_undo_stack.append(("cl_new", path, name))
+        self._cl_redo_stack.clear()
+        self._status.showMessage(f"Created checklist: {name}")
+
+    def _rename_checklist(self):
+        inv = self._file_combo.currentData()
+        if not inv:
+            return
+        old_name = inv.display_name
+        new_name, ok = QInputDialog.getText(self, "Rename Checklist",
+                                             f"Rename '{old_name}' to:", text=old_name)
+        if not ok or not new_name.strip() or new_name.strip() == old_name:
+            return
+        new_name = new_name.strip()
+        inv.display_name = new_name
+        inv.save()
+        idx = self._file_combo.currentIndex()
+        self._file_combo.setItemText(idx, new_name)
+        self._cl_undo_stack.append(("cl_rename", inv.path, old_name, new_name))
+        self._cl_redo_stack.clear()
+        self._status.showMessage(f"Renamed: {old_name} → {new_name}")
+
+    def _delete_checklist(self):
+        inv = self._file_combo.currentData()
+        if not inv:
+            return
+        if not ConfirmDialog.confirm(self, "Delete Checklist",
+                f"Permanently delete '{inv.display_name}'?\nThis cannot be undone."):
+            return
+        # Capture state for undo
+        saved_content = json.dumps(inv.to_json_data())
+        saved_name = inv.display_name
+        saved_path = inv.path
+        try:
+            os.remove(inv.path)
+        except Exception as e:
+            self._status.showMessage(f"Error: {e}")
+            return
+        self.rig_files.remove(inv)
+        idx = self._file_combo.currentIndex()
+        self._file_combo.removeItem(idx)
+        if self._file_combo.count() > 0:
+            self._on_file_selected()
+        else:
+            self.current_file = None
+            self._rebuild_rig_tree()
+        self._cl_undo_stack.append(("cl_delete", saved_path, saved_name, saved_content))
+        self._cl_redo_stack.clear()
+        self._status.showMessage(f"Deleted checklist: {saved_name}")
+
     def _load_master(self):
         if os.path.isfile(self.master_list_path):
             try:
@@ -2419,6 +2552,7 @@ class App(QMainWindow):
         self._master_redo_stack.clear()
         self._master_last_snap = json.dumps(self.master_list.to_json_data()) if self.master_list else None
         self._update_master_visibility()
+        self._rebuild_master_ref_tree()
 
     def _update_master_visibility(self):
         """Show tree or 'Create' button depending on whether master list exists."""
@@ -2578,8 +2712,6 @@ class App(QMainWindow):
                 self.lemsa_config = {}
         else:
             self.lemsa_config = {}
-        if hasattr(self, '_l_dl_dir'):
-            self._l_dl_dir.setText(self.lemsa_config.get("_download_dir", ""))
 
     def _save_lemsa_config(self):
         os.makedirs(os.path.dirname(self.lemsa_config_path), exist_ok=True)
@@ -2602,16 +2734,9 @@ class App(QMainWindow):
             conf["acronym"] = ""
         return conf
 
-    def _browse_lemsa_dl_dir(self):
-        d = QFileDialog.getExistingDirectory(self, "Save PDFs to", self._l_dl_dir.text() or self.base_dir)
-        if d:
-            self._l_dl_dir.setText(d)
-            self.lemsa_config["_download_dir"] = d
-            self._save_lemsa_config()
-
     def _get_lemsa_dl_dir(self):
-        d = self._l_dl_dir.text().strip()
-        return d if d and os.path.isdir(d) else None
+        os.makedirs(self.lemsa_pdf_dir, exist_ok=True)
+        return self.lemsa_pdf_dir
 
     def _save_lemsa_pdf(self, name, doc_data):
         dl_dir = self._get_lemsa_dl_dir()
@@ -3306,6 +3431,7 @@ class App(QMainWindow):
                 cat_nodes[ci].setExpanded(True)
 
         self._m_tree.endRebuild(saved)
+        self._rebuild_master_ref_tree()
 
     def _on_master_select(self, item):
         data = item.data(0, Qt.ItemDataRole.UserRole)
@@ -4194,6 +4320,176 @@ class App(QMainWindow):
 
     # -- Rig tree ------------------------------------------------------------
 
+    def _rebuild_master_ref_tree(self):
+        """Build a read-only reference tree of the master list for the rig tab."""
+        if not hasattr(self, '_mr_tree'):
+            return
+        saved = self._mr_tree.beginRebuild()
+        self._mr_tree.clear()
+        if not self.master_list:
+            self._mr_tree.endRebuild(saved)
+            return
+        q = self._mr_search.text().strip().lower()
+        CN = DragDropTree.ROLE_CLEAN_NAME
+
+        cat_nodes = {}
+        child_cats = []
+        sorted_cats = sorted(enumerate(self.master_list.categories),
+                             key=lambda x: _natural_sort_key(x[1].name))
+
+        for ci, cat in sorted_cats:
+            cat_match = q and q in cat.name.lower()
+            show = [(ii, it) for ii, it in enumerate(cat.items)
+                    if not q or cat_match or q in it.name.lower()
+                    or (it.group and q in it.group.lower())]
+            if not show and q:
+                continue
+
+            cat_item = QTreeWidgetItem([cat.name])
+            cat_item.setText(1, f"({len(show)})")
+            cat_item.setIcon(0, _ICONS["cat"])
+            cat_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_cat", ci))
+            cat_item.setData(0, CN, cat.name)
+            # No drag for containers
+            cat_item.setFlags(cat_item.flags() & ~Qt.ItemFlag.ItemIsDragEnabled)
+
+            groups = {}
+            ungrouped = []
+            for ii, it in show:
+                if it.group:
+                    groups.setdefault(it.group, []).append((ii, it))
+                else:
+                    ungrouped.append((ii, it))
+
+            for group_name in sorted(groups.keys(), key=_natural_sort_key):
+                members = groups[group_name]
+                g_item = QTreeWidgetItem([group_name])
+                g_item.setText(1, f"({len(members)})")
+                g_item.setIcon(0, _ICONS["group"])
+                g_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_group", ci, group_name))
+                g_item.setData(0, CN, group_name)
+                g_item.setFlags(g_item.flags() & ~Qt.ItemFlag.ItemIsDragEnabled)
+                cat_item.addChild(g_item)
+                if q: g_item.setExpanded(True)
+                for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
+                    i_item = QTreeWidgetItem([it.name])
+                    i_item.setText(1, f"min {it.emsa_min}")
+                    i_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_item", ci, ii))
+                    i_item.setData(0, CN, it.name)
+                    g_item.addChild(i_item)
+
+            for ii, it in sorted(ungrouped, key=lambda x: _natural_sort_key(x[1].name)):
+                i_item = QTreeWidgetItem([it.name])
+                i_item.setText(1, f"min {it.emsa_min}")
+                i_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_item", ci, ii))
+                i_item.setData(0, CN, it.name)
+                cat_item.addChild(i_item)
+
+            cat_nodes[ci] = cat_item
+            if cat.child_of:
+                child_cats.append((ci, cat))
+            else:
+                self._mr_tree.addTopLevelItem(cat_item)
+                if q: cat_item.setExpanded(True)
+
+        # Nest child categories under parents
+        for ci, cat in child_cats:
+            parent_ci = None
+            for pci, pcat in enumerate(self.master_list.categories):
+                if pcat.name == cat.child_of:
+                    parent_ci = pci
+                    break
+            if parent_ci is not None and parent_ci in cat_nodes:
+                cat_nodes[parent_ci].addChild(cat_nodes[ci])
+                if q: cat_nodes[ci].setExpanded(True)
+            else:
+                self._mr_tree.addTopLevelItem(cat_nodes[ci])
+                if q: cat_nodes[ci].setExpanded(True)
+
+        self._mr_tree.endRebuild(saved)
+
+    def _on_master_ref_drop(self, event):
+        """Handle drop from master ref tree onto rig tree."""
+        source_tree = event.source()
+        if source_tree is not self._mr_tree or not self.current_file:
+            event.ignore()
+            return
+        target_item = self._r_tree.itemAt(event.position().toPoint())
+        if not target_item:
+            event.ignore()
+            return
+        target_data = target_item.data(0, Qt.ItemDataRole.UserRole)
+        if not target_data:
+            event.ignore()
+            return
+
+        # Resolve target area/category
+        target_kind = target_data[0]
+        target_ai = target_data[1]
+        if target_ai >= len(self.current_file.areas):
+            event.ignore()
+            return
+        target_area = self.current_file.areas[target_ai]
+        target_group = None
+
+        if target_kind == "group":
+            target_ci = target_data[2]
+            if target_ci >= len(target_area.categories):
+                event.ignore()
+                return
+            target_cat = target_area.categories[target_ci]
+            target_group = target_data[3]
+        elif target_kind in ("item", "cat"):
+            target_ci = target_data[2]
+            if target_ci >= len(target_area.categories):
+                event.ignore()
+                return
+            target_cat = target_area.categories[target_ci]
+        elif target_kind == "area":
+            if not target_area.categories:
+                target_area.categories.append(Category("General"))
+            target_cat = target_area.categories[0]
+        else:
+            event.ignore()
+            return
+
+        # Collect items from master ref selection
+        selected = source_tree.selectedItems()
+        if not selected:
+            event.ignore()
+            return
+
+        added = 0
+        for sel_item in selected:
+            sel_data = sel_item.data(0, Qt.ItemDataRole.UserRole)
+            if not sel_data or sel_data[0] != "mr_item":
+                continue
+            ci, ii = sel_data[1], sel_data[2]
+            if ci >= len(self.master_list.categories):
+                continue
+            mcat = self.master_list.categories[ci]
+            if ii >= len(mcat.items):
+                continue
+            mi = mcat.items[ii]
+            # Format name: "Group, Item" if grouped, else just item name
+            if mi.group:
+                item_name = f"{mi.group}, {mi.name}"
+            else:
+                item_name = mi.name
+            new_item = Item(item_name, mi.emsa_min, target_group)
+            target_cat.items.append(new_item)
+            added += 1
+
+        if added:
+            event.setDropAction(Qt.DropAction.IgnoreAction)
+            event.accept()
+            self.dirty = True
+            self._update_save_state()
+            self._rebuild_rig_tree()
+            self._status.showMessage(f"Added {added} item(s) from master list")
+        else:
+            event.ignore()
+
     def _rebuild_rig_tree(self):
         # Auto-push undo if data changed since last snapshot
         if self.current_file and not self._undo_suppress:
@@ -4934,7 +5230,14 @@ class App(QMainWindow):
         self._new_cat_action.setVisible(visible)
 
     def _rig_undo(self):
+        # Check checklist-level undo first (if rig tree has nothing to undo)
+        if not self._rig_undo_stack and self._cl_undo_stack:
+            self._cl_undo()
+            return
         if not self._rig_undo_stack or not self.current_file:
+            if self._cl_undo_stack:
+                self._cl_undo()
+                return
             self._status.showMessage("Nothing to undo (rig)")
             return
         # Push current state to redo
@@ -4952,7 +5255,14 @@ class App(QMainWindow):
         self._status.showMessage(f"Undo (rig) — {len(self._rig_undo_stack)} remaining")
 
     def _rig_redo(self):
+        # Check checklist-level redo first (if rig tree has nothing to redo)
+        if not self._rig_redo_stack and self._cl_redo_stack:
+            self._cl_redo()
+            return
         if not self._rig_redo_stack or not self.current_file:
+            if self._cl_redo_stack:
+                self._cl_redo()
+                return
             self._status.showMessage("Nothing to redo (rig)")
             return
         self._rig_undo_stack.append(
@@ -4966,6 +5276,117 @@ class App(QMainWindow):
         self._rebuild_rig_tree()
         self._undo_suppress = False
         self._status.showMessage(f"Redo (rig) — {len(self._rig_redo_stack)} remaining")
+
+    def _cl_undo(self):
+        if not self._cl_undo_stack:
+            return
+        entry = self._cl_undo_stack.pop()
+        op = entry[0]
+        if op == "cl_new":
+            # Undo create: delete the file
+            path, name = entry[1], entry[2]
+            inv = self._find_inv_by_path(path)
+            if inv:
+                try:
+                    os.remove(path)
+                except Exception:
+                    pass
+                self.rig_files.remove(inv)
+                for i in range(self._file_combo.count()):
+                    if self._file_combo.itemData(i) is inv:
+                        self._file_combo.removeItem(i)
+                        break
+                if self._file_combo.count() > 0:
+                    self._on_file_selected()
+                else:
+                    self.current_file = None
+                    self._rebuild_rig_tree()
+            self._cl_redo_stack.append(entry)
+            self._status.showMessage(f"Undo: removed checklist '{name}'")
+        elif op == "cl_rename":
+            path, old_name, new_name = entry[1], entry[2], entry[3]
+            inv = self._find_inv_by_path(path)
+            if inv:
+                inv.display_name = old_name
+                inv.save()
+                for i in range(self._file_combo.count()):
+                    if self._file_combo.itemData(i) is inv:
+                        self._file_combo.setItemText(i, old_name)
+                        break
+            self._cl_redo_stack.append(entry)
+            self._status.showMessage(f"Undo: renamed '{new_name}' back to '{old_name}'")
+        elif op == "cl_delete":
+            path, name, content = entry[1], entry[2], entry[3]
+            inv = InventoryFile(path)
+            inv.display_name = name
+            inv.areas = InventoryFile._parse_json(json.loads(content))
+            inv.save()
+            self.rig_files.append(inv)
+            self._file_combo.blockSignals(True)
+            self._file_combo.addItem(inv.display_name, inv)
+            self._file_combo.blockSignals(False)
+            self._file_combo.setCurrentIndex(self._file_combo.count() - 1)
+            self._on_file_selected()
+            self._cl_redo_stack.append(entry)
+            self._status.showMessage(f"Undo: restored checklist '{name}'")
+
+    def _cl_redo(self):
+        if not self._cl_redo_stack:
+            return
+        entry = self._cl_redo_stack.pop()
+        op = entry[0]
+        if op == "cl_new":
+            # Redo create: re-create the file
+            path, name = entry[1], entry[2]
+            inv = InventoryFile(path)
+            inv.display_name = name
+            inv.save()
+            self.rig_files.append(inv)
+            self._file_combo.blockSignals(True)
+            self._file_combo.addItem(inv.display_name, inv)
+            self._file_combo.blockSignals(False)
+            self._file_combo.setCurrentIndex(self._file_combo.count() - 1)
+            self._on_file_selected()
+            self._cl_undo_stack.append(entry)
+            self._status.showMessage(f"Redo: re-created checklist '{name}'")
+        elif op == "cl_rename":
+            path, old_name, new_name = entry[1], entry[2], entry[3]
+            inv = self._find_inv_by_path(path)
+            if inv:
+                inv.display_name = new_name
+                inv.save()
+                for i in range(self._file_combo.count()):
+                    if self._file_combo.itemData(i) is inv:
+                        self._file_combo.setItemText(i, new_name)
+                        break
+            self._cl_undo_stack.append(entry)
+            self._status.showMessage(f"Redo: renamed '{old_name}' to '{new_name}'")
+        elif op == "cl_delete":
+            path, name, content = entry[1], entry[2], entry[3]
+            inv = self._find_inv_by_path(path)
+            if inv:
+                try:
+                    os.remove(path)
+                except Exception:
+                    pass
+                self.rig_files.remove(inv)
+                for i in range(self._file_combo.count()):
+                    if self._file_combo.itemData(i) is inv:
+                        self._file_combo.removeItem(i)
+                        break
+                if self._file_combo.count() > 0:
+                    self._on_file_selected()
+                else:
+                    self.current_file = None
+                    self._rebuild_rig_tree()
+            self._cl_undo_stack.append(entry)
+            self._status.showMessage(f"Redo: deleted checklist '{name}'")
+
+    def _find_inv_by_path(self, path):
+        for inv in self.rig_files:
+            if inv.path == path:
+                return inv
+        return None
 
     def _master_undo(self):
         if not self._master_undo_stack or not self.master_list:
@@ -5997,7 +6418,7 @@ class App(QMainWindow):
             return
         dl_dir = self._get_lemsa_dl_dir()
         if not dl_dir:
-            self._status.showMessage("No LEMSA PDF directory set. Configure in LEMSA Equipment tab.")
+            self._status.showMessage("Could not create LEMSA PDF directory.")
             return
 
         # Step 1: Clear previous table edits and aliases

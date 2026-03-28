@@ -7,11 +7,13 @@
         "items": [
           {
             "name": "Alcohol Prep Pads Box",
-            "qty": 1
+            "qty": 1,
+            "group": "Disinfectant"
           },
           {
             "name": "Chlorhexidine Swabs Box",
-            "qty": 1
+            "qty": 1,
+            "group": "Disinfectant"
           },
           {
             "name": "Curad Adhesive Bandages Box",
@@ -252,12 +254,14 @@
             "qty": 2
           },
           {
-            "name": "Arm Board (Short)",
-            "qty": 2
+            "name": "Short",
+            "qty": 2,
+            "group": "Arm Board"
           },
           {
-            "name": "Arm Board (Long)",
-            "qty": 2
+            "name": "Long",
+            "qty": 2,
+            "group": "Arm Board"
           },
           {
             "name": "10-Drop Set",
@@ -457,7 +461,7 @@
             "qty": 1
           },
           {
-            "name": "Zoll Monitor",
+            "name": "Monitor",
             "qty": 1
           }
         ]
@@ -495,7 +499,7 @@
             "qty": 1
           },
           {
-            "name": "Manual Jet Ventilator",
+            "name": "Jet Instaflator",
             "qty": 1
           },
           {
@@ -576,7 +580,7 @@
             "group": "Getac"
           },
           {
-            "name": "Monitor Charger",
+            "name": "Charger",
             "qty": 1
           }
         ]
@@ -614,12 +618,14 @@
             "qty": 1
           },
           {
-            "name": "Posey restraints (red-ankle)",
-            "qty": 2
+            "name": "Red, Ankle",
+            "qty": 2,
+            "group": "Restraints"
           },
           {
-            "name": "Posey restraints (blue-wrist)",
-            "qty": 2
+            "name": "Blue, Wrist",
+            "qty": 2,
+            "group": "Restraints"
           }
         ]
       },
@@ -631,8 +637,9 @@
             "qty": 3
           },
           {
-            "name": "Posey Soft Restraints",
-            "qty": 3
+            "name": "Soft",
+            "qty": 3,
+            "group": "Restraints"
           },
           {
             "name": "Urinals",
@@ -661,11 +668,11 @@
         "name": "Left",
         "items": [
           {
-            "name": "Pediatric Board (orange)",
+            "name": "Pediatric Board",
             "qty": 1
           },
           {
-            "name": "Infant Board (green)",
+            "name": "Infant Board",
             "qty": 1
           },
           {

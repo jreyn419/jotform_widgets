@@ -4,16 +4,16 @@
     1018
   ],
   "master_splitter": [
-    285,
-    1142
+    537,
+    890
   ],
   "master_right_splitter": [
     251,
     518
   ],
   "rig_splitter": [
-    386,
-    1033
+    297,
+    1122
   ],
   "rig_right_splitter": [
     316,
@@ -22,8 +22,8 @@
   "maximized_panel": null,
   "rig_maximized_panel": null,
   "window_geometry": [
-    -1,
-    31,
+    0,
+    30,
     1440,
     842
   ]
