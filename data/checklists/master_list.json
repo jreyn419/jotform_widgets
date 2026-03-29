@@ -384,7 +384,13 @@
         {
           "name": "Adult",
           "emsa_min": 1,
-          "group": "Manual BP Cuff"
+          "group": "Manual BP Cuff",
+          "aliases": [
+            {
+              "name": "Adult BP Cuff",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         }
       ]
     },
@@ -489,7 +495,13 @@
         {
           "name": "Defibrillation Cable",
           "emsa_min": 1,
-          "group": "Cables"
+          "group": "Cables",
+          "aliases": [
+            {
+              "name": "AED cables",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         },
         {
           "name": "Monitor-to-SpO2 Cable",
@@ -1502,7 +1514,13 @@
         {
           "name": "Adult",
           "emsa_min": 1,
-          "group": "Thomas Tube Holder"
+          "group": "Thomas Tube Holder",
+          "aliases": [
+            {
+              "name": "Advanced Airway Tube/Device Holder",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "Pediatric",

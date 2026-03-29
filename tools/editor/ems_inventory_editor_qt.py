@@ -43,7 +43,7 @@ from PyQt6.QtWidgets import (
     QFileDialog, QInputDialog, QMessageBox, QMenu, QSizePolicy, QFrame,
     QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
     QStyledItemDelegate, QCompleter, QDialog, QDialogButtonBox,
-    QAbstractItemDelegate
+    QAbstractItemDelegate, QGraphicsOpacityEffect
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl, QMimeData, QPoint
 from PyQt6.QtGui import QAction, QShortcut, QKeySequence, QColor, QBrush, QPalette, QPainter, QPixmap, QPen, QIcon, QFont, QDrag, QStandardItemModel, QStandardItem
@@ -862,7 +862,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.1.1"
+VERSION = "6.2.1"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -2047,21 +2047,26 @@ class App(QMainWindow):
         lp_header.addWidget(self._m_lemsa_max_btn)
         lp_layout.addLayout(lp_header)
 
-        # Filter bar for table views
+        # Filter tab bar for table views
         filter_bar = QHBoxLayout()
         filter_bar.setSpacing(0)
         filter_bar.setContentsMargins(0, 0, 0, 0)
         self._filter_buttons = []
         self._active_filter = 0
-        for i, label in enumerate(["All Items", "Match", "No Match", "Qty Diff"]):
+        _tab_style = (
+            "QPushButton { padding: 4px 10px; font-size: 11px;"
+            " border: 1px solid #45475a; border-bottom: none;"
+            " background: #181825; color: #6c7086;"
+            " border-top-left-radius: 4px; border-top-right-radius: 4px;"
+            " margin-right: 1px; }"
+            "QPushButton:checked { background: #2a2a3c; color: #cdd6f4;"
+            " font-weight: bold; border-bottom: 1px solid #2a2a3c; }"
+            "QPushButton:hover:!checked { background: #1e1e2e; color: #a6adc8; }")
+        for i, label in enumerate(["All Items", "Match", "No Match", "Qty Diff", "Excluded"]):
             btn = QPushButton(label)
             btn.setCheckable(True)
             btn.setChecked(i == 0)
-            btn.setStyleSheet(
-                "QPushButton { padding: 4px 10px; border: 1px solid #45475a; border-bottom: none;"
-                " background: #1e1e2e; color: #6c7086; font-size: 11px; }"
-                "QPushButton:checked { background: #2a2a3c; color: #cdd6f4; font-weight: bold; }"
-                "QPushButton:hover:!checked { background: #252536; }")
+            btn.setStyleSheet(_tab_style)
             btn.clicked.connect(lambda checked, idx=i: self._on_filter_tab_click(idx))
             filter_bar.addWidget(btn)
             self._filter_buttons.append(btn)
@@ -2176,7 +2181,7 @@ class App(QMainWindow):
 
         # Apply Changes button at bottom of panel (disabled until edits exist)
         self._apply_btn = QPushButton("Apply Changes")
-        self._apply_btn.setToolTip("Apply table edits to the master list and refresh comparison")
+        self._apply_btn.setToolTip("Ctrl+Enter")
         self._apply_btn.setEnabled(False)
         self._apply_btn.clicked.connect(self._apply_changes_to_master)
         lp_layout.addWidget(self._apply_btn)
@@ -2417,7 +2422,9 @@ class App(QMainWindow):
         """)
         btn.setToolTip("Expand/collapse all")
         lbl = QLabel("Toggle All")
-        lbl.setStyleSheet("color: #a6adc8; font-size: 12px;")
+        lbl.setStyleSheet(
+            "QLabel { color: #a6adc8; font-size: 12px; }"
+            "QLabel:hover { text-decoration: underline; }")
         lbl.setCursor(Qt.CursorShape.PointingHandCursor)
 
         def _toggle():
@@ -3170,6 +3177,13 @@ class App(QMainWindow):
                   if self._m_all_table.item(row, self.COL_STATUS) else "")
         group = (self._m_all_table.item(row, self.COL_GROUP).text().strip()
                  if self._m_all_table.item(row, self.COL_GROUP) else "")
+
+        # "N/A" is a display-only status for Match rows — preserve the
+        # previously saved status (and alias data) so we don't lose it
+        existing = edits.get(key, {})
+        if status == "N/A":
+            status = existing.get("status", "")
+
         edit_data = {
             "master_name": master_name,
             "group": group,
@@ -3189,6 +3203,9 @@ class App(QMainWindow):
                 "lemsa_name": lemsa_name,
                 "lemsa": lemsa_source,
             }
+        elif status == "Name Difference" and existing.get("alias"):
+            # Preserve existing alias data when master_name wasn't changed
+            edit_data["alias"] = existing["alias"]
         edits[key] = edit_data
         self._save_table_edits(edits)
 
@@ -3644,12 +3661,20 @@ class App(QMainWindow):
                 # Search filter
                 if q and not cat_match and q not in it.name.lower() and not (it.group and q in it.group.lower()):
                     continue
-                # Modified filter
+                # Modified filter — still collect item but track if modified
                 if mod_only and it.name not in self._session_modified:
                     continue
                 show.append((ii, it))
-            if not show and (q or mod_only):
+            if not show and q:
                 return False
+
+            # When modified filter is on but no items match, show grayed structure
+            show_structure_only = mod_only and not show
+            if show_structure_only:
+                # Rebuild full item list (unfiltered) to get group names
+                all_items = list(enumerate(cat.items))
+            else:
+                all_items = None
 
             # Separate into groups and ungrouped
             groups = {}
@@ -3660,27 +3685,47 @@ class App(QMainWindow):
                 else:
                     ungrouped.append((ii, it))
 
+            # Also collect all group names for structure-only mode
+            if show_structure_only:
+                all_groups = {}
+                for ii, it in all_items:
+                    if it.group:
+                        all_groups.setdefault(it.group, []).append((ii, it))
+
             total = len(show)
             cat_item.setText(0, cat.name)
             cat_item.setText(1, f"({total})")
 
+            if show_structure_only:
+                # Gray out the category node
+                cat_item.setForeground(0, _dim_brush)
+                cat_item.setForeground(1, _dim_brush)
+
             # Group nodes (sorted naturally)
-            for group_name in sorted(groups.keys(), key=_natural_sort_key):
-                members = groups[group_name]
+            group_names = sorted(
+                (all_groups.keys() if show_structure_only else groups.keys()),
+                key=_natural_sort_key)
+            for group_name in group_names:
+                members = groups.get(group_name, [])
                 g_item = QTreeWidgetItem([group_name])
                 g_item.setText(1, f"({len(members)})")
                 g_item.setIcon(0, _ICONS["group"])
                 g_item.setData(0, Qt.ItemDataRole.UserRole, ("group", ci, group_name))
                 g_item.setData(0, CN, group_name)
                 cat_item.addChild(g_item)
-                if q or mod_only: g_item.setExpanded(True)
-                # Sort items within group naturally
-                for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
-                    i_item = QTreeWidgetItem([it.name])
-                    i_item.setText(1, f"min {it.emsa_min}")
-                    i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ci, ii))
-                    i_item.setData(0, CN, it.name)
-                    g_item.addChild(i_item)
+                if not members:
+                    # Gray out empty group
+                    g_item.setForeground(0, _dim_brush)
+                    g_item.setForeground(1, _dim_brush)
+                else:
+                    if q or mod_only: g_item.setExpanded(True)
+                    # Sort items within group naturally
+                    for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
+                        i_item = QTreeWidgetItem([it.name])
+                        i_item.setText(1, f"min {it.emsa_min}")
+                        i_item.setData(0, Qt.ItemDataRole.UserRole, ("item", ci, ii))
+                        i_item.setData(0, CN, it.name)
+                        g_item.addChild(i_item)
 
             # Ungrouped items (sorted naturally)
             for ii, it in sorted(ungrouped, key=lambda x: _natural_sort_key(x[1].name)):
@@ -6879,9 +6924,11 @@ class App(QMainWindow):
 
     def _finalize_comparison(self, all_lemsa, pdf_count, errors):
         """Compare extracted LEMSA items against master list and display."""
-        # Filter out excluded items
+        # Separate excluded items — they skip matching but stay in the table
         exclusions = self._load_exclusions()
+        excluded_items = {}
         if exclusions:
+            excluded_items = {k: v for k, v in all_lemsa.items() if k in exclusions}
             all_lemsa = {k: v for k, v in all_lemsa.items() if k not in exclusions}
 
         # Build master_names: name.lower() -> [(cat_name, item), ...]
@@ -6959,9 +7006,9 @@ class App(QMainWindow):
         if errors:
             self._status.showMessage(f"Extraction errors: {'; '.join(errors)}")
 
-        self._show_comparison_results(new_items, missing_items, match_items, pdf_count)
+        self._show_comparison_results(new_items, missing_items, match_items, pdf_count, excluded_items)
 
-    def _show_comparison_results(self, new_items, missing_items, match_items, pdf_count):
+    def _show_comparison_results(self, new_items, missing_items, match_items, pdf_count, excluded_items=None):
         self._m_lemsa_title.setText(f"LEMSA List ({pdf_count} PDFs)")
 
         # Make sure the LEMSA panel is visible
@@ -6997,7 +7044,21 @@ class App(QMainWindow):
                 "status": "Match",
             })
 
-        status_order = {"No Match": 0, "Match": 1}
+        # Excluded items (kept in table for Excluded tab)
+        if excluded_items:
+            for key, data in sorted(excluded_items.items(), key=lambda x: x[1]["name"].lower()):
+                all_rows.append({
+                    "name": data["name"],
+                    "lemsa_qty": data["qty"],
+                    "master_qty": "",
+                    "master_name": "",
+                    "group": "",
+                    "sources": ", ".join(data.get("sources", [])),
+                    "category": "",
+                    "status": "Excluded",
+                })
+
+        status_order = {"No Match": 0, "Match": 1, "Excluded": 2}
         all_rows.sort(key=lambda r: (status_order.get(r["status"], 9), r["name"].lower()))
 
         # Disconnect cellChanged during population
@@ -7013,6 +7074,7 @@ class App(QMainWindow):
         type_colors = {
             "No Match": QColor("#74b9ff"),
             "Match": QColor("#55efc4"),
+            "Excluded": QColor("#6c7086"),
         }
         # Per-cell backgrounds: readonly slightly lighter (faded), editable more prominent
         bg_editable_even = QBrush(QColor("#2a2a3c"))
@@ -7067,15 +7129,18 @@ class App(QMainWindow):
             ]
             # Match rows: lock Master Name, Group, Category, Status
             is_match = row["status"] == "Match"
+            is_excluded_type = row["status"] == "Excluded"
             if is_match:
                 items[self.COL_STATUS].setText("N/A")
+            elif is_excluded_type:
+                items[self.COL_STATUS].setText("Exclude")
 
             # Overlay saved edits if present
             edit_key = row["name"].lower()
-            is_exclude = False
+            is_exclude = is_excluded_type
             if edit_key in saved_edits:
                 edits = saved_edits[edit_key]
-                is_exclude = edits.get("status") == "Exclude"
+                is_exclude = is_exclude or edits.get("status") in ("Exclude", "Optional")
                 if not is_exclude:
                     if edits.get("master_name"):
                         items[self.COL_MASTER_NAME].setText(edits["master_name"])
@@ -7086,17 +7151,17 @@ class App(QMainWindow):
                     if edits.get("category"):
                         items[self.COL_CATEGORY].setText(edits["category"])
                 # Don't overlay status for match rows
-                if not is_match and edits.get("status"):
+                if not is_match and not is_excluded_type and edits.get("status"):
                     items[self.COL_STATUS].setText(edits["status"])
 
             is_odd = i % 2 == 1
-            # Columns locked on Match rows
+            # Columns locked on Match rows and Excluded-type rows
             match_locked = {self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY, self.COL_STATUS}
             for col, ti in enumerate(items):
                 if col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY):
                     ti.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
                 # Set background per cell
-                is_ro = col in self._readonly_cols or (is_match and col in match_locked)
+                is_ro = col in self._readonly_cols or ((is_match or is_excluded_type) and col in match_locked)
                 if col == self.COL_LEMSA_QTY:
                     ti.setBackground(bg_qty_odd if is_odd else bg_qty_even)
                     ti.setFlags(ti.flags() & ~Qt.ItemFlag.ItemIsEditable)
@@ -7133,28 +7198,45 @@ class App(QMainWindow):
                 self._lock_exclude_row(i)
         self._m_all_table.setSortingEnabled(True)
 
-        nomatch_count = sum(1 for r in all_rows if r["status"] == "No Match")
-        match_count = sum(1 for r in all_rows if r["status"] == "Match")
-        # Qty Diff = Match rows where LEMSA qty != Master qty
+        # Compute filter counts from actual table cell values (after edit overlays)
+        nomatch_count = 0
+        match_count = 0
         qty_diff_count = 0
-        for r in all_rows:
-            if r["status"] == "Match":
+        excluded_count = 0
+        active_count = 0  # rows visible in "All Items" (not excluded/optional)
+        for ri in range(self._m_all_table.rowCount()):
+            type_cell = self._m_all_table.item(ri, self.COL_TYPE)
+            status_cell = self._m_all_table.item(ri, self.COL_STATUS)
+            rtype = type_cell.text().strip() if type_cell else ""
+            rstatus = status_cell.text().strip() if status_cell else ""
+            is_hidden = rtype == "Excluded" or rstatus in ("Exclude", "Optional")
+            if is_hidden:
+                excluded_count += 1
+                continue
+            active_count += 1
+            if rtype == "Match":
+                match_count += 1
+                l_cell = self._m_all_table.item(ri, self.COL_LEMSA_QTY)
+                m_cell = self._m_all_table.item(ri, self.COL_MASTER_QTY)
                 try:
-                    lq = int(r["lemsa_qty"]) if r["lemsa_qty"] != "" else None
-                    mq = int(r["master_qty"]) if r["master_qty"] != "" else None
+                    lq = int(l_cell.text().strip()) if l_cell and l_cell.text().strip() else None
+                    mq = int(m_cell.text().strip()) if m_cell and m_cell.text().strip() else None
                     if lq is not None and mq is not None and lq != mq:
                         qty_diff_count += 1
                 except (ValueError, TypeError):
                     pass
+            elif rtype == "No Match":
+                nomatch_count += 1
 
         # Update filter button labels
         self._filter_counts = {
-            0: len(all_rows),
+            0: active_count,
             1: match_count,
             2: nomatch_count,
             3: qty_diff_count,
+            4: excluded_count,
         }
-        labels = ["All Items", "Match", "No Match", "Qty Diff"]
+        labels = ["All Items", "Match", "No Match", "Qty Diff", "Excluded"]
         for i, btn in enumerate(self._filter_buttons):
             btn.setText(f"{labels[i]} ({self._filter_counts[i]})")
 
@@ -7163,7 +7245,8 @@ class App(QMainWindow):
 
         self._status.showMessage(
             f"Comparison: {nomatch_count} no match, {match_count} matched, "
-            f"{qty_diff_count} qty diff, {len(all_rows)} total items")
+            f"{qty_diff_count} qty diff, {excluded_count} excluded, "
+            f"{active_count} total items")
 
     def _apply_changes_to_master(self):
         """Apply table edits to the master list, then refresh comparison."""
@@ -7178,9 +7261,10 @@ class App(QMainWindow):
         updated = 0
         aliases_added = 0
         skipped = 0
+        applied_edit_keys = []  # track edit keys that were successfully applied
 
-        # Pre-pass: collect max qty per master item name across all rows
-        max_qty_by_master = {}  # master_name.lower() -> max qty
+        # Pre-pass: collect max qty per master item (name+group) across all rows
+        max_qty_by_master = {}  # (master_name.lower(), group.lower()) -> max qty
         for row in range(self._m_all_table.rowCount()):
             status_item = self._m_all_table.item(row, self.COL_STATUS)
             status = status_item.text().strip() if status_item else ""
@@ -7190,12 +7274,14 @@ class App(QMainWindow):
             mn = mn_item.text().strip() if mn_item else ""
             if not mn:
                 continue
+            grp_item = self._m_all_table.item(row, self.COL_GROUP)
+            grp = grp_item.text().strip() if grp_item else ""
             mq_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
             try:
                 q = int(mq_item.text().strip()) if mq_item and mq_item.text().strip() else 0
             except ValueError:
                 q = 0
-            key = mn.lower()
+            key = (mn.lower(), grp.lower())
             max_qty_by_master[key] = max(max_qty_by_master.get(key, 0), q)
 
         for row in range(self._m_all_table.rowCount()):
@@ -7216,13 +7302,17 @@ class App(QMainWindow):
             category_item = self._m_all_table.item(row, self.COL_CATEGORY)
             category = category_item.text().strip() if category_item else ""
 
+            # Edit key for cleanup tracking
+            name_item = self._m_all_table.item(row, self.COL_NAME)
+            edit_key = name_item.text().strip().lower() if name_item else ""
+
             try:
                 qty = int(master_qty_item.text().strip()) if master_qty_item and master_qty_item.text().strip() else 0
             except ValueError:
                 qty = 0
-            # Use max qty across all rows referencing this master item
+            # Use max qty across all rows referencing this exact master item (name+group)
             if master_name:
-                qty = max(qty, max_qty_by_master.get(master_name.lower(), qty))
+                qty = max(qty, max_qty_by_master.get((master_name.lower(), group.lower()), qty))
 
             if status == "New":
                 # Add new item to master list
@@ -7252,6 +7342,8 @@ class App(QMainWindow):
                 target_cat.items.append(MasterItem(new_name, qty, new_group))
                 added += 1
                 self._session_modified.add(new_name)
+                if edit_key:
+                    applied_edit_keys.append(edit_key)
             elif status == "Name Difference" and master_name:
                 # Write alias onto master item
                 cat_obj, master_item = self.master_list.find_item(master_name, group)
@@ -7291,6 +7383,8 @@ class App(QMainWindow):
                 if changed:
                     updated += 1
                     self._session_modified.add(master_name)
+                if edit_key:
+                    applied_edit_keys.append(edit_key)
             elif master_name:
                 # Update existing master item
                 cat_obj, master_item = self.master_list.find_item(master_name, group)
@@ -7320,11 +7414,20 @@ class App(QMainWindow):
                 if changed:
                     updated += 1
                     self._session_modified.add(master_name)
+                if edit_key:
+                    applied_edit_keys.append(edit_key)
 
         if added or updated or aliases_added:
             self.dirty_master = True
             self._update_save_state()
             self._rebuild_master_tree()
+
+        # Clean up successfully-applied edits (keep Exclude/Optional and skipped)
+        if applied_edit_keys:
+            edits = self._load_table_edits()
+            for ek in applied_edit_keys:
+                edits.pop(ek, None)
+            self._save_table_edits(edits)
 
         # Reset unapplied edits flag
         self._has_unapplied_edits = False
@@ -7382,7 +7485,7 @@ class App(QMainWindow):
     def _apply_table_filter(self):
         """Apply both search text and tab filter to the table."""
         query = self._m_find_edit.text().strip().lower() if hasattr(self, '_m_find_edit') else ""
-        active = self._active_filter  # 0=All, 1=Match, 2=No Match, 3=Qty Diff
+        active = self._active_filter  # 0=All, 1=Match, 2=No Match, 3=Qty Diff, 4=Excluded
 
         for row in range(self._m_all_table.rowCount()):
             # Text search filter
@@ -7396,26 +7499,34 @@ class App(QMainWindow):
 
             # Tab filter
             tab_match = True
-            if active != 0:
-                type_item = self._m_all_table.item(row, self.COL_TYPE)
-                row_type = type_item.text().strip() if type_item else ""
-                if active == 1:
-                    tab_match = row_type == "Match"
-                elif active == 2:
-                    tab_match = row_type == "No Match"
-                elif active == 3:
-                    # Qty Diff: Match rows where quantities differ
-                    if row_type != "Match":
+            type_item = self._m_all_table.item(row, self.COL_TYPE)
+            row_type = type_item.text().strip() if type_item else ""
+            status_item = self._m_all_table.item(row, self.COL_STATUS)
+            row_status = status_item.text().strip() if status_item else ""
+
+            if active == 0:
+                # All Items: hide Excluded-type rows and Optional/Exclude status rows
+                tab_match = row_type != "Excluded" and row_status not in ("Exclude", "Optional")
+            elif active == 1:
+                tab_match = row_type == "Match" and row_status not in ("Exclude", "Optional")
+            elif active == 2:
+                tab_match = row_type == "No Match" and row_status not in ("Exclude", "Optional")
+            elif active == 3:
+                # Qty Diff: Match rows where quantities differ
+                if row_type != "Match" or row_status in ("Exclude", "Optional"):
+                    tab_match = False
+                else:
+                    l_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
+                    m_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
+                    try:
+                        lq = int(l_item.text().strip()) if l_item and l_item.text().strip() else None
+                        mq = int(m_item.text().strip()) if m_item and m_item.text().strip() else None
+                        tab_match = lq is not None and mq is not None and lq != mq
+                    except ValueError:
                         tab_match = False
-                    else:
-                        l_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
-                        m_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
-                        try:
-                            lq = int(l_item.text().strip()) if l_item and l_item.text().strip() else None
-                            mq = int(m_item.text().strip()) if m_item and m_item.text().strip() else None
-                            tab_match = lq is not None and mq is not None and lq != mq
-                        except ValueError:
-                            tab_match = False
+            elif active == 4:
+                # Excluded tab: show Excluded-type rows + any row with Exclude/Optional status
+                tab_match = row_type == "Excluded" or row_status in ("Exclude", "Optional")
 
             self._m_all_table.setRowHidden(row, not (text_match and tab_match))
 
@@ -8456,9 +8567,11 @@ class App(QMainWindow):
 
     def _save_all(self):
         errors = []
+        saved_master = False
         if self.dirty_master and self.master_list:
             try:
                 self.master_list.save()
+                saved_master = True
             except Exception as e:
                 errors.append(f"Master: {e}")
         if self.dirty:
@@ -8479,6 +8592,29 @@ class App(QMainWindow):
         self.dirty = False
         self.dirty_master = False
         self._update_save_state()
+
+        # Clear modified session on save (change 6)
+        if saved_master and self._session_modified:
+            self._session_modified.clear()
+            self._show_modified_only = False
+            self._m_modified_btn.setChecked(False)
+            self._m_modified_btn.hide()
+            self._rebuild_master_tree()
+
+        # Refresh comparison table if master was saved and table has data
+        if saved_master and self._m_all_table.rowCount() > 0:
+            cached = self._load_compiled_list()
+            if cached:
+                self._flicker_table()
+                self._run_comparison_from_cache(cached)
+
+    def _flicker_table(self):
+        """Brief opacity flicker on the comparison table to signal a refresh."""
+        effect = QGraphicsOpacityEffect(self._m_all_table)
+        self._m_all_table.setGraphicsEffect(effect)
+        effect.setOpacity(0.3)
+        QTimer.singleShot(120, lambda: effect.setOpacity(1.0))
+        QTimer.singleShot(250, lambda: self._m_all_table.setGraphicsEffect(None))
 
     def closeEvent(self, event):
         if self.dirty or self.dirty_master:

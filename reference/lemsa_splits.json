@@ -62,5 +62,24 @@
         "qty": 1
       }
     ]
+  },
+  "aed cables and pads for sizes adult and pediatric": {
+    "original_name": "AED cables and pads for sizes adult and pediatric",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "AED cables",
+        "qty": 1
+      },
+      {
+        "name": "AED Pads, Adult",
+        "qty": 1
+      },
+      {
+        "name": "AED Pads, Pediatric",
+        "qty": 1
+      }
+    ]
   }
 }

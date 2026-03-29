@@ -380,7 +380,11 @@
     "group": "Manual BP Cuff",
     "master_qty": "1",
     "category": "Patient Assessment",
-    "status": ""
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Adult BP Cuff",
+      "lemsa": "Sierra-Sacramento Valley EMS Agency"
+    }
   },
   "pediatric bp cuff": {
     "master_name": "Child",
@@ -416,10 +420,25 @@
     }
   },
   "advanced airway tube/device holder": {
-    "master_name": "",
-    "group": "",
-    "master_qty": "",
-    "category": "",
-    "status": ""
+    "master_name": "Adult",
+    "group": "Thomas Tube Holder",
+    "master_qty": "1",
+    "category": "ET Tube Securement",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Advanced Airway Tube/Device Holder",
+      "lemsa": "Sierra-Sacramento Valley EMS Agency"
+    }
+  },
+  "aed cables": {
+    "master_name": "Defibrillation Cable",
+    "group": "Cables",
+    "master_qty": "1",
+    "category": "Zoll",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "AED cables",
+      "lemsa": "San Joaquin EMS Agency"
+    }
   }
 }
