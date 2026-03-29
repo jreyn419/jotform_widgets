@@ -90,12 +90,24 @@
         {
           "name": "22 ga",
           "emsa_min": 4,
-          "group": "Needle"
+          "group": "Needle",
+          "aliases": [
+            {
+              "name": "22 ga Safety Injection Needles",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "25 ga",
           "emsa_min": 4,
-          "group": "Needle"
+          "group": "Needle",
+          "aliases": [
+            {
+              "name": "25 ga Safety Injection Needles",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "Twinpak",
@@ -123,7 +135,13 @@
       "items": [
         {
           "name": "Acetaminophen Bag 1000mg/100mL",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "aliases": [
+            {
+              "name": "Acetaminophen – IV (1000 mg)",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "Activated Charcoal 25g/120mL",
@@ -131,7 +149,13 @@
         },
         {
           "name": "Adenosine 6mg/2mL",
-          "emsa_min": 3
+          "emsa_min": 3,
+          "aliases": [
+            {
+              "name": "Adenosine (6 mg/2 mL)",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
@@ -439,7 +463,13 @@
         },
         {
           "name": "EKG Electrode",
-          "emsa_min": 48
+          "emsa_min": 48,
+          "aliases": [
+            {
+              "name": "Adult/Pediatric ECG Electrodes",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "EKG razors",
@@ -453,7 +483,13 @@
         {
           "name": "Square Port",
           "emsa_min": 1,
-          "group": "Invasive Monitoring Cable"
+          "group": "Invasive Monitoring Cable",
+          "aliases": [
+            {
+              "name": "Abbott (square) invasive line cable",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         },
         {
           "name": "Temperature Monitoring Cable",
@@ -623,7 +659,13 @@
         },
         {
           "name": "Sterile Distilled Water for Irrigation Box 500mL",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "aliases": [
+            {
+              "name": "1000 mL Sterile Irrigation Solution",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "Sterile NS Water for Irrigation Box 500mL",
@@ -827,14 +869,20 @@
       "name": "Prep",
       "items": [
         {
-          "name": "Chlorhexidine Swabs Box",
+          "name": "Chlorhexidine Swab",
           "emsa_min": 1,
           "group": "Disinfectant"
         },
         {
-          "name": "Alcohol Prep Pads Box",
-          "emsa_min": 1,
-          "group": "Disinfectant"
+          "name": "Alcohol Prep Pad",
+          "emsa_min": 20,
+          "group": "Disinfectant",
+          "aliases": [
+            {
+              "name": "Alcohol Swabs",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "2\" x 2\", Sterile",
@@ -869,7 +917,7 @@
           "group": "Sponges"
         },
         {
-          "name": "Betadine Pads",
+          "name": "Betadine Pad",
           "emsa_min": 4,
           "group": "Disinfectant"
         }
@@ -906,7 +954,13 @@
       "items": [
         {
           "name": "Backboard",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "aliases": [
+            {
+              "name": "Adult Long Spine Board with Straps",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "Breakaway Stretcher",
@@ -960,7 +1014,13 @@
         },
         {
           "name": "Adult NRB",
-          "emsa_min": 4
+          "emsa_min": 4,
+          "aliases": [
+            {
+              "name": "Adult Non-rebreather oxygen mask",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         },
         {
           "name": "Adult BVM",
@@ -1134,7 +1194,13 @@
         },
         {
           "name": "Pressure Infusion Bag",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "aliases": [
+            {
+              "name": "1000ml Pressure infusion bag or equivalent",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         },
         {
           "name": "Fluid Warmer",
@@ -1243,7 +1309,13 @@
         },
         {
           "name": "Ventilator Circuit",
-          "emsa_min": 3
+          "emsa_min": 3,
+          "aliases": [
+            {
+              "name": "Adult ventilator circuit",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         }
       ]
     },
@@ -1268,7 +1340,13 @@
         },
         {
           "name": "Gauze Rolls",
-          "emsa_min": 5
+          "emsa_min": 5,
+          "aliases": [
+            {
+              "name": "2”, 3” or 4” Kling/Kerlix Rolls",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         },
         {
           "name": "Israeli Bandage",
@@ -1292,7 +1370,17 @@
         },
         {
           "name": "Triangular Bandage",
-          "emsa_min": 4
+          "emsa_min": 4,
+          "aliases": [
+            {
+              "name": "Triangular bandages",
+              "lemsa": "San Joaquin EMS Agency"
+            },
+            {
+              "name": "Triangular Bandages 40\"",
+              "lemsa": "Yolo County EMS Agency"
+            }
+          ]
         },
         {
           "name": "Chest Decompression Needle",
@@ -1337,7 +1425,13 @@
         },
         {
           "name": "Traction Splint",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "aliases": [
+            {
+              "name": "Adult traction splint for femur",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         }
       ],
       "child_of": "Trauma"
@@ -1435,7 +1529,13 @@
         {
           "name": "60 mL Syringe, Catheter Tip",
           "emsa_min": 1,
-          "group": "Luer Lock, Needle-less"
+          "group": "Luer Lock, Needle-less",
+          "aliases": [
+            {
+              "name": "50 – 60 mL Syringe",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            }
+          ]
         }
       ]
     },
@@ -1513,12 +1613,16 @@
       "items": [
         {
           "name": "Adult",
-          "emsa_min": 1,
+          "emsa_min": 2,
           "group": "Thomas Tube Holder",
           "aliases": [
             {
               "name": "Advanced Airway Tube/Device Holder",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            },
+            {
+              "name": "ET tube holder",
+              "lemsa": "San Joaquin EMS Agency"
             }
           ]
         },
@@ -1834,12 +1938,32 @@
         {
           "name": "1\"",
           "emsa_min": 2,
-          "group": "Tape (Cloth/Synthetic)"
+          "group": "Tape (Cloth/Synthetic)",
+          "aliases": [
+            {
+              "name": "1” Adhesive Tape Rolls",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            },
+            {
+              "name": "Adhesive Tape 1\"",
+              "lemsa": "Yolo County EMS Agency"
+            }
+          ]
         },
         {
           "name": "2\"",
           "emsa_min": 2,
-          "group": "Tape (Cloth/Synthetic)"
+          "group": "Tape (Cloth/Synthetic)",
+          "aliases": [
+            {
+              "name": "2” Adhesive Tape Rolls",
+              "lemsa": "Sierra-Sacramento Valley EMS Agency"
+            },
+            {
+              "name": "Adhesive Tape 2\"",
+              "lemsa": "Yolo County EMS Agency"
+            }
+          ]
         },
         {
           "name": "Coban",

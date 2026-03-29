@@ -862,7 +862,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.2.1"
+VERSION = "6.3.0"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1682,6 +1682,7 @@ class App(QMainWindow):
         self._has_unapplied_edits = False  # enables Apply Changes button
         self._session_modified = set()  # master item names modified during this session
         self._show_modified_only = False  # toggle for tree filter
+        self._show_rig_modified_only = False  # toggle for rig tree filter
         self._ui_state_path = os.path.join(self.base_dir, "ui_state.json")
 
         # Undo/redo stacks (separate per tree, snapshot-based)
@@ -2203,6 +2204,15 @@ class App(QMainWindow):
         layout = QVBoxLayout(self._rig_tab)
         layout.setContentsMargins(4, 4, 4, 0)
 
+        # Main horizontal splitter: [Left (combos + trees + editor) | Right (preview)]
+        self._rig_main_splitter = QSplitter(Qt.Orientation.Horizontal)
+        layout.addWidget(self._rig_main_splitter)
+
+        # ── Left panel ──────────────────────────────────────────────────────
+        left_panel = QWidget()
+        lp_layout = QVBoxLayout(left_panel)
+        lp_layout.setContentsMargins(4, 4, 4, 4)
+
         # Row 1: Rig selection
         dir_row = QHBoxLayout()
         dir_row.addWidget(QLabel("Rig:"))
@@ -2217,7 +2227,7 @@ class App(QMainWindow):
         dup_btn.clicked.connect(self._duplicate_rig)
         dir_row.addWidget(dup_btn)
         dir_row.addStretch()
-        layout.addLayout(dir_row)
+        lp_layout.addLayout(dir_row)
 
         # Row 2: Checklist selection
         file_row = QHBoxLayout()
@@ -2236,18 +2246,15 @@ class App(QMainWindow):
         del_cl_btn.clicked.connect(self._delete_checklist)
         file_row.addWidget(del_cl_btn)
         file_row.addStretch()
-        layout.addLayout(file_row)
+        lp_layout.addLayout(file_row)
 
-        self._rig_splitter = ReorderableSplitter(Qt.Orientation.Horizontal)
-        self._rig_splitter.reordered.connect(self._save_ui_state)
-        layout.addWidget(self._rig_splitter)
+        # Inner horizontal splitter: [Checklist tree | Master Ref tree]
+        self._rig_trees_splitter = QSplitter(Qt.Orientation.Horizontal)
 
-        left = QWidget()
-        left_layout = QVBoxLayout(left)
-        left_layout.setContentsMargins(4, 4, 4, 4)
-
-        left_grip = PanelGrip("Checklist", "checklist", self._rig_splitter)
-        left_layout.addWidget(left_grip)
+        # -- Checklist tree panel --
+        cl_panel = QWidget()
+        cl_layout = QVBoxLayout(cl_panel)
+        cl_layout.setContentsMargins(0, 0, 0, 0)
 
         sf = QHBoxLayout()
         sf.addWidget(QLabel("Search:"))
@@ -2261,7 +2268,19 @@ class App(QMainWindow):
         clear_btn.setStyleSheet("padding: 2px;")
         clear_btn.clicked.connect(lambda: self._r_search.setText(""))
         sf.addWidget(clear_btn)
-        left_layout.addLayout(sf)
+        self._r_modified_btn = QPushButton("Modified")
+        self._r_modified_btn.setCheckable(True)
+        self._r_modified_btn.setFixedHeight(24)
+        self._r_modified_btn.setStyleSheet(
+            "QPushButton { padding: 2px 8px; font-size: 11px; color: #6c7086;"
+            " border: 1px solid #45475a; border-radius: 3px; }"
+            "QPushButton:checked { background: #45475a; color: #cdd6f4; }"
+            "QPushButton:hover:!checked { background: #313244; }")
+        self._r_modified_btn.setToolTip("Show only items modified during this session")
+        self._r_modified_btn.clicked.connect(self._toggle_rig_modified_filter)
+        self._r_modified_btn.hide()
+        sf.addWidget(self._r_modified_btn)
+        cl_layout.addLayout(sf)
 
         self._r_tree = DragDropTree()
         self._r_tree.setIndentation(20)
@@ -2276,97 +2295,15 @@ class App(QMainWindow):
         self._r_tree._paired_search = '_r_search'
         self._r_tree.installEventFilter(self)
         self._r_toggle_row, self._r_toggle_btn = self._make_toggle_all_row(self._r_tree)
-        left_layout.addLayout(self._r_toggle_row)
-        left_layout.addWidget(self._r_tree)
-        self._rig_splitter.register_panel("checklist", left)
+        cl_layout.addLayout(self._r_toggle_row)
+        cl_layout.addWidget(self._r_tree)
+        self._rig_trees_splitter.addWidget(cl_panel)
 
-        # Right side: two panels with maximize toggles (mirrors master list tab)
-        right = QWidget()
-        right_layout = QVBoxLayout(right)
-        right_layout.setContentsMargins(4, 4, 4, 4)
+        # -- Master Ref tree panel --
+        mr_panel = QWidget()
+        mr_layout = QVBoxLayout(mr_panel)
+        mr_layout.setContentsMargins(0, 0, 0, 0)
 
-        right_grip = PanelGrip("Editor / Preview", "editor_preview", self._rig_splitter)
-        right_layout.addWidget(right_grip)
-
-        self._r_right_splitter = QSplitter(Qt.Orientation.Vertical)
-
-        # Top panel: Editor
-        editor_panel = QWidget()
-        ep_layout = QVBoxLayout(editor_panel)
-        ep_layout.setContentsMargins(0, 0, 0, 0)
-        ep_header = QHBoxLayout()
-        self._r_detail_title = QLabel("Select an item")
-        self._r_detail_title.setStyleSheet("font-size: 14px; font-weight: bold;")
-        ep_header.addWidget(self._r_detail_title)
-        ep_header.addStretch()
-        self._r_editor_max_btn = QPushButton("⤢")
-        self._r_editor_max_btn.setFixedSize(24, 24)
-        self._r_editor_max_btn.setStyleSheet("padding: 2px;")
-        self._r_editor_max_btn.setToolTip("Maximize/restore editor panel")
-        self._r_editor_max_btn.clicked.connect(lambda: self._toggle_rig_panel("editor"))
-        ep_header.addWidget(self._r_editor_max_btn)
-        ep_layout.addLayout(ep_header)
-        self._r_editor_area = QScrollArea()
-        self._r_editor_area.setWidgetResizable(True)
-        self._r_editor_widget = QWidget()
-        self._r_editor_layout = QVBoxLayout(self._r_editor_widget)
-        self._r_editor_area.setWidget(self._r_editor_widget)
-        ep_layout.addWidget(self._r_editor_area)
-        self._r_right_splitter.addWidget(editor_panel)
-
-        # Bottom panel: Preview
-        preview_panel = QWidget()
-        pp_layout = QVBoxLayout(preview_panel)
-        pp_layout.setContentsMargins(0, 0, 0, 0)
-        pp_header = QHBoxLayout()
-        preview_label = QLabel("Preview")
-        preview_label.setStyleSheet("font-size: 14px; font-weight: bold;")
-        pp_header.addWidget(preview_label)
-        pp_header.addStretch()
-        sim_btn = QPushButton("Open in Browser")
-        sim_btn.setToolTip("Open preview in external browser")
-        sim_btn.clicked.connect(self._simulate)
-        pp_header.addWidget(sim_btn)
-        if HAS_WEBENGINE:
-            self._preview_refresh_btn = QPushButton("↻")
-            self._preview_refresh_btn.setFixedSize(24, 24)
-            self._preview_refresh_btn.setStyleSheet("padding: 2px;")
-            self._preview_refresh_btn.setToolTip("Refresh preview")
-            self._preview_refresh_btn.clicked.connect(self._refresh_preview)
-            pp_header.addWidget(self._preview_refresh_btn)
-        self._r_preview_max_btn = QPushButton("⤢")
-        self._r_preview_max_btn.setFixedSize(24, 24)
-        self._r_preview_max_btn.setStyleSheet("padding: 2px;")
-        self._r_preview_max_btn.setToolTip("Maximize/restore preview panel")
-        self._r_preview_max_btn.clicked.connect(lambda: self._toggle_rig_panel("preview"))
-        pp_header.addWidget(self._r_preview_max_btn)
-        pp_layout.addLayout(pp_header)
-
-        if HAS_WEBENGINE:
-            self._preview_web = QWebEngineView()
-            pp_layout.addWidget(self._preview_web)
-        else:
-            self._preview_web = None
-            no_preview = QLabel("Install PyQt6-WebEngine for inline preview")
-            no_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            no_preview.setStyleSheet("color: #6c7086; font-style: italic; padding: 20px;")
-            pp_layout.addWidget(no_preview)
-
-        self._r_right_splitter.addWidget(preview_panel)
-        self._r_right_splitter.setSizes([300, 300])
-        self._r_maximized_panel = None
-        self._r_editor_panel = editor_panel
-        self._r_preview_panel = preview_panel
-
-        right_layout.addWidget(self._r_right_splitter)
-        self._rig_splitter.register_panel("editor_preview", right)
-
-        # Far right: Master list reference (read-only, drag source)
-        master_ref = QWidget()
-        mr_layout = QVBoxLayout(master_ref)
-        mr_layout.setContentsMargins(4, 4, 4, 4)
-        mr_grip = PanelGrip("Master List", "master_ref", self._rig_splitter)
-        mr_layout.addWidget(mr_grip)
         mr_sf = QHBoxLayout()
         mr_sf.addWidget(QLabel("Search:"))
         self._mr_search = QLineEdit()
@@ -2392,8 +2329,81 @@ class App(QMainWindow):
         self._mr_toggle_row, self._mr_toggle_btn = self._make_toggle_all_row(self._mr_tree)
         mr_layout.addLayout(self._mr_toggle_row)
         mr_layout.addWidget(self._mr_tree)
-        self._rig_splitter.register_panel("master_ref", master_ref)
-        self._rig_splitter.setSizes([350, 400, 250])
+        self._rig_trees_splitter.addWidget(mr_panel)
+
+        self._rig_trees_splitter.setSizes([400, 250])
+        lp_layout.addWidget(self._rig_trees_splitter)
+
+        # -- Collapsible Editor at bottom of left panel --
+        self._r_editor_container = QWidget()
+        ec_layout = QVBoxLayout(self._r_editor_container)
+        ec_layout.setContentsMargins(0, 0, 0, 0)
+        ec_layout.setSpacing(0)
+
+        # Editor header with collapse toggle
+        editor_header = QHBoxLayout()
+        self._r_editor_collapse_btn = QPushButton("▼")
+        self._r_editor_collapse_btn.setFixedSize(20, 20)
+        self._r_editor_collapse_btn.setStyleSheet(
+            "QPushButton { background: transparent; color: #a6adc8;"
+            " border: none; font-size: 11px; padding: 0; }"
+            "QPushButton:hover { color: #cdd6f4; }")
+        self._r_editor_collapse_btn.setToolTip("Expand/collapse editor")
+        self._r_editor_collapse_btn.clicked.connect(self._toggle_rig_editor)
+        editor_header.addWidget(self._r_editor_collapse_btn)
+        self._r_detail_title = QLabel("Select an item")
+        self._r_detail_title.setStyleSheet("font-size: 12px; font-weight: bold;")
+        editor_header.addWidget(self._r_detail_title)
+        editor_header.addStretch()
+        ec_layout.addLayout(editor_header)
+
+        self._r_editor_area = QScrollArea()
+        self._r_editor_area.setWidgetResizable(True)
+        self._r_editor_area.setMaximumHeight(200)
+        self._r_editor_widget = QWidget()
+        self._r_editor_layout = QVBoxLayout(self._r_editor_widget)
+        self._r_editor_area.setWidget(self._r_editor_widget)
+        ec_layout.addWidget(self._r_editor_area)
+
+        self._r_editor_expanded = True
+        lp_layout.addWidget(self._r_editor_container)
+
+        self._rig_main_splitter.addWidget(left_panel)
+
+        # ── Right panel: Preview (full height) ──────────────────────────────
+        preview_panel = QWidget()
+        pp_layout = QVBoxLayout(preview_panel)
+        pp_layout.setContentsMargins(4, 4, 4, 4)
+        pp_header = QHBoxLayout()
+        preview_label = QLabel("Preview")
+        preview_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+        pp_header.addWidget(preview_label)
+        pp_header.addStretch()
+        sim_btn = QPushButton("Open in Browser")
+        sim_btn.setToolTip("Open preview in external browser")
+        sim_btn.clicked.connect(self._simulate)
+        pp_header.addWidget(sim_btn)
+        if HAS_WEBENGINE:
+            self._preview_refresh_btn = QPushButton("↻")
+            self._preview_refresh_btn.setFixedSize(24, 24)
+            self._preview_refresh_btn.setStyleSheet("padding: 2px;")
+            self._preview_refresh_btn.setToolTip("Refresh preview")
+            self._preview_refresh_btn.clicked.connect(self._refresh_preview)
+            pp_header.addWidget(self._preview_refresh_btn)
+        pp_layout.addLayout(pp_header)
+
+        if HAS_WEBENGINE:
+            self._preview_web = QWebEngineView()
+            pp_layout.addWidget(self._preview_web)
+        else:
+            self._preview_web = None
+            no_preview = QLabel("Install PyQt6-WebEngine for inline preview")
+            no_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            no_preview.setStyleSheet("color: #6c7086; font-style: italic; padding: 20px;")
+            pp_layout.addWidget(no_preview)
+
+        self._rig_main_splitter.addWidget(preview_panel)
+        self._rig_main_splitter.setSizes([550, 450])
 
         # Set up cross-tree drop handler
         self._r_tree._external_drop_handler = self._on_master_ref_drop
@@ -2421,10 +2431,12 @@ class App(QMainWindow):
             }
         """)
         btn.setToolTip("Expand/collapse all")
-        lbl = QLabel("Toggle All")
+        lbl = QPushButton("Toggle All")
+        lbl.setFlat(True)
         lbl.setStyleSheet(
-            "QLabel { color: #a6adc8; font-size: 12px; }"
-            "QLabel:hover { text-decoration: underline; }")
+            "QPushButton { color: #a6adc8; font-size: 12px; border: none;"
+            " text-align: left; padding: 0px; }"
+            "QPushButton:hover { text-decoration: underline; }")
         lbl.setCursor(Qt.CursorShape.PointingHandCursor)
 
         def _toggle():
@@ -2438,7 +2450,7 @@ class App(QMainWindow):
             btn.setText("−" if expanding else "+")
 
         btn.clicked.connect(_toggle)
-        lbl.mousePressEvent = lambda e: _toggle()
+        lbl.clicked.connect(_toggle)
         row.addWidget(btn)
         row.addWidget(lbl)
         row.addStretch()
@@ -2575,11 +2587,10 @@ class App(QMainWindow):
             "lemsa_splitter": self._lemsa_splitter.sizes(),
             "master_splitter": self._master_splitter.sizes(),
             "master_right_splitter": self._m_right_splitter.sizes(),
-            "rig_splitter": self._rig_splitter.sizes(),
-            "rig_right_splitter": self._r_right_splitter.sizes(),
-            "rig_panel_order": self._rig_splitter.panel_order(),
+            "rig_main_splitter": self._rig_main_splitter.sizes(),
+            "rig_trees_splitter": self._rig_trees_splitter.sizes(),
+            "rig_editor_expanded": self._r_editor_expanded,
             "maximized_panel": self._m_maximized_panel,
-            "rig_maximized_panel": self._r_maximized_panel,
             "window_geometry": [self.x(), self.y(), self.width(), self.height()],
         }
         try:
@@ -2611,24 +2622,25 @@ class App(QMainWindow):
         if "master_right_splitter" in state:
             self._m_right_splitter.setSizes(state["master_right_splitter"])
         if "rig_panel_order" in state:
-            self._rig_splitter.restore_order(state["rig_panel_order"])
+            pass  # legacy key — reorderable rig splitter removed
         if "rig_splitter" in state:
-            saved = state["rig_splitter"]
-            if len(saved) == self._rig_splitter.count():
-                self._rig_splitter.setSizes(saved)
-            # else: panel count changed (e.g. preview added), keep defaults
+            pass  # legacy key — replaced by rig_main_splitter
+        if "rig_main_splitter" in state:
+            saved = state["rig_main_splitter"]
+            if len(saved) == self._rig_main_splitter.count():
+                self._rig_main_splitter.setSizes(saved)
+        if "rig_trees_splitter" in state:
+            saved = state["rig_trees_splitter"]
+            if len(saved) == self._rig_trees_splitter.count():
+                self._rig_trees_splitter.setSizes(saved)
 
         saved_max = state.get("maximized_panel")
         if saved_max in ("editor", "lemsa"):
             self._m_maximized_panel = None  # reset so toggle works
             self._toggle_master_panel(saved_max)
 
-        if "rig_right_splitter" in state:
-            self._r_right_splitter.setSizes(state["rig_right_splitter"])
-        saved_rig_max = state.get("rig_maximized_panel")
-        if saved_rig_max in ("editor", "preview"):
-            self._r_maximized_panel = None  # reset so toggle works
-            self._toggle_rig_panel(saved_rig_max)
+        if not state.get("rig_editor_expanded", True):
+            self._toggle_rig_editor()
 
     def _toggle_master_panel(self, which):
         """Toggle maximize/restore for editor or lemsa panel."""
@@ -2652,27 +2664,21 @@ class App(QMainWindow):
                 self._m_lemsa_max_btn.setText("⤡")
             self._m_maximized_panel = which
 
-    def _toggle_rig_panel(self, which):
-        """Toggle maximize/restore for editor or preview panel in rig tab."""
-        if self._r_maximized_panel == which:
-            # Restore
-            self._r_editor_panel.show()
-            self._r_preview_panel.show()
-            self._r_right_splitter.setSizes([300, 300])
-            self._r_maximized_panel = None
-            self._r_editor_max_btn.setText("⤢")
-            self._r_preview_max_btn.setText("⤢")
+    def _toggle_rig_editor(self):
+        """Toggle expand/collapse of the rig editor at the bottom of the left panel."""
+        if self._r_editor_expanded:
+            self._r_editor_area.hide()
+            self._r_editor_collapse_btn.setText("▶")
+            self._r_editor_expanded = False
         else:
-            # Maximize the requested panel
-            if which == "editor":
-                self._r_preview_panel.hide()
-                self._r_editor_panel.show()
-                self._r_editor_max_btn.setText("⤡")
-            else:
-                self._r_editor_panel.hide()
-                self._r_preview_panel.show()
-                self._r_preview_max_btn.setText("⤡")
-            self._r_maximized_panel = which
+            self._r_editor_area.show()
+            self._r_editor_collapse_btn.setText("▼")
+            self._r_editor_expanded = True
+
+    def _toggle_rig_modified_filter(self):
+        """Toggle the modified-only filter on the rig tree."""
+        self._show_rig_modified_only = self._r_modified_btn.isChecked()
+        self._rebuild_rig_tree()
 
     def _show_progress(self, maximum=0, text=""):
         """Show the global progress bar with optional text overlay."""
@@ -2744,10 +2750,9 @@ class App(QMainWindow):
             self._rig_combo.blockSignals(False)
             return
         rigs = sorted([n for n in os.listdir(d) if os.path.isdir(os.path.join(d, n))], key=str.lower)
+        self._rig_combo.addItem("")  # empty placeholder
         self._rig_combo.addItems(rigs)
         self._rig_combo.blockSignals(False)
-        if rigs:
-            self._on_rig_selected()
 
     def _on_rig_selected(self):
         rig = self._rig_combo.currentText()
@@ -4910,6 +4915,7 @@ class App(QMainWindow):
             return
         q = self._r_search.text().strip().lower()
         mn = self.master_list.all_item_names() if self.master_list else set()
+        rig_mod = self._show_rig_modified_only and self._session_modified
         CN = DragDropTree.ROLE_CLEAN_NAME
 
         # Build area nodes, then nest children under parents
@@ -4933,6 +4939,9 @@ class App(QMainWindow):
                 matches = [(ii, it) for ii, it in enumerate(cat.items)
                            if not q or area_match or cat_match
                            or q in it.name.lower() or (it.group and q in it.group.lower())]
+                if rig_mod:
+                    matches = [(ii, it) for ii, it in matches
+                               if it.name in self._session_modified]
                 if not matches:
                     continue
 
@@ -6836,6 +6845,9 @@ class App(QMainWindow):
         self._show_modified_only = False
         self._m_modified_btn.setChecked(False)
         self._m_modified_btn.hide()
+        self._show_rig_modified_only = False
+        self._r_modified_btn.setChecked(False)
+        self._r_modified_btn.hide()
 
         # Step 2: Check for updates first
         self._status.showMessage("Checking LEMSAs for updates before comparing...")
@@ -7444,10 +7456,13 @@ class App(QMainWindow):
             parts.append(f"{skipped} skipped")
         self._status.showMessage(f"Applied: {', '.join(parts) if parts else 'no changes'}")
 
-        # Update modified filter button
+        # Update modified filter buttons
         if self._session_modified:
-            self._m_modified_btn.setText(f"Modified ({len(self._session_modified)})")
+            mod_label = f"Modified ({len(self._session_modified)})"
+            self._m_modified_btn.setText(mod_label)
             self._m_modified_btn.show()
+            self._r_modified_btn.setText(mod_label)
+            self._r_modified_btn.show()
 
         # Refresh the comparison table from cache
         cached = self._load_compiled_list()
@@ -8142,21 +8157,13 @@ class App(QMainWindow):
             type_item = self._m_all_table.item(row, self.COL_TYPE)
             if type_item and type_item.text().strip() == "Match":
                 return False
-        # No Match rows with a recognized master name: Group/Category locked unless multi-match
+        # No Match rows with a recognized master name: Group/Category always locked
         if col in (self.COL_GROUP, self.COL_CATEGORY):
             master_name_item = self._m_all_table.item(row, self.COL_MASTER_NAME)
             if master_name_item and master_name_item.text().strip() and self.master_list:
                 matches = self.master_list.find_all_items(master_name_item.text().strip())
-                if len(matches) == 1:
+                if matches:
                     return False
-                if len(matches) > 1:
-                    # Multi-match: Group is editable if groups differ, Category if cats differ
-                    groups = {(mi.group or "") for _, mi in matches}
-                    cats = {cat.name for cat, _ in matches}
-                    if col == self.COL_GROUP and len(groups) <= 1:
-                        return False
-                    if col == self.COL_CATEGORY and len(cats) <= 1:
-                        return False
         return True
 
     def _deferred_edit_item(self, item, attempt):
@@ -8264,13 +8271,6 @@ class App(QMainWindow):
                                 cat_obj, master_item = matches[0]
                             is_odd = row % 2 == 1
                             bg_ro = QBrush(QColor("#1a1a28") if is_odd else QColor("#1e1e2e"))
-                            bg_ed = QBrush(QColor("#252536") if is_odd else QColor("#2a2a3c"))
-
-                            # Determine if groups/categories differ across matches
-                            groups = {(mi.group or "") for _, mi in matches}
-                            cats = {cat.name for cat, _ in matches}
-                            multi_group = len(groups) > 1
-                            multi_cat = len(cats) > 1
 
                             # Group
                             grp_item = self._m_all_table.item(row, self.COL_GROUP)
@@ -8278,14 +8278,9 @@ class App(QMainWindow):
                                 grp_item = QTableWidgetItem("")
                                 self._m_all_table.setItem(row, self.COL_GROUP, grp_item)
                             grp_item.setText(master_item.group or "")
-                            if multi_group:
-                                grp_item.setFlags(grp_item.flags() | Qt.ItemFlag.ItemIsEditable)
-                                grp_item.setBackground(bg_ed)
-                                grp_item.setData(self.ROLE_VALID_OPTIONS, sorted(groups))
-                            else:
-                                grp_item.setFlags(grp_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                                grp_item.setBackground(bg_ro)
-                                grp_item.setData(self.ROLE_VALID_OPTIONS, None)
+                            grp_item.setFlags(grp_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                            grp_item.setBackground(bg_ro)
+                            grp_item.setData(self.ROLE_VALID_OPTIONS, None)
 
                             # Qty
                             qty_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
@@ -8300,14 +8295,9 @@ class App(QMainWindow):
                                 cat_item = QTableWidgetItem("")
                                 self._m_all_table.setItem(row, self.COL_CATEGORY, cat_item)
                             cat_item.setText(cat_obj.name)
-                            if multi_cat:
-                                cat_item.setFlags(cat_item.flags() | Qt.ItemFlag.ItemIsEditable)
-                                cat_item.setBackground(bg_ed)
-                                cat_item.setData(self.ROLE_VALID_OPTIONS, sorted(cats))
-                            else:
-                                cat_item.setFlags(cat_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                                cat_item.setBackground(bg_ro)
-                                cat_item.setData(self.ROLE_VALID_OPTIONS, None)
+                            cat_item.setFlags(cat_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                            cat_item.setBackground(bg_ro)
+                            cat_item.setData(self.ROLE_VALID_OPTIONS, None)
 
                             # Apply dynamic qty coloring
                             lemsa_qty_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
@@ -8593,13 +8583,17 @@ class App(QMainWindow):
         self.dirty_master = False
         self._update_save_state()
 
-        # Clear modified session on save (change 6)
+        # Clear modified session on save
         if saved_master and self._session_modified:
             self._session_modified.clear()
             self._show_modified_only = False
             self._m_modified_btn.setChecked(False)
             self._m_modified_btn.hide()
+            self._show_rig_modified_only = False
+            self._r_modified_btn.setChecked(False)
+            self._r_modified_btn.hide()
             self._rebuild_master_tree()
+            self._rebuild_rig_tree()
 
         # Refresh comparison table if master was saved and table has data
         if saved_master and self._m_all_table.rowCount() > 0:

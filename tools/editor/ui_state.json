@@ -4,21 +4,21 @@
     1018
   ],
   "master_splitter": [
-    318,
-    1109
+    347,
+    1080
   ],
   "master_right_splitter": [
     0,
     772
   ],
   "rig_splitter": [
-    166,
-    203,
-    257
+    375,
+    407,
+    634
   ],
   "rig_right_splitter": [
-    0,
-    367
+    334,
+    333
   ],
   "rig_panel_order": [
     "checklist",
@@ -26,7 +26,7 @@
     "editor_preview"
   ],
   "maximized_panel": "lemsa",
-  "rig_maximized_panel": "preview",
+  "rig_maximized_panel": null,
   "window_geometry": [
     0,
     30,

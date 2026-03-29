@@ -81,5 +81,24 @@
         "qty": 1
       }
     ]
+  },
+  "adhesive tape 1\", 2\", or 3\"": {
+    "original_name": "Adhesive Tape 1\", 2\", or 3\"",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Adhesive Tape 1\"",
+        "qty": 2
+      },
+      {
+        "name": "Adhesive Tape 2\"",
+        "qty": 2
+      },
+      {
+        "name": "Adhesive Tape 3\"",
+        "qty": 2
+      }
+    ]
   }
 }

@@ -10,12 +10,12 @@
           "name": "Top Shelf",
           "items": [
             {
-              "name": "Alcohol Prep Pads Box",
+              "name": "Alcohol Prep Pad",
               "qty": 1,
               "group": "Disinfectant"
             },
             {
-              "name": "Chlorhexidine Swabs Box",
+              "name": "Chlorhexidine Swab",
               "qty": 1,
               "group": "Disinfectant"
             },
