@@ -12,13 +12,13 @@
     772
   ],
   "rig_splitter": [
-    352,
-    488,
-    576
+    169,
+    206,
+    257
   ],
   "rig_right_splitter": [
     0,
-    667
+    477
   ],
   "rig_panel_order": [
     "checklist",
@@ -26,7 +26,7 @@
     "editor_preview"
   ],
   "maximized_panel": "lemsa",
-  "rig_maximized_panel": null,
+  "rig_maximized_panel": "preview",
   "window_geometry": [
     0,
     30,

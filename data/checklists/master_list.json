@@ -9,12 +9,12 @@
           "group": "Pediatric HFNCs"
         },
         {
-          "name": "M Adult",
+          "name": "Medium",
           "emsa_min": 2,
           "group": "Adult HFNCs"
         },
         {
-          "name": "S Adult",
+          "name": "Small",
           "emsa_min": 2,
           "group": "Adult HFNCs"
         },
@@ -43,14 +43,14 @@
           "emsa_min": 6
         },
         {
-          "name": "Adult",
+          "name": "Pediatric",
           "emsa_min": 1,
           "group": "Magill Forceps"
         },
         {
-          "name": "Pediatric",
-          "emsa_min": 1,
-          "group": "Magill Forceps"
+          "name": "Large",
+          "emsa_min": 2,
+          "group": "Adult HFNCs"
         }
       ]
     },
@@ -171,13 +171,7 @@
         },
         {
           "name": "Amiodarone 150mg/3mL",
-          "emsa_min": 6,
-          "aliases": [
-            {
-              "name": "Amiodarone (150 mg/3 mL)",
-              "lemsa": "Sierra-Sacramento Valley EMS Agency"
-            }
-          ]
+          "emsa_min": 6
         },
         {
           "name": "Nitroglycerin Ointment 1g/in.",
@@ -324,8 +318,8 @@
           "group": "Glucometer kit"
         },
         {
-          "name": "Lancets",
-          "emsa_min": 6,
+          "name": "Lancet",
+          "emsa_min": 10,
           "group": "Glucometer kit"
         },
         {
@@ -386,6 +380,11 @@
         {
           "name": "Pediatric Emergency Tape",
           "emsa_min": 1
+        },
+        {
+          "name": "Adult",
+          "emsa_min": 1,
+          "group": "Manual BP Cuff"
         }
       ]
     },
@@ -433,8 +432,8 @@
           "group": "Cables"
         },
         {
-          "name": "Electrode Bag",
-          "emsa_min": 1
+          "name": "EKG Electrode",
+          "emsa_min": 48
         },
         {
           "name": "EKG razors",
@@ -448,13 +447,7 @@
         {
           "name": "Square Port",
           "emsa_min": 1,
-          "group": "Invasive Monitoring Cable",
-          "aliases": [
-            {
-              "name": "Abbott (square) invasive line cable",
-              "lemsa": "San Joaquin EMS Agency"
-            }
-          ]
+          "group": "Invasive Monitoring Cable"
         },
         {
           "name": "Temperature Monitoring Cable",
@@ -486,11 +479,6 @@
         },
         {
           "name": "Pediatric",
-          "emsa_min": 2,
-          "group": "Defibrillation Pads"
-        },
-        {
-          "name": "Adult",
           "emsa_min": 2,
           "group": "Defibrillation Pads"
         },
@@ -561,13 +549,7 @@
         },
         {
           "name": "Ventilator",
-          "emsa_min": 1,
-          "aliases": [
-            {
-              "name": "Zoll Z series™ ventilator with CPAP and/or BiPAP*",
-              "lemsa": "San Joaquin EMS Agency"
-            }
-          ]
+          "emsa_min": 1
         },
         {
           "name": "Portable Suction + charger",
@@ -629,13 +611,7 @@
         },
         {
           "name": "Sterile Distilled Water for Irrigation Box 500mL",
-          "emsa_min": 2,
-          "aliases": [
-            {
-              "name": "1000 mL Sterile Irrigation Solution",
-              "lemsa": "Sierra-Sacramento Valley EMS Agency"
-            }
-          ]
+          "emsa_min": 2
         },
         {
           "name": "Sterile NS Water for Irrigation Box 500mL",
@@ -851,12 +827,24 @@
         {
           "name": "2\" x 2\", Sterile",
           "emsa_min": 10,
-          "group": "Sponges"
+          "group": "Sponges",
+          "aliases": [
+            {
+              "name": "2 x 2 gauze pads Sterile",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         },
         {
           "name": "4\" x 4\", Sterile",
           "emsa_min": 10,
-          "group": "Sponges"
+          "group": "Sponges",
+          "aliases": [
+            {
+              "name": "4 x 4 gauze pads Sterile",
+              "lemsa": "San Joaquin EMS Agency"
+            }
+          ]
         },
         {
           "name": "2\"x2\", Non-Sterile (Sleeve)",
@@ -942,7 +930,7 @@
           "emsa_min": 3
         },
         {
-          "name": "Urinals",
+          "name": "Urinal",
           "emsa_min": 3
         }
       ]
@@ -960,7 +948,7 @@
         },
         {
           "name": "Adult NRB",
-          "emsa_min": 3
+          "emsa_min": 4
         },
         {
           "name": "Adult BVM",
@@ -973,10 +961,6 @@
         {
           "name": "Adult High-Flow Circuit",
           "emsa_min": 3
-        },
-        {
-          "name": "Large Adult CPAP Mask",
-          "emsa_min": 2
         },
         {
           "name": "Pediatric BVM",
@@ -995,8 +979,9 @@
           "emsa_min": 3
         },
         {
-          "name": "Medium/Small Adult CPAP Mask",
-          "emsa_min": 2
+          "name": "Medium/Small",
+          "emsa_min": 2,
+          "group": "CPAP Masks, Adult"
         },
         {
           "name": "Adult EtCO2 Nasal Cannula",
@@ -1027,6 +1012,11 @@
         {
           "name": "Pediatric Nebulizer Mask",
           "emsa_min": 3
+        },
+        {
+          "name": "Large",
+          "emsa_min": 2,
+          "group": "CPAP Masks, Adult"
         }
       ]
     },
@@ -1211,8 +1201,7 @@
       "items": [
         {
           "name": "HME Filter",
-          "emsa_min": 2,
-          "group": "Ventilator",
+          "emsa_min": 3,
           "aliases": [
             {
               "name": "0.2 micron filter",
@@ -1222,8 +1211,7 @@
         },
         {
           "name": "Inline EtCO2",
-          "emsa_min": 3,
-          "group": "Ventilator"
+          "emsa_min": 3
         },
         {
           "name": "PEEP Valve",
@@ -1239,13 +1227,11 @@
         },
         {
           "name": "Omni-Flex",
-          "emsa_min": 2,
-          "group": "Ventilator"
+          "emsa_min": 2
         },
         {
-          "name": "Circuit",
-          "emsa_min": 3,
-          "group": "Ventilator"
+          "name": "Ventilator Circuit",
+          "emsa_min": 3
         }
       ]
     },
@@ -1270,13 +1256,7 @@
         },
         {
           "name": "Gauze Rolls",
-          "emsa_min": 5,
-          "aliases": [
-            {
-              "name": "2”, 3” or 4” Kling/Kerlix Rolls",
-              "lemsa": "Sierra-Sacramento Valley EMS Agency"
-            }
-          ]
+          "emsa_min": 5
         },
         {
           "name": "Israeli Bandage",
@@ -1451,22 +1431,12 @@
       "name": "C-Collars",
       "items": [
         {
-          "name": "Adult",
-          "emsa_min": 3
-        },
-        {
           "name": "Pediatric",
           "emsa_min": 3
         },
         {
           "name": "X-Collars™",
-          "emsa_min": 4,
-          "aliases": [
-            {
-              "name": "X-Collars™",
-              "lemsa": "San Joaquin EMS Agency"
-            }
-          ]
+          "emsa_min": 4
         },
         {
           "name": "L",
@@ -1803,14 +1773,9 @@
       "name": "Laryngoscope",
       "items": [
         {
-          "name": "Adult",
-          "emsa_min": 1,
-          "group": "Handles"
-        },
-        {
           "name": "Pediatric",
           "emsa_min": 1,
-          "group": "Handles"
+          "group": "Larygoscope Handles"
         },
         {
           "name": "Laryngoscope Light",

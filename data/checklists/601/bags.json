@@ -75,7 +75,7 @@
               "qty": 1
             },
             {
-              "name": "Adult",
+              "name": "Pediatric",
               "qty": 1,
               "group": "EtCO2 Nasal Cannula"
             },
@@ -118,7 +118,7 @@
           "name": "Top Zippered Pocket",
           "items": [
             {
-              "name": "Adult",
+              "name": "Pediatric",
               "qty": 1,
               "group": "Thomas Tube Holder"
             },
@@ -137,7 +137,7 @@
           "name": "Main Compartment",
           "items": [
             {
-              "name": "Adult",
+              "name": "Pediatric",
               "qty": 1,
               "group": "Bougie"
             },
@@ -588,7 +588,7 @@
               "qty": 2
             },
             {
-              "name": "Adult",
+              "name": "Pediatric",
               "qty": 1,
               "group": "Laryngoscope"
             },
@@ -598,7 +598,7 @@
               "group": "Laryngoscope"
             },
             {
-              "name": "Adult",
+              "name": "Pediatric",
               "qty": 1,
               "group": "Magill Forceps"
             },
@@ -783,7 +783,7 @@
               "qty": 1
             },
             {
-              "name": "Adult",
+              "name": "Pediatric",
               "qty": 2,
               "group": "Defibrillation Pads"
             },
@@ -810,7 +810,7 @@
               "qty": 1
             },
             {
-              "name": "Electrode Bag",
+              "name": "EKG Electrode",
               "qty": 1
             },
             {
@@ -829,7 +829,7 @@
               "group": "Glucometer kit"
             },
             {
-              "name": "Lancets",
+              "name": "Lancet",
               "qty": 6,
               "group": "Glucometer kit"
             },

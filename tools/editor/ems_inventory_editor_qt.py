@@ -379,6 +379,26 @@ class ManagedTableWidget(QTableWidget):
         self.editorClosed.emit()
 
 
+class QtyBorderDelegate(QStyledItemDelegate):
+    """Delegate that draws a thicker border on the outer edge of qty columns."""
+    def __init__(self, edge, parent=None):
+        super().__init__(parent)
+        self._edge = edge  # "left", "right", or "both"
+
+    def paint(self, painter, option, index):
+        super().paint(painter, option, index)
+        painter.save()
+        pen = QPen(QColor("#585b70"))
+        pen.setWidth(3)
+        painter.setPen(pen)
+        r = option.rect
+        if self._edge in ("left", "both"):
+            painter.drawLine(r.left(), r.top(), r.left(), r.bottom())
+        if self._edge in ("right", "both"):
+            painter.drawLine(r.right(), r.top(), r.right(), r.bottom())
+        painter.restore()
+
+
 class DesignationDelegate(QStyledItemDelegate):
     """Dropdown delegate for the Status column.
     Number keys 1-4 select items directly. Popup auto-shows on edit.
@@ -466,11 +486,10 @@ class DesignationDelegate(QStyledItemDelegate):
 
 
 class CategoryDelegate(QStyledItemDelegate):
-    """Searchable dropdown delegate for Category and Master Name columns.
+    """Searchable delegate for Group and Category columns using QLineEdit + QCompleter.
 
-    Shows an editable combo box that filters as the user types.
-    Popup auto-shows on edit, limited to 10 visible items.
-    Escape closes popup + editor in one press.
+    When ROLE_VALID_OPTIONS is set on the cell, only those options are offered.
+    Otherwise, the full list from the provider function is used.
     """
     def __init__(self, get_categories_fn, parent=None):
         super().__init__(parent)
@@ -478,207 +497,155 @@ class CategoryDelegate(QStyledItemDelegate):
         self._active_editor = None
 
     def createEditor(self, parent, option, index):
-        combo = QComboBox(parent)
-        combo.setEditable(True)
-        combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
-        combo.setMaxVisibleItems(10)
-        categories = sorted(self._get_categories(), key=str.lower)
-        combo.addItems(categories)
-        completer = QCompleter(categories, combo)
+        editor = QLineEdit(parent)
+        editor.setFrame(False)
+
+        # Check for restricted valid options on this cell
+        valid_options = index.data(Qt.ItemDataRole.UserRole + 10)  # ROLE_VALID_OPTIONS
+        if valid_options and isinstance(valid_options, list):
+            options = sorted(valid_options, key=str.lower)
+        else:
+            options = sorted(self._get_categories(), key=str.lower)
+
+        completer = QCompleter(options, editor)
         completer.setFilterMode(Qt.MatchFlag.MatchContains)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         completer.setMaxVisibleItems(10)
-        combo.setCompleter(completer)
-        combo.setFrame(False)
-        self._active_editor = combo
-        combo.installEventFilter(self)
-        combo.view().installEventFilter(self)
-        if combo.lineEdit():
-            combo.lineEdit().installEventFilter(self)
-        # Auto-commit when user selects from popup
-        combo.activated.connect(self._on_item_selected)
-        # Auto-show popup unless triggered by typing
-        table = self.parent()
-        if not getattr(table, '_suppress_popup', False):
-            from PyQt6.QtCore import QTimer
-            QTimer.singleShot(100, lambda: self._show_popup_if_active(combo))
-        else:
-            # Typing initiated: ensure line edit has focus
-            from PyQt6.QtCore import QTimer
-            QTimer.singleShot(0, lambda: combo.lineEdit().setFocus() if combo.lineEdit() else None)
-        return combo
+        completer.popup().setStyleSheet(
+            "QAbstractItemView { background: #1e1e2e; color: #cdd6f4;"
+            " selection-background-color: #45475a; font-size: 12px; }")
+        editor.setCompleter(completer)
 
-    def _show_popup_if_active(self, combo):
-        """Show popup only if this combo is still the active editor."""
-        if combo is self._active_editor and combo.isVisible():
-            combo.showPopup()
+        self._active_editor = editor
+        editor.installEventFilter(self)
+        return editor
 
     def destroyEditor(self, editor, index):
         if editor is self._active_editor:
             self._active_editor = None
         super().destroyEditor(editor, index)
 
-    def _commit_selection(self):
-        """Deferred commit after popup selection."""
-        combo = self._active_editor
-        if combo:
-            self.commitData.emit(combo)
-            self.closeEditor.emit(combo, QAbstractItemDelegate.EndEditHint.NoHint)
-
-    def _on_item_selected(self, idx):
-        """Called when user selects an item from the popup. Commit and close."""
-        from PyQt6.QtCore import QTimer
-        QTimer.singleShot(0, self._commit_selection)
-
     def eventFilter(self, obj, event):
         from PyQt6.QtCore import QEvent
         if self._active_editor and event.type() == QEvent.Type.KeyPress:
             if event.key() == Qt.Key.Key_Escape:
-                combo = self._active_editor
-                # If popup is visible, close everything in one Escape press
-                if combo.view().isVisible():
-                    combo.hidePopup()
-                # Close the editor without committing
-                self.closeEditor.emit(combo, QAbstractItemDelegate.EndEditHint.NoHint)
+                self.closeEditor.emit(self._active_editor, QAbstractItemDelegate.EndEditHint.NoHint)
                 return True
-        # Only call super() for the combo editor itself, not popup view or line edit
-        if obj is self._active_editor:
-            return super().eventFilter(obj, event)
-        return False
+        return super().eventFilter(obj, event)
 
     def setEditorData(self, editor, index):
         val = index.data(Qt.ItemDataRole.DisplayRole) or ""
-        idx = editor.findText(val)
-        if idx >= 0:
-            editor.setCurrentIndex(idx)
-        else:
-            editor.setCurrentText(val)
+        editor.setText(val)
 
     def setModelData(self, editor, model, index):
-        model.setData(index, editor.currentText(), Qt.ItemDataRole.EditRole)
+        model.setData(index, editor.text().strip(), Qt.ItemDataRole.EditRole)
 
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
 
 
 class MasterNameDelegate(QStyledItemDelegate):
-    """Dropdown for Master Name column with visual group headers and separators.
+    """Searchable delegate for Master Name using QCompleter only (no combo popup).
 
-    Shows items organized by group with:
-    - Group Name headers (grayed, not selectable)
-    - Items listed by bare name under their group
-    - Separator after groups if followed by ungrouped items
-    On commit, stores bare item name (group is tracked in separate column).
+    The completer popup shows 'name  ·  group' for context.
+    Filtering matches against both name and group text.
+    On selection or Enter, the bare item name is committed and the group is stored.
     """
     def __init__(self, get_items_fn, parent=None):
         super().__init__(parent)
         self._get_items = get_items_fn
         self._active_editor = None
+        self._display_map = {}  # display_string -> (name, group)
 
     def createEditor(self, parent, option, index):
-        combo = QComboBox(parent)
-        combo.setEditable(True)
-        combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
-        combo.setMaxVisibleItems(15)
+        editor = QLineEdit(parent)
+        editor.setFrame(False)
 
         entries = self._get_items()
-        model = QStandardItemModel(combo)
-        selectable_names = []
+        display_strings = []
+        self._display_map = {}
 
         for entry in entries:
-            kind = entry[0]
-            if kind == "header":
-                si = QStandardItem(entry[1])
-                si.setFlags(Qt.ItemFlag.NoItemFlags)
-                si.setForeground(QBrush(QColor("#6c7086")))
-                model.appendRow(si)
-            elif kind == "separator":
-                si = QStandardItem("────────────────")
-                si.setFlags(Qt.ItemFlag.NoItemFlags)
-                si.setForeground(QBrush(QColor("#45475a")))
-                model.appendRow(si)
-            elif kind == "item":
+            if entry[0] == "item":
                 name, group = entry[1], entry[2]
-                si = QStandardItem(name)
-                si.setData(group, Qt.ItemDataRole.UserRole)
-                model.appendRow(si)
-                selectable_names.append(name)
+                if group:
+                    display = f"{name}  ·  {group}"
+                else:
+                    display = name
+                display_strings.append(display)
+                self._display_map[display] = (name, group)
 
-        combo.setModel(model)
-
-        completer = QCompleter(selectable_names, combo)
+        completer = QCompleter(display_strings, editor)
         completer.setFilterMode(Qt.MatchFlag.MatchContains)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
-        completer.setMaxVisibleItems(10)
-        combo.setCompleter(completer)
-        combo.setFrame(False)
+        completer.setMaxVisibleItems(12)
+        completer.popup().setStyleSheet(
+            "QAbstractItemView { background: #1e1e2e; color: #cdd6f4;"
+            " selection-background-color: #45475a; font-size: 12px; }")
+        # Make popup wider to show group names
+        completer.popup().setMinimumWidth(option.rect.width() * 2)
+        completer.activated[str].connect(
+            lambda text: self._on_completer_activated(editor, text))
+        editor.setCompleter(completer)
 
-        self._active_editor = combo
-        combo.installEventFilter(self)
-        combo.view().installEventFilter(self)
-        if combo.lineEdit():
-            combo.lineEdit().installEventFilter(self)
+        self._active_editor = editor
+        editor.installEventFilter(self)
+        return editor
 
-        combo.activated.connect(self._on_item_selected)
+    def _on_completer_activated(self, editor, display_text):
+        """User selected from completer popup — insert bare name and commit."""
+        pair = self._display_map.get(display_text)
+        if pair:
+            name, group = pair
+            editor.setText(name)
+            editor.setProperty("_selected_group", group)
+        from PyQt6.QtCore import QTimer
+        QTimer.singleShot(0, self._commit_selection)
 
-        table = self.parent()
-        if not getattr(table, '_suppress_popup', False):
-            from PyQt6.QtCore import QTimer
-            QTimer.singleShot(100, lambda: self._show_popup_if_active(combo))
-        else:
-            from PyQt6.QtCore import QTimer
-            QTimer.singleShot(0, lambda: combo.lineEdit().setFocus() if combo.lineEdit() else None)
-        return combo
-
-    def _show_popup_if_active(self, combo):
-        if combo is self._active_editor and combo.isVisible():
-            combo.showPopup()
+    def _commit_selection(self):
+        editor = self._active_editor
+        if editor:
+            self.commitData.emit(editor)
+            self.closeEditor.emit(editor, QAbstractItemDelegate.EndEditHint.NoHint)
 
     def destroyEditor(self, editor, index):
         if editor is self._active_editor:
             self._active_editor = None
         super().destroyEditor(editor, index)
 
-    def _commit_selection(self):
-        combo = self._active_editor
-        if combo:
-            self.commitData.emit(combo)
-            self.closeEditor.emit(combo, QAbstractItemDelegate.EndEditHint.NoHint)
-
-    def _on_item_selected(self, idx):
-        from PyQt6.QtCore import QTimer
-        QTimer.singleShot(0, self._commit_selection)
-
     def eventFilter(self, obj, event):
         from PyQt6.QtCore import QEvent
         if self._active_editor and event.type() == QEvent.Type.KeyPress:
             if event.key() == Qt.Key.Key_Escape:
-                combo = self._active_editor
-                if combo.view().isVisible():
-                    combo.hidePopup()
-                self.closeEditor.emit(combo, QAbstractItemDelegate.EndEditHint.NoHint)
+                self.closeEditor.emit(self._active_editor, QAbstractItemDelegate.EndEditHint.NoHint)
                 return True
-        if obj is self._active_editor:
-            return super().eventFilter(obj, event)
-        return False
+        return super().eventFilter(obj, event)
 
     def setEditorData(self, editor, index):
         val = index.data(Qt.ItemDataRole.DisplayRole) or ""
-
-        model = editor.model()
-        for i in range(model.rowCount()):
-            si = model.item(i)
-            if si and si.text() == val and (si.flags() & Qt.ItemFlag.ItemIsEnabled):
-                editor.setCurrentIndex(i)
-                if editor.lineEdit():
-                    editor.lineEdit().setText(val)
-                return
-        editor.setCurrentText(val)
+        editor.setText(val)
+        # Restore stored group
+        stored_group = index.data(Qt.ItemDataRole.UserRole + 11)  # ROLE_SELECTED_GROUP
+        editor.setProperty("_selected_group", stored_group)
 
     def setModelData(self, editor, model, index):
-        text = editor.currentText().strip()
+        text = editor.text().strip()
+        # If text matches a display string (user typed full "name · group"), extract bare name
+        pair = self._display_map.get(text)
+        if pair:
+            text = pair[0]
+        # Determine group
+        group = editor.property("_selected_group")
+        if group is None and text:
+            # Scan display map for first match by bare name
+            for display, (name, grp) in self._display_map.items():
+                if name == text:
+                    group = grp
+                    break
+        # Write group BEFORE EditRole — EditRole triggers cellChanged which reads the group
+        model.setData(index, group, Qt.ItemDataRole.UserRole + 11)
         model.setData(index, text, Qt.ItemDataRole.EditRole)
 
     def updateEditorGeometry(self, editor, option, index):
@@ -895,7 +862,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.0.0"
+VERSION = "6.1.1"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1230,13 +1197,22 @@ class MasterList:
     def all_item_names(self):
         return {item.name for cat in self.categories for item in cat.items}
 
-    def find_item(self, name):
-        """Find item by name. Returns (category, item) or (None, None)."""
+    def find_item(self, name, group=None):
+        """Find item by name (and optionally group). Returns (category, item) or (None, None).
+        When a non-empty group is specified, only an exact group match is returned;
+        this prevents corrupting a different item that shares the same name."""
+        first_match = (None, None)
         for cat in self.categories:
             for item in cat.items:
                 if item.name == name:
-                    return cat, item
-        return None, None
+                    if group is not None and (item.group or "") == group:
+                        return cat, item  # exact group match
+                    if first_match[0] is None:
+                        first_match = (cat, item)
+        # Non-empty group was specified but no exact match — don't return wrong item
+        if group:
+            return (None, None)
+        return first_match
 
     def find_all_items(self, name):
         """Find all items matching name. Returns list of (category, item)."""
@@ -1670,6 +1646,10 @@ class App(QMainWindow):
     COL_GROUP = 6
     COL_CATEGORY = 7
     COL_STATUS = 8
+    # Data role for storing valid dropdown options on multi-match cells
+    ROLE_VALID_OPTIONS = Qt.ItemDataRole.UserRole + 10
+    # Data role for storing the group selected from the Master Name dropdown
+    ROLE_SELECTED_GROUP = Qt.ItemDataRole.UserRole + 11
 
     def __init__(self):
         super().__init__()
@@ -1700,6 +1680,8 @@ class App(QMainWindow):
         self._edit_scope = "empty"  # "empty" = skip filled cells, "all" = visit every cell
         self._editing_cell = None   # (row, col) when a cell edit is in progress
         self._has_unapplied_edits = False  # enables Apply Changes button
+        self._session_modified = set()  # master item names modified during this session
+        self._show_modified_only = False  # toggle for tree filter
         self._ui_state_path = os.path.join(self.base_dir, "ui_state.json")
 
         # Undo/redo stacks (separate per tree, snapshot-based)
@@ -1841,6 +1823,10 @@ class App(QMainWindow):
         find_shortcut = QShortcut(QKeySequence("Ctrl+F"), self)
         find_shortcut.activated.connect(self._toggle_find_bar)
 
+        # Ctrl+Enter: Apply Changes (LEMSA table edits → master list)
+        apply_shortcut = QShortcut(QKeySequence("Ctrl+Return"), self)
+        apply_shortcut.activated.connect(self._apply_changes_to_master)
+
         # Ctrl+M: move selected to existing category
         move_shortcut = QShortcut(QKeySequence("Ctrl+M"), self)
         move_shortcut.activated.connect(self._do_move_to_category)
@@ -1957,6 +1943,18 @@ class App(QMainWindow):
         clear_btn.setStyleSheet("padding: 2px;")
         clear_btn.clicked.connect(lambda: self._m_search.setText(""))
         sf.addWidget(clear_btn)
+        self._m_modified_btn = QPushButton("Modified")
+        self._m_modified_btn.setCheckable(True)
+        self._m_modified_btn.setFixedHeight(24)
+        self._m_modified_btn.setStyleSheet(
+            "QPushButton { padding: 2px 8px; font-size: 11px; color: #6c7086;"
+            " border: 1px solid #45475a; border-radius: 3px; }"
+            "QPushButton:checked { background: #45475a; color: #cdd6f4; }"
+            "QPushButton:hover:!checked { background: #313244; }")
+        self._m_modified_btn.setToolTip("Show only items modified during this session")
+        self._m_modified_btn.clicked.connect(self._toggle_modified_filter)
+        self._m_modified_btn.hide()  # hidden until first Apply Changes
+        sf.addWidget(self._m_modified_btn)
         left_layout.addLayout(sf)
 
         self._m_tree = DragDropTree()
@@ -2069,27 +2067,13 @@ class App(QMainWindow):
             self._filter_buttons.append(btn)
         filter_bar.addStretch()
 
-        # Corner toolbar: find + edit-direction + edit-scope toggles
+        # Find button (top right)
         find_btn = QPushButton("🔍")
         find_btn.setFixedSize(28, 22)
         find_btn.setStyleSheet("padding: 2px;")
         find_btn.setToolTip("Find (Ctrl+F)")
         find_btn.clicked.connect(self._toggle_find_bar)
         filter_bar.addWidget(find_btn)
-
-        self._edit_dir_btn = QPushButton("→")
-        self._edit_dir_btn.setFixedSize(28, 22)
-        self._edit_dir_btn.setStyleSheet("padding: 2px;")
-        self._edit_dir_btn.setToolTip("Edit direction: across (click to switch to down)")
-        self._edit_dir_btn.clicked.connect(self._toggle_edit_dir)
-        filter_bar.addWidget(self._edit_dir_btn)
-
-        self._edit_scope_btn = QPushButton("∅")
-        self._edit_scope_btn.setFixedSize(28, 22)
-        self._edit_scope_btn.setStyleSheet("padding: 2px;")
-        self._edit_scope_btn.setToolTip("Edit scope: empty cells only (click to switch to all cells)")
-        self._edit_scope_btn.clicked.connect(self._toggle_edit_scope)
-        filter_bar.addWidget(self._edit_scope_btn)
 
         lp_layout.addLayout(filter_bar)
 
@@ -2163,6 +2147,12 @@ class App(QMainWindow):
         cat_delegate = CategoryDelegate(self._get_master_categories, self._m_all_table)
         self._m_all_table.setItemDelegateForColumn(self.COL_CATEGORY, cat_delegate)
 
+        # Border delegates for qty columns
+        self._m_all_table.setItemDelegateForColumn(
+            self.COL_LEMSA_QTY, QtyBorderDelegate("left", self._m_all_table))
+        self._m_all_table.setItemDelegateForColumn(
+            self.COL_MASTER_QTY, QtyBorderDelegate("right", self._m_all_table))
+
         all_container_layout.addWidget(self._m_all_table)
         lp_layout.addWidget(all_container)
 
@@ -2174,6 +2164,7 @@ class App(QMainWindow):
         self._m_find_edit = QLineEdit()
         self._m_find_edit.setPlaceholderText("Search items…")
         self._m_find_edit.textChanged.connect(self._filter_lemsa_tables)
+        self._m_find_edit.installEventFilter(self)  # Escape closes find bar
         find_layout.addWidget(self._m_find_edit)
         find_close = QPushButton("✕")
         find_close.setFixedWidth(24)
@@ -3639,6 +3630,7 @@ class App(QMainWindow):
             self._m_tree.endRebuild(saved)
             return
         q = self._m_search.text().strip().lower()
+        mod_only = self._show_modified_only and self._session_modified
         CN = DragDropTree.ROLE_CLEAN_NAME
 
         cat_nodes = {}  # ci -> QTreeWidgetItem
@@ -3647,10 +3639,16 @@ class App(QMainWindow):
         def _build_cat_content(cat_item, ci, cat):
             """Populate a category node with groups and items. Returns True if has content."""
             cat_match = q and q in cat.name.lower()
-            show = [(ii, it) for ii, it in enumerate(cat.items) if not q or cat_match
-                    or q in it.name.lower()
-                    or (it.group and q in it.group.lower())]
-            if not show and q:
+            show = []
+            for ii, it in enumerate(cat.items):
+                # Search filter
+                if q and not cat_match and q not in it.name.lower() and not (it.group and q in it.group.lower()):
+                    continue
+                # Modified filter
+                if mod_only and it.name not in self._session_modified:
+                    continue
+                show.append((ii, it))
+            if not show and (q or mod_only):
                 return False
 
             # Separate into groups and ungrouped
@@ -3675,7 +3673,7 @@ class App(QMainWindow):
                 g_item.setData(0, Qt.ItemDataRole.UserRole, ("group", ci, group_name))
                 g_item.setData(0, CN, group_name)
                 cat_item.addChild(g_item)
-                if q: g_item.setExpanded(True)
+                if q or mod_only: g_item.setExpanded(True)
                 # Sort items within group naturally
                 for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
                     i_item = QTreeWidgetItem([it.name])
@@ -6789,6 +6787,10 @@ class App(QMainWindow):
         self._save_table_edits({})
         self._has_unapplied_edits = False
         self._apply_btn.setEnabled(False)
+        self._session_modified.clear()
+        self._show_modified_only = False
+        self._m_modified_btn.setChecked(False)
+        self._m_modified_btn.hide()
 
         # Step 2: Check for updates first
         self._status.showMessage("Checking LEMSAs for updates before comparing...")
@@ -7095,11 +7097,9 @@ class App(QMainWindow):
                     ti.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
                 # Set background per cell
                 is_ro = col in self._readonly_cols or (is_match and col in match_locked)
-                is_qty = col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY)
-                if is_qty:
+                if col == self.COL_LEMSA_QTY:
                     ti.setBackground(bg_qty_odd if is_odd else bg_qty_even)
-                    if is_ro:
-                        ti.setFlags(ti.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                    ti.setFlags(ti.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 elif is_ro:
                     ti.setFlags(ti.flags() & ~Qt.ItemFlag.ItemIsEditable)
                     ti.setBackground(bg_readonly_odd if is_odd else bg_readonly_even)
@@ -7179,6 +7179,25 @@ class App(QMainWindow):
         aliases_added = 0
         skipped = 0
 
+        # Pre-pass: collect max qty per master item name across all rows
+        max_qty_by_master = {}  # master_name.lower() -> max qty
+        for row in range(self._m_all_table.rowCount()):
+            status_item = self._m_all_table.item(row, self.COL_STATUS)
+            status = status_item.text().strip() if status_item else ""
+            if status in ("Optional", "Exclude"):
+                continue
+            mn_item = self._m_all_table.item(row, self.COL_MASTER_NAME)
+            mn = mn_item.text().strip() if mn_item else ""
+            if not mn:
+                continue
+            mq_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
+            try:
+                q = int(mq_item.text().strip()) if mq_item and mq_item.text().strip() else 0
+            except ValueError:
+                q = 0
+            key = mn.lower()
+            max_qty_by_master[key] = max(max_qty_by_master.get(key, 0), q)
+
         for row in range(self._m_all_table.rowCount()):
             status_item = self._m_all_table.item(row, self.COL_STATUS)
             status = status_item.text().strip() if status_item else ""
@@ -7201,6 +7220,9 @@ class App(QMainWindow):
                 qty = int(master_qty_item.text().strip()) if master_qty_item and master_qty_item.text().strip() else 0
             except ValueError:
                 qty = 0
+            # Use max qty across all rows referencing this master item
+            if master_name:
+                qty = max(qty, max_qty_by_master.get(master_name.lower(), qty))
 
             if status == "New":
                 # Add new item to master list
@@ -7229,9 +7251,10 @@ class App(QMainWindow):
                     continue
                 target_cat.items.append(MasterItem(new_name, qty, new_group))
                 added += 1
+                self._session_modified.add(new_name)
             elif status == "Name Difference" and master_name:
                 # Write alias onto master item
-                cat_obj, master_item = self.master_list.find_item(master_name)
+                cat_obj, master_item = self.master_list.find_item(master_name, group)
                 if not master_item:
                     skipped += 1
                     continue
@@ -7244,6 +7267,7 @@ class App(QMainWindow):
                 if not existing:
                     master_item.aliases.append({"name": lemsa_name, "lemsa": lemsa_source})
                     aliases_added += 1
+                    self._session_modified.add(master_name)
                 # Also update qty/category/group if changed
                 changed = False
                 if qty and qty != master_item.emsa_min:
@@ -7266,9 +7290,10 @@ class App(QMainWindow):
                     changed = True
                 if changed:
                     updated += 1
+                    self._session_modified.add(master_name)
             elif master_name:
                 # Update existing master item
-                cat_obj, master_item = self.master_list.find_item(master_name)
+                cat_obj, master_item = self.master_list.find_item(master_name, group)
                 if not master_item:
                     skipped += 1
                     continue
@@ -7294,6 +7319,7 @@ class App(QMainWindow):
                     changed = True
                 if changed:
                     updated += 1
+                    self._session_modified.add(master_name)
 
         if added or updated or aliases_added:
             self.dirty_master = True
@@ -7315,6 +7341,11 @@ class App(QMainWindow):
             parts.append(f"{skipped} skipped")
         self._status.showMessage(f"Applied: {', '.join(parts) if parts else 'no changes'}")
 
+        # Update modified filter button
+        if self._session_modified:
+            self._m_modified_btn.setText(f"Modified ({len(self._session_modified)})")
+            self._m_modified_btn.show()
+
         # Refresh the comparison table from cache
         cached = self._load_compiled_list()
         if cached:
@@ -7332,27 +7363,10 @@ class App(QMainWindow):
             self._m_find_edit.setFocus()
             self._m_find_edit.selectAll()
 
-    def _toggle_edit_dir(self):
-        """Toggle edit advance direction between across and down."""
-        if self._edit_dir == "across":
-            self._edit_dir = "down"
-            self._edit_dir_btn.setText("↓")
-            self._edit_dir_btn.setToolTip("Edit direction: down (click to switch to across)")
-        else:
-            self._edit_dir = "across"
-            self._edit_dir_btn.setText("→")
-            self._edit_dir_btn.setToolTip("Edit direction: across (click to switch to down)")
-
-    def _toggle_edit_scope(self):
-        """Toggle edit advance scope between empty-only and all cells."""
-        if self._edit_scope == "empty":
-            self._edit_scope = "all"
-            self._edit_scope_btn.setText("▣")
-            self._edit_scope_btn.setToolTip("Edit scope: all cells (click to switch to empty only)")
-        else:
-            self._edit_scope = "empty"
-            self._edit_scope_btn.setText("∅")
-            self._edit_scope_btn.setToolTip("Edit scope: empty cells only (click to switch to all cells)")
+    def _toggle_modified_filter(self):
+        """Toggle the modified-only filter on the master tree."""
+        self._show_modified_only = self._m_modified_btn.isChecked()
+        self._rebuild_master_tree()
 
     def _filter_lemsa_tables(self, text):
         """Filter table to show only rows matching the search text, combined with active filter."""
@@ -7455,6 +7469,13 @@ class App(QMainWindow):
                         search.setFocus()
                         return True
 
+        # Find edit: Escape closes find bar
+        if hasattr(self, '_m_find_edit') and obj == self._m_find_edit:
+            if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
+                self._toggle_find_bar()
+                self._m_all_table.setFocus()
+                return True
+
         # Viewport: floating tooltip (only when text is truncated) + qty equals button
         if hasattr(self, '_m_all_table') and obj == self._m_all_table.viewport():
             if event.type() == QEvent.Type.MouseMove:
@@ -7535,6 +7556,12 @@ class App(QMainWindow):
                 self._paste_cell()
                 return True
 
+            # Escape: close find bar if open
+            if key == Qt.Key.Key_Escape:
+                if self._m_find_bar.isVisible():
+                    self._toggle_find_bar()
+                    return True
+
             if key == Qt.Key.Key_Left:
                 # Find previous editable cell in this row
                 for c in range(col - 1, -1, -1):
@@ -7577,11 +7604,32 @@ class App(QMainWindow):
                 idx = key - Qt.Key.Key_1 + 1
                 if idx < len(status_options) and self._is_cell_editable(row, col):
                     self._set_status_for_rows([row], status_options[idx])
-                    # Advance to Master Name on next visible row
+                    # Advance to next empty editable cell from Master Name on next row
                     for nr in range(row + 1, total_rows):
-                        if not self._m_all_table.isRowHidden(nr):
+                        if self._m_all_table.isRowHidden(nr):
+                            continue
+                        found = False
+                        for nc in range(self.COL_MASTER_NAME, total_cols):
+                            if self._is_cell_editable(nr, nc):
+                                cell = self._m_all_table.item(nr, nc)
+                                if not cell or not cell.text().strip():
+                                    self._m_all_table.setCurrentCell(nr, nc)
+                                    found = True
+                                    break
+                        if not found:
                             self._m_all_table.setCurrentCell(nr, self.COL_MASTER_NAME)
-                            break
+                        break
+                return True
+
+            elif key in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
+                has_ctrl = mods & (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.MetaModifier)
+                has_shift = mods & Qt.KeyboardModifier.ShiftModifier
+                if has_shift:
+                    # Shift+Delete/Backspace (with or without Ctrl/Cmd): clear all editable cells in row
+                    self._clear_row_editable(row)
+                else:
+                    # Delete/Backspace (plain or with Ctrl/Cmd): clear single cell
+                    self._clear_cell(row, col)
                 return True
 
             elif event.text() and event.text().isprintable() and not event.modifiers() & (
@@ -7636,6 +7684,36 @@ class App(QMainWindow):
         item = self._m_all_table.item(row, col)
         if item:
             QApplication.clipboard().setText(item.text())
+
+    def _clear_cell(self, row, col):
+        """Clear a single editable cell and persist."""
+        if not self._is_cell_editable(row, col):
+            return
+        self._edit_guard = True
+        try:
+            item = self._m_all_table.item(row, col)
+            if item and item.text().strip():
+                item.setText("")
+                self._save_row_edit(row)
+        finally:
+            self._edit_guard = False
+
+    def _clear_row_editable(self, row):
+        """Clear all editable cells in a row and persist."""
+        self._edit_guard = True
+        try:
+            cleared = False
+            for col in range(self._m_all_table.columnCount()):
+                if not self._is_cell_editable(row, col):
+                    continue
+                item = self._m_all_table.item(row, col)
+                if item and item.text().strip():
+                    item.setText("")
+                    cleared = True
+            if cleared:
+                self._save_row_edit(row)
+        finally:
+            self._edit_guard = False
 
     def _paste_cell(self):
         """Paste clipboard text into the currently focused editable table cell."""
@@ -7885,12 +7963,11 @@ class App(QMainWindow):
             bg_q_even = QBrush(QColor("#1e2030"))
             bg_q_odd = QBrush(QColor("#1a1c2c"))
             for col, ci in enumerate(cells):
-                is_qty = col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY)
-                if is_qty:
+                if col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY):
                     ci.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+                if col == self.COL_LEMSA_QTY:
                     ci.setBackground(bg_q_odd if is_odd else bg_q_even)
-                    if col in self._readonly_cols:
-                        ci.setFlags(ci.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                    ci.setFlags(ci.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 elif col in self._readonly_cols:
                     ci.setFlags(ci.flags() & ~Qt.ItemFlag.ItemIsEditable)
                     ci.setBackground(bg_ro_odd if is_odd else bg_ro_even)
@@ -7971,6 +8048,18 @@ class App(QMainWindow):
                         return False
         return True
 
+    def _deferred_edit_item(self, item, attempt):
+        """Try to start editing an item, retrying if Qt is still in EditingState."""
+        if attempt > 5:
+            return  # give up after 5 retries
+        if self._m_all_table.state() == QAbstractItemView.State.EditingState:
+            QTimer.singleShot(20, lambda: self._deferred_edit_item(item, attempt + 1))
+            return
+        try:
+            self._m_all_table.editItem(item)
+        except RuntimeError:
+            pass
+
     def _begin_cell_edit(self, row, col):
         """Start editing a cell if it's editable. Used by double-click and keyboard."""
         if not self._is_cell_editable(row, col):
@@ -8050,7 +8139,18 @@ class App(QMainWindow):
                     if self.master_list:
                         matches = self.master_list.find_all_items(selected_name)
                         if matches:
-                            cat_obj, master_item = matches[0]  # first match
+                            # Check if the dropdown stored a specific group selection
+                            selected_group = item.data(self.ROLE_SELECTED_GROUP)
+                            if selected_group and len(matches) > 1:
+                                # Find the match with the selected group
+                                for cat_c, mi_c in matches:
+                                    if (mi_c.group or "") == selected_group:
+                                        cat_obj, master_item = cat_c, mi_c
+                                        break
+                                else:
+                                    cat_obj, master_item = matches[0]
+                            else:
+                                cat_obj, master_item = matches[0]
                             is_odd = row % 2 == 1
                             bg_ro = QBrush(QColor("#1a1a28") if is_odd else QColor("#1e1e2e"))
                             bg_ed = QBrush(QColor("#252536") if is_odd else QColor("#2a2a3c"))
@@ -8070,9 +8170,11 @@ class App(QMainWindow):
                             if multi_group:
                                 grp_item.setFlags(grp_item.flags() | Qt.ItemFlag.ItemIsEditable)
                                 grp_item.setBackground(bg_ed)
+                                grp_item.setData(self.ROLE_VALID_OPTIONS, sorted(groups))
                             else:
                                 grp_item.setFlags(grp_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                                 grp_item.setBackground(bg_ro)
+                                grp_item.setData(self.ROLE_VALID_OPTIONS, None)
 
                             # Qty
                             qty_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
@@ -8090,9 +8192,11 @@ class App(QMainWindow):
                             if multi_cat:
                                 cat_item.setFlags(cat_item.flags() | Qt.ItemFlag.ItemIsEditable)
                                 cat_item.setBackground(bg_ed)
+                                cat_item.setData(self.ROLE_VALID_OPTIONS, sorted(cats))
                             else:
                                 cat_item.setFlags(cat_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                                 cat_item.setBackground(bg_ro)
+                                cat_item.setData(self.ROLE_VALID_OPTIONS, None)
 
                             # Apply dynamic qty coloring
                             lemsa_qty_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
@@ -8183,17 +8287,25 @@ class App(QMainWindow):
             skip_scroll = status_text in ("Exclude", "Optional", "N/A")
             edited_row_complete = skip_scroll or _row_is_complete(row)
 
-            # Special case: after setting Status, always jump to Master Name on next row
+            # Special case: after setting Status, find next empty editable cell
+            # starting from Master Name on the next visible row
             if col == self.COL_STATUS:
                 target = None
                 for nr in range(original_row + 1, total_rows):
-                    if not self._m_all_table.isRowHidden(nr):
-                        if self._is_cell_editable(nr, self.COL_MASTER_NAME):
-                            target = (nr, self.COL_MASTER_NAME)
-                        else:
-                            # Match row — just move cursor without editing
-                            self._m_all_table.setCurrentCell(nr, self.COL_MASTER_NAME)
+                    if self._m_all_table.isRowHidden(nr):
+                        continue
+                    # Scan from Master Name onwards for first empty editable cell
+                    for nc in range(self.COL_MASTER_NAME, total_cols):
+                        if self._is_cell_editable(nr, nc):
+                            cell = self._m_all_table.item(nr, nc)
+                            if not cell or not cell.text().strip():
+                                target = (nr, nc)
+                                break
+                    if target:
                         break
+                    # Row has no empty editable cells — move cursor and stop
+                    self._m_all_table.setCurrentCell(nr, self.COL_MASTER_NAME)
+                    break
             elif edited_row_complete:
                 # Row is done — focus the item now at the original position
                 # (this is the row that slid into the sorted-away slot)
@@ -8248,7 +8360,8 @@ class App(QMainWindow):
                 # Disable sorting before starting next edit
                 self._m_all_table.setSortingEnabled(False)
                 self._m_all_table.setCurrentCell(r, c)
-                self._m_all_table.editItem(next_item)
+                # Defer editItem — retry if Qt is still tearing down the previous editor
+                self._deferred_edit_item(next_item, 0)
             else:
                 try:
                     self._m_all_table.cellChanged.disconnect(self._on_all_table_cell_changed)

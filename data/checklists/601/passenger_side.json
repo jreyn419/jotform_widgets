@@ -99,7 +99,7 @@
           "name": "Lower Shelf",
           "items": [
             {
-              "name": "Circuit",
+              "name": "Ventilator Circuit",
               "qty": 3
             },
             {
@@ -198,7 +198,7 @@
               "group": "Manual BP Cuff"
             },
             {
-              "name": "Large Adult",
+              "name": "Large",
               "qty": 1,
               "group": "Manual BP Cuff"
             },
@@ -276,7 +276,7 @@
               "qty": 2
             },
             {
-              "name": "Electrode Bag",
+              "name": "EKG Electrode",
               "qty": 1
             }
           ]
@@ -346,7 +346,7 @@
               "qty": 3
             },
             {
-              "name": "Adult",
+              "name": "Pediatric",
               "qty": 3
             },
             {

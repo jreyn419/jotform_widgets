@@ -28,5 +28,39 @@
         "qty": 2
       }
     ]
+  },
+  "adult laryngoscope handle with alkaline batteries or 2 disposable handles": {
+    "original_name": "Adult laryngoscope handle with alkaline batteries or 2 disposable handles",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Adult laryngoscope handle",
+        "qty": 1
+      },
+      {
+        "name": "Alkaline battery for laryngoscope",
+        "qty": 2
+      }
+    ]
+  },
+  "adult, pediatric & thigh bp cuff": {
+    "original_name": "Adult, Pediatric & Thigh BP Cuff",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Adult BP Cuff",
+        "qty": 1
+      },
+      {
+        "name": "Pediatric BP Cuff",
+        "qty": 1
+      },
+      {
+        "name": "Thigh BP Cuff",
+        "qty": 1
+      }
+    ]
   }
 }

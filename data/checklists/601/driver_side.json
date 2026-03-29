@@ -231,7 +231,7 @@
               "qty": 2
             },
             {
-              "name": "Lancets",
+              "name": "Lancet",
               "qty": 6
             },
             {
@@ -491,12 +491,13 @@
               "qty": 2
             },
             {
-              "name": "Large Adult CPAP Mask",
+              "name": "Large",
               "qty": 2
             },
             {
-              "name": "Medium/Small Adult CPAP Mask",
-              "qty": 2
+              "name": "Medium/Small",
+              "qty": 2,
+              "group": "CPAP Masks"
             },
             {
               "name": "Cricothyrotomy Kit",
@@ -646,7 +647,7 @@
               "group": "Restraints"
             },
             {
-              "name": "Urinals",
+              "name": "Urinal",
               "qty": 3
             },
             {
