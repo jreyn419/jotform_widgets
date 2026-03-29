@@ -11,22 +11,16 @@
     0,
     772
   ],
-  "rig_splitter": [
-    375,
-    407,
-    634
+  "rig_main_splitter": [
+    870,
+    549
   ],
-  "rig_right_splitter": [
-    334,
-    333
+  "rig_trees_splitter": [
+    440,
+    419
   ],
-  "rig_panel_order": [
-    "checklist",
-    "master_ref",
-    "editor_preview"
-  ],
+  "rig_editor_expanded": false,
   "maximized_panel": "lemsa",
-  "rig_maximized_panel": null,
   "window_geometry": [
     0,
     30,

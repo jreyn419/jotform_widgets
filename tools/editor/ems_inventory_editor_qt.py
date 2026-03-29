@@ -862,7 +862,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.3.0"
+VERSION = "6.3.2"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1683,6 +1683,8 @@ class App(QMainWindow):
         self._session_modified = set()  # master item names modified during this session
         self._show_modified_only = False  # toggle for tree filter
         self._show_rig_modified_only = False  # toggle for rig tree filter
+        self._rig_loaded_snapshot = set()  # fingerprint tuples from file load
+        self._rig_modified_names = set()  # item names modified since load
         self._ui_state_path = os.path.join(self.base_dir, "ui_state.json")
 
         # Undo/redo stacks (separate per tree, snapshot-based)
@@ -2212,26 +2214,38 @@ class App(QMainWindow):
         left_panel = QWidget()
         lp_layout = QVBoxLayout(left_panel)
         lp_layout.setContentsMargins(4, 4, 4, 4)
+        lp_layout.setSpacing(4)
 
-        # Row 1: Rig selection
-        dir_row = QHBoxLayout()
-        dir_row.addWidget(QLabel("Rig:"))
+        # Row 1 & 2: Rig and Checklist selection (aligned labels)
+        combo_grid = QHBoxLayout()
+        combo_labels = QVBoxLayout()
+        combo_labels.setSpacing(4)
+        combo_fields = QVBoxLayout()
+        combo_fields.setSpacing(4)
+
+        rig_lbl = QLabel("Rig:")
+        rig_lbl.setFixedWidth(62)
+        rig_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        combo_labels.addWidget(rig_lbl)
+        rig_row = QHBoxLayout()
         self._rig_combo = QComboBox()
         self._rig_combo.setMinimumWidth(80)
         self._rig_combo.currentTextChanged.connect(self._on_rig_selected)
-        dir_row.addWidget(self._rig_combo)
+        rig_row.addWidget(self._rig_combo)
         new_btn = QPushButton("New Rig…")
         new_btn.clicked.connect(self._new_rig)
-        dir_row.addWidget(new_btn)
+        rig_row.addWidget(new_btn)
         dup_btn = QPushButton("Duplicate Rig…")
         dup_btn.clicked.connect(self._duplicate_rig)
-        dir_row.addWidget(dup_btn)
-        dir_row.addStretch()
-        lp_layout.addLayout(dir_row)
+        rig_row.addWidget(dup_btn)
+        rig_row.addStretch()
+        combo_fields.addLayout(rig_row)
 
-        # Row 2: Checklist selection
+        cl_lbl = QLabel("Checklist:")
+        cl_lbl.setFixedWidth(62)
+        cl_lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        combo_labels.addWidget(cl_lbl)
         file_row = QHBoxLayout()
-        file_row.addWidget(QLabel("Checklist:"))
         self._file_combo = QComboBox()
         self._file_combo.setMinimumWidth(180)
         self._file_combo.currentIndexChanged.connect(lambda _: self._on_file_selected())
@@ -2246,7 +2260,17 @@ class App(QMainWindow):
         del_cl_btn.clicked.connect(self._delete_checklist)
         file_row.addWidget(del_cl_btn)
         file_row.addStretch()
-        lp_layout.addLayout(file_row)
+        combo_fields.addLayout(file_row)
+
+        combo_grid.addLayout(combo_labels)
+        combo_grid.addLayout(combo_fields)
+        lp_layout.addLayout(combo_grid)
+
+        # Separator line between combos and trees
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet("color: #45475a;")
+        lp_layout.addWidget(sep)
 
         # Inner horizontal splitter: [Checklist tree | Master Ref tree]
         self._rig_trees_splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -2332,27 +2356,34 @@ class App(QMainWindow):
         self._rig_trees_splitter.addWidget(mr_panel)
 
         self._rig_trees_splitter.setSizes([400, 250])
-        lp_layout.addWidget(self._rig_trees_splitter)
+        lp_layout.addWidget(self._rig_trees_splitter, stretch=1)
 
         # -- Collapsible Editor at bottom of left panel --
         self._r_editor_container = QWidget()
         ec_layout = QVBoxLayout(self._r_editor_container)
-        ec_layout.setContentsMargins(0, 0, 0, 0)
+        ec_layout.setContentsMargins(0, 2, 0, 0)
         ec_layout.setSpacing(0)
 
-        # Editor header with collapse toggle
+        # Editor header with collapse toggle + clickable title
         editor_header = QHBoxLayout()
-        self._r_editor_collapse_btn = QPushButton("▼")
+        editor_header.setSpacing(4)
+        self._r_editor_collapse_btn = QPushButton("▶")
         self._r_editor_collapse_btn.setFixedSize(20, 20)
         self._r_editor_collapse_btn.setStyleSheet(
-            "QPushButton { background: transparent; color: #a6adc8;"
+            "QPushButton { background: transparent; color: #6c7086;"
             " border: none; font-size: 11px; padding: 0; }"
-            "QPushButton:hover { color: #cdd6f4; }")
+            "QPushButton:hover { color: #a6adc8; }")
         self._r_editor_collapse_btn.setToolTip("Expand/collapse editor")
         self._r_editor_collapse_btn.clicked.connect(self._toggle_rig_editor)
         editor_header.addWidget(self._r_editor_collapse_btn)
-        self._r_detail_title = QLabel("Select an item")
-        self._r_detail_title.setStyleSheet("font-size: 12px; font-weight: bold;")
+        self._r_detail_title = QPushButton("Select an item")
+        self._r_detail_title.setFlat(True)
+        self._r_detail_title.setStyleSheet(
+            "QPushButton { color: #6c7086; font-size: 12px; font-weight: bold;"
+            " border: none; text-align: left; padding: 0; background: transparent; }"
+            "QPushButton:hover { color: #a6adc8; text-decoration: underline; }")
+        self._r_detail_title.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._r_detail_title.clicked.connect(self._toggle_rig_editor)
         editor_header.addWidget(self._r_detail_title)
         editor_header.addStretch()
         ec_layout.addLayout(editor_header)
@@ -2365,7 +2396,9 @@ class App(QMainWindow):
         self._r_editor_area.setWidget(self._r_editor_widget)
         ec_layout.addWidget(self._r_editor_area)
 
-        self._r_editor_expanded = True
+        self._r_editor_expanded = False  # start collapsed
+        self._r_editor_has_content = False  # no item selected yet
+        self._r_editor_area.hide()
         lp_layout.addWidget(self._r_editor_container)
 
         self._rig_main_splitter.addWidget(left_panel)
@@ -2434,9 +2467,9 @@ class App(QMainWindow):
         lbl = QPushButton("Toggle All")
         lbl.setFlat(True)
         lbl.setStyleSheet(
-            "QPushButton { color: #a6adc8; font-size: 12px; border: none;"
-            " text-align: left; padding: 0px; }"
-            "QPushButton:hover { text-decoration: underline; }")
+            "QPushButton { color: #6c7086; font-size: 12px; border: none;"
+            " text-align: left; padding: 0px; background: transparent; }"
+            "QPushButton:hover { color: #a6adc8; text-decoration: underline; }")
         lbl.setCursor(Qt.CursorShape.PointingHandCursor)
 
         def _toggle():
@@ -2468,6 +2501,9 @@ class App(QMainWindow):
     def _clear_editor(self, title_label, editor_widget, editor_layout, title="Select an item"):
         title_label.setText(title)
         self._clear_layout(editor_layout)
+        # If clearing the rig editor, deactivate it
+        if title_label is self._r_detail_title:
+            self._set_rig_editor_active(False)
 
     def _get_master_categories(self):
         """Return sorted list of category names from master list + table edits."""
@@ -2589,7 +2625,6 @@ class App(QMainWindow):
             "master_right_splitter": self._m_right_splitter.sizes(),
             "rig_main_splitter": self._rig_main_splitter.sizes(),
             "rig_trees_splitter": self._rig_trees_splitter.sizes(),
-            "rig_editor_expanded": self._r_editor_expanded,
             "maximized_panel": self._m_maximized_panel,
             "window_geometry": [self.x(), self.y(), self.width(), self.height()],
         }
@@ -2639,9 +2674,6 @@ class App(QMainWindow):
             self._m_maximized_panel = None  # reset so toggle works
             self._toggle_master_panel(saved_max)
 
-        if not state.get("rig_editor_expanded", True):
-            self._toggle_rig_editor()
-
     def _toggle_master_panel(self, which):
         """Toggle maximize/restore for editor or lemsa panel."""
         if self._m_maximized_panel == which:
@@ -2666,6 +2698,8 @@ class App(QMainWindow):
 
     def _toggle_rig_editor(self):
         """Toggle expand/collapse of the rig editor at the bottom of the left panel."""
+        if not self._r_editor_has_content:
+            return  # nothing to show
         if self._r_editor_expanded:
             self._r_editor_area.hide()
             self._r_editor_collapse_btn.setText("▶")
@@ -2674,6 +2708,31 @@ class App(QMainWindow):
             self._r_editor_area.show()
             self._r_editor_collapse_btn.setText("▼")
             self._r_editor_expanded = True
+
+    def _set_rig_editor_active(self, has_content):
+        """Update editor header state based on whether content is loaded."""
+        self._r_editor_has_content = has_content
+        if has_content:
+            self._r_detail_title.setStyleSheet(
+                "QPushButton { color: #cdd6f4; font-size: 12px; font-weight: bold;"
+                " border: none; text-align: left; padding: 0; background: transparent; }"
+                "QPushButton:hover { color: #cdd6f4; text-decoration: underline; }")
+            self._r_editor_collapse_btn.setStyleSheet(
+                "QPushButton { background: transparent; color: #a6adc8;"
+                " border: none; font-size: 11px; padding: 0; }"
+                "QPushButton:hover { color: #cdd6f4; }")
+        else:
+            self._r_detail_title.setStyleSheet(
+                "QPushButton { color: #6c7086; font-size: 12px; font-weight: bold;"
+                " border: none; text-align: left; padding: 0; background: transparent; }")
+            self._r_editor_collapse_btn.setStyleSheet(
+                "QPushButton { background: transparent; color: #6c7086;"
+                " border: none; font-size: 11px; padding: 0; }")
+            # Collapse when content is cleared
+            if self._r_editor_expanded:
+                self._r_editor_area.hide()
+                self._r_editor_collapse_btn.setText("▶")
+                self._r_editor_expanded = False
 
     def _toggle_rig_modified_filter(self):
         """Toggle the modified-only filter on the rig tree."""
@@ -2791,6 +2850,12 @@ class App(QMainWindow):
         self._rig_undo_stack.clear()
         self._rig_redo_stack.clear()
         self._rig_last_snap = json.dumps(self.current_file.to_json_data()) if self.current_file else None
+        # Snapshot for rig Modified filter
+        self._rig_loaded_snapshot = self._snapshot_rig_items()
+        self._rig_modified_names = set()
+        self._show_rig_modified_only = False
+        self._r_modified_btn.setChecked(False)
+        self._r_modified_btn.hide()
         self._rebuild_rig_tree()
         self._clear_editor(self._r_detail_title, self._r_editor_widget, self._r_editor_layout)
         if self.current_file:
@@ -4898,6 +4963,52 @@ class App(QMainWindow):
         else:
             event.ignore()
 
+    def _snapshot_rig_items(self):
+        """Capture a fingerprint set of all items in the current rig file."""
+        snap = set()
+        if not self.current_file:
+            return snap
+        for area in self.current_file.areas:
+            for cat in area.categories:
+                for item in cat.items:
+                    snap.add((area.name, cat.name, item.name, item.qty, item.group or ""))
+        return snap
+
+    def _compute_rig_modified(self):
+        """Compare current rig state against loaded snapshot, return set of modified item names."""
+        if not self.current_file or not self._rig_loaded_snapshot:
+            return set()
+        current = self._snapshot_rig_items()
+        # Items whose fingerprint changed or are new
+        modified = set()
+        current_by_name = {}
+        for fp in current:
+            current_by_name.setdefault(fp[2], set()).add(fp)
+        snapshot_by_name = {}
+        for fp in self._rig_loaded_snapshot:
+            snapshot_by_name.setdefault(fp[2], set()).add(fp)
+        # New or changed items
+        for name, fps in current_by_name.items():
+            if name not in snapshot_by_name or fps != snapshot_by_name[name]:
+                modified.add(name)
+        # Deleted items (were in snapshot but not current)
+        for name in snapshot_by_name:
+            if name not in current_by_name:
+                modified.add(name)
+        return modified
+
+    def _update_rig_modified_btn(self):
+        """Recompute rig modified set and update button visibility."""
+        self._rig_modified_names = self._compute_rig_modified()
+        if self._rig_modified_names:
+            self._r_modified_btn.setText(f"Modified ({len(self._rig_modified_names)})")
+            self._r_modified_btn.show()
+        else:
+            self._r_modified_btn.hide()
+            if self._show_rig_modified_only:
+                self._show_rig_modified_only = False
+                self._r_modified_btn.setChecked(False)
+
     def _rebuild_rig_tree(self):
         # Auto-push undo if data changed since last snapshot
         if self.current_file and not self._undo_suppress:
@@ -4915,7 +5026,9 @@ class App(QMainWindow):
             return
         q = self._r_search.text().strip().lower()
         mn = self.master_list.all_item_names() if self.master_list else set()
-        rig_mod = self._show_rig_modified_only and self._session_modified
+        # Recompute rig modified set on each rebuild
+        self._update_rig_modified_btn()
+        rig_mod = self._show_rig_modified_only and self._rig_modified_names
         CN = DragDropTree.ROLE_CLEAN_NAME
 
         # Build area nodes, then nest children under parents
@@ -4941,7 +5054,7 @@ class App(QMainWindow):
                            or q in it.name.lower() or (it.group and q in it.group.lower())]
                 if rig_mod:
                     matches = [(ii, it) for ii, it in matches
-                               if it.name in self._session_modified]
+                               if it.name in self._rig_modified_names]
                 if not matches:
                     continue
 
@@ -5103,6 +5216,7 @@ class App(QMainWindow):
         """Edit an item."""
         self._clear_layout(self._r_editor_layout)
         self._r_detail_title.setText(f"Edit Item — {area.name} › {cat.name}")
+        self._set_rig_editor_active(True)
         f = self._r_editor_layout
         mn = self.master_list.all_item_names() if self.master_list else set()
 
@@ -5166,6 +5280,7 @@ class App(QMainWindow):
     def _show_rig_area_editor(self, area):
         self._clear_layout(self._r_editor_layout)
         self._r_detail_title.setText("Edit Area")
+        self._set_rig_editor_active(True)
         f = self._r_editor_layout
         form = QFormLayout()
         name_edit = QLineEdit(area.name)
@@ -5223,6 +5338,7 @@ class App(QMainWindow):
     def _show_rig_cat_editor(self, area, cat):
         self._clear_layout(self._r_editor_layout)
         self._r_detail_title.setText(f"Edit Category — {area.name}")
+        self._set_rig_editor_active(True)
         f = self._r_editor_layout
         form = QFormLayout()
         name_edit = QLineEdit(cat.name)
@@ -5276,6 +5392,7 @@ class App(QMainWindow):
         members = [it for it in cat.items if it.group == group_name]
         self._clear_layout(self._r_editor_layout)
         self._r_detail_title.setText(f"Edit Group — {area.name} › {cat.name}")
+        self._set_rig_editor_active(True)
         f = self._r_editor_layout
         form = QFormLayout()
         name_edit = QLineEdit(group_name)
@@ -6845,9 +6962,6 @@ class App(QMainWindow):
         self._show_modified_only = False
         self._m_modified_btn.setChecked(False)
         self._m_modified_btn.hide()
-        self._show_rig_modified_only = False
-        self._r_modified_btn.setChecked(False)
-        self._r_modified_btn.hide()
 
         # Step 2: Check for updates first
         self._status.showMessage("Checking LEMSAs for updates before comparing...")
@@ -7456,13 +7570,10 @@ class App(QMainWindow):
             parts.append(f"{skipped} skipped")
         self._status.showMessage(f"Applied: {', '.join(parts) if parts else 'no changes'}")
 
-        # Update modified filter buttons
+        # Update master modified filter button
         if self._session_modified:
-            mod_label = f"Modified ({len(self._session_modified)})"
-            self._m_modified_btn.setText(mod_label)
+            self._m_modified_btn.setText(f"Modified ({len(self._session_modified)})")
             self._m_modified_btn.show()
-            self._r_modified_btn.setText(mod_label)
-            self._r_modified_btn.show()
 
         # Refresh the comparison table from cache
         cached = self._load_compiled_list()
@@ -8558,6 +8669,7 @@ class App(QMainWindow):
     def _save_all(self):
         errors = []
         saved_master = False
+        saved_rigs = False
         if self.dirty_master and self.master_list:
             try:
                 self.master_list.save()
@@ -8565,6 +8677,7 @@ class App(QMainWindow):
             except Exception as e:
                 errors.append(f"Master: {e}")
         if self.dirty:
+            saved_rigs = True
             for rf in self.rig_files:
                 try:
                     rf.save()
@@ -8583,16 +8696,21 @@ class App(QMainWindow):
         self.dirty_master = False
         self._update_save_state()
 
-        # Clear modified session on save
+        # Clear master modified session on save
         if saved_master and self._session_modified:
             self._session_modified.clear()
             self._show_modified_only = False
             self._m_modified_btn.setChecked(False)
             self._m_modified_btn.hide()
+            self._rebuild_master_tree()
+
+        # Reset rig snapshot on save (saved state = new baseline)
+        if saved_rigs and self.current_file:
+            self._rig_loaded_snapshot = self._snapshot_rig_items()
+            self._rig_modified_names.clear()
             self._show_rig_modified_only = False
             self._r_modified_btn.setChecked(False)
             self._r_modified_btn.hide()
-            self._rebuild_master_tree()
             self._rebuild_rig_tree()
 
         # Refresh comparison table if master was saved and table has data

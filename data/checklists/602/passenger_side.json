@@ -1,691 +1,696 @@
-[
-  {
-    "area": "A (Upper CCT Cabinet)",
-    "categories": [
-      {
-        "name": "General",
-        "items": [
-          {
-            "name": "Hamilton Humidifier",
-            "qty": 1
-          },
-          {
-            "name": "Jackery + charger",
-            "qty": 1
-          },
-          {
-            "name": "HFNC Cell",
-            "qty": 1
-          },
-          {
-            "name": "Portable Suction + charger",
-            "qty": 1
-          },
-          {
-            "name": "Doppler",
-            "qty": 1
-          }
-        ]
-      }
-    ]
+{
+  "_meta": {
+    "name": "Passenger Side"
   },
-  {
-    "area": "HFNC Cell,  “Universal”",
-    "categories": [
-      {
-        "name": "Loose",
-        "items": [
-          {
-            "name": "Equipment Mount – Aluminum",
-            "qty": 1
-          },
-          {
-            "name": "L",
-            "qty": 2,
-            "group": "Adult HFNCs"
-          },
-          {
-            "name": "M Adult High-Flow Nasal Cannula",
-            "qty": 2,
-            "group": "Adult HFNCs"
-          },
-          {
-            "name": "S Adult High-Flow Nasal Cannula",
-            "qty": 2,
-            "group": "Adult HFNCs"
-          },
-          {
-            "name": "XL",
-            "qty": 1,
-            "group": "Pediatric HFNCs"
-          },
-          {
-            "name": "L",
-            "qty": 1,
-            "group": "Pediatric HFNCs"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "area": "B (Lower CCT Cabinet)",
-    "categories": [
-      {
-        "name": "Upper Shelf",
-        "items": [
-          {
-            "name": "Power Strip",
-            "qty": 1
-          },
-          {
-            "name": "IV Pump Chargers",
-            "qty": 3
-          },
-          {
-            "name": "Stretcher Charger",
-            "qty": 1
-          },
-          {
-            "name": "Stretcher Battery",
-            "qty": 1
-          },
-          {
-            "name": "Ventilator",
-            "qty": 1
-          }
-        ]
-      },
-      {
-        "name": "Middle Shelf",
-        "items": [
-          {
-            "name": "IV Pumps",
-            "qty": 5
-          },
-          {
-            "name": "Bracket for 3 IV Pumps",
-            "qty": 1
-          },
-          {
-            "name": "Bracket for 2 IV Pumps",
-            "qty": 1
-          }
-        ]
-      },
-      {
-        "name": "Lower Shelf",
-        "items": [
-          {
-            "name": "Ventilator Circuit",
-            "qty": 3
-          },
-          {
-            "name": "Adult High-Flow Circuit",
-            "qty": 3
-          },
-          {
-            "name": "Infant/Pediatric High-Flow Circuit",
-            "qty": 3
-          },
-          {
-            "name": "Bubbler",
-            "qty": 2
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "area": "C (Clear Cabinet, Right)",
-    "categories": [
-      {
-        "name": "General",
-        "items": [
-          {
-            "name": "Ventilator filters",
-            "qty": 3
-          },
-          {
-            "name": "Omniflex",
-            "qty": 3
-          },
-          {
-            "name": "Inline ETCO2",
-            "qty": 3
-          },
-          {
-            "name": "Nebulizer (inline)",
-            "qty": 3
-          },
-          {
-            "name": "Full Sets",
-            "qty": 10
-          },
-          {
-            "name": "Half Sets",
-            "qty": 10
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "area": "D (Clear Cabinet, Left)",
-    "categories": [
-      {
-        "name": "General",
-        "items": [
-          {
-            "name": "Suction Canister",
-            "qty": 3
-          },
-          {
-            "name": "Suction Lid",
-            "qty": 3
-          },
-          {
-            "name": "Manual Suction Device",
-            "qty": 1
-          },
-          {
-            "name": "Yankauer Suction Tip + Tubing",
-            "qty": 3
-          },
-          {
-            "name": "DuCanto Suction Tip",
-            "qty": 1
-          },
-          {
-            "name": "Manual BP Cuff - Infant",
-            "qty": 1
-          },
-          {
-            "name": "Manual BP Cuff - Child",
-            "qty": 1
-          },
-          {
-            "name": "Manual BP Cuff - Small Adult",
-            "qty": 1
-          },
-          {
-            "name": "Manual BP Cuff - Large Adult",
-            "qty": 1
-          },
-          {
-            "name": "Manual BP Cuff – Thigh",
-            "qty": 1
-          }
-        ]
-      },
-      {
-        "name": "French Suction Catheters",
-        "items": [
-          {
-            "name": "6 Fr.",
-            "qty": 1
-          },
-          {
-            "name": "8 Fr.",
-            "qty": 1
-          },
-          {
-            "name": "10 Fr.",
-            "qty": 1
-          },
-          {
-            "name": "12 Fr.",
-            "qty": 1
-          },
-          {
-            "name": "14 Fr.",
-            "qty": 1
-          },
-          {
-            "name": "16 Fr.",
-            "qty": 1
-          },
-          {
-            "name": "18 Fr.",
-            "qty": 1
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "area": "E (Bench, Right)",
-    "categories": [
-      {
-        "name": "Large Box",
-        "items": [
-          {
-            "name": "SpO2 Sensor, Clip",
-            "qty": 1
-          },
-          {
-            "name": "Monitor-to-SpO2 Cable",
-            "qty": 1
-          },
-          {
-            "name": "Montor-to-BP-cuff connector",
-            "qty": 1
-          },
-          {
-            "name": "4-lead cord",
-            "qty": 1
-          },
-          {
-            "name": "BP cuff connector tubing (short, bifurcated tubing)",
-            "qty": 1
-          },
-          {
-            "name": "Monitor Battery (charged)",
-            "qty": 2
-          },
-          {
-            "name": "Electrode Bag",
-            "qty": 1
-          },
-          {
-            "name": "Lancets",
-            "qty": 6,
-            "group": "Glucometer kit"
-          },
-          {
-            "name": "Sterile 2x2",
-            "qty": 6,
-            "group": "Glucometer kit"
-          },
-          {
-            "name": "Adhesive Bandages",
-            "qty": 6,
-            "group": "Glucometer kit"
-          },
-          {
-            "name": "Alcohol Prep Pads",
-            "qty": 6,
-            "group": "Glucometer kit"
-          },
-          {
-            "name": "Test Strip Vial (at least 6 strips)",
-            "qty": 1,
-            "group": "Glucometer kit"
-          },
-          {
-            "name": "Glucometer, operational",
-            "qty": 1,
-            "group": "Glucometer kit"
-          },
-          {
-            "name": "7",
-            "qty": 1,
-            "group": "BP Cuffs"
-          },
-          {
-            "name": "8",
-            "qty": 1,
-            "group": "BP Cuffs"
-          },
-          {
-            "name": "9",
-            "qty": 1,
-            "group": "BP Cuffs"
-          },
-          {
-            "name": "10",
-            "qty": 1,
-            "group": "BP Cuffs"
-          },
-          {
-            "name": "11",
-            "qty": 1,
-            "group": "BP Cuffs"
-          },
-          {
-            "name": "11L",
-            "qty": 1,
-            "group": "BP Cuffs"
-          },
-          {
-            "name": "12",
-            "qty": 1,
-            "group": "BP Cuffs"
-          }
-        ]
-      },
-      {
-        "name": "Small Box",
-        "items": [
-          {
-            "name": "Adult/Neonatal Adhesive SpO2 Sensor",
-            "qty": 3
-          },
-          {
-            "name": "Infant Adhesive SpO2 Sensor",
-            "qty": 3
-          },
-          {
-            "name": "Monitor Printer Paper Rolls",
-            "qty": 2
-          },
-          {
-            "name": "Boxes of Oral/Axillary Temp Probe Sheaths",
-            "qty": 2
-          },
-          {
-            "name": "Razors (For EKG Prep)",
-            "qty": 2
-          },
-          {
-            "name": "Adult/Child Defib Pads",
-            "qty": 1
-          },
-          {
-            "name": "Infant/Pediatric Defib Pads",
-            "qty": 1
-          }
-        ]
-      },
-      {
-        "name": "Shelf, Left",
-        "items": [
-          {
-            "name": "Extrication Collars Bag",
-            "qty": 1
-          },
-          {
-            "name": "Pedi-Mate",
-            "qty": 1
-          },
-          {
-            "name": "Pelvic Sling",
-            "qty": 1
-          },
-          {
-            "name": "L",
-            "qty": 1,
-            "group": "Soft Collars"
-          },
-          {
-            "name": "M",
-            "qty": 1,
-            "group": "Soft Collars"
-          },
-          {
-            "name": "S",
-            "qty": 1,
-            "group": "Soft Collars"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "area": "Extrication Collars Bag",
-    "categories": [
-      {
-        "name": "General",
-        "items": [
-          {
-            "name": "Head Bed + Triangles",
-            "qty": 3
-          },
-          {
-            "name": "Adult C-Collar",
-            "qty": 3
-          },
-          {
-            "name": "Pediatric C-Collar",
-            "qty": 3
-          },
-          {
-            "name": "Adult XCollar",
-            "qty": 4
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "area": "F (Bench, Left)",
-    "categories": [
-      {
-        "name": "General",
-        "items": [
-          {
-            "name": "Responder Bag",
-            "qty": 1
-          },
-          {
-            "name": "IV Fluid Warmer",
-            "qty": 1
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "area": "IV start/Med Delivery Equipment (Formerly the Yellow Pouches)",
-    "categories": [
-      {
-        "name": "Bottom",
-        "items": [
-          {
-            "name": "Yellow Tags",
-            "qty": 20
-          },
-          {
-            "name": "White Tags",
-            "qty": 5
-          },
-          {
-            "name": "IV start kits",
-            "qty": 4
-          },
-          {
-            "name": "Stethoscope",
-            "qty": 1
-          },
-          {
-            "name": "20 mL Syringe (Luer-Lock Tip, Without Needle)",
-            "qty": 1
-          },
-          {
-            "name": "60mL Syringe (Luer-Lock Tip)",
-            "qty": 2
-          },
-          {
-            "name": "NS Flush",
-            "qty": 10
-          },
-          {
-            "name": "IV Extension Set",
-            "qty": 6
-          },
-          {
-            "name": "Coban",
-            "qty": 1
-          }
-        ]
-      },
-      {
-        "name": "Syringe Storage",
-        "items": [
-          {
-            "name": "1 mL Syringe (Luer-Lock Tip, Without Needle)",
-            "qty": 3
-          },
-          {
-            "name": "3 mL Syringe (Luer-Lock Tip, Without Needle)",
-            "qty": 3
-          },
-          {
-            "name": "5 mL Syringe (Luer-Lock Tip, Without Needle)",
-            "qty": 3
-          },
-          {
-            "name": "10 mL Syringe (Luer-Lock Tip, Without Needle)",
-            "qty": 3
-          },
-          {
-            "name": "3-Way Stopcock",
-            "qty": 2
-          }
-        ]
-      },
-      {
-        "name": "Needle Storage",
-        "items": [
-          {
-            "name": "Alcohol Prep Pads",
-            "qty": 20
-          },
-          {
-            "name": "Betadine Pads",
-            "qty": 4
-          },
-          {
-            "name": "Nail Polish Remover",
-            "qty": 10
-          },
-          {
-            "name": "22G Safety Needle",
-            "qty": 4
-          },
-          {
-            "name": "25G Safety Needle",
-            "qty": 4
-          },
-          {
-            "name": "18G Filter Needle",
-            "qty": 2
-          },
-          {
-            "name": "Twinpak (Or blunt needle)",
-            "qty": 5
-          }
-        ]
-      },
-      {
-        "name": "Horizontal Pouches",
-        "items": [
-          {
-            "name": "Sterile 2x2",
-            "qty": 6
-          },
-          {
-            "name": "Sterile 4x4",
-            "qty": 6
-          },
-          {
-            "name": "Tegaderm",
-            "qty": 6
-          },
-          {
-            "name": "3mL Syringe (With BD TwinPak)",
-            "qty": 8
-          },
-          {
-            "name": "Pen light",
-            "qty": 2
-          },
-          {
-            "name": "Pen",
-            "qty": 1
-          },
-          {
-            "name": "Temporal Thermometer",
-            "qty": 1
-          },
-          {
-            "name": "24G YELLOW",
-            "qty": 4,
-            "group": "IV Catheter"
-          },
-          {
-            "name": "22G BLUE",
-            "qty": 4,
-            "group": "IV Catheter"
-          },
-          {
-            "name": "20G PINK",
-            "qty": 6,
-            "group": "IV Catheter"
-          },
-          {
-            "name": "18G GREEN",
-            "qty": 6,
-            "group": "IV Catheter"
-          },
-          {
-            "name": "16G GRAY",
-            "qty": 6,
-            "group": "IV Catheter"
-          },
-          {
-            "name": "14G ORANGE",
-            "qty": 6,
-            "group": "IV Catheter"
-          }
-        ]
-      },
-      {
-        "name": "Hanging",
-        "items": [
-          {
-            "name": "Curos Strips",
-            "qty": 3
-          },
-          {
-            "name": "Elastic Tourniquet",
-            "qty": 6
-          },
-          {
-            "name": "Tape, 1\"",
-            "qty": 2
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "area": "Side Entryway",
-    "categories": [
-      {
-        "name": "Glove Storage",
-        "items": [
-          {
-            "name": "Extra Small",
-            "qty": 1
-          },
-          {
-            "name": "Small",
-            "qty": 1
-          },
-          {
-            "name": "Extra Large",
-            "qty": 1
-          }
-        ]
-      },
-      {
-        "name": "Benchside",
-        "items": [
-          {
-            "name": "Large Sharps Container",
-            "qty": 1
-          },
-          {
-            "name": "Empty Trash Can",
-            "qty": 1
-          },
-          {
-            "name": "Fire Extinguisher",
-            "qty": 1
-          }
-        ]
-      }
-    ]
-  }
-]
+  "areas": [
+    {
+      "area": "A (Upper CCT Cabinet)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Hamilton Humidifier",
+              "qty": 1
+            },
+            {
+              "name": "Jackery + charger",
+              "qty": 1
+            },
+            {
+              "name": "HFNC Cell",
+              "qty": 1
+            },
+            {
+              "name": "Portable Suction + charger",
+              "qty": 1
+            },
+            {
+              "name": "Doppler",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "HFNC Cell,  “Universal”",
+      "categories": [
+        {
+          "name": "Loose",
+          "items": [
+            {
+              "name": "Equipment Mount – Aluminum",
+              "qty": 1
+            },
+            {
+              "name": "L",
+              "qty": 2,
+              "group": "Adult HFNCs"
+            },
+            {
+              "name": "M Adult High-Flow Nasal Cannula",
+              "qty": 2,
+              "group": "Adult HFNCs"
+            },
+            {
+              "name": "S Adult High-Flow Nasal Cannula",
+              "qty": 2,
+              "group": "Adult HFNCs"
+            },
+            {
+              "name": "XL",
+              "qty": 1,
+              "group": "Pediatric HFNCs"
+            },
+            {
+              "name": "L",
+              "qty": 1,
+              "group": "Pediatric HFNCs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "B (Lower CCT Cabinet)",
+      "categories": [
+        {
+          "name": "Upper Shelf",
+          "items": [
+            {
+              "name": "Power Strip",
+              "qty": 1
+            },
+            {
+              "name": "IV Pump Chargers",
+              "qty": 3
+            },
+            {
+              "name": "Stretcher Charger",
+              "qty": 1
+            },
+            {
+              "name": "Stretcher Battery",
+              "qty": 1
+            },
+            {
+              "name": "Ventilator",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Middle Shelf",
+          "items": [
+            {
+              "name": "IV Pumps",
+              "qty": 5
+            },
+            {
+              "name": "Bracket for 3 IV Pumps",
+              "qty": 1
+            },
+            {
+              "name": "Bracket for 2 IV Pumps",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Lower Shelf",
+          "items": [
+            {
+              "name": "Ventilator Circuit",
+              "qty": 3
+            },
+            {
+              "name": "Adult High-Flow Circuit",
+              "qty": 3
+            },
+            {
+              "name": "Infant/Pediatric High-Flow Circuit",
+              "qty": 3
+            },
+            {
+              "name": "Bubbler",
+              "qty": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "C (Clear Cabinet, Right)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Ventilator filters",
+              "qty": 3
+            },
+            {
+              "name": "Omniflex",
+              "qty": 3
+            },
+            {
+              "name": "Inline ETCO2",
+              "qty": 3
+            },
+            {
+              "name": "Nebulizer (inline)",
+              "qty": 3
+            },
+            {
+              "name": "Full Sets",
+              "qty": 10
+            },
+            {
+              "name": "Half Sets",
+              "qty": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "D (Clear Cabinet, Left)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Suction Canister",
+              "qty": 3
+            },
+            {
+              "name": "Suction Lid",
+              "qty": 3
+            },
+            {
+              "name": "Manual Suction Device",
+              "qty": 1
+            },
+            {
+              "name": "Yankauer Suction Tip + Tubing",
+              "qty": 3
+            },
+            {
+              "name": "DuCanto Suction Tip",
+              "qty": 1
+            },
+            {
+              "name": "Manual BP Cuff - Infant",
+              "qty": 1
+            },
+            {
+              "name": "Manual BP Cuff - Child",
+              "qty": 1
+            },
+            {
+              "name": "Manual BP Cuff - Small Adult",
+              "qty": 1
+            },
+            {
+              "name": "Manual BP Cuff - Large Adult",
+              "qty": 1
+            },
+            {
+              "name": "Manual BP Cuff – Thigh",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "French Suction Catheters",
+          "items": [
+            {
+              "name": "6 Fr.",
+              "qty": 1
+            },
+            {
+              "name": "8 Fr.",
+              "qty": 1
+            },
+            {
+              "name": "10 Fr.",
+              "qty": 1
+            },
+            {
+              "name": "12 Fr.",
+              "qty": 1
+            },
+            {
+              "name": "14 Fr.",
+              "qty": 1
+            },
+            {
+              "name": "16 Fr.",
+              "qty": 1
+            },
+            {
+              "name": "18 Fr.",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "E (Bench, Right)",
+      "categories": [
+        {
+          "name": "Large Box",
+          "items": [
+            {
+              "name": "SpO2 Sensor, Clip",
+              "qty": 1
+            },
+            {
+              "name": "Monitor-to-SpO2 Cable",
+              "qty": 1
+            },
+            {
+              "name": "Montor-to-BP-cuff connector",
+              "qty": 1
+            },
+            {
+              "name": "4-lead cord",
+              "qty": 1
+            },
+            {
+              "name": "BP cuff connector tubing (short, bifurcated tubing)",
+              "qty": 1
+            },
+            {
+              "name": "Monitor Battery (charged)",
+              "qty": 2
+            },
+            {
+              "name": "Electrode Bag",
+              "qty": 1
+            },
+            {
+              "name": "Lancets",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Sterile 2x2",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Adhesive Bandages",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Alcohol Prep Pads",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Glucometer Test Strip",
+              "qty": 1,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Glucometer",
+              "qty": 1,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "7",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "8",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "9",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "10",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "11",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "11L",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "12",
+              "qty": 1,
+              "group": "BP Cuffs"
+            }
+          ]
+        },
+        {
+          "name": "Small Box",
+          "items": [
+            {
+              "name": "Adult/Neonatal Adhesive SpO2 Sensor",
+              "qty": 3
+            },
+            {
+              "name": "Infant Adhesive SpO2 Sensor",
+              "qty": 3
+            },
+            {
+              "name": "Monitor Printer Paper Rolls",
+              "qty": 2
+            },
+            {
+              "name": "W/A Temp Probe Sheaths",
+              "qty": 2
+            },
+            {
+              "name": "Razors (For EKG Prep)",
+              "qty": 2
+            },
+            {
+              "name": "Adult/Child Defib Pads",
+              "qty": 1
+            },
+            {
+              "name": "Infant/Pediatric Defib Pads",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Shelf, Left",
+          "items": [
+            {
+              "name": "Extrication Collars Bag",
+              "qty": 1
+            },
+            {
+              "name": "Pedi-Mate",
+              "qty": 1
+            },
+            {
+              "name": "Pelvic Sling",
+              "qty": 1
+            },
+            {
+              "name": "L",
+              "qty": 1,
+              "group": "Soft Collars"
+            },
+            {
+              "name": "M",
+              "qty": 1,
+              "group": "Soft Collars"
+            },
+            {
+              "name": "S",
+              "qty": 1,
+              "group": "Soft Collars"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Extrication Collars Bag",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Head Bed + Triangles",
+              "qty": 3
+            },
+            {
+              "name": "Adult C-Collar",
+              "qty": 3
+            },
+            {
+              "name": "Pediatric C-Collar",
+              "qty": 3
+            },
+            {
+              "name": "Adult XCollar",
+              "qty": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "F (Bench, Left)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Responder Bag",
+              "qty": 1
+            },
+            {
+              "name": "IV Fluid Warmer",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "IV start/Med Delivery Equipment (Formerly the Yellow Pouches)",
+      "categories": [
+        {
+          "name": "Bottom",
+          "items": [
+            {
+              "name": "Yellow Tags",
+              "qty": 20
+            },
+            {
+              "name": "White Tags",
+              "qty": 5
+            },
+            {
+              "name": "IV start kits",
+              "qty": 4
+            },
+            {
+              "name": "Stethoscope",
+              "qty": 1
+            },
+            {
+              "name": "20 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 1
+            },
+            {
+              "name": "60mL Syringe (Luer-Lock Tip)",
+              "qty": 2
+            },
+            {
+              "name": "NS Flush",
+              "qty": 10
+            },
+            {
+              "name": "IV Extension Set",
+              "qty": 6
+            },
+            {
+              "name": "Coban",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Syringe Storage",
+          "items": [
+            {
+              "name": "1 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3
+            },
+            {
+              "name": "3 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3
+            },
+            {
+              "name": "5 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3
+            },
+            {
+              "name": "10 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3
+            },
+            {
+              "name": "3-Way Stopcock",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "name": "Needle Storage",
+          "items": [
+            {
+              "name": "Alcohol Prep Pads",
+              "qty": 20
+            },
+            {
+              "name": "Betadine Pads",
+              "qty": 4
+            },
+            {
+              "name": "Nail Polish Remover",
+              "qty": 10
+            },
+            {
+              "name": "22G Safety Needle",
+              "qty": 4
+            },
+            {
+              "name": "25G Safety Needle",
+              "qty": 4
+            },
+            {
+              "name": "18G Filter Needle",
+              "qty": 2
+            },
+            {
+              "name": "Twinpak (Or blunt needle)",
+              "qty": 5
+            }
+          ]
+        },
+        {
+          "name": "Horizontal Pouches",
+          "items": [
+            {
+              "name": "Sterile 2x2",
+              "qty": 6
+            },
+            {
+              "name": "Sterile 4x4",
+              "qty": 6
+            },
+            {
+              "name": "Tegaderm",
+              "qty": 6
+            },
+            {
+              "name": "3mL Syringe (With BD TwinPak)",
+              "qty": 8
+            },
+            {
+              "name": "Pen light",
+              "qty": 2
+            },
+            {
+              "name": "Pen",
+              "qty": 1
+            },
+            {
+              "name": "Temporal Thermometer",
+              "qty": 1
+            },
+            {
+              "name": "24G YELLOW",
+              "qty": 4,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "22G BLUE",
+              "qty": 4,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "20G PINK",
+              "qty": 6,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "18G GREEN",
+              "qty": 6,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "16G GRAY",
+              "qty": 6,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "14G ORANGE",
+              "qty": 6,
+              "group": "IV Catheter"
+            }
+          ]
+        },
+        {
+          "name": "Hanging",
+          "items": [
+            {
+              "name": "Curos Strips",
+              "qty": 3
+            },
+            {
+              "name": "Elastic Tourniquet",
+              "qty": 6
+            },
+            {
+              "name": "Tape, 1\"",
+              "qty": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Side Entryway",
+      "categories": [
+        {
+          "name": "Glove Storage",
+          "items": [
+            {
+              "name": "Extra Small",
+              "qty": 1
+            },
+            {
+              "name": "Small",
+              "qty": 1
+            },
+            {
+              "name": "Extra Large",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Benchside",
+          "items": [
+            {
+              "name": "Large Sharps Container",
+              "qty": 1
+            },
+            {
+              "name": "Empty Trash Can",
+              "qty": 1
+            },
+            {
+              "name": "Fire Extinguisher",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

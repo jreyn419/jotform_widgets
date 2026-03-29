@@ -294,67 +294,49 @@
         {
           "name": "10",
           "emsa_min": 1,
-          "group": "BP Cuffs"
+          "group": "Monitor BP Cuffs"
         },
         {
           "name": "11",
           "emsa_min": 1,
-          "group": "BP Cuffs"
+          "group": "Monitor BP Cuffs"
         },
         {
           "name": "11L",
           "emsa_min": 1,
-          "group": "BP Cuffs"
+          "group": "Monitor BP Cuffs"
         },
         {
           "name": "12",
           "emsa_min": 1,
-          "group": "BP Cuffs"
+          "group": "Monitor BP Cuffs"
         },
         {
           "name": "7",
           "emsa_min": 1,
-          "group": "BP Cuffs"
+          "group": "Monitor BP Cuffs"
         },
         {
           "name": "8",
           "emsa_min": 1,
-          "group": "BP Cuffs"
+          "group": "Monitor BP Cuffs"
         },
         {
           "name": "9",
           "emsa_min": 1,
-          "group": "BP Cuffs"
+          "group": "Monitor BP Cuffs"
         },
         {
-          "name": "Adhesive Bandages",
-          "emsa_min": 6,
-          "group": "Glucometer kit"
-        },
-        {
-          "name": "Alcohol Prep Pads",
-          "emsa_min": 20,
-          "group": "Glucometer kit"
-        },
-        {
-          "name": "Glucometer, operational",
-          "emsa_min": 1,
-          "group": "Glucometer kit"
+          "name": "Glucometer",
+          "emsa_min": 1
         },
         {
           "name": "Lancet",
-          "emsa_min": 10,
-          "group": "Glucometer kit"
+          "emsa_min": 10
         },
         {
-          "name": "Sterile 2x2",
-          "emsa_min": 6,
-          "group": "Glucometer kit"
-        },
-        {
-          "name": "Test Strip Vial (at least 6 strips)",
-          "emsa_min": 1,
-          "group": "Glucometer kit"
+          "name": "Glucometer Test Strip",
+          "emsa_min": 1
         },
         {
           "name": "Child",
@@ -390,11 +372,7 @@
           "emsa_min": 2
         },
         {
-          "name": "Boxes of Oral/Axillary Temp Probe Sheaths",
-          "emsa_min": 2
-        },
-        {
-          "name": "Microdot Glucometer Test Strip Containers",
+          "name": "W/A Temp Probe Sheaths",
           "emsa_min": 2
         },
         {
