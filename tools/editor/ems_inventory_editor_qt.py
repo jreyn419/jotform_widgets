@@ -861,7 +861,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.6.3"
+VERSION = "6.7.0"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -2067,7 +2067,7 @@ class App(QMainWindow):
             "QPushButton:checked { background: #2a2a3c; color: #cdd6f4;"
             " font-weight: bold; border-bottom: 1px solid #2a2a3c; }"
             "QPushButton:hover:!checked { background: #1e1e2e; color: #a6adc8; }")
-        for i, label in enumerate(["All Items", "Match", "No Match", "Qty Diff", "Excluded"]):
+        for i, label in enumerate(["All Items", "Match", "No Match", "Qty Diff", "Excluded", "Not in LEMSA"]):
             btn = QPushButton(label)
             btn.setCheckable(True)
             btn.setChecked(i == 0)
@@ -5312,7 +5312,7 @@ class App(QMainWindow):
                 if rig_mod:
                     matches = [(ii, it) for ii, it in matches
                                if it.name in self._rig_modified_names]
-                if not matches:
+                if not matches and (q or rig_mod):
                     continue
 
                 is_uncat = cat.name.lower() == "uncategorized"
@@ -7421,7 +7421,12 @@ class App(QMainWindow):
         for key, entries in sorted(master_names.items(), key=lambda x: x[1][0][1].name.lower()):
             if key not in lemsa_keys and key not in matched_master_keys:
                 cat_name, item = entries[0]
-                missing_items.append({"name": item.name, "cat": cat_name})
+                missing_items.append({
+                    "name": item.name,
+                    "cat": cat_name,
+                    "group": item.group or "",
+                    "qty": item.emsa_min,
+                })
 
         if errors:
             self._status.showMessage(f"Extraction errors: {'; '.join(errors)}")
@@ -7481,7 +7486,20 @@ class App(QMainWindow):
                     "split_from": data.get("split_from", ""),
                 })
 
-        status_order = {"No Match": 0, "Match": 1, "Excluded": 2}
+        # Missing items (in master but not in any LEMSA list)
+        for m in missing_items:
+            all_rows.append({
+                "name": m["name"],
+                "lemsa_qty": "",
+                "master_qty": m["qty"],
+                "master_name": m["name"],
+                "group": m.get("group", ""),
+                "sources": "",
+                "category": m["cat"],
+                "status": "Not in LEMSA",
+            })
+
+        status_order = {"No Match": 0, "Match": 1, "Excluded": 2, "Not in LEMSA": 3}
         all_rows.sort(key=lambda r: (status_order.get(r["status"], 9), r["name"].lower()))
 
         # Disconnect cellChanged during population
@@ -7498,6 +7516,7 @@ class App(QMainWindow):
             "No Match": QColor("#74b9ff"),
             "Match": QColor("#55efc4"),
             "Excluded": QColor("#6c7086"),
+            "Not in LEMSA": QColor("#f9e2af"),
         }
         # Per-cell backgrounds: readonly slightly lighter (faded), editable more prominent
         bg_editable_even = QBrush(QColor("#2a2a3c"))
@@ -7558,6 +7577,7 @@ class App(QMainWindow):
             # Match rows: lock Master Name, Group, Category (but NOT Exclude?)
             is_match = row["status"] == "Match"
             is_excluded_type = row["status"] == "Excluded"
+            is_not_in_lemsa = row["status"] == "Not in LEMSA"
             if is_excluded_type:
                 items[self.COL_STATUS].setText("Extraction Error")
 
@@ -7587,13 +7607,16 @@ class App(QMainWindow):
                     items[self.COL_STATUS].setText(saved_status)
 
             is_odd = i % 2 == 1
-            # Columns locked on Match rows and Excluded-type rows (Exclude? stays editable)
+            # Columns locked on Match/Excluded/Not-in-LEMSA rows (Exclude? stays editable)
             match_locked = {self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY}
+            not_in_lemsa_locked = {self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY, self.COL_MASTER_QTY}
             for col, ti in enumerate(items):
                 if col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY):
                     ti.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
                 # Set background per cell
-                is_ro = col in self._readonly_cols or ((is_match or is_excluded_type) and col in match_locked)
+                is_ro = col in self._readonly_cols or (
+                    (is_match or is_excluded_type) and col in match_locked
+                ) or (is_not_in_lemsa and col in not_in_lemsa_locked)
                 if col == self.COL_LEMSA_QTY:
                     ti.setBackground(bg_qty_odd if is_odd else bg_qty_even)
                     ti.setFlags(ti.flags() & ~Qt.ItemFlag.ItemIsEditable)
@@ -7635,12 +7658,16 @@ class App(QMainWindow):
         match_count = 0
         qty_diff_count = 0
         excluded_count = 0
-        active_count = 0  # rows visible in "All Items" (not excluded/optional)
+        not_in_lemsa_count = 0
+        active_count = 0  # rows visible in "All Items" (not excluded/optional/not-in-lemsa)
         for ri in range(self._m_all_table.rowCount()):
             type_cell = self._m_all_table.item(ri, self.COL_TYPE)
             status_cell = self._m_all_table.item(ri, self.COL_STATUS)
             rtype = type_cell.text().strip() if type_cell else ""
             rstatus = status_cell.text().strip() if status_cell else ""
+            if rtype == "Not in LEMSA":
+                not_in_lemsa_count += 1
+                continue
             is_hidden = rtype == "Excluded" or rstatus in ("Extraction Error", "Optional")
             if is_hidden:
                 excluded_count += 1
@@ -7667,8 +7694,9 @@ class App(QMainWindow):
             2: nomatch_count,
             3: qty_diff_count,
             4: excluded_count,
+            5: not_in_lemsa_count,
         }
-        labels = ["All Items", "Match", "No Match", "Qty Diff", "Excluded"]
+        labels = ["All Items", "Match", "No Match", "Qty Diff", "Excluded", "Not in LEMSA"]
         for i, btn in enumerate(self._filter_buttons):
             btn.setText(f"{labels[i]} ({self._filter_counts[i]})")
 
@@ -7678,7 +7706,7 @@ class App(QMainWindow):
         self._status.showMessage(
             f"Comparison: {nomatch_count} no match, {match_count} matched, "
             f"{qty_diff_count} qty diff, {excluded_count} excluded, "
-            f"{active_count} total items")
+            f"{not_in_lemsa_count} not in LEMSA, {active_count} total items")
 
     def _apply_changes_to_master(self):
         """Apply table edits to the master list, then refresh comparison."""
@@ -7885,7 +7913,7 @@ class App(QMainWindow):
     def _apply_table_filter(self):
         """Apply both search text and tab filter to the table."""
         query = self._m_find_edit.text().strip().lower() if hasattr(self, '_m_find_edit') else ""
-        active = self._active_filter  # 0=All, 1=Match, 2=No Match, 3=Qty Diff, 4=Excluded
+        active = self._active_filter  # 0=All, 1=Match, 2=No Match, 3=Qty Diff, 4=Excluded, 5=Not in LEMSA
 
         for row in range(self._m_all_table.rowCount()):
             # Text search filter
@@ -7905,8 +7933,9 @@ class App(QMainWindow):
             row_status = status_item.text().strip() if status_item else ""
 
             if active == 0:
-                # All Items: hide Excluded-type rows and excluded status rows
-                tab_match = row_type != "Excluded" and row_status not in ("Extraction Error", "Optional")
+                # All Items: hide Excluded, Not in LEMSA, and excluded status rows
+                tab_match = (row_type not in ("Excluded", "Not in LEMSA")
+                             and row_status not in ("Extraction Error", "Optional"))
             elif active == 1:
                 tab_match = row_type == "Match" and row_status not in ("Extraction Error", "Optional")
             elif active == 2:
@@ -7927,6 +7956,9 @@ class App(QMainWindow):
             elif active == 4:
                 # Excluded tab: show Excluded-type rows + any row with exclusion status
                 tab_match = row_type == "Excluded" or row_status in ("Extraction Error", "Optional")
+            elif active == 5:
+                # Not in LEMSA tab
+                tab_match = row_type == "Not in LEMSA"
 
             self._m_all_table.setRowHidden(row, not (text_match and tab_match))
 
@@ -8340,6 +8372,18 @@ class App(QMainWindow):
                 status_menu.addAction(display,
                     lambda s=status_val, rows=list(selected_rows): self._set_status_for_rows(rows, s))
 
+        # Remove from Master List — only for "Not in LEMSA" rows
+        not_in_lemsa_rows = []
+        for r in selected_rows:
+            type_item = self._m_all_table.item(r, self.COL_TYPE)
+            if type_item and type_item.text().strip() == "Not in LEMSA":
+                not_in_lemsa_rows.append(r)
+        if not_in_lemsa_rows:
+            n = len(not_in_lemsa_rows)
+            label = f"Remove from Master List ({n} items)" if n > 1 else "Remove from Master List"
+            menu.addAction(label,
+                lambda rows=list(not_in_lemsa_rows): self._remove_from_master_via_table(rows))
+
         if menu.isEmpty():
             return
         menu.exec(self._m_all_table.viewport().mapToGlobal(pos))
@@ -8374,6 +8418,46 @@ class App(QMainWindow):
             self._m_all_table.setSortingEnabled(True)
             self._edit_guard = False
         self._status.showMessage(f"Set exclude '{status_value or '(clear)'}' on {len(rows)} row(s)")
+
+    def _remove_from_master_via_table(self, rows):
+        """Remove 'Not in LEMSA' items from the master list and table."""
+        if not self.master_list:
+            return
+        names = []
+        for r in rows:
+            ni = self._m_all_table.item(r, self.COL_NAME)
+            if ni:
+                names.append(ni.text().strip())
+        if not names:
+            return
+        if len(names) == 1:
+            msg = f"Remove '{names[0]}' from the master list?"
+        else:
+            msg = f"Remove {len(names)} items from the master list?"
+        if not ConfirmDialog.confirm(self, "Remove from Master List", msg):
+            return
+
+        removed = 0
+        for r in rows:
+            name_item = self._m_all_table.item(r, self.COL_NAME)
+            group_item = self._m_all_table.item(r, self.COL_GROUP)
+            if not name_item:
+                continue
+            name = name_item.text().strip()
+            group = group_item.text().strip() if group_item else ""
+            cat_obj, master_item = self.master_list.find_item(name, group)
+            if master_item and cat_obj:
+                cat_obj.items.remove(master_item)
+                removed += 1
+
+        if removed:
+            self.dirty_master = True
+            self._update_save_state()
+            self._rebuild_master_tree()
+            # Remove rows from table in reverse order
+            for r in sorted(rows, reverse=True):
+                self._m_all_table.removeRow(r)
+            self._status.showMessage(f"Removed {removed} item(s) from master list")
 
     def _find_in_master_tree(self, master_name, group, category):
         """Find and highlight an item in the master tree by name, group, and category."""
@@ -8704,6 +8788,11 @@ class App(QMainWindow):
         if col in (self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY):
             type_item = self._m_all_table.item(row, self.COL_TYPE)
             if type_item and type_item.text().strip() == "Match":
+                return False
+        # Not in LEMSA rows: all data cols locked (only Exclude? editable)
+        if col in (self.COL_MASTER_QTY, self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY):
+            type_item = self._m_all_table.item(row, self.COL_TYPE)
+            if type_item and type_item.text().strip() == "Not in LEMSA":
                 return False
         # No Match rows with a recognized master name: Group/Category always locked
         if col in (self.COL_GROUP, self.COL_CATEGORY):

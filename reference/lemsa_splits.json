@@ -1070,5 +1070,331 @@
         "qty": 2
       }
     ]
+  },
+  "nasal cannula (adult/pediatric)": {
+    "original_name": "Nasal Cannula (adult/pediatric)",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Nasal Cannula - adult",
+        "qty": 2
+      },
+      {
+        "name": "Nasal Cannula - pediatric",
+        "qty": 2
+      }
+    ]
+  },
+  "nebulizer mask (adult/pediatric)": {
+    "original_name": "Nebulizer Mask (adult/pediatric)",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Nebulizer Mask - adult",
+        "qty": 2
+      },
+      {
+        "name": "Nebulizer Mask - pediatric",
+        "qty": 2
+      }
+    ]
+  },
+  "needles: 18 ga, 20 ga, 22 ga, 24 ga, 25 ga": {
+    "original_name": "Needles: 18 ga, 20 ga, 22 ga, 24 ga, 25 ga",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Needles: 18 ga",
+        "qty": 2
+      },
+      {
+        "name": "Needles: 20 ga",
+        "qty": 2
+      },
+      {
+        "name": "Needles: 22 ga",
+        "qty": 2
+      },
+      {
+        "name": "Needles: 24 ga",
+        "qty": 2
+      },
+      {
+        "name": "Needles: 25 ga",
+        "qty": 2
+      }
+    ]
+  },
+  "oropharyngeal airway kit (adult, child, infant) each size 0 \u2013 8 or 40mm to 110mm": {
+    "original_name": "Oropharyngeal Airway Kit (adult, child, infant) each size 0 \u2013 8 or 40mm to 110mm",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Oropharyngeal Airway, 0",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airway, 1",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airway, 2",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airway, 3",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airway, 4",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airway, 5",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airway, 6",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airway, 7",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airway, 8",
+        "qty": 1
+      }
+    ]
+  },
+  "oropharyngeal airways: 00, 0, 1, 2, 3, 4, 5, 6": {
+    "original_name": "Oropharyngeal Airways: 00, 0, 1, 2, 3, 4, 5, 6",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Oropharyngeal Airways: 40mm",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airways: 50mm",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airways: 60mm",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airways: 70mm",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airways: 80mm",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airways: 90mm",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airways: 100mm",
+        "qty": 1
+      },
+      {
+        "name": "Oropharyngeal Airways: 110mm",
+        "qty": 1
+      }
+    ]
+  },
+  "pediatric laryngoscope handle with alkaline batteries or 2 disposable handles": {
+    "original_name": "Pediatric laryngoscope handle with alkaline batteries or 2 disposable handles",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Pediatric laryngoscope handle",
+        "qty": 1
+      },
+      {
+        "name": "Alkaline batteries for pediatric laryngoscope handle",
+        "qty": 2
+      }
+    ]
+  },
+  "pillows, sheets, pillowcases & towels": {
+    "original_name": "Pillows, Sheets, Pillowcases & Towels",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Pillows",
+        "qty": 2
+      },
+      {
+        "name": "Sheets",
+        "qty": 10
+      },
+      {
+        "name": "Pillowcases",
+        "qty": 2
+      },
+      {
+        "name": "Towels",
+        "qty": 2
+      }
+    ]
+  },
+  "rigid c-collars: sizes pediatric & s, m, l adult or adjustable": {
+    "original_name": "Rigid C-Collars: Sizes Pediatric & S, M, L Adult OR Adjustable",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Rigid C-Collars: Adult, Adjustable",
+        "qty": 2
+      },
+      {
+        "name": "Rigid C-Collars: Pediatric",
+        "qty": 2
+      }
+    ]
+  },
+  "oxygen (o2) mask non-rebreather (adult/pediatric)": {
+    "original_name": "Oxygen (O2) Mask Non-rebreather (adult/pediatric)",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Oxygen (O2) Mask Non-rebreather - adult",
+        "qty": 2
+      },
+      {
+        "name": "Oxygen (O2) Mask Non-rebreather - pediatric",
+        "qty": 2
+      }
+    ]
+  },
+  "oropharyngeal airways: sizes 40 mm \u2013 110 mm or equivalent": {
+    "original_name": "Oropharyngeal Airways: Sizes 40 mm \u2013 110 mm or Equivalent",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Oropharyngeal Airways: 40 mm",
+        "qty": 2
+      },
+      {
+        "name": "Oropharyngeal Airways: 50 mm",
+        "qty": 2
+      },
+      {
+        "name": "Oropharyngeal Airways: 60 mm",
+        "qty": 2
+      },
+      {
+        "name": "Oropharyngeal Airways: 70 mm",
+        "qty": 2
+      },
+      {
+        "name": "Oropharyngeal Airways: 80 mm",
+        "qty": 2
+      },
+      {
+        "name": "Oropharyngeal Airways: 90 mm",
+        "qty": 2
+      },
+      {
+        "name": "Oropharyngeal Airways: 100 mm",
+        "qty": 2
+      },
+      {
+        "name": "Oropharyngeal Airways: 110 mm",
+        "qty": 2
+      }
+    ]
+  },
+  "pulse oximeter probes (adult/pediatric)": {
+    "original_name": "Pulse Oximeter Probes (adult/pediatric)",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Pulse Oximeter Probes - adult",
+        "qty": 1
+      },
+      {
+        "name": "Pulse Oximeter Probes - pediatric",
+        "qty": 1
+      }
+    ]
+  },
+  "spare suction canisters/bags with lids": {
+    "original_name": "Spare Suction Canisters/Bags with Lids",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Spare Suction Canisters - tub",
+        "qty": 2
+      },
+      {
+        "name": "Spare Suction Canisters - lid",
+        "qty": 2
+      }
+    ]
+  },
+  "iv start kit, which contains: \u2013 (2) alcohol or chlorhexidine wipes, (1) roll tape, 3/4\u201d, (2) \u2013 2\u201d x 2\u201d gauze sponge, (1) id label, (1) providone iodine prep, (1) adhesive bandage, (1) latex free tourniquet, (1) opsite dressing (or equivalent)": {
+    "original_name": "IV start kit, which contains: \u2013 (2) Alcohol or Chlorhexidine wipes, (1) Roll tape, 3/4\u201d, (2) \u2013 2\u201d x 2\u201d gauze sponge, (1) ID label, (1) Providone iodine prep, (1) Adhesive bandage, (1) Latex Free Tourniquet, (1) OpSite Dressing (or equivalent)",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Latex Free Tourniquet",
+        "qty": 3
+      },
+      {
+        "name": "Adhesive bandage",
+        "qty": 3
+      },
+      {
+        "name": "Providone iodine prep",
+        "qty": 3
+      },
+      {
+        "name": "ID label",
+        "qty": 3
+      },
+      {
+        "name": "2\u201d x 2\u201d gauze sponge",
+        "qty": 6
+      },
+      {
+        "name": "Roll tape, 3/4\u201d",
+        "qty": 3
+      },
+      {
+        "name": "Alcohol or Chlorhexidine wipes",
+        "qty": 3
+      }
+    ]
+  },
+  "percutaneous needle cricothyroidotomy insertion kit, which includes: 10 ml syringe, translaryngeal jet ventilator device with push-button and high-pressure tubing with locking device (adult), 10- or 12-gauge needle for adult, and betadine swab, or enk oxygen flow modulator set, (adult), and betadine swab or kit approved by ems medical director.": {
+    "original_name": "Percutaneous Needle Cricothyroidotomy insertion kit, which includes: 10 ml syringe, Translaryngeal jet ventilator device with push-button and high-pressure tubing with locking device (Adult), 10- or 12-gauge needle for adult, and Betadine swab, or Enk Oxygen Flow Modulator set, (Adult), and Betadine swab or kit approved by EMS Medical Director.",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Percutaneous Needle Cricothyroidotomy insertion kit, which includes: 10 ml syringe, Translaryngeal jet ventilator device with push-button and high-pressure tubing with locking device (Adult), 10- or 12-gauge needle for adult, and Betadine swab, or Enk Oxygen Flow Modulator set, (Adult), and Betadine swab or kit approved by EMS Medical Director.",
+        "qty": 1
+      },
+      {
+        "name": "Translaryngeal jet ventilator device with push-button and high-pressure tubing with locking device (Adult)",
+        "qty": 1
+      }
+    ]
   }
 }

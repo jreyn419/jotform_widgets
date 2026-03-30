@@ -2,5 +2,17 @@
   "_meta": {
     "name": "Passenger Side"
   },
-  "areas": []
+  "areas": [
+    {
+      "area": "CCT Cabinet",
+      "categories": [
+        {
+          "name": "Top Shelf"
+        },
+        {
+          "name": "Top Shelf"
+        }
+      ]
+    }
+  ]
 }

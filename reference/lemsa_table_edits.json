@@ -173,7 +173,7 @@
     "group": "",
     "master_qty": "",
     "category": "",
-    "status": ""
+    "status": "Extraction Error"
   },
   "iv fluid warmer (9-1-1 providers only)": {
     "master_name": "",
@@ -229,7 +229,7 @@
     "group": "",
     "master_qty": "",
     "category": "",
-    "status": ""
+    "status": "Optional"
   },
   "iv start kit, which contains: \u2013 (2) alcohol or chlorhexidine wipes, (1) roll tape, 3/4\u201d, (2) \u2013 2\u201d x 2\u201d gauze sponge, (1) id label, (1) providone iodine prep, (1) adhesive bandage, (1) latex free tourniquet, (1) opsite dressing (or equivalent)": {
     "master_name": "",
@@ -246,6 +246,181 @@
     "status": "Optional"
   },
   "medications carried \u2013 list must be provided to lemsa only": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "mobile uhf med-net radio": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "nemsis version 3.4 compliant electronic pcr system": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "neo-tee: t-piece resuscitator": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "nicardipine 25mg/10ml": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "nitroglycerin 50mg/10ml": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "ofimev 1000/100ml": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "one or more of the following for use in patient movement on": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Extraction Error"
+  },
+  "oropharyngeal airway, 8": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "phenergan 25mg/ml": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "phenylephrine 10mg/ml": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "radios with dual band frequency programed to yolo county dispatch channels": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "reflex hammer": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "saline locks": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "san joaquin county ems agency als protocols": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Extraction Error"
+  },
+  "san joaquin county ems agency bls protocols": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Extraction Error"
+  },
+  "patient compartment door latches operable from inside and": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "pitocin 10u/1ml": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "portable uhf med-net radio or mobile telephone": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "solu-medrol 125mg": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "piston style mechanical compression device": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "iv start pack or equivalent (with tourniquet)": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "pediatric defibrillation equipment": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "secondary iv infusion kit": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "splints \u2013 soft or cushioned surface or equivalent padded board, wrap around, wire ladder, inflatable, vacuum or cardboard (able to accommodate adult/pediatric/infants)": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "rigid splints for splinting each extremity": {
     "master_name": "",
     "group": "",
     "master_qty": "",
