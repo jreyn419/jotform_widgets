@@ -100,5 +100,35 @@
         "qty": 2
       }
     ]
+  },
+  "arm boards: sizes short & long": {
+    "original_name": "Arm Boards: Sizes Short & Long",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Arm Boards, Short",
+        "qty": 2
+      },
+      {
+        "name": "Arm Boards, Long",
+        "qty": 2
+      }
+    ]
+  },
+  "cold packs & heat packs": {
+    "original_name": "Cold Packs & Heat Packs",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Cold Pack",
+        "qty": 4
+      },
+      {
+        "name": "Heat Pack",
+        "qty": 4
+      }
+    ]
   }
 }

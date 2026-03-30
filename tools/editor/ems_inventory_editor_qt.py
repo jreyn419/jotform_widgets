@@ -862,7 +862,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.3.2"
+VERSION = "6.4.2"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1685,6 +1685,7 @@ class App(QMainWindow):
         self._show_rig_modified_only = False  # toggle for rig tree filter
         self._rig_loaded_snapshot = set()  # fingerprint tuples from file load
         self._rig_modified_names = set()  # item names modified since load
+        self._show_mr_needed_only = False  # filter master ref to needed items
         self._ui_state_path = os.path.join(self.base_dir, "ui_state.json")
 
         # Undo/redo stacks (separate per tree, snapshot-based)
@@ -1879,7 +1880,8 @@ class App(QMainWindow):
         sf.addWidget(self._l_search)
         clear_btn = QPushButton("✕")
         clear_btn.setFixedWidth(30)
-        clear_btn.setStyleSheet("padding: 2px;")
+        clear_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        clear_btn.setStyleSheet("padding: 0px 4px;")
         clear_btn.clicked.connect(lambda: self._l_search.setText(""))
         sf.addWidget(clear_btn)
         left_layout.addLayout(sf)
@@ -1943,21 +1945,10 @@ class App(QMainWindow):
         sf.addWidget(self._m_search)
         clear_btn = QPushButton("✕")
         clear_btn.setFixedWidth(30)
-        clear_btn.setStyleSheet("padding: 2px;")
+        clear_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        clear_btn.setStyleSheet("padding: 0px 4px;")
         clear_btn.clicked.connect(lambda: self._m_search.setText(""))
         sf.addWidget(clear_btn)
-        self._m_modified_btn = QPushButton("Modified")
-        self._m_modified_btn.setCheckable(True)
-        self._m_modified_btn.setFixedHeight(24)
-        self._m_modified_btn.setStyleSheet(
-            "QPushButton { padding: 2px 8px; font-size: 11px; color: #6c7086;"
-            " border: 1px solid #45475a; border-radius: 3px; }"
-            "QPushButton:checked { background: #45475a; color: #cdd6f4; }"
-            "QPushButton:hover:!checked { background: #313244; }")
-        self._m_modified_btn.setToolTip("Show only items modified during this session")
-        self._m_modified_btn.clicked.connect(self._toggle_modified_filter)
-        self._m_modified_btn.hide()  # hidden until first Apply Changes
-        sf.addWidget(self._m_modified_btn)
         left_layout.addLayout(sf)
 
         self._m_tree = DragDropTree()
@@ -1973,6 +1964,18 @@ class App(QMainWindow):
         self._m_tree._paired_search = '_m_search'
         self._m_tree.installEventFilter(self)
         self._m_toggle_row, self._m_toggle_btn = self._make_toggle_all_row(self._m_tree)
+        self._m_modified_btn = QPushButton("Modified")
+        self._m_modified_btn.setCheckable(True)
+        self._m_modified_btn.setFixedHeight(20)
+        self._m_modified_btn.setStyleSheet(
+            "QPushButton { padding: 2px 8px; font-size: 11px; color: #6c7086;"
+            " border: 1px solid #45475a; border-radius: 3px; }"
+            "QPushButton:checked { background: #45475a; color: #cdd6f4; }"
+            "QPushButton:hover:!checked { background: #313244; }")
+        self._m_modified_btn.setToolTip("Show only items modified during this session")
+        self._m_modified_btn.clicked.connect(self._toggle_modified_filter)
+        self._m_modified_btn.hide()
+        self._m_toggle_row.addWidget(self._m_modified_btn)
         left_layout.addLayout(self._m_toggle_row)
         left_layout.addWidget(self._m_tree)
 
@@ -2281,6 +2284,7 @@ class App(QMainWindow):
         cl_layout.setContentsMargins(0, 0, 0, 0)
 
         sf = QHBoxLayout()
+        sf.setContentsMargins(0, 0, 6, 0)  # right padding near splitter
         sf.addWidget(QLabel("Search:"))
         self._r_search = QLineEdit()
         self._r_search.textChanged.connect(lambda: self._rebuild_rig_tree())
@@ -2289,21 +2293,10 @@ class App(QMainWindow):
         sf.addWidget(self._r_search)
         clear_btn = QPushButton("✕")
         clear_btn.setFixedWidth(30)
-        clear_btn.setStyleSheet("padding: 2px;")
+        clear_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        clear_btn.setStyleSheet("padding: 0px 4px;")
         clear_btn.clicked.connect(lambda: self._r_search.setText(""))
         sf.addWidget(clear_btn)
-        self._r_modified_btn = QPushButton("Modified")
-        self._r_modified_btn.setCheckable(True)
-        self._r_modified_btn.setFixedHeight(24)
-        self._r_modified_btn.setStyleSheet(
-            "QPushButton { padding: 2px 8px; font-size: 11px; color: #6c7086;"
-            " border: 1px solid #45475a; border-radius: 3px; }"
-            "QPushButton:checked { background: #45475a; color: #cdd6f4; }"
-            "QPushButton:hover:!checked { background: #313244; }")
-        self._r_modified_btn.setToolTip("Show only items modified during this session")
-        self._r_modified_btn.clicked.connect(self._toggle_rig_modified_filter)
-        self._r_modified_btn.hide()
-        sf.addWidget(self._r_modified_btn)
         cl_layout.addLayout(sf)
 
         self._r_tree = DragDropTree()
@@ -2319,8 +2312,26 @@ class App(QMainWindow):
         self._r_tree._paired_search = '_r_search'
         self._r_tree.installEventFilter(self)
         self._r_toggle_row, self._r_toggle_btn = self._make_toggle_all_row(self._r_tree)
+        self._r_toggle_row.setContentsMargins(1, 0, 6, 0)  # right margin matches search row
+        self._r_modified_btn = QPushButton("Modified")
+        self._r_modified_btn.setCheckable(True)
+        self._r_modified_btn.setFixedHeight(20)
+        self._r_modified_btn.setStyleSheet(
+            "QPushButton { padding: 2px 8px; font-size: 11px; color: #6c7086;"
+            " border: 1px solid #45475a; border-radius: 3px; }"
+            "QPushButton:checked { background: #45475a; color: #cdd6f4; }"
+            "QPushButton:hover:!checked { background: #313244; }")
+        self._r_modified_btn.setToolTip("Show only items modified during this session")
+        self._r_modified_btn.clicked.connect(self._toggle_rig_modified_filter)
+        self._r_modified_btn.hide()
+        self._r_toggle_row.addWidget(self._r_modified_btn)
         cl_layout.addLayout(self._r_toggle_row)
         cl_layout.addWidget(self._r_tree)
+        self._r_placeholder = QLabel("Select a Rig Checklist")
+        self._r_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+        self._r_placeholder.setStyleSheet("color: #6c7086; font-style: italic; padding: 40px 20px;")
+        self._r_placeholder.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        cl_layout.addWidget(self._r_placeholder)
         self._rig_trees_splitter.addWidget(cl_panel)
 
         # -- Master Ref tree panel --
@@ -2329,13 +2340,15 @@ class App(QMainWindow):
         mr_layout.setContentsMargins(0, 0, 0, 0)
 
         mr_sf = QHBoxLayout()
+        mr_sf.setContentsMargins(6, 0, 0, 0)  # left padding near splitter
         mr_sf.addWidget(QLabel("Search:"))
         self._mr_search = QLineEdit()
         self._mr_search.textChanged.connect(lambda: self._rebuild_master_ref_tree())
         mr_sf.addWidget(self._mr_search)
         mr_clear = QPushButton("✕")
         mr_clear.setFixedWidth(30)
-        mr_clear.setStyleSheet("padding: 2px;")
+        mr_clear.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        mr_clear.setStyleSheet("padding: 0px 4px;")
         mr_clear.clicked.connect(lambda: self._mr_search.setText(""))
         mr_sf.addWidget(mr_clear)
         mr_layout.addLayout(mr_sf)
@@ -2351,6 +2364,17 @@ class App(QMainWindow):
         self._mr_tree.setDragEnabled(True)
         self._mr_tree.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
         self._mr_toggle_row, self._mr_toggle_btn = self._make_toggle_all_row(self._mr_tree)
+        self._mr_needed_btn = QPushButton("Needed")
+        self._mr_needed_btn.setCheckable(True)
+        self._mr_needed_btn.setFixedHeight(20)
+        self._mr_needed_btn.setStyleSheet(
+            "QPushButton { padding: 2px 8px; font-size: 11px; color: #6c7086;"
+            " border: 1px solid #45475a; border-radius: 3px; }"
+            "QPushButton:checked { background: #45475a; color: #cdd6f4; }"
+            "QPushButton:hover:!checked { background: #313244; }")
+        self._mr_needed_btn.setToolTip("Show only items still needed in checklists")
+        self._mr_needed_btn.clicked.connect(self._toggle_mr_needed_filter)
+        self._mr_toggle_row.addWidget(self._mr_needed_btn)
         mr_layout.addLayout(self._mr_toggle_row)
         mr_layout.addWidget(self._mr_tree)
         self._rig_trees_splitter.addWidget(mr_panel)
@@ -2364,29 +2388,50 @@ class App(QMainWindow):
         ec_layout.setContentsMargins(0, 2, 0, 0)
         ec_layout.setSpacing(0)
 
-        # Editor header with collapse toggle + clickable title
-        editor_header = QHBoxLayout()
-        editor_header.setSpacing(4)
-        self._r_editor_collapse_btn = QPushButton("▶")
-        self._r_editor_collapse_btn.setFixedSize(20, 20)
-        self._r_editor_collapse_btn.setStyleSheet(
-            "QPushButton { background: transparent; color: #6c7086;"
-            " border: none; font-size: 11px; padding: 0; }"
-            "QPushButton:hover { color: #a6adc8; }")
+        # Editor header with collapse toggle + clickable title (hover-synced)
+        class _EditorHeaderWidget(QWidget):
+            """Container that syncs hover state across caret and title."""
+            def __init__(self, parent_app, parent=None):
+                super().__init__(parent)
+                self._app = parent_app
+                self.setCursor(Qt.CursorShape.PointingHandCursor)
+                layout = QHBoxLayout(self)
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(4)
+                self._caret = QPushButton("▶")
+                self._caret.setFixedSize(20, 20)
+                self._caret.setStyleSheet(
+                    "QPushButton { background: transparent; color: #6c7086;"
+                    " border: none; font-size: 11px; padding: 0; }")
+                self._caret.clicked.connect(parent_app._toggle_rig_editor)
+                layout.addWidget(self._caret)
+                self._title = QPushButton("Select an item")
+                self._title.setFlat(True)
+                self._title.setStyleSheet(
+                    "QPushButton { color: #6c7086; font-size: 12px; font-weight: bold;"
+                    " border: none; text-align: left; padding: 0; background: transparent; }")
+                self._title.clicked.connect(parent_app._toggle_rig_editor)
+                layout.addWidget(self._title)
+                layout.addStretch()
+            def enterEvent(self, event):
+                if self._app._r_editor_has_content:
+                    self._caret.setStyleSheet(
+                        "QPushButton { background: transparent; color: #cdd6f4;"
+                        " border: none; font-size: 11px; padding: 0; }")
+                    self._title.setStyleSheet(
+                        "QPushButton { color: #cdd6f4; font-size: 12px; font-weight: bold;"
+                        " border: none; text-align: left; padding: 0;"
+                        " background: transparent; text-decoration: underline; }")
+                super().enterEvent(event)
+            def leaveEvent(self, event):
+                self._app._apply_editor_header_style()
+                super().leaveEvent(event)
+
+        self._r_editor_header = _EditorHeaderWidget(self)
+        self._r_editor_collapse_btn = self._r_editor_header._caret
+        self._r_detail_title = self._r_editor_header._title
         self._r_editor_collapse_btn.setToolTip("Expand/collapse editor")
-        self._r_editor_collapse_btn.clicked.connect(self._toggle_rig_editor)
-        editor_header.addWidget(self._r_editor_collapse_btn)
-        self._r_detail_title = QPushButton("Select an item")
-        self._r_detail_title.setFlat(True)
-        self._r_detail_title.setStyleSheet(
-            "QPushButton { color: #6c7086; font-size: 12px; font-weight: bold;"
-            " border: none; text-align: left; padding: 0; background: transparent; }"
-            "QPushButton:hover { color: #a6adc8; text-decoration: underline; }")
-        self._r_detail_title.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._r_detail_title.clicked.connect(self._toggle_rig_editor)
-        editor_header.addWidget(self._r_detail_title)
-        editor_header.addStretch()
-        ec_layout.addLayout(editor_header)
+        ec_layout.addWidget(self._r_editor_header)
 
         self._r_editor_area = QScrollArea()
         self._r_editor_area.setWidgetResizable(True)
@@ -2407,7 +2452,12 @@ class App(QMainWindow):
         preview_panel = QWidget()
         pp_layout = QVBoxLayout(preview_panel)
         pp_layout.setContentsMargins(4, 4, 4, 4)
-        pp_header = QHBoxLayout()
+        pp_layout.setSpacing(0)
+
+        # Header row (hidden when no file selected)
+        self._pp_header_widget = QWidget()
+        pp_header = QHBoxLayout(self._pp_header_widget)
+        pp_header.setContentsMargins(0, 0, 0, 4)
         preview_label = QLabel("Preview")
         preview_label.setStyleSheet("font-size: 14px; font-weight: bold;")
         pp_header.addWidget(preview_label)
@@ -2423,11 +2473,20 @@ class App(QMainWindow):
             self._preview_refresh_btn.setToolTip("Refresh preview")
             self._preview_refresh_btn.clicked.connect(self._refresh_preview)
             pp_header.addWidget(self._preview_refresh_btn)
-        pp_layout.addLayout(pp_header)
+        self._pp_header_widget.hide()
+        pp_layout.addWidget(self._pp_header_widget)
 
+        # Placeholder (shown when no file selected, hidden otherwise)
+        self._preview_placeholder = QLabel("Select a Rig Checklist")
+        self._preview_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._preview_placeholder.setStyleSheet("color: #6c7086; font-style: italic; padding: 20px;")
+        pp_layout.addWidget(self._preview_placeholder, stretch=1)
+
+        # Web view (hidden when no file selected)
         if HAS_WEBENGINE:
             self._preview_web = QWebEngineView()
-            pp_layout.addWidget(self._preview_web)
+            self._preview_web.hide()
+            pp_layout.addWidget(self._preview_web, stretch=1)
         else:
             self._preview_web = None
             no_preview = QLabel("Install PyQt6-WebEngine for inline preview")
@@ -2441,28 +2500,75 @@ class App(QMainWindow):
         # Set up cross-tree drop handler
         self._r_tree._external_drop_handler = self._on_master_ref_drop
 
+        # Initial state: no rig selected — show placeholders, hide content
+        self._r_tree.hide()
+        for i in range(self._r_toggle_row.count()):
+            w = self._r_toggle_row.itemAt(i).widget()
+            if w: w.hide()
+
     # -- Helpers -------------------------------------------------------------
+
+    def _show_preview_placeholder(self):
+        """Show the placeholder, hide the preview content."""
+        self._preview_placeholder.show()
+        self._pp_header_widget.hide()
+        if self._preview_web:
+            self._preview_web.hide()
+
+    def _show_preview_content(self):
+        """Show the preview content, hide the placeholder."""
+        self._preview_placeholder.hide()
+        self._pp_header_widget.show()
+        if self._preview_web:
+            self._preview_web.show()
 
     def _make_toggle_all_row(self, tree):
         """Create a +/− Toggle All row for a tree widget. Returns (layout, button)."""
         row = QHBoxLayout()
-        row.setContentsMargins(0, 0, 0, 0)
-        btn = QPushButton("+")
-        btn.setFixedSize(18, 18)
-        btn.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                color: #a6adc8;
-                border: 1px dotted #585b70;
-                font-size: 12px;
-                font-weight: bold;
-                padding: 0px;
-            }
-            QPushButton:hover {
-                background-color: #313244;
-                color: #cdd6f4;
-            }
-        """)
+        row.setContentsMargins(1, 0, 0, 0)  # align +/- with tree indicators
+
+        class _DashBorderButton(QPushButton):
+            """Button with border matching tree expand/collapse indicators exactly."""
+            def __init__(self, text, parent=None):
+                super().__init__(text, parent)
+                self._hovered = False
+                self.setFixedSize(18, 18)
+                self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+            def enterEvent(self, event):
+                self._hovered = True
+                self.update()
+                super().enterEvent(event)
+            def leaveEvent(self, event):
+                self._hovered = False
+                self.update()
+                super().leaveEvent(event)
+            def paintEvent(self, event):
+                p = QPainter(self)
+                p.setRenderHint(QPainter.RenderHint.Antialiasing, False)
+                if self._hovered:
+                    p.fillRect(self.rect(), QColor("#313244"))
+                # 12x12 box centered in 18x18 — matches tree arrow-closed/arrow-open
+                bsz = 12
+                bx = (self.width() - bsz) // 2
+                by = (self.height() - bsz) // 2
+                # Box border: DotLine matches tree indicator boxes
+                box_pen = QPen(QColor("#585b70"))
+                box_pen.setStyle(Qt.PenStyle.DotLine)
+                box_pen.setWidth(1)
+                p.setPen(box_pen)
+                p.drawRect(bx, by, bsz, bsz)
+                # +/- sign: same color/weight as tree indicators
+                sign_pen = QPen(QColor("#cdd6f4") if self._hovered else QColor("#a6adc8"))
+                sign_pen.setWidth(1)
+                p.setPen(sign_pen)
+                mid_x = bx + bsz // 2
+                mid_y = by + bsz // 2
+                p.drawLine(bx + 3, mid_y, bx + bsz - 3, mid_y)  # horizontal
+                if self.text() == "+":
+                    p.drawLine(mid_x, by + 3, mid_x, by + bsz - 3)  # vertical
+                p.end()
+
+        btn = _DashBorderButton("+")
         btn.setToolTip("Expand/collapse all")
         lbl = QPushButton("Toggle All")
         lbl.setFlat(True)
@@ -2484,8 +2590,40 @@ class App(QMainWindow):
 
         btn.clicked.connect(_toggle)
         lbl.clicked.connect(_toggle)
-        row.addWidget(btn)
-        row.addWidget(lbl)
+
+        # Hover-synced container
+        class _ToggleAllWidget(QWidget):
+            def __init__(self, btn_ref, lbl_ref, parent=None):
+                super().__init__(parent)
+                self._btn = btn_ref
+                self._lbl = lbl_ref
+                self.setCursor(Qt.CursorShape.PointingHandCursor)
+                layout = QHBoxLayout(self)
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(4)
+                layout.addWidget(btn_ref)
+                layout.addWidget(lbl_ref)
+            def enterEvent(self, event):
+                self._btn._hovered = True
+                self._btn.update()
+                self._lbl.setStyleSheet(
+                    "QPushButton { color: #a6adc8; font-size: 12px; border: none;"
+                    " text-align: left; padding: 0px; background: transparent;"
+                    " text-decoration: underline; }")
+                super().enterEvent(event)
+            def leaveEvent(self, event):
+                self._btn._hovered = False
+                self._btn.update()
+                self._lbl.setStyleSheet(
+                    "QPushButton { color: #6c7086; font-size: 12px; border: none;"
+                    " text-align: left; padding: 0px; background: transparent; }")
+                super().leaveEvent(event)
+            def mouseReleaseEvent(self, event):
+                _toggle()
+                super().mouseReleaseEvent(event)
+
+        container = _ToggleAllWidget(btn, lbl)
+        row.addWidget(container)
         row.addStretch()
         return row, btn
 
@@ -2709,18 +2847,15 @@ class App(QMainWindow):
             self._r_editor_collapse_btn.setText("▼")
             self._r_editor_expanded = True
 
-    def _set_rig_editor_active(self, has_content):
-        """Update editor header state based on whether content is loaded."""
-        self._r_editor_has_content = has_content
-        if has_content:
+    def _apply_editor_header_style(self):
+        """Apply the correct non-hover style to the editor header based on content state."""
+        if self._r_editor_has_content:
             self._r_detail_title.setStyleSheet(
                 "QPushButton { color: #cdd6f4; font-size: 12px; font-weight: bold;"
-                " border: none; text-align: left; padding: 0; background: transparent; }"
-                "QPushButton:hover { color: #cdd6f4; text-decoration: underline; }")
+                " border: none; text-align: left; padding: 0; background: transparent; }")
             self._r_editor_collapse_btn.setStyleSheet(
                 "QPushButton { background: transparent; color: #a6adc8;"
-                " border: none; font-size: 11px; padding: 0; }"
-                "QPushButton:hover { color: #cdd6f4; }")
+                " border: none; font-size: 11px; padding: 0; }")
         else:
             self._r_detail_title.setStyleSheet(
                 "QPushButton { color: #6c7086; font-size: 12px; font-weight: bold;"
@@ -2728,16 +2863,25 @@ class App(QMainWindow):
             self._r_editor_collapse_btn.setStyleSheet(
                 "QPushButton { background: transparent; color: #6c7086;"
                 " border: none; font-size: 11px; padding: 0; }")
-            # Collapse when content is cleared
-            if self._r_editor_expanded:
-                self._r_editor_area.hide()
-                self._r_editor_collapse_btn.setText("▶")
-                self._r_editor_expanded = False
+
+    def _set_rig_editor_active(self, has_content):
+        """Update editor header state based on whether content is loaded."""
+        self._r_editor_has_content = has_content
+        self._apply_editor_header_style()
+        if not has_content and self._r_editor_expanded:
+            self._r_editor_area.hide()
+            self._r_editor_collapse_btn.setText("▶")
+            self._r_editor_expanded = False
 
     def _toggle_rig_modified_filter(self):
         """Toggle the modified-only filter on the rig tree."""
         self._show_rig_modified_only = self._r_modified_btn.isChecked()
         self._rebuild_rig_tree()
+
+    def _toggle_mr_needed_filter(self):
+        """Toggle the needed-only filter on the master ref tree."""
+        self._show_mr_needed_only = self._mr_needed_btn.isChecked()
+        self._rebuild_master_ref_tree()
 
     def _show_progress(self, maximum=0, text=""):
         """Show the global progress bar with optional text overlay."""
@@ -4787,6 +4931,16 @@ class App(QMainWindow):
         if not self.master_list:
             return
         q = self._mr_search.text().strip().lower()
+        needed_only = self._show_mr_needed_only
+
+        # Build rig quantity lookup: item_name.lower() -> total qty across ALL checklists
+        rig_totals = {}
+        for rf in self.rig_files:
+            for area in rf.areas:
+                for cat in area.categories:
+                    for item in cat.items:
+                        key = item.name.lower()
+                        rig_totals[key] = rig_totals.get(key, 0) + item.qty
 
         cat_nodes = {}
         child_cats = []
@@ -4795,6 +4949,23 @@ class App(QMainWindow):
 
         _mr_dim = QBrush(QColor("#6c7086"))
         _mr_bg = QBrush(QColor("#181825"))
+        needed_count = 0
+
+        def _make_item_node(it, ci, ii):
+            """Create an item tree node with remaining-qty display. Returns (node, remaining)."""
+            nonlocal needed_count
+            i_item = QTreeWidgetItem([it.name])
+            total_in_rig = rig_totals.get(it.name.lower(), 0)
+            remaining = max(0, it.emsa_min - total_in_rig)
+            if remaining > 0:
+                i_item.setText(1, f"×{remaining}")
+                needed_count += 1
+            else:
+                # Fulfilled — gray out but keep draggable
+                i_item.setForeground(0, _mr_dim)
+                i_item.setForeground(1, _mr_dim)
+            i_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_item", ci, ii))
+            return i_item, remaining
 
         for ci, cat in sorted_cats:
             cat_match = q and q in cat.name.lower()
@@ -4805,14 +4976,12 @@ class App(QMainWindow):
                 continue
 
             cat_item = QTreeWidgetItem([cat.name])
-            cat_item.setText(1, f"({len(show)})")
             cat_item.setIcon(0, _ICONS["cat"])
             cat_item.setForeground(0, _mr_dim)
             cat_item.setForeground(1, _mr_dim)
             cat_item.setBackground(0, _mr_bg)
             cat_item.setBackground(1, _mr_bg)
             cat_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_cat", ci))
-            # No drag for categories
             cat_item.setFlags(cat_item.flags() & ~Qt.ItemFlag.ItemIsDragEnabled)
 
             groups = {}
@@ -4823,32 +4992,46 @@ class App(QMainWindow):
                 else:
                     ungrouped.append((ii, it))
 
+            cat_has_needed = False
             for group_name in sorted(groups.keys(), key=_natural_sort_key):
                 members = groups[group_name]
                 g_item = QTreeWidgetItem([group_name])
-                g_item.setText(1, f"({len(members)})")
                 g_item.setIcon(0, _ICONS["group"])
                 g_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_group", ci, group_name))
-                cat_item.addChild(g_item)
-                if q: g_item.setExpanded(True)
+                group_needed = 0
                 for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
-                    i_item = QTreeWidgetItem([it.name])
-                    i_item.setText(1, f"min {it.emsa_min}")
-                    i_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_item", ci, ii))
-                    g_item.addChild(i_item)
+                    i_node, remaining = _make_item_node(it, ci, ii)
+                    if needed_only and remaining == 0:
+                        continue
+                    g_item.addChild(i_node)
+                    if remaining > 0:
+                        group_needed += 1
+                if g_item.childCount() == 0:
+                    continue
+                g_item.setText(1, f"({g_item.childCount()})")
+                cat_item.addChild(g_item)
+                if q or needed_only: g_item.setExpanded(True)
+                if group_needed > 0:
+                    cat_has_needed = True
 
             for ii, it in sorted(ungrouped, key=lambda x: _natural_sort_key(x[1].name)):
-                i_item = QTreeWidgetItem([it.name])
-                i_item.setText(1, f"min {it.emsa_min}")
-                i_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_item", ci, ii))
-                cat_item.addChild(i_item)
+                i_node, remaining = _make_item_node(it, ci, ii)
+                if needed_only and remaining == 0:
+                    continue
+                cat_item.addChild(i_node)
+                if remaining > 0:
+                    cat_has_needed = True
 
+            if cat_item.childCount() == 0 and (q or needed_only):
+                continue
+
+            cat_item.setText(1, f"({cat_item.childCount()})")
             cat_nodes[ci] = cat_item
             if cat.child_of:
                 child_cats.append((ci, cat))
             else:
                 self._mr_tree.addTopLevelItem(cat_item)
-                if q: cat_item.setExpanded(True)
+                if q or (needed_only and cat_has_needed): cat_item.setExpanded(True)
 
         # Nest child categories under parents
         for ci, cat in child_cats:
@@ -4873,6 +5056,12 @@ class App(QMainWindow):
                 _restore_expanded(item.child(i))
         for i in range(self._mr_tree.topLevelItemCount()):
             _restore_expanded(self._mr_tree.topLevelItem(i))
+
+        # Update Needed button label
+        if needed_count > 0:
+            self._mr_needed_btn.setText(f"Needed ({needed_count})")
+        else:
+            self._mr_needed_btn.setText("Needed")
 
     def _on_master_ref_drop(self, event):
         """Handle drop from master ref tree onto rig tree."""
@@ -4925,7 +5114,17 @@ class App(QMainWindow):
             event.ignore()
             return
 
+        # Build rig totals for remaining-qty calculation (same as ref tree)
+        rig_totals = {}
+        for rf in self.rig_files:
+            for a in rf.areas:
+                for c in a.categories:
+                    for it in c.items:
+                        key = it.name.lower()
+                        rig_totals[key] = rig_totals.get(key, 0) + it.qty
+
         added = 0
+        merged = 0
         for sel_item in selected:
             sel_data = sel_item.data(0, Qt.ItemDataRole.UserRole)
             if not sel_data:
@@ -4938,10 +5137,24 @@ class App(QMainWindow):
                 if ii >= len(mcat.items):
                     continue
                 mi = mcat.items[ii]
-                grp = target_group if target_group else mi.group
-                new_item = Item(mi.name, mi.emsa_min, grp)
-                target_cat.items.append(new_item)
-                added += 1
+                remaining = max(0, mi.emsa_min - rig_totals.get(mi.name.lower(), 0))
+                qty_to_add = remaining if remaining > 0 else mi.emsa_min
+                # Check if target category already has an item with this name
+                existing = None
+                for it in target_cat.items:
+                    if it.name == mi.name:
+                        existing = it
+                        break
+                if existing and remaining > 0:
+                    # Merge: add remaining qty to existing item
+                    existing.qty += remaining
+                    merged += 1
+                else:
+                    # Add new item
+                    grp = target_group if target_group else mi.group
+                    new_item = Item(mi.name, qty_to_add, grp)
+                    target_cat.items.append(new_item)
+                    added += 1
             elif sel_data[0] == "mr_group":
                 ci, group_name = sel_data[1], sel_data[2]
                 if ci >= len(self.master_list.categories):
@@ -4949,17 +5162,34 @@ class App(QMainWindow):
                 mcat = self.master_list.categories[ci]
                 for mi in mcat.items:
                     if mi.group == group_name:
-                        new_item = Item(mi.name, mi.emsa_min, group_name)
-                        target_cat.items.append(new_item)
-                        added += 1
+                        remaining = max(0, mi.emsa_min - rig_totals.get(mi.name.lower(), 0))
+                        qty_to_add = remaining if remaining > 0 else mi.emsa_min
+                        existing = None
+                        for it in target_cat.items:
+                            if it.name == mi.name:
+                                existing = it
+                                break
+                        if existing and remaining > 0:
+                            existing.qty += remaining
+                            merged += 1
+                        else:
+                            new_item = Item(mi.name, qty_to_add, group_name)
+                            target_cat.items.append(new_item)
+                            added += 1
 
-        if added:
+        total_changes = added + merged
+        if total_changes:
             event.setDropAction(Qt.DropAction.IgnoreAction)
             event.accept()
             self.dirty = True
             self._update_save_state()
             self._rebuild_rig_tree()
-            self._status.showMessage(f"Added {added} item(s) from master list")
+            parts = []
+            if added:
+                parts.append(f"{added} added")
+            if merged:
+                parts.append(f"{merged} updated")
+            self._status.showMessage(f"From master list: {', '.join(parts)}")
         else:
             event.ignore()
 
@@ -5023,7 +5253,21 @@ class App(QMainWindow):
         self._r_tree.clear()
         if not self.current_file:
             self._r_tree.endRebuild(saved)
+            self._r_placeholder.show()
+            self._r_tree.hide()
+            # Hide toggle row widgets
+            for i in range(self._r_toggle_row.count()):
+                w = self._r_toggle_row.itemAt(i).widget()
+                if w: w.hide()
+            self._show_preview_placeholder()
             return
+        self._r_placeholder.hide()
+        self._r_tree.show()
+        # Show toggle row widgets
+        for i in range(self._r_toggle_row.count()):
+            w = self._r_toggle_row.itemAt(i).widget()
+            if w: w.show()
+        self._show_preview_content()
         q = self._r_search.text().strip().lower()
         mn = self.master_list.all_item_names() if self.master_list else set()
         # Recompute rig modified set on each rebuild
@@ -5072,7 +5316,7 @@ class App(QMainWindow):
                     cat_item.setFont(0, font)
                     cat_item.setFont(1, font)
                 area_item.addChild(cat_item)
-                if q: cat_item.setExpanded(True)
+                if q or rig_mod: cat_item.setExpanded(True)
 
                 # Separate into groups and ungrouped
                 groups = {}
@@ -5096,7 +5340,7 @@ class App(QMainWindow):
                     g_item.setData(0, Qt.ItemDataRole.UserRole, ("group", ai, ci, group_name))
                     g_item.setData(0, CN, group_name)
                     cat_item.addChild(g_item)
-                    if q: g_item.setExpanded(True)
+                    if q or rig_mod: g_item.setExpanded(True)
                     # Sort items within group naturally
                     for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
                         ok = it.name in mn
@@ -5126,6 +5370,7 @@ class App(QMainWindow):
             return area_item.childCount() > 0
 
         # First pass: create all area nodes
+        _dim_area_brush = QBrush(QColor("#6c7086"))
         for ai, area in enumerate(self.current_file.areas):
             seal = " 🔒" if area.sealable else ""
             area_item = QTreeWidgetItem([f"{area.name}{seal}"])
@@ -5135,14 +5380,20 @@ class App(QMainWindow):
             has_content = _build_area_content(area_item, ai, area)
 
             if not has_content and q and not (q in area.name.lower()):
-                continue  # skip empty areas during search unless area name matches
+                if not rig_mod:
+                    continue  # skip empty areas during search unless area name matches
+
+            # When rig modified filter is active, show all areas but gray unmodified
+            if rig_mod and not has_content:
+                area_item.setForeground(0, _dim_area_brush)
+                area_item.setForeground(1, _dim_area_brush)
 
             area_nodes[ai] = area_item
             if area.child_of:
                 child_areas.append((ai, area))
             else:
                 self._r_tree.addTopLevelItem(area_item)
-                if q: area_item.setExpanded(True)
+                if q or (rig_mod and has_content): area_item.setExpanded(True)
 
         # Second pass: nest child areas under parents
         for ai, area in child_areas:
@@ -5161,6 +5412,7 @@ class App(QMainWindow):
                 area_nodes[ai].setExpanded(True)
 
         self._r_tree.endRebuild(saved)
+        self._rebuild_master_ref_tree()
 
     def _on_rig_tree_select(self, item):
         data = item.data(0, Qt.ItemDataRole.UserRole)
@@ -8639,6 +8891,8 @@ class App(QMainWindow):
         html = self._get_widget_html_template()
         if not html:
             return
+        # Switch to content view
+        self._show_preview_content()
         try:
             json_content = json.dumps(self.current_file.to_json_data())
             m = re.search(r"var\s+DEFAULT_INVENTORY\s*=\s*[\s\S]*?;", html)

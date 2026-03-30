@@ -1,12 +1,94 @@
 {
-  "albuterol (2.5 mg/3 ml)": {
-    "master_name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
+  "arterial line equipment (swan-ganz, cvp, ivp, iabp)": {
+    "master_name": "",
     "group": "",
-    "master_qty": "6",
-    "category": "Medications",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "battery operated flashlight": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": ""
+  },
+  "warming mattress": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "automated external defibrillator \u2013 compliant with the current aha": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "commercial biohazard spill kit or equivalent": {
+    "master_name": "Infectious control cleanup kit",
+    "group": "",
+    "master_qty": "1",
+    "category": "Decontamination",
     "status": "Name Difference",
     "alias": {
-      "lemsa_name": "Albuterol (2.5 mg/3 mL)",
+      "lemsa_name": "Commercial Biohazard spill kit or equivalent",
+      "lemsa": "San Joaquin EMS Agency"
+    }
+  },
+  "connecting tubing for suction units": {
+    "master_name": "Yankauer Suction Tip + Tubing",
+    "group": "Suction Tips",
+    "master_qty": "3",
+    "category": "Suction",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Connecting tubing for suction units",
+      "lemsa": "San Joaquin EMS Agency"
+    }
+  },
+  "controlled substances locking storage container": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "controlled substances tracking sheet": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "covered waste container": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": ""
+  },
+  "chlorhexidine swabs/skin prep": {
+    "master_name": "Chlorhexidine Swab",
+    "group": "Disinfectant",
+    "master_qty": "5",
+    "category": "Prep",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Chlorhexidine Swabs/Skin Prep",
+      "lemsa": "Sierra-Sacramento Valley EMS Agency"
+    }
+  },
+  "heat pack": {
+    "master_name": "Heat Pack",
+    "group": "",
+    "master_qty": "4",
+    "category": "Temperature Management",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Heat Pack",
       "lemsa": "Sierra-Sacramento Valley EMS Agency"
     }
   }

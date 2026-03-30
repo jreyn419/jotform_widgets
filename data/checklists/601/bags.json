@@ -10,10 +10,6 @@
           "name": "Main Compartment",
           "items": [
             {
-              "name": "Ventilator Circuit w/ Exhaust Valve",
-              "qty": 1
-            },
-            {
               "name": "Inline Nebulizer Kit",
               "qty": 1
             },
@@ -41,6 +37,10 @@
               "name": "Half",
               "qty": 5,
               "group": "Sapphire Infusion Set"
+            },
+            {
+              "name": "Ventilator Circuit",
+              "qty": 1
             }
           ]
         },
@@ -172,32 +172,39 @@
           "name": "Main Compartment, Mesh Pocket; iGels",
           "items": [
             {
-              "name": "iGel, 90+ kgs ORANGE",
-              "qty": 1
+              "name": "10-25 kg GRAY",
+              "qty": 1,
+              "group": "iGels"
             },
             {
-              "name": "iGel, 50-90 kgs GREEN",
-              "qty": 1
+              "name": "2-5 kg PINK",
+              "qty": 1,
+              "group": "iGels"
             },
             {
-              "name": "iGel, 30-60 kgs YELLOW",
-              "qty": 1
+              "name": "25-35 kg WHITE",
+              "qty": 1,
+              "group": "iGels"
             },
             {
-              "name": "iGel, 25-35 kgs WHITE",
-              "qty": 1
+              "name": "30-60 kg YELLOW",
+              "qty": 1,
+              "group": "iGels"
             },
             {
-              "name": "iGel, 10-25 kgs GRAY",
-              "qty": 1
+              "name": "5-12 kg BLUE",
+              "qty": 1,
+              "group": "iGels"
             },
             {
-              "name": "iGel, 5-12 kgs BLUE",
-              "qty": 1
+              "name": "50-90 kg GREEN",
+              "qty": 1,
+              "group": "iGels"
             },
             {
-              "name": "iGel, 2-5 kgs PINK",
-              "qty": 1
+              "name": "90 kg ORANGE",
+              "qty": 1,
+              "group": "iGels"
             }
           ]
         },
@@ -309,7 +316,8 @@
           "items": [
             {
               "name": "Atropine Sulfate Preload",
-              "qty": 1
+              "qty": 1,
+              "group": "Atropine"
             },
             {
               "name": "Calcium Chloride 10% Preload",
@@ -386,7 +394,8 @@
             },
             {
               "name": "Atropine Sulfate 1mg/1mL",
-              "qty": 2
+              "qty": 2,
+              "group": "Atropine"
             },
             {
               "name": "Ondansetron 4mg/2mL",
@@ -810,10 +819,6 @@
               "qty": 1
             },
             {
-              "name": "EKG Electrode",
-              "qty": 1
-            },
-            {
               "name": "Adhesive Bandages",
               "qty": 6,
               "group": "Glucometer kit"
@@ -842,6 +847,10 @@
               "name": "Test Strip Vial (at least 6 strips)",
               "qty": 1,
               "group": "Glucometer kit"
+            },
+            {
+              "name": "EKG Electrode",
+              "qty": 48
             }
           ]
         }
