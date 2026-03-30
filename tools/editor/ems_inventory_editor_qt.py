@@ -861,7 +861,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.7.0"
+VERSION = "6.8.0"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1685,6 +1685,8 @@ class App(QMainWindow):
         self._rig_loaded_snapshot = set()  # fingerprint tuples from file load
         self._rig_modified_names = set()  # item names modified since load
         self._show_mr_needed_only = False  # filter master ref to needed items
+        self._show_mr_lemsa_only = False  # filter master ref to LEMSA-matched items
+        self._lemsa_matched_master_keys = set()  # master item keys matched in LEMSA comparison
         self._ui_state_path = os.path.join(self.base_dir, "ui_state.json")
 
         # Undo/redo stacks (separate per tree, snapshot-based)
@@ -2374,6 +2376,17 @@ class App(QMainWindow):
         self._mr_needed_btn.setToolTip("Show only items still needed in checklists")
         self._mr_needed_btn.clicked.connect(self._toggle_mr_needed_filter)
         self._mr_toggle_row.addWidget(self._mr_needed_btn)
+        self._mr_lemsa_btn = QPushButton("LEMSA Only")
+        self._mr_lemsa_btn.setCheckable(True)
+        self._mr_lemsa_btn.setFixedHeight(20)
+        self._mr_lemsa_btn.setStyleSheet(
+            "QPushButton { padding: 2px 8px; font-size: 11px; color: #6c7086;"
+            " border: 1px solid #45475a; border-radius: 3px; }"
+            "QPushButton:checked { background: #45475a; color: #cdd6f4; }"
+            "QPushButton:hover:!checked { background: #313244; }")
+        self._mr_lemsa_btn.setToolTip("Show only items that appear in LEMSA lists")
+        self._mr_lemsa_btn.clicked.connect(self._toggle_mr_lemsa_filter)
+        self._mr_toggle_row.addWidget(self._mr_lemsa_btn)
         mr_layout.addLayout(self._mr_toggle_row)
         mr_layout.addWidget(self._mr_tree)
         self._rig_trees_splitter.addWidget(mr_panel)
@@ -2880,6 +2893,11 @@ class App(QMainWindow):
     def _toggle_mr_needed_filter(self):
         """Toggle the needed-only filter on the master ref tree."""
         self._show_mr_needed_only = self._mr_needed_btn.isChecked()
+        self._rebuild_master_ref_tree()
+
+    def _toggle_mr_lemsa_filter(self):
+        """Toggle the LEMSA-only filter on the master ref tree."""
+        self._show_mr_lemsa_only = self._mr_lemsa_btn.isChecked()
         self._rebuild_master_ref_tree()
 
     def _show_progress(self, maximum=0, text=""):
@@ -4944,6 +4962,8 @@ class App(QMainWindow):
             return
         q = self._mr_search.text().strip().lower()
         needed_only = self._show_mr_needed_only
+        lemsa_only = self._show_mr_lemsa_only
+        lemsa_keys = self._lemsa_matched_master_keys if lemsa_only else None
 
         # Build rig quantity lookup: item_name.lower() -> total qty across ALL checklists
         rig_totals = {}
@@ -5012,6 +5032,8 @@ class App(QMainWindow):
                 g_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_group", ci, group_name))
                 group_needed = 0
                 for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
+                    if lemsa_keys is not None and it.name.lower() not in lemsa_keys:
+                        continue
                     i_node, remaining = _make_item_node(it, ci, ii)
                     if needed_only and remaining == 0:
                         continue
@@ -5022,11 +5044,13 @@ class App(QMainWindow):
                     continue
                 g_item.setText(1, f"({g_item.childCount()})")
                 cat_item.addChild(g_item)
-                if q or needed_only: g_item.setExpanded(True)
+                if q or needed_only or lemsa_only: g_item.setExpanded(True)
                 if group_needed > 0:
                     cat_has_needed = True
 
             for ii, it in sorted(ungrouped, key=lambda x: _natural_sort_key(x[1].name)):
+                if lemsa_keys is not None and it.name.lower() not in lemsa_keys:
+                    continue
                 i_node, remaining = _make_item_node(it, ci, ii)
                 if needed_only and remaining == 0:
                     continue
@@ -5034,7 +5058,7 @@ class App(QMainWindow):
                 if remaining > 0:
                     cat_has_needed = True
 
-            if cat_item.childCount() == 0 and (q or needed_only):
+            if cat_item.childCount() == 0 and (q or needed_only or lemsa_only):
                 continue
 
             cat_item.setText(1, f"({cat_item.childCount()})")
@@ -5043,7 +5067,7 @@ class App(QMainWindow):
                 child_cats.append((ci, cat))
             else:
                 self._mr_tree.addTopLevelItem(cat_item)
-                if q or (needed_only and cat_has_needed): cat_item.setExpanded(True)
+                if q or (needed_only and cat_has_needed) or lemsa_only: cat_item.setExpanded(True)
 
         # Nest child categories under parents
         for ci, cat in child_cats:
@@ -5074,6 +5098,13 @@ class App(QMainWindow):
             self._mr_needed_btn.setText(f"Needed ({needed_count})")
         else:
             self._mr_needed_btn.setText("Needed")
+
+        # Update LEMSA Only button label
+        lemsa_count = len(self._lemsa_matched_master_keys)
+        if lemsa_count > 0:
+            self._mr_lemsa_btn.setText(f"LEMSA Only ({lemsa_count})")
+        else:
+            self._mr_lemsa_btn.setText("LEMSA Only")
 
     def _on_master_ref_drop(self, event):
         """Handle drop from master ref tree onto rig tree."""
@@ -7415,6 +7446,9 @@ class App(QMainWindow):
                 })
             else:
                 new_items.append(data)
+
+        # Store matched master keys for LEMSA Only ref tree filter
+        self._lemsa_matched_master_keys = set(matched_master_keys)
 
         missing_items = []
         lemsa_keys = set(all_lemsa.keys())
