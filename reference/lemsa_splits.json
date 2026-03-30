@@ -445,7 +445,7 @@
     "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
     "items": [
       {
-        "name": "i-gel Airway Devices, 1.0,",
+        "name": "i-gel Airway Devices, 1.0",
         "qty": 1
       },
       {
@@ -459,6 +459,615 @@
       {
         "name": "i-gel Airway Devices, 2.5",
         "qty": 1
+      }
+    ]
+  },
+  "glucometer (with lancets, test strips [10 each], & alcohol swabs)": {
+    "original_name": "Glucometer (with lancets, test strips [10 each], & alcohol swabs)",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Glucometer",
+        "qty": 1
+      },
+      {
+        "name": "Lancets",
+        "qty": 10
+      },
+      {
+        "name": "Glucometer Test strips",
+        "qty": 10
+      },
+      {
+        "name": "Alcohol swabs",
+        "qty": 10
+      }
+    ]
+  },
+  "i-gel airway devices: sizes 3, 4, 5": {
+    "original_name": "i-gel Airway Devices: Sizes 3, 4, 5",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "i-gel Airway Devices, 3",
+        "qty": 1
+      },
+      {
+        "name": "i-gel Airway Devices, 4",
+        "qty": 1
+      },
+      {
+        "name": "i-gel Airway Devices, 5",
+        "qty": 1
+      }
+    ]
+  },
+  "igel airway each size 1.0,1.5, 2.0, 2.5": {
+    "original_name": "iGel Airway each size 1.0,1.5, 2.0, 2.5",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "iGel Airway, 1.0",
+        "qty": 1
+      },
+      {
+        "name": "iGel Airway, 1.5",
+        "qty": 1
+      },
+      {
+        "name": "iGel Airway, 2.0",
+        "qty": 1
+      },
+      {
+        "name": "iGel Airway, 2.5",
+        "qty": 1
+      }
+    ]
+  },
+  "igel airway each size 3.0, 4.0, 5.0": {
+    "original_name": "iGel Airway each size 3.0, 4.0, 5.0",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "iGel Airway, 3.0",
+        "qty": 1
+      },
+      {
+        "name": "iGel Airway, 4.0",
+        "qty": 1
+      },
+      {
+        "name": "iGel Airway, 5.0",
+        "qty": 1
+      }
+    ]
+  },
+  "io needles (pink, blue, yellow)": {
+    "original_name": "IO Needles (Pink, Blue, Yellow)",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "IO Needles, Pink",
+        "qty": 1
+      },
+      {
+        "name": "IO Needles, Blue",
+        "qty": 1
+      },
+      {
+        "name": "IO Needles, Yellow",
+        "qty": 1
+      }
+    ]
+  },
+  "io needles each size: 15mm, 25mm, 45mm": {
+    "original_name": "IO Needles each size: 15mm, 25mm, 45mm",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "IO Needles, 15mm",
+        "qty": 1
+      },
+      {
+        "name": "IO Needles, 25mm",
+        "qty": 1
+      },
+      {
+        "name": "IO Needles, 45mm",
+        "qty": 1
+      }
+    ]
+  },
+  "iv catheter: sizes 14 ga, 16 ga, 18 ga, 20 ga": {
+    "original_name": "IV Catheter: Sizes 14 ga, 16 ga, 18 ga, 20 ga",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "IV Catheter, 14 ga",
+        "qty": 6
+      },
+      {
+        "name": "IV Catheter, 16 ga",
+        "qty": 6
+      },
+      {
+        "name": "IV Catheter, 18 ga",
+        "qty": 6
+      },
+      {
+        "name": "IV Catheter, 20 ga",
+        "qty": 6
+      }
+    ]
+  },
+  "iv catheter: sizes 22 ga, 24 ga": {
+    "original_name": "IV Catheter: Sizes 22 ga, 24 ga",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "IV Catheter, 22 ga",
+        "qty": 4
+      },
+      {
+        "name": "IV Catheter, 24 ga",
+        "qty": 4
+      }
+    ]
+  },
+  "triage kit (mci vests for \u2018triage unit leader\u2019 and \u2018medical group supervisor\u2019, pens, trauma shears, clipboard, patient tracking sheets, start triage reference sheet, barrier tape, glow sticks)": {
+    "original_name": "Triage Kit (MCI vests for \u2018Triage Unit Leader\u2019 and \u2018Medical Group Supervisor\u2019, pens, trauma shears, clipboard, patient tracking sheets, START Triage reference sheet, barrier tape, glow sticks)",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "glow sticks (for MCI kit)",
+        "qty": 1
+      },
+      {
+        "name": "barrier tape (for MCI kit)",
+        "qty": 1
+      },
+      {
+        "name": "START Triage reference sheet (for MCI kit)",
+        "qty": 1
+      },
+      {
+        "name": "patient tracking sheets (for MCI kit)",
+        "qty": 1
+      },
+      {
+        "name": "clipboard (for MCI kit)",
+        "qty": 1
+      },
+      {
+        "name": "trauma shears",
+        "qty": 1
+      },
+      {
+        "name": "pens",
+        "qty": 2
+      },
+      {
+        "name": "\u2018Medical Group Supervisor\u2019 vest",
+        "qty": 1
+      },
+      {
+        "name": "\u2018Triage Unit Leader\u2019 vest",
+        "qty": 1
+      }
+    ]
+  },
+  "suction catheters: sizes 6 fr \u2013 14 fr": {
+    "original_name": "Suction Catheters: Sizes 6 Fr \u2013 14 Fr",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Suction Catheters, 6 Fr",
+        "qty": 1
+      },
+      {
+        "name": "Suction Catheters, 8 Fr",
+        "qty": 1
+      },
+      {
+        "name": "Suction Catheters, 10 Fr",
+        "qty": 1
+      },
+      {
+        "name": "Suction Catheters, 12 Fr",
+        "qty": 1
+      },
+      {
+        "name": "Suction Catheters, 14 Fr",
+        "qty": 1
+      }
+    ]
+  },
+  "syringes: 1 ml, 3 ml, 5 ml, 10 ml, 50 ml": {
+    "original_name": "Syringes: 1 mL, 3 mL, 5 mL, 10 mL, 50 mL",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Syringes, 1 mL",
+        "qty": 2
+      },
+      {
+        "name": "Syringes, 3 mL",
+        "qty": 2
+      },
+      {
+        "name": "Syringes, 5 mL",
+        "qty": 2
+      },
+      {
+        "name": "Syringes, 10 mL",
+        "qty": 2
+      },
+      {
+        "name": "Syringes, 50 mL",
+        "qty": 2
+      }
+    ]
+  },
+  "syringes: sizes: 1 ml, 3 \u2013 5 ml, 10 ml": {
+    "original_name": "Syringes: Sizes: 1 mL, 3 \u2013 5 mL, 10 mL",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Syringes: 1 mL,",
+        "qty": 3
+      },
+      {
+        "name": "Syringes: 3 \u2013 5 mL",
+        "qty": 3
+      },
+      {
+        "name": "Syringes: 10 mL",
+        "qty": 3
+      }
+    ]
+  },
+  "straight (miller) laryngoscope blades: sizes 0 \u2013 4": {
+    "original_name": "Straight (Miller) Laryngoscope Blades: Sizes 0 \u2013 4",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Straight (Miller) Laryngoscope Blades, 0",
+        "qty": 1
+      },
+      {
+        "name": "Straight (Miller) Laryngoscope Blades, 1",
+        "qty": 1
+      },
+      {
+        "name": "Straight (Miller) Laryngoscope Blades, 2",
+        "qty": 1
+      },
+      {
+        "name": "Straight (Miller) Laryngoscope Blades, 3",
+        "qty": 1
+      },
+      {
+        "name": "Straight (Miller) Laryngoscope Blades, 4",
+        "qty": 1
+      }
+    ]
+  },
+  "suction catheters with control for each size fr 14, 18": {
+    "original_name": "Suction catheters with control for each size Fr 14, 18",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Suction catheters Fr 14",
+        "qty": 1
+      },
+      {
+        "name": "Suction catheters Fr 18",
+        "qty": 1
+      }
+    ]
+  },
+  "iv catheters each size: 14ga, 24ga": {
+    "original_name": "IV catheters each size: 14ga, 24ga",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "IV catheters, 14ga",
+        "qty": 2
+      },
+      {
+        "name": "IV catheters, 24 ga",
+        "qty": 2
+      }
+    ]
+  },
+  "iv catheters each size: 16ga, 18ga, 20ga, 22ga": {
+    "original_name": "IV catheters each size: 16ga, 18ga, 20ga, 22ga",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "IV catheters, 16ga",
+        "qty": 2
+      },
+      {
+        "name": "IV catheters, 18ga",
+        "qty": 2
+      },
+      {
+        "name": "IV catheters, 20ga",
+        "qty": 2
+      },
+      {
+        "name": "IV catheters, 22ga",
+        "qty": 2
+      }
+    ]
+  },
+  "iv catheters: 16 ga, 18 ga, 20 ga, 22 ga, 24 ga": {
+    "original_name": "IV Catheters: 16 ga, 18 ga, 20 ga, 22 ga, 24 ga",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "IV Catheters: 16 ga",
+        "qty": 4
+      },
+      {
+        "name": "IV Catheters, 18 ga",
+        "qty": 4
+      },
+      {
+        "name": "IV Catheters, 20 ga",
+        "qty": 4
+      },
+      {
+        "name": "IV Catheters, 22 ga",
+        "qty": 4
+      },
+      {
+        "name": "IV Catheters, 24 ga",
+        "qty": 4
+      }
+    ]
+  },
+  "laryngoscope blades: macintosh # 2, 3, 4": {
+    "original_name": "Laryngoscope Blades: MacIntosh # 2, 3, 4",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Laryngoscope Blades: MacIntosh, #2",
+        "qty": 1
+      },
+      {
+        "name": "Laryngoscope Blades: MacIntosh, #3",
+        "qty": 1
+      },
+      {
+        "name": "Laryngoscope Blades: MacIntosh, #4",
+        "qty": 1
+      }
+    ]
+  },
+  "laryngoscope blades: miller # 2, 3, 4": {
+    "original_name": "Laryngoscope Blades: Miller # 2, 3, 4",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Laryngoscope Blades: Miller # 2",
+        "qty": 1
+      },
+      {
+        "name": "Laryngoscope Blades: Miller # 3",
+        "qty": 1
+      },
+      {
+        "name": "Laryngoscope Blades: Miller # 4",
+        "qty": 1
+      }
+    ]
+  },
+  "magill forceps (adult/pediatric)": {
+    "original_name": "Magill Forceps (adult/pediatric)",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Magill Forceps, adult",
+        "qty": 1
+      },
+      {
+        "name": "Magill Forceps, pediatric",
+        "qty": 1
+      }
+    ]
+  },
+  "magill forceps \u2013 adult and pediatric": {
+    "original_name": "Magill Forceps \u2013 Adult and Pediatric",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Magill Forceps \u2013 Adult",
+        "qty": 1
+      },
+      {
+        "name": "Magill Forceps \u2013 Pediatric",
+        "qty": 1
+      }
+    ]
+  },
+  "magill forceps: adult & pediatric": {
+    "original_name": "Magill Forceps: Adult & Pediatric",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Magill Forceps: Adult",
+        "qty": 1
+      },
+      {
+        "name": "Magill Forceps: Pediatric",
+        "qty": 1
+      }
+    ]
+  },
+  "mci vests - medical group supervisor, triage unit leader (min)": {
+    "original_name": "MCI Vests - Medical Group Supervisor, Triage Unit Leader (min)",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "MCI Vests - Medical Group Supervisor",
+        "qty": 1
+      },
+      {
+        "name": "MCI Vests - Triage Unit Leader",
+        "qty": 1
+      }
+    ]
+  },
+  "micro-drip & macro-drip iv set or selectable drip iv set": {
+    "original_name": "Micro-Drip & Macro-Drip IV Set OR Selectable Drip IV Set",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Micro-Drip IV",
+        "qty": 4
+      },
+      {
+        "name": "Macro-Drip IV",
+        "qty": 4
+      }
+    ]
+  },
+  "nasopharyngeal airways, each size fr 20, 24, 28, 32, 36": {
+    "original_name": "Nasopharyngeal Airways, each size Fr 20, 24, 28, 32, 36",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Nasopharyngeal Airways, 20 Fr.",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways, 24 Fr.",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways, 28 Fr.",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways, 32 Fr.",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways, 36 Fr.",
+        "qty": 1
+      }
+    ]
+  },
+  "nasopharyngeal airways: 16,18, 20, 22, 24, 26, 28, 30, 32, 34": {
+    "original_name": "Nasopharyngeal Airways: 16,18, 20, 22, 24, 26, 28, 30, 32, 34",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Nasopharyngeal Airways: 16",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways: 18",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways: 20",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways: 22",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways: 24",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways: 26",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways: 28",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways: 30",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways: 32",
+        "qty": 1
+      },
+      {
+        "name": "Nasopharyngeal Airways: 34",
+        "qty": 1
+      }
+    ]
+  },
+  "nasopharyngeal airways: sizes 20 fr \u2013 34 fr or equivalent": {
+    "original_name": "Nasopharyngeal Airways: Sizes 20 Fr \u2013 34 Fr or Equivalent",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Nasopharyngeal Airways: 20 Fr.",
+        "qty": 2
+      },
+      {
+        "name": "Nasopharyngeal Airways: 22 Fr.",
+        "qty": 2
+      },
+      {
+        "name": "Nasopharyngeal Airways: 24 Fr.",
+        "qty": 2
+      },
+      {
+        "name": "Nasopharyngeal Airways: 26 Fr.",
+        "qty": 2
+      },
+      {
+        "name": "Nasopharyngeal Airways: 28 Fr.",
+        "qty": 2
+      },
+      {
+        "name": "Nasopharyngeal Airways: 30 Fr.",
+        "qty": 2
+      },
+      {
+        "name": "Nasopharyngeal Airways: 32 Fr.",
+        "qty": 2
+      },
+      {
+        "name": "Nasopharyngeal Airways: 34 Fr.",
+        "qty": 2
       }
     ]
   }

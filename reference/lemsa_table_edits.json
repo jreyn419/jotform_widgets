@@ -161,11 +161,95 @@
     "category": "",
     "status": "Optional"
   },
-  "i-gel airway devices, 1.0,": {
-    "master_name": "2-5 kg PINK",
-    "group": "iGels",
-    "master_qty": "1",
-    "category": "Advanced Airway",
+  "in ambulance oxygen source, minimum of 500 psi with a wall mounted regulator": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "isolation kit including: (2) gowns, (2) n95 or n100 respirators, (2)": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
     "status": ""
+  },
+  "iv fluid warmer (9-1-1 providers only)": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "wall mounted suction device": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "vhf & uhf mobile radio minimum 45-watt power located in": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "uhf control head, microphone and speaker installed in each": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "transducer (ext side)": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "terbutaline": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "straight (miller) laryngoscope blades: sizes 0 \u2013 4": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": ""
+  },
+  "iv start kits": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": ""
+  },
+  "iv start kit, which contains: \u2013 (2) alcohol or chlorhexidine wipes, (1) roll tape, 3/4\u201d, (2) \u2013 2\u201d x 2\u201d gauze sponge, (1) id label, (1) providone iodine prep, (1) adhesive bandage, (1) latex free tourniquet, (1) opsite dressing (or equivalent)": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": ""
+  },
+  "lasix 100mg/10ml": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "medications carried \u2013 list must be provided to lemsa only": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
   }
 }

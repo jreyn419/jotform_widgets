@@ -861,7 +861,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.6.2"
+VERSION = "6.6.3"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -3918,6 +3918,10 @@ class App(QMainWindow):
                 # Gray out the category node
                 cat_item.setForeground(0, _dim_brush)
                 cat_item.setForeground(1, _dim_brush)
+            elif mod_only and show:
+                # Highlight category containing modified items
+                cat_item.setForeground(0, _mod_brush)
+                cat_item.setForeground(1, _mod_brush)
 
             # Group nodes (sorted naturally)
             group_names = sorted(
@@ -3936,6 +3940,9 @@ class App(QMainWindow):
                     g_item.setForeground(0, _dim_brush)
                     g_item.setForeground(1, _dim_brush)
                 else:
+                    if mod_only:
+                        g_item.setForeground(0, _mod_brush)
+                        g_item.setForeground(1, _mod_brush)
                     if q or mod_only: g_item.setExpanded(True)
                     # Sort items within group naturally
                     for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
@@ -3959,6 +3966,7 @@ class App(QMainWindow):
         # Separate Uncategorized to pin at top
         _dim_color = QColor("#6c7086")
         _dim_brush = QBrush(_dim_color)
+        _mod_brush = QBrush(QColor("#f9e2af"))
         sorted_cats = sorted(enumerate(self.master_list.categories),
                              key=lambda x: _natural_sort_key(x[1].name))
         uncat_entries = [(ci, cat) for ci, cat in sorted_cats
@@ -5287,6 +5295,7 @@ class App(QMainWindow):
             """Populate an area node with categories, groups, and items."""
             area_match = q and q in area.name.lower()
             _dim_brush = QBrush(QColor("#6c7086"))
+            _mod_brush = QBrush(QColor("#f9e2af"))
             # Sort categories naturally, but pin Uncategorized at top
             sorted_area_cats = sorted(enumerate(area.categories),
                                       key=lambda x: _natural_sort_key(x[1].name))
@@ -5319,6 +5328,9 @@ class App(QMainWindow):
                     font.setItalic(True)
                     cat_item.setFont(0, font)
                     cat_item.setFont(1, font)
+                elif rig_mod:
+                    cat_item.setForeground(0, _mod_brush)
+                    cat_item.setForeground(1, _mod_brush)
                 area_item.addChild(cat_item)
                 if q or rig_mod: cat_item.setExpanded(True)
 
@@ -5345,6 +5357,9 @@ class App(QMainWindow):
                     g_item.setData(0, CN, group_name)
                     cat_item.addChild(g_item)
                     if q or rig_mod: g_item.setExpanded(True)
+                    if rig_mod:
+                        g_item.setForeground(0, _mod_brush)
+                        g_item.setForeground(1, _mod_brush)
                     # Sort items within group naturally
                     for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
                         ok = it.name in mn
@@ -5391,6 +5406,10 @@ class App(QMainWindow):
             if rig_mod and not has_content:
                 area_item.setForeground(0, _dim_area_brush)
                 area_item.setForeground(1, _dim_area_brush)
+            elif rig_mod and has_content:
+                _mod_area_brush = QBrush(QColor("#f9e2af"))
+                area_item.setForeground(0, _mod_area_brush)
+                area_item.setForeground(1, _mod_area_brush)
 
             area_nodes[ai] = area_item
             if area.child_of:
