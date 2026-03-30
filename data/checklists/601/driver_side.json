@@ -4,518 +4,47 @@
   },
   "areas": [
     {
-      "area": "G (Top Cabinet Towards Back Door)",
-      "categories": [
-        {
-          "name": "Top Shelf",
-          "items": [
-            {
-              "name": "Alcohol Prep Pad",
-              "qty": 1,
-              "group": "Disinfectant"
-            },
-            {
-              "name": "Chlorhexidine Swab",
-              "qty": 1,
-              "group": "Disinfectant"
-            },
-            {
-              "name": "Adhesive Bandage",
-              "qty": 1
-            },
-            {
-              "name": "Nail Polish Remover Box",
-              "qty": 1
-            },
-            {
-              "name": "1\"",
-              "qty": 2,
-              "group": "Tape (Cloth/Synthetic)"
-            },
-            {
-              "name": "2\"",
-              "qty": 2,
-              "group": "Tape (Cloth/Synthetic)"
-            },
-            {
-              "name": "Nose Clamp",
-              "qty": 5
-            },
-            {
-              "name": "Coban",
-              "qty": 6
-            },
-            {
-              "name": "Elastic Bandage Roll (Dukal)",
-              "qty": 2
-            },
-            {
-              "name": "Triangular Bandage",
-              "qty": 4
-            },
-            {
-              "name": "Israeli Bandage",
-              "qty": 2
-            },
-            {
-              "name": "2\" x 2\", Sterile",
-              "qty": 10,
-              "group": "Sponges"
-            },
-            {
-              "name": "4\" x 4\", Sterile",
-              "qty": 10,
-              "group": "Sponges"
-            },
-            {
-              "name": "Gauze Rolls",
-              "qty": 5
-            },
-            {
-              "name": "Chest Seal",
-              "qty": 2
-            },
-            {
-              "name": "Petrolatum Dressing",
-              "qty": 2
-            },
-            {
-              "name": "4\"x4\" Quickclot Dressing",
-              "qty": 3
-            },
-            {
-              "name": "2\"x2\", Non-Sterile (Sleeve)",
-              "qty": 1,
-              "group": "Sponges"
-            },
-            {
-              "name": "4\"x4\", Non-Sterile (Sleeve)",
-              "qty": 1,
-              "group": "Sponges"
-            },
-            {
-              "name": "Trauma Tourniquet",
-              "qty": 4
-            },
-            {
-              "name": "Ring Cutter",
-              "qty": 1
-            },
-            {
-              "name": "Shears",
-              "qty": 1
-            },
-            {
-              "name": "Chest Decompression Needle",
-              "qty": 2
-            },
-            {
-              "name": "Center Punch Tool",
-              "qty": 1
-            },
-            {
-              "name": "Trauma Dressing",
-              "qty": 2
-            },
-            {
-              "name": "Sterile Burn Sheet",
-              "qty": 2
-            }
-          ]
-        },
-        {
-          "name": "Bottom Shelf",
-          "items": [
-            {
-              "name": "Acetaminophen Bag 1000mg/100mL",
-              "qty": 2
-            },
-            {
-              "name": "Activated Charcoal 25g/120mL",
-              "qty": 1
-            },
-            {
-              "name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
-              "qty": 6
-            },
-            {
-              "name": "Ipratropium Bromide Inhalation Solution 0.5mg/2.5mL",
-              "qty": 6
-            },
-            {
-              "name": "Ibuprofen Oral Suspension",
-              "qty": 4
-            },
-            {
-              "name": "Aspirin Bottle 81 mg/tablet",
-              "qty": 2
-            },
-            {
-              "name": "Diphenhydramine PO 25mg/10mL",
-              "qty": 4
-            },
-            {
-              "name": "Diphenhydramine 50mg/mL",
-              "qty": 2
-            },
-            {
-              "name": "Sodium Bicarbonate Preload 50mEq/50mL",
-              "qty": 1
-            },
-            {
-              "name": "Labetalol 100mg/20mL",
-              "qty": 4
-            },
-            {
-              "name": "Magnesium Sulfate 5g/10mL",
-              "qty": 1
-            },
-            {
-              "name": "Epinephrine 1mg/1mL",
-              "qty": 5
-            },
-            {
-              "name": "Norepinephrine 4mg/4mL",
-              "qty": 2
-            },
-            {
-              "name": "Adenosine 6mg/2mL",
-              "qty": 3
-            },
-            {
-              "name": "Amiodarone 150mg/3mL",
-              "qty": 6
-            },
-            {
-              "name": "Atropine Sulfate 1mg/1mL",
-              "qty": 4,
-              "group": "Atropine"
-            },
-            {
-              "name": "Nitroglycerin Ointment Paper",
-              "qty": 5
-            },
-            {
-              "name": "Nitroglycerin Ointment 1g/in.",
-              "qty": 5
-            },
-            {
-              "name": "Nitroglycerin Vial 0.4mg/tablet",
-              "qty": 2
-            },
-            {
-              "name": "Tranexamic Acid 1000mg/10mL",
-              "qty": 4
-            },
-            {
-              "name": "Lidocaine 100mg/5mL",
-              "qty": 5
-            },
-            {
-              "name": "Ketorolac 30mg/mL",
-              "qty": 2
-            },
-            {
-              "name": "Ondansetron 4mg/2mL",
-              "qty": 3
-            },
-            {
-              "name": "Ondansetron Orally Disintegrating Tablets 4mg",
-              "qty": 4
-            },
-            {
-              "name": "Glucose Oral Gel 15 mg",
-              "qty": 2
-            },
-            {
-              "name": "Microdot Glucometer Test Strip Containers",
-              "qty": 2
-            },
-            {
-              "name": "Lancet",
-              "qty": 6
-            },
-            {
-              "name": "Sterile Water for Inhalation Bag 1000mL",
-              "qty": 3
-            },
-            {
-              "name": "1000 mL, Bag",
-              "qty": 6,
-              "group": "Fluids"
-            },
-            {
-              "name": "250 mL, Bag",
-              "qty": 2,
-              "group": "Fluids"
-            },
-            {
-              "name": "100 mL, Bag",
-              "qty": 5,
-              "group": "Fluids"
-            },
-            {
-              "name": "Pressure Infusion Bag",
-              "qty": 2
-            },
-            {
-              "name": "Short",
-              "qty": 2,
-              "group": "Arm Board"
-            },
-            {
-              "name": "Long",
-              "qty": 2,
-              "group": "Arm Board"
-            },
-            {
-              "name": "10-Drop Set",
-              "qty": 4,
-              "group": "Infusion Sets"
-            },
-            {
-              "name": "60-Drop Set",
-              "qty": 4,
-              "group": "Infusion Sets"
-            },
-            {
-              "name": "Invasive BP Clamp Mount",
-              "qty": 1
-            },
-            {
-              "name": "Epinephrine Preload 1mg/10mL",
-              "qty": 8
-            },
-            {
-              "name": "Atropine Sulfate Preload 1mg/10mL",
-              "qty": 2,
-              "group": "Atropine"
-            },
-            {
-              "name": "Lidocaine HCl Preload 100mg/5mL",
-              "qty": 2
-            },
-            {
-              "name": "Calcium Chloride Preload 1g/10mL",
-              "qty": 4,
-              "group": "Calcium"
-            },
-            {
-              "name": "Naloxone Hydrochloride Preload 2mg/2mL",
-              "qty": 4
-            },
-            {
-              "name": "MAD",
-              "qty": 4
-            },
-            {
-              "name": "Dextrose Preload 25g/50mL",
-              "qty": 2
-            },
-            {
-              "name": "Dextrose 25g/250mL",
-              "qty": 3
-            },
-            {
-              "name": "Glucagon Injection Kits 1mg/1mL",
-              "qty": 2
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "H",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Surgical Masks Box",
-              "qty": 1
-            },
-            {
-              "name": "Medium",
-              "qty": 1
-            },
-            {
-              "name": "Large",
-              "qty": 1
-            },
-            {
-              "name": "Hand Sanitizer",
-              "qty": 1
-            },
-            {
-              "name": "Biohazard Bags",
-              "qty": 2
-            },
-            {
-              "name": "Paper Towels, roll (or stack of napkins)",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "I (Bottom Shelves Towards Back Door)",
-      "categories": [
-        {
-          "name": "Top Shelf",
-          "items": [
-            {
-              "name": "Sterile Distilled Water for Irrigation Box 500mL",
-              "qty": 2
-            },
-            {
-              "name": "Sterile NS Water for Irrigation Box 500mL",
-              "qty": 2
-            },
-            {
-              "name": "Heat Pack",
-              "qty": 4
-            },
-            {
-              "name": "Cold Pack",
-              "qty": 4
-            }
-          ]
-        },
-        {
-          "name": "Bottom Shelf",
-          "items": [
-            {
-              "name": "N95 Mask",
-              "qty": 6
-            },
-            {
-              "name": "Surgical Mask",
-              "qty": 10
-            },
-            {
-              "name": "Isolation Gown",
-              "qty": 10
-            },
-            {
-              "name": "Face Shield",
-              "qty": 3
-            },
-            {
-              "name": "Goggles",
-              "qty": 3
-            },
-            {
-              "name": "Cavicide Wipes Container",
-              "qty": 1
-            },
-            {
-              "name": "Cavicide Spray Bottle",
-              "qty": 1
-            },
-            {
-              "name": "Bleach Wipes Container",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "J (Bench)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Pillow",
-              "qty": 3
-            },
-            {
-              "name": "Pillow case (disposable)",
-              "qty": 3
-            },
-            {
-              "name": "Blanket",
-              "qty": 6
-            },
-            {
-              "name": "Emergency Blanket",
-              "qty": 2
-            },
-            {
-              "name": "Type D",
-              "qty": 3,
-              "group": "Oxygen"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "Top of Bench",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Yellow Table",
-              "qty": 1
-            },
-            {
-              "name": "Medslinger Bag",
-              "qty": 1
-            },
-            {
-              "name": "Monitor",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "K (Airway Cabinet)",
+      "area": "Airway Cabinet",
       "categories": [
         {
           "name": "Left Side",
           "items": [
             {
               "name": "Adult BVM",
-              "qty": 2
-            },
-            {
-              "name": "Pediatric BVM",
-              "qty": 2
+              "qty": 2,
+              "group": "BVMs"
             },
             {
               "name": "Infant BVM",
-              "qty": 2
+              "qty": 1,
+              "group": "BVMs"
             },
             {
-              "name": "Large",
-              "qty": 2
+              "name": "Pediatric BVM",
+              "qty": 1,
+              "group": "BVMs"
             },
             {
               "name": "Medium/Small",
               "qty": 2,
-              "group": "CPAP Masks"
+              "group": "CPAP Masks, Adult"
+            },
+            {
+              "name": "Large",
+              "qty": 2,
+              "group": "CPAP Masks, Adult"
             },
             {
               "name": "Cricothyrotomy Kit",
               "qty": 1
             },
             {
-              "name": "Jet Instaflator",
+              "name": "Jet insufflator",
               "qty": 1
-            },
-            {
-              "name": "Handheld Nebulizer Kit",
-              "qty": 3
             },
             {
               "name": "PEEP Valve",
-              "qty": 3
+              "qty": 2
             }
           ]
         },
@@ -523,195 +52,134 @@
           "name": "Right Side",
           "items": [
             {
-              "name": "Adult EtCO2 Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Adult Nasal Cannula",
-              "qty": 3
-            },
-            {
               "name": "Adult NRB",
-              "qty": 3
-            },
-            {
-              "name": "Adult Nebulizer Mask",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric EtCO2 Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric Nasal Cannula",
-              "qty": 3
+              "qty": 4,
+              "group": "Adult (Left)"
             },
             {
               "name": "Pediatric NRB",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric Nebulizer Mask",
-              "qty": 3
-            },
-            {
-              "name": "lubricant packet",
-              "qty": 6
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "Action Area",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Unused Suction Container",
-              "qty": 1
-            },
-            {
-              "name": "Unused Suction Tubing & Suction Tip",
-              "qty": 1
-            },
-            {
-              "name": "Getac",
-              "qty": 1,
-              "group": "Getac"
-            },
-            {
-              "name": "Charger",
-              "qty": 1,
-              "group": "Getac"
-            },
-            {
-              "name": "Charger",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "L (Action Area Cabinet)",
-      "categories": [
-        {
-          "name": "Left Side",
-          "items": [
-            {
-              "name": "I/O stabilizer",
-              "qty": 1
-            },
-            {
-              "name": "15mm I/O needle",
-              "qty": 1
-            },
-            {
-              "name": "45mm I/O needle",
-              "qty": 1
-            },
-            {
-              "name": "25mm I/O needle",
-              "qty": 1
-            },
-            {
-              "name": "I/O drill",
-              "qty": 1
-            },
-            {
-              "name": "Infectious control cleanup kit",
-              "qty": 1
-            },
-            {
-              "name": "Red, Ankle",
               "qty": 2,
-              "group": "Restraints"
+              "group": "Pediatric (Right)"
             },
             {
-              "name": "Blue, Wrist",
-              "qty": 2,
-              "group": "Restraints"
-            }
-          ]
-        },
-        {
-          "name": "Right Side",
-          "items": [
-            {
-              "name": "Spit Hoods",
-              "qty": 3
-            },
-            {
-              "name": "Soft",
+              "name": "Adult EtCO2 Nasal Cannula",
               "qty": 3,
-              "group": "Restraints"
+              "group": "Adult (Left)"
             },
             {
-              "name": "Urinal",
-              "qty": 3
+              "name": "Pediatric EtCO2 Nasal Cannula",
+              "qty": 3,
+              "group": "Pediatric (Right)"
             },
             {
-              "name": "Bedpans",
-              "qty": 3
+              "name": "Adult Nasal Cannula",
+              "qty": 4,
+              "group": "Adult (Left)"
             },
             {
-              "name": "Obstetrical Kit",
-              "qty": 2
-            },
-            {
-              "name": "Baby Cap (if not included in OB kit)",
-              "qty": 2
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "External Backboard Cabinet",
-      "categories": [
-        {
-          "name": "Left",
-          "items": [
-            {
-              "name": "Pediatric Board",
-              "qty": 1
-            },
-            {
-              "name": "Infant Board",
-              "qty": 1
-            },
-            {
-              "name": "Traction Splint",
-              "qty": 2
-            }
-          ]
-        },
-        {
-          "name": "Right",
-          "items": [
-            {
-              "name": "Backboard",
-              "qty": 2
-            },
-            {
-              "name": "Breakaway Stretcher",
-              "qty": 1
-            },
-            {
-              "name": "Scoop Stretcher",
-              "qty": 1
-            },
-            {
-              "name": "Long Cardboard",
+              "name": "Pediatric Nasal Cannula",
               "qty": 2,
-              "group": "Splint"
+              "group": "Pediatric (Right)"
             },
             {
-              "name": "Short Cardboard",
+              "name": "14 Fr.",
               "qty": 2,
-              "group": "Splint"
+              "group": "NPAs"
+            },
+            {
+              "name": "16 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "18 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "20 Fr.",
+              "qty": 2,
+              "group": "NPAs"
+            },
+            {
+              "name": "22 Fr.",
+              "qty": 2,
+              "group": "NPAs"
+            },
+            {
+              "name": "24 Fr.",
+              "qty": 2,
+              "group": "NPAs"
+            },
+            {
+              "name": "26 Fr.",
+              "qty": 2,
+              "group": "NPAs"
+            },
+            {
+              "name": "28 Fr.",
+              "qty": 2,
+              "group": "NPAs"
+            },
+            {
+              "name": "30 Fr.",
+              "qty": 2,
+              "group": "NPAs"
+            },
+            {
+              "name": "32 Fr.",
+              "qty": 2,
+              "group": "NPAs"
+            },
+            {
+              "name": "34 Fr.",
+              "qty": 2,
+              "group": "NPAs"
+            },
+            {
+              "name": "36 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "100mm PINK",
+              "qty": 2,
+              "group": "OPAs"
+            },
+            {
+              "name": "110mm ORANGE",
+              "qty": 2,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm PINK",
+              "qty": 2,
+              "group": "OPAs"
+            },
+            {
+              "name": "50mm BLUE",
+              "qty": 2,
+              "group": "OPAs"
+            },
+            {
+              "name": "60mm GRAY",
+              "qty": 2,
+              "group": "OPAs"
+            },
+            {
+              "name": "70mm WHITE",
+              "qty": 2,
+              "group": "OPAs"
+            },
+            {
+              "name": "80mm GREEN",
+              "qty": 2,
+              "group": "OPAs"
+            },
+            {
+              "name": "90mm YELLOW",
+              "qty": 2,
+              "group": "OPAs"
             }
           ]
         }

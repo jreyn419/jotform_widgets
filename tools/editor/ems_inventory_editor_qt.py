@@ -861,7 +861,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.8.0"
+VERSION = "6.9.0"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1135,12 +1135,13 @@ class InventoryFile:
 # == Master list model ========================================================
 
 class MasterItem:
-    __slots__ = ("name", "emsa_min", "group", "aliases")
-    def __init__(self, name, emsa_min, group=None, aliases=None):
+    __slots__ = ("name", "emsa_min", "group", "aliases", "lemsa_qty")
+    def __init__(self, name, emsa_min, group=None, aliases=None, lemsa_qty=None):
         self.name = name
         self.emsa_min = emsa_min
         self.group = group
         self.aliases = aliases or []
+        self.lemsa_qty = lemsa_qty or {}  # {acronym: qty, ...}
 
 class MasterCategory:
     __slots__ = ("name", "items", "child_of")
@@ -1166,7 +1167,8 @@ class MasterList:
                     item_obj.get("name", ""),
                     item_obj.get("emsa_min", 1),
                     item_obj.get("group"),
-                    item_obj.get("aliases", [])
+                    item_obj.get("aliases", []),
+                    item_obj.get("lemsa_qty", {})
                 ))
             ml.categories.append(cat)
         return ml
@@ -1181,6 +1183,8 @@ class MasterList:
                     item_obj["group"] = it.group
                 if it.aliases:
                     item_obj["aliases"] = it.aliases
+                if it.lemsa_qty:
+                    item_obj["lemsa_qty"] = it.lemsa_qty
                 items.append(item_obj)
             cat_obj = {"name": cat.name, "items": items}
             if cat.child_of:
@@ -1686,7 +1690,6 @@ class App(QMainWindow):
         self._rig_modified_names = set()  # item names modified since load
         self._show_mr_needed_only = False  # filter master ref to needed items
         self._show_mr_lemsa_only = False  # filter master ref to LEMSA-matched items
-        self._lemsa_matched_master_keys = set()  # master item keys matched in LEMSA comparison
         self._ui_state_path = os.path.join(self.base_dir, "ui_state.json")
 
         # Undo/redo stacks (separate per tree, snapshot-based)
@@ -4153,6 +4156,14 @@ class App(QMainWindow):
         if not loc_widgets:
             f.addWidget(QLabel("(not placed on current rig)"))
 
+        # LEMSA sources
+        if item.lemsa_qty:
+            f.addWidget(QLabel("<b>LEMSA Sources:</b>"))
+            for acr in sorted(item.lemsa_qty.keys()):
+                f.addWidget(QLabel(f"  {acr}: {item.lemsa_qty[acr]}"))
+        else:
+            f.addWidget(QLabel("<b>LEMSA Sources:</b> (none)"))
+
         old_name = item.name
 
         def _apply():
@@ -4963,7 +4974,6 @@ class App(QMainWindow):
         q = self._mr_search.text().strip().lower()
         needed_only = self._show_mr_needed_only
         lemsa_only = self._show_mr_lemsa_only
-        lemsa_keys = self._lemsa_matched_master_keys if lemsa_only else None
 
         # Build rig quantity lookup: item_name.lower() -> total qty across ALL checklists
         rig_totals = {}
@@ -5032,7 +5042,7 @@ class App(QMainWindow):
                 g_item.setData(0, Qt.ItemDataRole.UserRole, ("mr_group", ci, group_name))
                 group_needed = 0
                 for ii, it in sorted(members, key=lambda x: _natural_sort_key(x[1].name)):
-                    if lemsa_keys is not None and it.name.lower() not in lemsa_keys:
+                    if lemsa_only and not it.lemsa_qty:
                         continue
                     i_node, remaining = _make_item_node(it, ci, ii)
                     if needed_only and remaining == 0:
@@ -5049,7 +5059,7 @@ class App(QMainWindow):
                     cat_has_needed = True
 
             for ii, it in sorted(ungrouped, key=lambda x: _natural_sort_key(x[1].name)):
-                if lemsa_keys is not None and it.name.lower() not in lemsa_keys:
+                if lemsa_only and not it.lemsa_qty:
                     continue
                 i_node, remaining = _make_item_node(it, ci, ii)
                 if needed_only and remaining == 0:
@@ -5100,9 +5110,9 @@ class App(QMainWindow):
             self._mr_needed_btn.setText("Needed")
 
         # Update LEMSA Only button label
-        lemsa_count = len(self._lemsa_matched_master_keys)
-        if lemsa_count > 0:
-            self._mr_lemsa_btn.setText(f"LEMSA Only ({lemsa_count})")
+        if self.master_list:
+            lc = sum(1 for c in self.master_list.categories for it in c.items if it.lemsa_qty)
+            self._mr_lemsa_btn.setText(f"LEMSA Only ({lc})" if lc else "LEMSA Only")
         else:
             self._mr_lemsa_btn.setText("LEMSA Only")
 
@@ -6244,7 +6254,8 @@ class App(QMainWindow):
                     item_obj.get("name", ""),
                     item_obj.get("emsa_min", 1),
                     item_obj.get("group"),
-                    item_obj.get("aliases", [])))
+                    item_obj.get("aliases", []),
+                    item_obj.get("lemsa_qty", {})))
             self.master_list.categories.append(cat)
         self._master_last_snap = snap
         self.dirty_master = True
@@ -6271,7 +6282,8 @@ class App(QMainWindow):
                     item_obj.get("name", ""),
                     item_obj.get("emsa_min", 1),
                     item_obj.get("group"),
-                    item_obj.get("aliases", [])))
+                    item_obj.get("aliases", []),
+                    item_obj.get("lemsa_qty", {})))
             self.master_list.categories.append(cat)
         self._master_last_snap = snap
         self.dirty_master = True
@@ -6465,7 +6477,7 @@ class App(QMainWindow):
             else:
                 target_cat.items.append(MasterItem(
                     ci["name"], ci.get("emsa_min", ci.get("qty", 1)),
-                    group, ci.get("aliases", [])))
+                    group, ci.get("aliases", []), ci.get("lemsa_qty", {})))
             pasted += 1
 
 
@@ -6989,19 +7001,19 @@ class App(QMainWindow):
                     ii = data[2]
                     it = cat.items[ii]
                     items.append({"name": it.name, "emsa_min": it.emsa_min, "group": it.group,
-                                  "aliases": it.aliases,
+                                  "aliases": it.aliases, "lemsa_qty": it.lemsa_qty,
                                   "_src": ("master", ci, ii)})
                 elif kind == "group":
                     gn = data[2]
                     for it in cat.items:
                         if it.group == gn:
                             items.append({"name": it.name, "emsa_min": it.emsa_min, "group": it.group,
-                                          "aliases": it.aliases,
+                                          "aliases": it.aliases, "lemsa_qty": it.lemsa_qty,
                                           "_src": ("master", ci, None)})
                 elif kind == "cat":
                     for it in cat.items:
                         items.append({"name": it.name, "emsa_min": it.emsa_min, "group": it.group,
-                                      "aliases": it.aliases,
+                                      "aliases": it.aliases, "lemsa_qty": it.lemsa_qty,
                                       "_src": ("master", ci, None)})
         return items
 
@@ -7447,9 +7459,6 @@ class App(QMainWindow):
             else:
                 new_items.append(data)
 
-        # Store matched master keys for LEMSA Only ref tree filter
-        self._lemsa_matched_master_keys = set(matched_master_keys)
-
         missing_items = []
         lemsa_keys = set(all_lemsa.keys())
         for key, entries in sorted(master_names.items(), key=lambda x: x[1][0][1].name.lower()):
@@ -7839,6 +7848,19 @@ class App(QMainWindow):
                         master_item.aliases.append({"name": lemsa_name, "lemsa": lemsa_source})
                         aliases_added += 1
                         changed = True
+                # Write per-LEMSA quantities
+                agency_item = self._m_all_table.item(row, self.COL_LEMSA)
+                lq_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
+                if agency_item and lq_item:
+                    acronyms = [a.strip() for a in agency_item.text().split(",") if a.strip()]
+                    try:
+                        l_qty = int(lq_item.text().strip())
+                    except (ValueError, AttributeError):
+                        l_qty = 0
+                    if acronyms and l_qty > 0:
+                        for acr in acronyms:
+                            master_item.lemsa_qty[acr] = max(master_item.lemsa_qty.get(acr, 0), l_qty)
+                        changed = True
                 if changed:
                     updated += 1
                     self._session_modified.add(master_name)
@@ -7873,6 +7895,18 @@ class App(QMainWindow):
                     lemsa_source = agency_item.toolTip().split("\n")[0] if agency_item and agency_item.toolTip() else ""
                     new_item.aliases.append({"name": lemsa_name, "lemsa": lemsa_source})
                     aliases_added += 1
+                # Write per-LEMSA quantities
+                agency_item = self._m_all_table.item(row, self.COL_LEMSA)
+                lq_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
+                if agency_item and lq_item:
+                    acronyms = [a.strip() for a in agency_item.text().split(",") if a.strip()]
+                    try:
+                        l_qty = int(lq_item.text().strip())
+                    except (ValueError, AttributeError):
+                        l_qty = 0
+                    if acronyms and l_qty > 0:
+                        for acr in acronyms:
+                            new_item.lemsa_qty[acr] = max(new_item.lemsa_qty.get(acr, 0), l_qty)
                 target_cat.items.append(new_item)
                 added += 1
                 self._session_modified.add(master_name)

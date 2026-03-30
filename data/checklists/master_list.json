@@ -19,7 +19,12 @@
               "name": "Flashlight OR Penlight",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Emergency Response Guidebook (ERG)",
@@ -29,7 +34,10 @@
               "name": "DOT Emergency Response Guidebook (ERG)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Emesis Bags",
@@ -47,15 +55,26 @@
               "name": "Emesis basins",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SSVEMSA": 2,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Epinephrine auto-injector (adult) 0.3mg",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Epinephrine auto-injector (pediatric) 0.15mg",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Field Operations Guide ICS 420-1 (FOG Manual), current edition",
@@ -65,7 +84,11 @@
               "name": "FIRESCOPE Field Operations Guide (FOG)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Ultrasound Gel",
@@ -75,11 +98,17 @@
               "name": "Tube Ultra Sound Gel",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Warming Mattress",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "6 Fr.",
@@ -90,7 +119,10 @@
               "name": "Suction Catheters, 6 Fr",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "8 Fr.",
@@ -101,7 +133,10 @@
               "name": "Suction Catheters, 8 Fr",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "10 Fr.",
@@ -112,7 +147,10 @@
               "name": "Suction Catheters, 10 Fr",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "12 Fr.",
@@ -123,7 +161,10 @@
               "name": "Suction Catheters, 12 Fr",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "14 Fr.",
@@ -134,11 +175,17 @@
               "name": "Suction Catheters, 14 Fr",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Stair Chair",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "YEMSA": 1
+          }
         },
         {
           "name": "Suction catheters Fr 14",
@@ -149,11 +196,17 @@
               "name": "Suction catheters Fr 18",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Tonsillar Tip Suction Handle",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Kendrick Extrication Device (KED)",
@@ -167,7 +220,11 @@
               "name": "Kendrick Immobilization Device (KED) or similar device approved",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Rig Phone (with GPS)",
@@ -185,11 +242,18 @@
               "name": "San Joaquin County Map Book (current within 2 years) or GPS",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Pediatric immobilization device",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Stretcher Sheets",
@@ -203,7 +267,11 @@
               "name": "Patient sheets (disposable)",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "SSVEMSA": 10
+          }
         },
         {
           "name": "Towel",
@@ -213,23 +281,38 @@
               "name": "Towels",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Refusal of EMS Care Forms",
-          "emsa_min": 10
+          "emsa_min": 10,
+          "lemsa_qty": {
+            "SSVEMSA": 10
+          }
         },
         {
           "name": "Rocuronium 100mg/10ml",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Secured Narcotics Drug Box",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "YEMSA": 1
+          }
         },
         {
           "name": "Portable Oxygen Regulator with Liter Flow",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Saline pillow for humidification",
@@ -239,7 +322,10 @@
               "name": "Saline humidifier",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         }
       ]
     },
@@ -293,7 +379,11 @@
               "name": "Water Soluble Lubricant",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Pediatric",
@@ -312,7 +402,12 @@
               "name": "Magill Forceps: Pediatric",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Large",
@@ -336,7 +431,12 @@
               "name": "Magill Forceps: Adult",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         }
       ]
     },
@@ -356,7 +456,11 @@
               "name": "IO Needles, 15mm",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "25mm I/O needle",
@@ -371,7 +475,11 @@
               "name": "IO Needles, 25mm",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "45mm I/O needle",
@@ -386,7 +494,11 @@
               "name": "IO Needles, 45mm",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "I/O drill",
@@ -401,7 +513,11 @@
               "name": "IO drill",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "I/O stabilizer",
@@ -417,7 +533,10 @@
               "name": "Filter Needle (only if utilizing medications in ampules)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "22 ga",
@@ -432,7 +551,11 @@
               "name": "Needles: 22 ga",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "YEMSA": 2
+          }
         },
         {
           "name": "25 ga",
@@ -451,7 +574,12 @@
               "name": "Needles: 25 ga",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "SJCEMSA": 2,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Twinpak",
@@ -466,7 +594,11 @@
               "name": "Vial Access Cannulas",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 5,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "10-Drop Set",
@@ -485,11 +617,19 @@
               "name": "Solution administration set, Macrodrip",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 4,
+            "SSVEMSA": 4,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "3-Way Stopcock",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "60-Drop Set",
@@ -508,7 +648,12 @@
               "name": "Solution administration set, Microdrip",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SSVEMSA": 4,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "21 ga",
@@ -519,7 +664,10 @@
               "name": "Hypodermic needles, 21ga",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "18 ga",
@@ -530,7 +678,10 @@
               "name": "Needles: 18 ga",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         },
         {
           "name": "20 ga",
@@ -541,7 +692,10 @@
               "name": "Needles: 20 ga",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         },
         {
           "name": "24 ga",
@@ -552,7 +706,10 @@
               "name": "Needles: 24 ga",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         }
       ]
     },
@@ -567,7 +724,10 @@
               "name": "Acetaminophen – IV (1000 mg)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Activated Charcoal 25g/120mL",
@@ -581,7 +741,10 @@
               "name": "Adenosine (6 mg/2 mL)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 3
+          }
         },
         {
           "name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
@@ -595,7 +758,11 @@
               "name": "Albuterol Aerosolized Solution 2.5 mg each",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 6,
+            "SJCEMSA": 4
+          }
         },
         {
           "name": "Dopamine Vial 400mg/10mL",
@@ -621,7 +788,11 @@
               "name": "Ipratropium (500 mcg/2.5 mL)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Ketorolac 30mg/mL",
@@ -631,11 +802,17 @@
               "name": "Ketorolac (30 mg/1 mL)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Labetalol 100mg/20mL",
-          "emsa_min": 4
+          "emsa_min": 4,
+          "lemsa_qty": {
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Tranexamic Acid 1000mg/10mL",
@@ -645,7 +822,10 @@
               "name": "Tranexamic Acid (1 gm)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Amiodarone 150mg/3mL",
@@ -659,7 +839,11 @@
               "name": "Amiodarone 150mg",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 6,
+            "SJCEMSA": 3
+          }
         },
         {
           "name": "Nitroglycerin Ointment 1g/in.",
@@ -673,7 +857,10 @@
               "name": "Transpore Tape",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         },
         {
           "name": "Nitroglycerin Vial 0.4mg/tablet",
@@ -683,11 +870,17 @@
               "name": "Nitroglycerin 0.4 mg (tablet bottle or aerosol spray)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Norepinephrine 4mg/4mL",
-          "emsa_min": 2
+          "emsa_min": 2,
+          "lemsa_qty": {
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Norepinephrine Bitartrate 4mg/4mL",
@@ -709,7 +902,11 @@
               "name": "Naloxone preload syringe",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 4,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Magnesium Sulfate 5g/10mL",
@@ -727,7 +924,11 @@
               "name": "Glucose Oral Product (minimum 15 gm)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "SL nitroglycerin",
@@ -741,7 +942,10 @@
               "name": "Glucagon (1 mg)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Medslinger Bag",
@@ -766,7 +970,10 @@
               "name": "Atropine (1 mg/10 mL)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Aspirin 81 mg/tablet",
@@ -776,7 +983,10 @@
               "name": "Aspirin (chewable tablets)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 8
+          }
         }
       ]
     },
@@ -863,7 +1073,11 @@
               "name": "Blood glucose measuring device approved by the FDA with",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Lancet",
@@ -873,7 +1087,10 @@
               "name": "Lancets",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 10
+          }
         },
         {
           "name": "Glucometer Test Strip",
@@ -883,7 +1100,10 @@
               "name": "Glucometer Test strips",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 10
+          }
         },
         {
           "name": "Child",
@@ -898,7 +1118,11 @@
               "name": "Blood Pressure Cuff - Portable , pediatric",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Infant",
@@ -909,7 +1133,10 @@
               "name": "Blood Pressure Cuff - Portable , infant",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1
+          }
         },
         {
           "name": "Large Adult",
@@ -920,7 +1147,10 @@
               "name": "Blood Pressure Cuff - Portable , large arm",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1
+          }
         },
         {
           "name": "Small Adult",
@@ -936,7 +1166,10 @@
               "name": "Thigh BP Cuff",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Stethoscope",
@@ -946,7 +1179,12 @@
               "name": "Stethoscope – adult/pediatric (or combination)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Pen light",
@@ -956,7 +1194,11 @@
               "name": "Penlight",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "W/A Temp Probe Sheaths",
@@ -978,7 +1220,12 @@
               "name": "Pediatric Length-based Weight Determination Tape",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Adult",
@@ -989,7 +1236,10 @@
               "name": "Adult BP Cuff",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         }
       ]
     },
@@ -1008,7 +1258,11 @@
               "name": "MCI Vests - Medical Group Supervisor",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Triage Tags",
@@ -1022,7 +1276,12 @@
               "name": "START triage tags",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 10,
+            "SJCEMSA": 25,
+            "YEMSA": 50
+          }
         },
         {
           "name": "Triage Unit Leader Vest",
@@ -1036,7 +1295,11 @@
               "name": "MCI Vests - Triage Unit Leader",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Yellow Table",
@@ -1050,7 +1313,10 @@
               "name": "glow sticks (for MCI kit)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Barrier Tape",
@@ -1060,11 +1326,17 @@
               "name": "barrier tape (for MCI kit)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "START Triage reference sheet (for MCI kit)",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "patient tracking sheets",
@@ -1074,7 +1346,10 @@
               "name": "patient tracking sheets (for MCI kit)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Clipboard",
@@ -1084,7 +1359,10 @@
               "name": "clipboard (for MCI kit)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         }
       ]
     },
@@ -1112,7 +1390,11 @@
               "name": "Portable Monitor/Defibrillator (capable of synchronized cardioversion, transcutaneous pacing, 12 Lead ECG with printout and waveform capnography)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "4-lead cables",
@@ -1144,7 +1426,12 @@
               "name": "ECG Electrodes Pediatric",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 48,
+            "YEMSA": 4,
+            "SJCEMSA": 6
+          }
         },
         {
           "name": "EKG razors",
@@ -1158,7 +1445,11 @@
               "name": "Razor",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Oval Port",
@@ -1169,7 +1460,10 @@
               "name": "Edwards (Oval) invasive line cable",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Square Port",
@@ -1180,7 +1474,10 @@
               "name": "Abbott (square) invasive line cable",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Temperature Monitoring Cable",
@@ -1198,7 +1495,10 @@
               "name": "Spare Monitor/Defibrillator Battery",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Invasive BP Clamp Mount",
@@ -1237,7 +1537,11 @@
               "name": "Defibrillator Pads (adult/pediatric)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Defibrillation Cable",
@@ -1248,7 +1552,10 @@
               "name": "AED cables",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Monitor-to-SpO2 Cable",
@@ -1263,7 +1570,10 @@
               "name": "ECG Extra Charged Batteries",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         }
       ],
       "child_of": "Electronics"
@@ -1280,7 +1590,10 @@
               "name": "IV pump line sets",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 6
+          }
         },
         {
           "name": "Half",
@@ -1295,7 +1608,11 @@
               "name": "IV extension tubing",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 6,
+            "YEMSA": 4
+          }
         },
         {
           "name": "Pump, Sapphire",
@@ -1313,7 +1630,11 @@
               "name": "Multi channel IV pump",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Charger, Sapphire",
@@ -1336,7 +1657,10 @@
       "items": [
         {
           "name": "Doppler",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Hamilton Humidifier",
@@ -1358,7 +1682,10 @@
               "name": "Mechanical Ventilator",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Portable Suction + charger",
@@ -1372,7 +1699,11 @@
               "name": "Portable Mechanical Suction Unit",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Charger Adapter Kit",
@@ -1427,7 +1758,11 @@
               "name": "Normal Saline 250 mL Bag",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "1000 mL, Bag",
@@ -1442,7 +1777,11 @@
               "name": "Normal Saline 1000 mL Bag",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "SSVEMSA": 6
+          }
         },
         {
           "name": "10 mL NS Flush",
@@ -1452,7 +1791,10 @@
               "name": "Normal saline for injection 10ml or 20 ml vials or preloads",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 4
+          }
         },
         {
           "name": "Sterile Distilled Water for Irrigation Box 500mL",
@@ -1466,7 +1808,11 @@
               "name": "Sterile H2O",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Sterile NS Water for Irrigation Box 500mL",
@@ -1476,7 +1822,10 @@
               "name": "Saline/Sterile Water 1000ml Irrigating",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Sterile Water for Inhalation Bag 1000mL",
@@ -1501,7 +1850,10 @@
               "name": "Dextrose 10% (250 mL bag)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 3
+          }
         }
       ],
       "child_of": "Medications"
@@ -1517,7 +1869,10 @@
               "name": "Lidocaine 2% (100 mg/5 mL)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Lidocaine HCl Preload",
@@ -1541,7 +1896,10 @@
               "name": "Epinephrine 1:1,000 (1 mg/1 mL – 1 mL vial or ampule)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 5
+          }
         },
         {
           "name": "Epinephrine Preload",
@@ -1555,7 +1913,10 @@
               "name": "Epinephrine 1:10,000 (1 mg/10 mL)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 8
+          }
         }
       ],
       "child_of": "Medications"
@@ -1571,7 +1932,10 @@
               "name": "Sodium Bicarbonate (50 mEq/50 mL)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Sodium Bicarbonate Vial 50mEq/50mL",
@@ -1591,7 +1955,10 @@
               "name": "Ondansetron (4 mg/2 mL)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 6
+          }
         },
         {
           "name": "Ondansetron Orally Disintegrating Tablets 4mg",
@@ -1601,7 +1968,10 @@
               "name": "Ondansetron Oral Disintegrating Tablets (4 mg)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 4
+          }
         }
       ],
       "child_of": "Medications"
@@ -1617,7 +1987,10 @@
               "name": "Diphenhydramine (50 mg/1 mL)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Diphenhydramine PO 25mg/10mL",
@@ -1627,7 +2000,10 @@
               "name": "Diphenhydramine elixir (100 mg)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         }
       ],
       "child_of": "Medications"
@@ -1643,11 +2019,17 @@
               "name": "Calcium Chloride (1 gm/10 mL)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 4
+          }
         },
         {
           "name": "Calcium Gluconate 1g/10mL",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         }
       ],
       "child_of": "Medications"
@@ -1664,7 +2046,10 @@
               "name": "Arm Boards, Long",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Short",
@@ -1679,7 +2064,11 @@
               "name": "IV Arm Board (pediatric)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Tegaderm",
@@ -1689,7 +2078,10 @@
               "name": "Transparent Tape (Venaguard/Tegaderm) or equivalent",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 6
+          }
         },
         {
           "name": "Curos Strips",
@@ -1697,7 +2089,10 @@
         },
         {
           "name": "IV Extension Set",
-          "emsa_min": 6
+          "emsa_min": 6,
+          "lemsa_qty": {
+            "SSVEMSA": 4
+          }
         },
         {
           "name": "14 ga ORANGE",
@@ -1712,7 +2107,11 @@
               "name": "IV catheters, 14ga",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 6,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "16 ga GRAY",
@@ -1731,7 +2130,12 @@
               "name": "IV Catheters: 16 ga",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 6,
+            "SJCEMSA": 2,
+            "YEMSA": 4
+          }
         },
         {
           "name": "18 ga GREEN",
@@ -1750,7 +2154,12 @@
               "name": "IV Catheters, 18 ga",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 6,
+            "YEMSA": 4,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "20 ga PINK",
@@ -1769,7 +2178,12 @@
               "name": "IV Catheters, 20 ga",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 6,
+            "YEMSA": 4,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "22 ga BLUE",
@@ -1788,7 +2202,12 @@
               "name": "IV Catheters, 22 ga",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 4,
+            "YEMSA": 4,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "24 ga YELLOW",
@@ -1803,7 +2222,11 @@
               "name": "IV catheters, 24 ga",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 4,
+            "YEMSA": 4
+          }
         },
         {
           "name": "Elastic Tourniquet",
@@ -1812,32 +2235,50 @@
         {
           "name": "Latex Free Tourniquet",
           "emsa_min": 3,
-          "group": "IV Start Kit"
+          "group": "IV Start Kit",
+          "lemsa_qty": {
+            "SJCEMSA": 3
+          }
         },
         {
           "name": "Adhesive bandage",
           "emsa_min": 3,
-          "group": "IV Start Kit"
+          "group": "IV Start Kit",
+          "lemsa_qty": {
+            "SJCEMSA": 3
+          }
         },
         {
           "name": "Providone iodine prep",
           "emsa_min": 1,
-          "group": "IV Start Kit"
+          "group": "IV Start Kit",
+          "lemsa_qty": {
+            "SJCEMSA": 3
+          }
         },
         {
           "name": "ID label",
           "emsa_min": 3,
-          "group": "IV Start Kit"
+          "group": "IV Start Kit",
+          "lemsa_qty": {
+            "SJCEMSA": 3
+          }
         },
         {
           "name": "2” x 2” gauze sponge",
           "emsa_min": 6,
-          "group": "IV Start Kit"
+          "group": "IV Start Kit",
+          "lemsa_qty": {
+            "SJCEMSA": 6
+          }
         },
         {
           "name": "Roll tape, 3/4”",
           "emsa_min": 3,
-          "group": "IV Start Kit"
+          "group": "IV Start Kit",
+          "lemsa_qty": {
+            "SJCEMSA": 3
+          }
         },
         {
           "name": "Alcohol swab",
@@ -1848,7 +2289,10 @@
               "name": "Alcohol or Chlorhexidine wipes",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 3
+          }
         }
       ],
       "child_of": "IV/IO/IM"
@@ -1865,7 +2309,10 @@
               "name": "Chlorhexidine Swabs/Skin Prep",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 5
+          }
         },
         {
           "name": "Alcohol Prep Pad",
@@ -1876,7 +2323,10 @@
               "name": "Alcohol Swabs",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 20
+          }
         },
         {
           "name": "2\" x 2\", Sterile",
@@ -1887,7 +2337,10 @@
               "name": "2 x 2 gauze pads Sterile",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 4
+          }
         },
         {
           "name": "4\" x 4\", Sterile",
@@ -1906,7 +2359,12 @@
               "name": "Sterile 4x4 Compresses",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 5,
+            "YEMSA": 4,
+            "SSVEMSA": 10
+          }
         },
         {
           "name": "2\"x2\", Non-Sterile (Sleeve)",
@@ -1922,7 +2380,10 @@
               "name": "Non-Sterile 4x4 Compresses",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 50
+          }
         },
         {
           "name": "Betadine Pad",
@@ -1933,7 +2394,10 @@
               "name": "Betadine solution or swabs",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2
+          }
         }
       ],
       "child_of": "IV/IO/IM"
@@ -1953,7 +2417,10 @@
               "name": "Antibacterial disinfectant solution",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Cavicide Wipes Container",
@@ -1967,7 +2434,10 @@
               "name": "Bottle of instant hand sanitizer (alcohol based) or box of",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Infectious control cleanup kit",
@@ -1977,7 +2447,10 @@
               "name": "Commercial Biohazard spill kit or equivalent",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         }
       ]
     },
@@ -1996,7 +2469,11 @@
               "name": "Spine Board – rigid, long with four (4) straps (or equivalent)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Breakaway Stretcher",
@@ -2006,7 +2483,10 @@
               "name": "Collapsible Stretcher/Breakaway Flat",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Head Bed + Triangles",
@@ -2016,7 +2496,10 @@
               "name": "Head Immobilization Set",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Pedi-Mate",
@@ -2030,7 +2513,11 @@
               "name": "Scoop Stretcher with straps or equivalent",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Infant Board",
@@ -2048,7 +2535,11 @@
               "name": "Pediatric Spine Board",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Extrication Device",
@@ -2058,7 +2549,10 @@
               "name": "Board for use in extrication",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         }
       ]
     },
@@ -2077,11 +2571,19 @@
               "name": "Bedpan OR Fracture Pan",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Urinal",
-          "emsa_min": 3
+          "emsa_min": 3,
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         }
       ]
     },
@@ -2104,7 +2606,12 @@
               "name": "Nasal Cannula - adult",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 4,
+            "YEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Adult Nebulizer Mask",
@@ -2118,7 +2625,11 @@
               "name": "Nebulizer mask adult",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Adult NRB",
@@ -2132,7 +2643,12 @@
               "name": "Oxygen (O2) Mask Non-rebreather - adult",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 4,
+            "SSVEMSA": 4,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Adult BVM",
@@ -2150,7 +2666,12 @@
               "name": "Disposable bag valve device - adult",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "YEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Infant BVM",
@@ -2160,7 +2681,10 @@
               "name": "Disposable bag valve device – infant",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Adult High-Flow Circuit",
@@ -2178,7 +2702,11 @@
               "name": "Pediatric Bag Valve Mask (BVM) With Neonate & Child Masks",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Pediatric NRB",
@@ -2196,7 +2724,12 @@
               "name": "Oxygen (O2) Mask Non-rebreather - pediatric",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SJCEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Pediatric EtCO2 Nasal Cannula",
@@ -2206,7 +2739,10 @@
               "name": "End tidal CO2 device, pediatric",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Pediatric Nasal Cannula",
@@ -2220,7 +2756,11 @@
               "name": "Nasal Cannula - pediatric",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Medium/Small",
@@ -2235,7 +2775,10 @@
               "name": "CPAP – Masks Small",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         },
         {
           "name": "Adult EtCO2 Nasal Cannula",
@@ -2249,7 +2792,11 @@
               "name": "EtCO2 Non-invasive Cannula (Waveform)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Handheld Nebulizer Kit",
@@ -2263,7 +2810,11 @@
               "name": "Nebulizer (hand held for inhalation)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Infant/Pediatric High-Flow Circuit",
@@ -2282,7 +2833,10 @@
               "name": "ETT Nebulizer Adapter",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         },
         {
           "name": "Type D",
@@ -2301,7 +2855,11 @@
               "name": "Spare Portable oxygen - D or E size cylinders, minimum of 1800 PSI",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Pediatric Nebulizer Mask",
@@ -2315,7 +2873,11 @@
               "name": "Nebulizer mask pediatric",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Large",
@@ -2334,7 +2896,11 @@
               "name": "CPAP – Masks Large",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Type M",
@@ -2345,7 +2911,10 @@
               "name": "Oxygen (O2) Tank – Fixed in vehicle with regulator (M-tank or equivalent)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1
+          }
         },
         {
           "name": "Blow-by mask",
@@ -2355,7 +2924,10 @@
               "name": "Oxygen (O2) Mask (pediatric/infant)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         }
       ]
     },
@@ -2374,7 +2946,10 @@
               "name": "Eye Protection (face shields, goggles, splash resistance)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         },
         {
           "name": "Isolation Gown",
@@ -2437,7 +3012,10 @@
               "name": "pens",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Pillow",
@@ -2451,7 +3029,11 @@
               "name": "Pillows",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Pillow case (disposable)",
@@ -2461,7 +3043,10 @@
               "name": "Pillowcases",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Blue, Wrist",
@@ -2486,7 +3071,11 @@
               "name": "Soft ankle/wrist restraints",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SJCEMSA": 4
+          }
         }
       ]
     },
@@ -2509,7 +3098,12 @@
               "name": "Mucosal Atomizer Devices (MAD)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "SSVEMSA": 2,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Pressure Infusion Bag",
@@ -2527,7 +3121,12 @@
               "name": "Pressure Bag",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Fluid Warmer",
@@ -2537,11 +3136,17 @@
               "name": "IV warming system capable of maintaining two 1000ml bags at a range of 2 degrees within normal body temperature",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Breath actuated nebulizer",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         }
       ]
     },
@@ -2557,7 +3162,10 @@
               "name": "Pulse Oximeter Probes - adult",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1
+          }
         },
         {
           "name": "Infant",
@@ -2572,7 +3180,10 @@
               "name": "SpO2 Ear probe",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Pediatric",
@@ -2583,7 +3194,10 @@
               "name": "Pulse Oximeter Probes - pediatric",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1
+          }
         },
         {
           "name": "Finger clip",
@@ -2597,7 +3211,11 @@
               "name": "Pulse oximetry device approved by the Food and Drug",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1
+          }
         }
       ]
     },
@@ -2616,7 +3234,11 @@
               "name": "Instant ice packs",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 4,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Heat Pack",
@@ -2630,7 +3252,11 @@
               "name": "Hot Packs",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 4,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Blanket",
@@ -2644,7 +3270,11 @@
               "name": "Patient blankets (disposable)",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Emergency Blanket",
@@ -2654,7 +3284,10 @@
               "name": "Emergency Blanket thermal or equivalent (reflective foil)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         }
       ]
     },
@@ -2667,7 +3300,10 @@
         },
         {
           "name": "Ring Cutter",
-          "emsa_min": 1
+          "emsa_min": 1,
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Shears",
@@ -2685,7 +3321,11 @@
               "name": "trauma shears",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1
+          }
         }
       ]
     },
@@ -2704,7 +3344,10 @@
               "name": "Inline Hepa Filter*",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Inline EtCO2",
@@ -2726,7 +3369,11 @@
               "name": "Sidestream EtCO Disposable Capnography Circuit, Pediatric 2",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "PEEP Valve",
@@ -2736,7 +3383,10 @@
               "name": "BVM PEEP valve",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Colorimetric CO2 Detector",
@@ -2766,7 +3416,11 @@
               "name": "Pediatric ventilator circuit",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "SSVEMSA": 2
+          }
         }
       ]
     },
@@ -2785,7 +3439,11 @@
               "name": "QuikClot® Dressing, Z Fold",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "YEMSA": 4
+          }
         },
         {
           "name": "Chest Seal",
@@ -2799,7 +3457,11 @@
               "name": "Occlusive dressings",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Adhesive Bandage",
@@ -2813,7 +3475,11 @@
               "name": "Band-Aids (assorted sizes)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 10,
+            "YEMSA": 6
+          }
         },
         {
           "name": "Elastic Bandage Roll (Dukal)",
@@ -2823,7 +3489,10 @@
               "name": "Bandages (Rolled) 2\" or 3\"",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 3
+          }
         },
         {
           "name": "Gauze Rolls",
@@ -2841,7 +3510,12 @@
               "name": "Kerlix Sterile Gauze Rolls",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 5,
+            "SJCEMSA": 2,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Israeli Bandage",
@@ -2851,7 +3525,10 @@
               "name": "Israeli Bandage or equivalent",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         },
         {
           "name": "Petrolatum Dressing",
@@ -2861,7 +3538,10 @@
               "name": "Petroleum Gauze",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Sterile Burn Sheet",
@@ -2875,7 +3555,11 @@
               "name": "Sterile burn sheets",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Trauma Dressing",
@@ -2889,7 +3573,12 @@
               "name": "Multi-Trauma Dressing, sterile",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 4,
+            "SSVEMSA": 2,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Trauma Tourniquet",
@@ -2907,7 +3596,12 @@
               "name": "Trauma Tourniquets: SOF Tactical Tourniquet or the Combat",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "YEMSA": 1,
+            "SJCEMSA": 4
+          }
         },
         {
           "name": "Triangular Bandage",
@@ -2921,7 +3615,12 @@
               "name": "Triangular Bandages 40\"",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 4,
+            "SSVEMSA": 4,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Chest Decompression Needle",
@@ -2939,7 +3638,12 @@
               "name": "Pleural Decompression/Needle 14 ga x 3”",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "SJCEMSA": 2,
+            "YEMSA": 2
+          }
         }
       ],
       "child_of": "Trauma"
@@ -2959,7 +3663,10 @@
               "name": "Meconium aspirator",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Obstetrical Kit",
@@ -2977,7 +3684,12 @@
               "name": "Obstetrics Kit",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "SJCEMSA": 1,
+            "YEMSA": 1
+          }
         }
       ]
     },
@@ -2997,7 +3709,10 @@
               "name": "Approved Commercial Pelvic Binder",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Short Cardboard",
@@ -3020,7 +3735,12 @@
               "name": "Pediatric traction splint for femur or adult traction splint that adjusts",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "SAM",
@@ -3031,7 +3751,10 @@
               "name": "Arm & Leg Splints (SAM, cardboard, vacuum, etc.)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         }
       ],
       "child_of": "Trauma"
@@ -3051,7 +3774,10 @@
               "name": "Non C Channel Video Laryngoscope with photo or video recording ability***",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "MAC S3",
@@ -3119,7 +3845,12 @@
               "name": "Syringes: 1 mL,",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "YEMSA": 2,
+            "SSVEMSA": 3
+          }
         },
         {
           "name": "10 mL",
@@ -3138,7 +3869,12 @@
               "name": "Syringes: 10 mL",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "YEMSA": 2,
+            "SSVEMSA": 3
+          }
         },
         {
           "name": "20 mL",
@@ -3158,7 +3894,11 @@
               "name": "Syringes, 3 mL",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "YEMSA": 2
+          }
         },
         {
           "name": "5 mL",
@@ -3177,7 +3917,12 @@
               "name": "Syringes: 3 – 5 mL",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2,
+            "YEMSA": 2,
+            "SSVEMSA": 3
+          }
         },
         {
           "name": "60mL",
@@ -3193,7 +3938,10 @@
               "name": "50 – 60 mL Syringe",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "50 mL",
@@ -3204,7 +3952,10 @@
               "name": "Syringes, 50 mL",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         }
       ]
     },
@@ -3213,7 +3964,10 @@
       "items": [
         {
           "name": "X-Collars™",
-          "emsa_min": 4
+          "emsa_min": 4,
+          "lemsa_qty": {
+            "SJCEMSA": 4
+          }
         },
         {
           "name": "L",
@@ -3234,7 +3988,10 @@
               "name": "Soft cervical collars – small pediatric",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Adult",
@@ -3249,7 +4006,11 @@
               "name": "Rigid C-Collars: Adult, Adjustable",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Pediatric",
@@ -3264,7 +4025,11 @@
               "name": "Rigid C-Collars: Pediatric",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SSVEMSA": 2
+          }
         }
       ],
       "child_of": "Patient Movement"
@@ -3285,7 +4050,11 @@
               "name": "iGel Airway, 2.0",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "2-5 kg PINK",
@@ -3300,7 +4069,11 @@
               "name": "iGel Airway, 1.0",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "25-35 kg WHITE",
@@ -3315,7 +4088,11 @@
               "name": "iGel Airway, 2.5",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "30-60 kg YELLOW",
@@ -3330,7 +4107,11 @@
               "name": "iGel Airway, 3.0",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "5-12 kg BLUE",
@@ -3345,7 +4126,11 @@
               "name": "iGel Airway, 1.5",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "50-90 kg GREEN",
@@ -3364,7 +4149,12 @@
               "name": "iGel Airway, 4.0",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "YEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "90 kg ORANGE",
@@ -3379,7 +4169,11 @@
               "name": "iGel Airway, 5.0",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1
+          }
         }
       ]
     },
@@ -3403,7 +4197,12 @@
               "name": "ETT Securing Device - adult",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Pediatric",
@@ -3418,7 +4217,11 @@
               "name": "ETT Securing Device - pediatric",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Infant ETT Securement Device",
@@ -3446,7 +4249,11 @@
               "name": "Medication-added Labels",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 2
+          }
         }
       ]
     },
@@ -3461,17 +4268,23 @@
               "name": "Percutaneous Needle Cricothyroidotomy insertion kit, which includes: 10 ml syringe, Translaryngeal jet ventilator device with push-button and high-pressure tubing with locking device (Adult), 10- or 12-gauge needle for adult, and Betadine swab, or Enk Oxygen Flow Modulator set, (Adult), and Betadine swab or kit approved by EMS Medical Director.",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
-          "name": "Jet Instaflator",
+          "name": "Jet insufflator",
           "emsa_min": 1,
           "aliases": [
             {
               "name": "Translaryngeal jet ventilator device with push-button and high-pressure tubing with locking device (Adult)",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         }
       ],
       "child_of": "Advanced Airway"
@@ -3500,7 +4313,12 @@
               "name": "Flex Guide ETT Introducer, audlt",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Pediatric",
@@ -3511,7 +4329,10 @@
               "name": "Flex Guide ETT Introducer, pediatric",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "10 Fr.",
@@ -3522,7 +4343,10 @@
               "name": "Adult Endotracheal Tube Stylet 10 Fr.",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "12 Fr.",
@@ -3537,7 +4361,11 @@
               "name": "Endotracheal tube stylet",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "6 Fr.",
@@ -3548,7 +4376,10 @@
               "name": "Pediatric stylet 6fr",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "8 Fr.",
@@ -3575,7 +4406,10 @@
               "name": "Nasopharyngeal Airways: 16",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1
+          }
         },
         {
           "name": "18 Fr.",
@@ -3586,7 +4420,10 @@
               "name": "Nasopharyngeal Airways: 18",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1
+          }
         },
         {
           "name": "20 Fr.",
@@ -3605,7 +4442,12 @@
               "name": "Nasopharyngeal Airways: 20 Fr.",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "22 Fr.",
@@ -3620,7 +4462,11 @@
               "name": "Nasopharyngeal Airways: 22 Fr.",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "24 Fr.",
@@ -3639,7 +4485,12 @@
               "name": "Nasopharyngeal Airways: 24 Fr.",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "26 Fr.",
@@ -3654,7 +4505,11 @@
               "name": "Nasopharyngeal Airways: 26 Fr.",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "28 Fr.",
@@ -3673,7 +4528,12 @@
               "name": "Nasopharyngeal Airways: 28 Fr.",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "30 Fr.",
@@ -3688,7 +4548,11 @@
               "name": "Nasopharyngeal Airways: 30 Fr.",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "32 Fr.",
@@ -3707,7 +4571,12 @@
               "name": "Nasopharyngeal Airways: 32 Fr.",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "34 Fr.",
@@ -3722,7 +4591,11 @@
               "name": "Nasopharyngeal Airways: 34 Fr.",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "36 Fr.",
@@ -3733,7 +4606,10 @@
               "name": "Nasopharyngeal Airways, 36 Fr.",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "100mm PINK",
@@ -3752,7 +4628,12 @@
               "name": "Oropharyngeal Airways: 100 mm",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2,
+            "YEMSA": 1
+          }
         },
         {
           "name": "110mm ORANGE",
@@ -3771,7 +4652,12 @@
               "name": "Oropharyngeal Airways: 110 mm",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2,
+            "YEMSA": 1
+          }
         },
         {
           "name": "40mm PINK",
@@ -3790,7 +4676,12 @@
               "name": "Oropharyngeal Airways: 40 mm",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2,
+            "YEMSA": 1
+          }
         },
         {
           "name": "50mm BLUE",
@@ -3809,7 +4700,12 @@
               "name": "Oropharyngeal Airways: 50 mm",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2,
+            "YEMSA": 1
+          }
         },
         {
           "name": "60mm GRAY",
@@ -3828,7 +4724,12 @@
               "name": "Oropharyngeal Airways: 60 mm",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2,
+            "YEMSA": 1
+          }
         },
         {
           "name": "70mm WHITE",
@@ -3847,7 +4748,12 @@
               "name": "Oropharyngeal Airways: 70 mm",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2,
+            "YEMSA": 1
+          }
         },
         {
           "name": "80mm GREEN",
@@ -3866,7 +4772,12 @@
               "name": "Oropharyngeal Airways: 80 mm",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2,
+            "YEMSA": 1
+          }
         },
         {
           "name": "90mm YELLOW",
@@ -3885,7 +4796,12 @@
               "name": "Oropharyngeal Airways: 90 mm",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2,
+            "YEMSA": 1
+          }
         }
       ]
     },
@@ -3909,7 +4825,12 @@
               "name": "Laryngoscope Blades: Miller # 4",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "#3",
@@ -3928,7 +4849,12 @@
               "name": "Laryngoscope Blades: Miller # 3",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "#2",
@@ -3947,7 +4873,12 @@
               "name": "Laryngoscope Blades: Miller # 2",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "#1",
@@ -3962,7 +4893,11 @@
               "name": "Straight (Miller) Laryngoscope Blades, 1",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "#0",
@@ -3977,7 +4912,11 @@
               "name": "Straight (Miller) Laryngoscope Blades, 0",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "#0",
@@ -3993,7 +4932,10 @@
               "name": "Disposable Macintosh laryngeal blades each size: #1",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "#2",
@@ -4008,7 +4950,11 @@
               "name": "Laryngoscope Blades: MacIntosh, #2",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "#3",
@@ -4027,7 +4973,12 @@
               "name": "Laryngoscope Blades: MacIntosh, #3",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "#4",
@@ -4046,7 +4997,12 @@
               "name": "Laryngoscope Blades: MacIntosh, #4",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 1,
+            "SJCEMSA": 1,
+            "YEMSA": 1
+          }
         }
       ],
       "child_of": "Laryngoscope"
@@ -4067,7 +5023,11 @@
               "name": "Spare Suction Canisters - tub",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "Lid",
@@ -4082,7 +5042,11 @@
               "name": "Spare Suction Canisters - lid",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "DuCanto Suction Tip",
@@ -4106,7 +5070,11 @@
               "name": "Pharyngeal Tonsil Tip (rigid) for suctioning",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 2
+          }
         },
         {
           "name": "Manual Suction Device",
@@ -4126,7 +5094,10 @@
               "name": "Pediatric laryngoscope handle",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "Laryngoscope Light",
@@ -4140,7 +5111,11 @@
               "name": "Spare Laryngoscope Blade Bulb (if not using disposable blades)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "AA",
@@ -4151,7 +5126,10 @@
               "name": "Alkaline batteries for pediatric laryngoscope handle",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "C",
@@ -4166,7 +5144,10 @@
               "name": "Spare alkaline batteries for laryngoscope handle",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Adult",
@@ -4181,7 +5162,12 @@
               "name": "Laryngoscope Handle",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         }
       ]
     },
@@ -4204,7 +5190,12 @@
               "name": "Sharps Container (appropriately sized)",
               "lemsa": "Yolo County EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "SSVEMSA": 1,
+            "YEMSA": 1
+          }
         },
         {
           "name": "Waste Container, Covered",
@@ -4218,7 +5209,11 @@
               "name": "Covered Waste Container (red biohazard bags acceptable)",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Biohazard Bags",
@@ -4232,7 +5227,11 @@
               "name": "Biohazard bags (various sizes recommended)",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "YEMSA": 2,
+            "SJCEMSA": 2
+          }
         }
       ]
     },
@@ -4248,7 +5247,10 @@
               "name": "1” Adhesive Tape Rolls",
               "lemsa": "Sierra-Sacramento Valley EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2
+          }
         },
         {
           "name": "2\"",
@@ -4267,11 +5269,19 @@
               "name": "Rolls of tape, size 1” or 2” or 3” Hypoallergenic (Transpore/paper)",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "YEMSA": 2,
+            "SJCEMSA": 2
+          }
         },
         {
           "name": "Coban",
-          "emsa_min": 6
+          "emsa_min": 6,
+          "lemsa_qty": {
+            "YEMSA": 2
+          }
         }
       ]
     },
@@ -4290,7 +5300,12 @@
               "name": "Patient thermometer",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SJCEMSA": 1,
+            "YEMSA": 1,
+            "SSVEMSA": 1
+          }
         },
         {
           "name": "Disposable Sensor - Neonate/Infant",
@@ -4335,7 +5350,11 @@
               "name": "Endotracheal tubes, 6.0",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "6.5 mm",
@@ -4350,7 +5369,11 @@
               "name": "Endotracheal tubes, 6.5",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "7.0 mm",
@@ -4365,7 +5388,11 @@
               "name": "Endotracheal tubes, 7.0",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "7.5 mm",
@@ -4384,7 +5411,12 @@
               "name": "Endotracheal tubes, 7.5",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "YEMSA": 1,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "8.0 mm",
@@ -4399,7 +5431,11 @@
               "name": "Endotracheal tubes, 8.0",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "8.5 mm",
@@ -4414,7 +5450,11 @@
               "name": "Endotracheal tubes, 8.5",
               "lemsa": "San Joaquin EMS Agency"
             }
-          ]
+          ],
+          "lemsa_qty": {
+            "SSVEMSA": 2,
+            "SJCEMSA": 1
+          }
         },
         {
           "name": "9.0 mm",
