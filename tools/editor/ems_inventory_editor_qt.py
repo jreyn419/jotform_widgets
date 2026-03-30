@@ -438,6 +438,11 @@ class DesignationDelegate(QStyledItemDelegate):
         """Deferred commit after number key selection."""
         combo = self._active_editor
         if combo:
+            try:
+                combo.currentText()  # verify C++ object is alive
+            except RuntimeError:
+                self._active_editor = None
+                return
             self.commitData.emit(combo)
             self.closeEditor.emit(combo, QAbstractItemDelegate.EndEditHint.NoHint)
 
@@ -595,20 +600,14 @@ class MasterNameDelegate(QStyledItemDelegate):
         return editor
 
     def _on_completer_activated(self, editor, display_text):
-        """User selected from completer popup — insert bare name and commit."""
+        """User selected from completer popup — insert bare name and set group.
+        Do NOT auto-commit; let Enter/Tab commit naturally to avoid
+        racing with auto-advance editItem."""
         pair = self._display_map.get(display_text)
         if pair:
             name, group = pair
             editor.setText(name)
             editor.setProperty("_selected_group", group)
-        from PyQt6.QtCore import QTimer
-        QTimer.singleShot(0, self._commit_selection)
-
-    def _commit_selection(self):
-        editor = self._active_editor
-        if editor:
-            self.commitData.emit(editor)
-            self.closeEditor.emit(editor, QAbstractItemDelegate.EndEditHint.NoHint)
 
     def destroyEditor(self, editor, index):
         if editor is self._active_editor:
@@ -862,7 +861,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.4.2"
+VERSION = "6.6.2"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -2096,10 +2095,10 @@ class App(QMainWindow):
         self._m_all_table = ManagedTableWidget()
         self._m_all_table._suppress_popup = False
         self._m_all_table.setColumnCount(9)
-        # Column order: Type | Agency | Item Name | LEMSA Qty | Master Qty | Master Name | Group | Category | Status
+        # Column order: Type | Agency | Item Name | LEMSA Qty | Master Qty | Master Name | Group | Category | Exclude?
         self._m_all_table.setHorizontalHeaderLabels(
             ["Type", "Agency", "Item Name", "L.Qty", "M.Qty",
-             "Master Name", "Group", "Category", "Status"])
+             "Master Name", "Group", "Category", "Exclude?"])
         hdr = self._m_all_table.horizontalHeader()
         hdr.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         hdr.setCascadingSectionResizes(False)
@@ -2143,7 +2142,7 @@ class App(QMainWindow):
         self._readonly_cols = {self.COL_TYPE, self.COL_LEMSA, self.COL_NAME, self.COL_LEMSA_QTY}
 
         # ComboBox delegate for Status column
-        desig_delegate = DesignationDelegate(["", "New", "Optional", "Name Difference", "Exclude"], self._m_all_table)
+        desig_delegate = DesignationDelegate(["", "Extraction Error", "Optional"], self._m_all_table)
         self._m_all_table.setItemDelegateForColumn(self.COL_STATUS, desig_delegate)
 
         # Searchable delegate for Master Name column
@@ -3387,16 +3386,10 @@ class App(QMainWindow):
         edits = self._load_table_edits()
         master_name = (self._m_all_table.item(row, self.COL_MASTER_NAME).text().strip()
                        if self._m_all_table.item(row, self.COL_MASTER_NAME) else "")
-        status = (self._m_all_table.item(row, self.COL_STATUS).text().strip()
-                  if self._m_all_table.item(row, self.COL_STATUS) else "")
+        exclude = (self._m_all_table.item(row, self.COL_STATUS).text().strip()
+                   if self._m_all_table.item(row, self.COL_STATUS) else "")
         group = (self._m_all_table.item(row, self.COL_GROUP).text().strip()
                  if self._m_all_table.item(row, self.COL_GROUP) else "")
-
-        # "N/A" is a display-only status for Match rows — preserve the
-        # previously saved status (and alias data) so we don't lose it
-        existing = edits.get(key, {})
-        if status == "N/A":
-            status = existing.get("status", "")
 
         edit_data = {
             "master_name": master_name,
@@ -3405,27 +3398,14 @@ class App(QMainWindow):
                            if self._m_all_table.item(row, self.COL_MASTER_QTY) else ""),
             "category": (self._m_all_table.item(row, self.COL_CATEGORY).text().strip()
                          if self._m_all_table.item(row, self.COL_CATEGORY) else ""),
-            "status": status,
+            "status": exclude,
         }
-        # Track alias info for Name Difference rows
-        if status == "Name Difference" and master_name:
-            lemsa_name = name_item.text().strip()
-            # Get LEMSA source from Agency column tooltip (full names)
-            agency_item = self._m_all_table.item(row, self.COL_LEMSA)
-            lemsa_source = agency_item.toolTip().split("\n")[0] if agency_item and agency_item.toolTip() else ""
-            edit_data["alias"] = {
-                "lemsa_name": lemsa_name,
-                "lemsa": lemsa_source,
-            }
-        elif status == "Name Difference" and existing.get("alias"):
-            # Preserve existing alias data when master_name wasn't changed
-            edit_data["alias"] = existing["alias"]
         edits[key] = edit_data
         self._save_table_edits(edits)
 
-        # Update exclusions: add if Exclude, remove otherwise
+        # Update exclusions: add if Extraction Error or Optional, remove otherwise
         exclusions = self._load_exclusions()
-        if status == "Exclude":
+        if exclude in ("Extraction Error", "Optional"):
             exclusions[key] = name_item.text().strip()
         elif key in exclusions:
             del exclusions[key]
@@ -3482,6 +3462,30 @@ class App(QMainWindow):
                 json.dump(splits, f, indent=2)
         except Exception:
             pass
+
+    _split_icon_cache = None
+
+    def _get_split_icon(self):
+        """Return a cached QIcon showing a fork glyph (one line → two)."""
+        if self._split_icon_cache is not None:
+            return self._split_icon_cache
+        sz = 16
+        pm = QPixmap(sz, sz)
+        pm.fill(QColor(0, 0, 0, 0))
+        p = QPainter(pm)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        pen = QPen(QColor("#6c7086"))
+        pen.setWidthF(1.5)
+        p.setPen(pen)
+        # Trunk: left-center going right
+        p.drawLine(2, 8, 7, 8)
+        # Upper fork
+        p.drawLine(7, 8, 13, 4)
+        # Lower fork
+        p.drawLine(7, 8, 13, 12)
+        p.end()
+        self._split_icon_cache = QIcon(pm)
+        return self._split_icon_cache
 
     # -- LEMSA list ----------------------------------------------------------
 
@@ -6189,7 +6193,8 @@ class App(QMainWindow):
                 cat.items.append(MasterItem(
                     item_obj.get("name", ""),
                     item_obj.get("emsa_min", 1),
-                    item_obj.get("group")))
+                    item_obj.get("group"),
+                    item_obj.get("aliases", [])))
             self.master_list.categories.append(cat)
         self._master_last_snap = snap
         self.dirty_master = True
@@ -6215,7 +6220,8 @@ class App(QMainWindow):
                 cat.items.append(MasterItem(
                     item_obj.get("name", ""),
                     item_obj.get("emsa_min", 1),
-                    item_obj.get("group")))
+                    item_obj.get("group"),
+                    item_obj.get("aliases", [])))
             self.master_list.categories.append(cat)
         self._master_last_snap = snap
         self.dirty_master = True
@@ -6409,7 +6415,7 @@ class App(QMainWindow):
             else:
                 target_cat.items.append(MasterItem(
                     ci["name"], ci.get("emsa_min", ci.get("qty", 1)),
-                    group))
+                    group, ci.get("aliases", [])))
             pasted += 1
 
 
@@ -6933,16 +6939,19 @@ class App(QMainWindow):
                     ii = data[2]
                     it = cat.items[ii]
                     items.append({"name": it.name, "emsa_min": it.emsa_min, "group": it.group,
+                                  "aliases": it.aliases,
                                   "_src": ("master", ci, ii)})
                 elif kind == "group":
                     gn = data[2]
                     for it in cat.items:
                         if it.group == gn:
                             items.append({"name": it.name, "emsa_min": it.emsa_min, "group": it.group,
+                                          "aliases": it.aliases,
                                           "_src": ("master", ci, None)})
                 elif kind == "cat":
                     for it in cat.items:
                         items.append({"name": it.name, "emsa_min": it.emsa_min, "group": it.group,
+                                      "aliases": it.aliases,
                                       "_src": ("master", ci, None)})
         return items
 
@@ -7279,9 +7288,16 @@ class App(QMainWindow):
         # Apply splits to cached data (splits may have been added after extraction)
         splits = self._load_splits()
         if splits:
+            # Build reverse index: child_name.lower() -> parent_key
+            child_to_parent = {}
+            for parent_key, split_info in splits.items():
+                for child in split_info.get("items", []):
+                    child_to_parent[child["name"].lower()] = parent_key
+
             updated = {}
             for key, data in all_lemsa.items():
                 if key in splits:
+                    # Original key still in cache — expand it
                     split_info = splits[key]
                     for split_item in split_info["items"]:
                         skey = split_item["name"].lower()
@@ -7289,8 +7305,13 @@ class App(QMainWindow):
                             "name": split_item["name"],
                             "qty": split_item["qty"],
                             "sources": data.get("sources", []),
+                            "split_from": key,
                         }
                 else:
+                    # Tag items that are already-expanded split children
+                    if key in child_to_parent:
+                        data = dict(data)  # shallow copy to avoid mutating cache
+                        data["split_from"] = child_to_parent[key]
                     updated[key] = data
             all_lemsa = updated
 
@@ -7321,10 +7342,10 @@ class App(QMainWindow):
             for alias in item.aliases:
                 alias_index[alias["name"].lower()] = (cat.name, item, alias)
 
-        # Also load edits-based aliases (Name Difference rows not yet applied)
+        # Also load edits-based aliases (rows with master_name set, not yet applied)
         saved_edits = self._load_table_edits()
         for key, edit_data in saved_edits.items():
-            if edit_data.get("status") == "Name Difference" and edit_data.get("master_name"):
+            if edit_data.get("master_name") and edit_data.get("status") not in ("Extraction Error", "Optional"):
                 if key not in alias_index:
                     master_key = edit_data["master_name"].lower()
                     # Strip group suffix for lookup if present
@@ -7334,7 +7355,7 @@ class App(QMainWindow):
                         entries = master_names[master_key]
                         cat_name, master_item = entries[0]
                         alias_index[key] = (cat_name, master_item, {
-                            "name": key, "lemsa": edit_data.get("alias", {}).get("lemsa", "")
+                            "name": key, "lemsa": ""
                         })
 
         new_items = []
@@ -7356,6 +7377,7 @@ class App(QMainWindow):
                     "sources": data.get("sources", []),
                     "category": cat_name,
                     "ambiguous": len(entries) > 1,
+                    "split_from": data.get("split_from", ""),
                 })
             elif key in alias_index:
                 # Alias match — LEMSA name differs from master name
@@ -7370,6 +7392,7 @@ class App(QMainWindow):
                     "sources": data.get("sources", []),
                     "category": cat_name,
                     "ambiguous": False,
+                    "split_from": data.get("split_from", ""),
                 })
             else:
                 new_items.append(data)
@@ -7407,6 +7430,7 @@ class App(QMainWindow):
                 "sources": ", ".join(data.get("sources", [])),
                 "category": "",
                 "status": "No Match",
+                "split_from": data.get("split_from", ""),
             })
 
         # Matched items (includes former "Qty Diff" — coloring handles that now)
@@ -7420,6 +7444,7 @@ class App(QMainWindow):
                 "sources": ", ".join(m.get("sources", [])),
                 "category": m["category"],
                 "status": "Match",
+                "split_from": m.get("split_from", ""),
             })
 
         # Excluded items (kept in table for Excluded tab)
@@ -7434,6 +7459,7 @@ class App(QMainWindow):
                     "sources": ", ".join(data.get("sources", [])),
                     "category": "",
                     "status": "Excluded",
+                    "split_from": data.get("split_from", ""),
                 })
 
         status_order = {"No Match": 0, "Match": 1, "Excluded": 2}
@@ -7505,20 +7531,29 @@ class App(QMainWindow):
                 QTableWidgetItem(row["category"]),           # COL_CATEGORY
                 QTableWidgetItem(""),                        # COL_STATUS
             ]
-            # Match rows: lock Master Name, Group, Category, Status
+            # Tag split-derived rows
+            split_from = row.get("split_from", "")
+            if split_from:
+                items[self.COL_NAME].setData(Qt.ItemDataRole.UserRole, split_from)
+                items[self.COL_NAME].setIcon(self._get_split_icon())
+            # Match rows: lock Master Name, Group, Category (but NOT Exclude?)
             is_match = row["status"] == "Match"
             is_excluded_type = row["status"] == "Excluded"
-            if is_match:
-                items[self.COL_STATUS].setText("N/A")
-            elif is_excluded_type:
-                items[self.COL_STATUS].setText("Exclude")
+            if is_excluded_type:
+                items[self.COL_STATUS].setText("Extraction Error")
 
             # Overlay saved edits if present
             edit_key = row["name"].lower()
             is_exclude = is_excluded_type
             if edit_key in saved_edits:
                 edits = saved_edits[edit_key]
-                is_exclude = is_exclude or edits.get("status") in ("Exclude", "Optional")
+                # Migrate old status values
+                saved_status = edits.get("status", "")
+                if saved_status == "Exclude":
+                    saved_status = "Extraction Error"
+                elif saved_status in ("New", "Name Difference", "N/A"):
+                    saved_status = ""
+                is_exclude = is_exclude or saved_status in ("Extraction Error", "Optional")
                 if not is_exclude:
                     if edits.get("master_name"):
                         items[self.COL_MASTER_NAME].setText(edits["master_name"])
@@ -7528,13 +7563,13 @@ class App(QMainWindow):
                         items[self.COL_MASTER_QTY].setText(edits["master_qty"])
                     if edits.get("category"):
                         items[self.COL_CATEGORY].setText(edits["category"])
-                # Don't overlay status for match rows
-                if not is_match and not is_excluded_type and edits.get("status"):
-                    items[self.COL_STATUS].setText(edits["status"])
+                # Always overlay exclude status (including on Match rows)
+                if saved_status:
+                    items[self.COL_STATUS].setText(saved_status)
 
             is_odd = i % 2 == 1
-            # Columns locked on Match rows and Excluded-type rows
-            match_locked = {self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY, self.COL_STATUS}
+            # Columns locked on Match rows and Excluded-type rows (Exclude? stays editable)
+            match_locked = {self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY}
             for col, ti in enumerate(items):
                 if col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY):
                     ti.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
@@ -7587,7 +7622,7 @@ class App(QMainWindow):
             status_cell = self._m_all_table.item(ri, self.COL_STATUS)
             rtype = type_cell.text().strip() if type_cell else ""
             rstatus = status_cell.text().strip() if status_cell else ""
-            is_hidden = rtype == "Excluded" or rstatus in ("Exclude", "Optional")
+            is_hidden = rtype == "Excluded" or rstatus in ("Extraction Error", "Optional")
             if is_hidden:
                 excluded_count += 1
                 continue
@@ -7644,9 +7679,9 @@ class App(QMainWindow):
         # Pre-pass: collect max qty per master item (name+group) across all rows
         max_qty_by_master = {}  # (master_name.lower(), group.lower()) -> max qty
         for row in range(self._m_all_table.rowCount()):
-            status_item = self._m_all_table.item(row, self.COL_STATUS)
-            status = status_item.text().strip() if status_item else ""
-            if status in ("Optional", "Exclude"):
+            exclude_item = self._m_all_table.item(row, self.COL_STATUS)
+            exclude = exclude_item.text().strip() if exclude_item else ""
+            if exclude in ("Extraction Error", "Optional"):
                 continue
             mn_item = self._m_all_table.item(row, self.COL_MASTER_NAME)
             mn = mn_item.text().strip() if mn_item else ""
@@ -7663,47 +7698,80 @@ class App(QMainWindow):
             max_qty_by_master[key] = max(max_qty_by_master.get(key, 0), q)
 
         for row in range(self._m_all_table.rowCount()):
-            status_item = self._m_all_table.item(row, self.COL_STATUS)
-            status = status_item.text().strip() if status_item else ""
-            if status == "Optional":
-                skipped += 1
-                continue
-            if status == "Exclude":
+            exclude_item = self._m_all_table.item(row, self.COL_STATUS)
+            exclude = exclude_item.text().strip() if exclude_item else ""
+            if exclude in ("Extraction Error", "Optional"):
                 skipped += 1
                 continue
 
             master_name_item = self._m_all_table.item(row, self.COL_MASTER_NAME)
             master_name = master_name_item.text().strip() if master_name_item else ""
+            if not master_name:
+                continue  # no master name set — nothing to apply
+
             master_qty_item = self._m_all_table.item(row, self.COL_MASTER_QTY)
             group_item = self._m_all_table.item(row, self.COL_GROUP)
             group = group_item.text().strip() if group_item else ""
             category_item = self._m_all_table.item(row, self.COL_CATEGORY)
             category = category_item.text().strip() if category_item else ""
 
-            # Edit key for cleanup tracking
             name_item = self._m_all_table.item(row, self.COL_NAME)
             edit_key = name_item.text().strip().lower() if name_item else ""
+            lemsa_name = name_item.text().strip() if name_item else ""
 
             try:
                 qty = int(master_qty_item.text().strip()) if master_qty_item and master_qty_item.text().strip() else 0
             except ValueError:
                 qty = 0
-            # Use max qty across all rows referencing this exact master item (name+group)
-            if master_name:
-                qty = max(qty, max_qty_by_master.get((master_name.lower(), group.lower()), qty))
+            qty = max(qty, max_qty_by_master.get((master_name.lower(), group.lower()), qty))
 
-            if status == "New":
-                # Add new item to master list
-                item_name_item = self._m_all_table.item(row, self.COL_NAME)
-                new_name = master_name or (item_name_item.text().strip() if item_name_item else "")
-                if not new_name or not category:
+            # Auto-detect: look up master_name in master list
+            cat_obj, master_item = self.master_list.find_item(master_name, group)
+
+            if master_item:
+                # Existing item — update qty/group/category + alias if names differ
+                changed = False
+                if qty and qty != master_item.emsa_min:
+                    master_item.emsa_min = qty
+                    changed = True
+                if group and master_item.group != group:
+                    master_item.group = group
+                    changed = True
+                if category and cat_obj and category != cat_obj.name:
+                    new_cat = None
+                    for c in self.master_list.categories:
+                        if c.name == category:
+                            new_cat = c
+                            break
+                    if not new_cat:
+                        new_cat = MasterCategory(category)
+                        self.master_list.categories.append(new_cat)
+                    cat_obj.items.remove(master_item)
+                    new_cat.items.append(master_item)
+                    changed = True
+                # Write alias if LEMSA name differs from master name
+                if lemsa_name and lemsa_name.lower() != master_name.lower():
+                    existing_alias = [a for a in master_item.aliases if a["name"].lower() == lemsa_name.lower()]
+                    if not existing_alias:
+                        agency_item = self._m_all_table.item(row, self.COL_LEMSA)
+                        lemsa_source = agency_item.toolTip().split("\n")[0] if agency_item and agency_item.toolTip() else ""
+                        master_item.aliases.append({"name": lemsa_name, "lemsa": lemsa_source})
+                        aliases_added += 1
+                        changed = True
+                if changed:
+                    updated += 1
+                    self._session_modified.add(master_name)
+                if edit_key:
+                    applied_edit_keys.append(edit_key)
+            else:
+                # New item — create in master list + alias if names differ
+                if not category:
                     skipped += 1
                     continue
-                # Use explicit group column instead of parsing "name, group"
                 new_group = group or None
                 # Strip group suffix from name if still present (backward compat)
-                if new_group and new_name.endswith(f", {new_group}"):
-                    new_name = new_name[:-(len(new_group) + 2)]
+                if new_group and master_name.endswith(f", {new_group}"):
+                    master_name = master_name[:-(len(new_group) + 2)]
                 # Find or create category
                 target_cat = None
                 for c in self.master_list.categories:
@@ -7713,85 +7781,20 @@ class App(QMainWindow):
                 if not target_cat:
                     target_cat = MasterCategory(category)
                     self.master_list.categories.append(target_cat)
-                # Check for duplicates across entire master list
-                if new_name.lower() in {n.lower() for n in self.master_list.all_item_names()}:
+                # Check for duplicates
+                if master_name.lower() in {n.lower() for n in self.master_list.all_item_names()}:
                     skipped += 1
                     continue
-                target_cat.items.append(MasterItem(new_name, qty, new_group))
-                added += 1
-                self._session_modified.add(new_name)
-                if edit_key:
-                    applied_edit_keys.append(edit_key)
-            elif status == "Name Difference" and master_name:
-                # Write alias onto master item
-                cat_obj, master_item = self.master_list.find_item(master_name, group)
-                if not master_item:
-                    skipped += 1
-                    continue
-                lemsa_name_item = self._m_all_table.item(row, self.COL_NAME)
-                lemsa_name = lemsa_name_item.text().strip() if lemsa_name_item else ""
-                agency_item = self._m_all_table.item(row, self.COL_LEMSA)
-                lemsa_source = agency_item.toolTip().split("\n")[0] if agency_item and agency_item.toolTip() else ""
-                # Check if this alias already exists
-                existing = [a for a in master_item.aliases if a["name"].lower() == lemsa_name.lower()]
-                if not existing:
-                    master_item.aliases.append({"name": lemsa_name, "lemsa": lemsa_source})
+                new_item = MasterItem(master_name, qty, new_group)
+                # Write alias if LEMSA name differs
+                if lemsa_name and lemsa_name.lower() != master_name.lower():
+                    agency_item = self._m_all_table.item(row, self.COL_LEMSA)
+                    lemsa_source = agency_item.toolTip().split("\n")[0] if agency_item and agency_item.toolTip() else ""
+                    new_item.aliases.append({"name": lemsa_name, "lemsa": lemsa_source})
                     aliases_added += 1
-                    self._session_modified.add(master_name)
-                # Also update qty/category/group if changed
-                changed = False
-                if qty and qty != master_item.emsa_min:
-                    master_item.emsa_min = qty
-                    changed = True
-                if group and master_item.group != group:
-                    master_item.group = group
-                    changed = True
-                if category and cat_obj and category != cat_obj.name:
-                    new_cat = None
-                    for c in self.master_list.categories:
-                        if c.name == category:
-                            new_cat = c
-                            break
-                    if not new_cat:
-                        new_cat = MasterCategory(category)
-                        self.master_list.categories.append(new_cat)
-                    cat_obj.items.remove(master_item)
-                    new_cat.items.append(master_item)
-                    changed = True
-                if changed:
-                    updated += 1
-                    self._session_modified.add(master_name)
-                if edit_key:
-                    applied_edit_keys.append(edit_key)
-            elif master_name:
-                # Update existing master item
-                cat_obj, master_item = self.master_list.find_item(master_name, group)
-                if not master_item:
-                    skipped += 1
-                    continue
-                changed = False
-                if qty and qty != master_item.emsa_min:
-                    master_item.emsa_min = qty
-                    changed = True
-                if group and master_item.group != group:
-                    master_item.group = group
-                    changed = True
-                if category and cat_obj and category != cat_obj.name:
-                    # Move to new category
-                    new_cat = None
-                    for c in self.master_list.categories:
-                        if c.name == category:
-                            new_cat = c
-                            break
-                    if not new_cat:
-                        new_cat = MasterCategory(category)
-                        self.master_list.categories.append(new_cat)
-                    cat_obj.items.remove(master_item)
-                    new_cat.items.append(master_item)
-                    changed = True
-                if changed:
-                    updated += 1
-                    self._session_modified.add(master_name)
+                target_cat.items.append(new_item)
+                added += 1
+                self._session_modified.add(master_name)
                 if edit_key:
                     applied_edit_keys.append(edit_key)
 
@@ -7883,15 +7886,15 @@ class App(QMainWindow):
             row_status = status_item.text().strip() if status_item else ""
 
             if active == 0:
-                # All Items: hide Excluded-type rows and Optional/Exclude status rows
-                tab_match = row_type != "Excluded" and row_status not in ("Exclude", "Optional")
+                # All Items: hide Excluded-type rows and excluded status rows
+                tab_match = row_type != "Excluded" and row_status not in ("Extraction Error", "Optional")
             elif active == 1:
-                tab_match = row_type == "Match" and row_status not in ("Exclude", "Optional")
+                tab_match = row_type == "Match" and row_status not in ("Extraction Error", "Optional")
             elif active == 2:
-                tab_match = row_type == "No Match" and row_status not in ("Exclude", "Optional")
+                tab_match = row_type == "No Match" and row_status not in ("Extraction Error", "Optional")
             elif active == 3:
                 # Qty Diff: Match rows where quantities differ
-                if row_type != "Match" or row_status in ("Exclude", "Optional"):
+                if row_type != "Match" or row_status in ("Extraction Error", "Optional"):
                     tab_match = False
                 else:
                     l_item = self._m_all_table.item(row, self.COL_LEMSA_QTY)
@@ -7903,8 +7906,8 @@ class App(QMainWindow):
                     except ValueError:
                         tab_match = False
             elif active == 4:
-                # Excluded tab: show Excluded-type rows + any row with Exclude/Optional status
-                tab_match = row_type == "Excluded" or row_status in ("Exclude", "Optional")
+                # Excluded tab: show Excluded-type rows + any row with exclusion status
+                tab_match = row_type == "Excluded" or row_status in ("Extraction Error", "Optional")
 
             self._m_all_table.setRowHidden(row, not (text_match and tab_match))
 
@@ -8087,9 +8090,9 @@ class App(QMainWindow):
                 self._begin_cell_edit(row, col)
                 return True
 
-            elif Qt.Key.Key_1 <= key <= Qt.Key.Key_4 and col == self.COL_STATUS:
-                # Status column: directly set value without opening editor
-                status_options = ["", "New", "Optional", "Name Difference", "Exclude"]
+            elif Qt.Key.Key_1 <= key <= Qt.Key.Key_2 and col == self.COL_STATUS:
+                # Exclude? column: directly set value without opening editor
+                status_options = ["", "Extraction Error", "Optional"]
                 idx = key - Qt.Key.Key_1 + 1
                 if idx < len(status_options) and self._is_cell_editable(row, col):
                     self._set_status_for_rows([row], status_options[idx])
@@ -8263,14 +8266,6 @@ class App(QMainWindow):
         if not selected_rows:
             return
 
-        # Filter to only rows whose status can be changed (not Match)
-        editable_rows = []
-        for r in selected_rows:
-            type_item = self._m_all_table.item(r, self.COL_TYPE)
-            if type_item and type_item.text().strip() == "Match":
-                continue
-            editable_rows.append(r)
-
         menu = QMenu(self)
 
         if len(selected_rows) == 1:
@@ -8303,17 +8298,28 @@ class App(QMainWindow):
 
             menu.addAction(f"Split '{name}'…",
                 lambda: self._split_table_item(row, name, qty, agency_text, agency_tip))
+
+            # Split management for split-derived rows
+            split_from = name_item.data(Qt.ItemDataRole.UserRole)
+            if split_from:
+                splits = self._load_splits()
+                orig_name = splits.get(split_from, {}).get("original_name", split_from)
+                menu.addAction(f"Add to Split '{orig_name}'…",
+                    lambda sf=split_from: self._add_to_split(sf))
+                menu.addAction(f"Remove Split '{orig_name}'",
+                    lambda sf=split_from: self._remove_split(sf))
+
             menu.addSeparator()
 
-        # Set Status submenu (only if there are editable rows)
-        if editable_rows:
-            count = len(editable_rows)
-            label = f"Set Status ({count} items)" if count > 1 else "Set Status"
+        # Set Exclude? submenu (available for all rows)
+        if selected_rows:
+            count = len(selected_rows)
+            label = f"Set Exclude? ({count} items)" if count > 1 else "Set Exclude?"
             status_menu = menu.addMenu(label)
-            for status_val in ["", "New", "Optional", "Name Difference", "Exclude"]:
+            for status_val in ["", "Extraction Error", "Optional"]:
                 display = status_val if status_val else "(clear)"
                 status_menu.addAction(display,
-                    lambda s=status_val, rows=list(editable_rows): self._set_status_for_rows(rows, s))
+                    lambda s=status_val, rows=list(selected_rows): self._set_status_for_rows(rows, s))
 
         if menu.isEmpty():
             return
@@ -8333,17 +8339,22 @@ class App(QMainWindow):
                 old_status = status_item.text().strip()
                 status_item.setText(status_value)
 
-                # Lock/unlock for Exclude
-                if status_value == "Exclude" and old_status != "Exclude":
-                    self._lock_exclude_row(r)
-                elif old_status == "Exclude" and status_value != "Exclude":
-                    self._unlock_exclude_row(r)
+                # Lock/unlock for exclusion (skip Match rows — already locked)
+                type_item = self._m_all_table.item(r, self.COL_TYPE)
+                is_match_row = type_item and type_item.text().strip() == "Match"
+                if not is_match_row:
+                    is_now_excluded = status_value in ("Extraction Error", "Optional")
+                    was_excluded = old_status in ("Extraction Error", "Optional", "Exclude")
+                    if is_now_excluded and not was_excluded:
+                        self._lock_exclude_row(r)
+                    elif was_excluded and not is_now_excluded:
+                        self._unlock_exclude_row(r)
 
                 self._save_row_edit(r)
         finally:
             self._m_all_table.setSortingEnabled(True)
             self._edit_guard = False
-        self._status.showMessage(f"Set status '{status_value or '(clear)'}' on {len(rows)} row(s)")
+        self._status.showMessage(f"Set exclude '{status_value or '(clear)'}' on {len(rows)} row(s)")
 
     def _find_in_master_tree(self, master_name, group, category):
         """Find and highlight an item in the master tree by name, group, and category."""
@@ -8401,6 +8412,34 @@ class App(QMainWindow):
         else:
             self._status.showMessage(f"'{name}' not found in master tree")
 
+    def _insert_lemsa_row(self, insert_at, cells, split_from_key=None):
+        """Insert a row into the LEMSA table with proper styling and flags.
+        cells: list of QTableWidgetItem for each column.
+        split_from_key: if set, tags the name cell with fork icon + UserRole."""
+        if split_from_key:
+            cells[self.COL_NAME].setData(Qt.ItemDataRole.UserRole, split_from_key)
+            cells[self.COL_NAME].setIcon(self._get_split_icon())
+        self._m_all_table.insertRow(insert_at)
+        is_odd = insert_at % 2 == 1
+        bg_ro_even = QBrush(QColor("#1e1e2e"))
+        bg_ro_odd = QBrush(QColor("#1a1a28"))
+        bg_ed_even = QBrush(QColor("#2a2a3c"))
+        bg_ed_odd = QBrush(QColor("#252536"))
+        bg_q_even = QBrush(QColor("#1e2030"))
+        bg_q_odd = QBrush(QColor("#1a1c2c"))
+        for col, ci in enumerate(cells):
+            if col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY):
+                ci.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+            if col == self.COL_LEMSA_QTY:
+                ci.setBackground(bg_q_odd if is_odd else bg_q_even)
+                ci.setFlags(ci.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            elif col in self._readonly_cols:
+                ci.setFlags(ci.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                ci.setBackground(bg_ro_odd if is_odd else bg_ro_even)
+            else:
+                ci.setBackground(bg_ed_odd if is_odd else bg_ed_even)
+            self._m_all_table.setItem(insert_at, col, ci)
+
     def _split_table_item(self, row, name, qty, agency_text="", agency_tip=""):
         """Open split dialog and persist the result."""
         dlg = SplitDialog(name, qty, self)
@@ -8427,7 +8466,6 @@ class App(QMainWindow):
         # Insert new rows at the same position
         for i, item_data in enumerate(new_items):
             insert_at = row + i
-            self._m_all_table.insertRow(insert_at)
             type_item = QTableWidgetItem("No Match")
             type_item.setForeground(QBrush(QColor("#74b9ff")))
             agency_cell = QTableWidgetItem(agency_text)
@@ -8435,36 +8473,164 @@ class App(QMainWindow):
                 agency_cell.setToolTip(agency_tip)
             cells = [
                 type_item,
-                agency_cell,                                       # Agency
-                QTableWidgetItem(item_data["name"]),               # Item Name
-                QTableWidgetItem(str(item_data["qty"])),           # LEMSA Qty
-                QTableWidgetItem(""),                              # Master Qty
-                QTableWidgetItem(""),                              # Master Name
-                QTableWidgetItem(""),                              # Group
-                QTableWidgetItem(""),                              # Category
-                QTableWidgetItem(""),                              # Status
+                agency_cell,
+                QTableWidgetItem(item_data["name"]),
+                QTableWidgetItem(str(item_data["qty"])),
+                QTableWidgetItem(""),
+                QTableWidgetItem(""),
+                QTableWidgetItem(""),
+                QTableWidgetItem(""),
+                QTableWidgetItem(""),
             ]
-            is_odd = insert_at % 2 == 1
-            bg_ro_even = QBrush(QColor("#1e1e2e"))
-            bg_ro_odd = QBrush(QColor("#1a1a28"))
-            bg_ed_even = QBrush(QColor("#2a2a3c"))
-            bg_ed_odd = QBrush(QColor("#252536"))
-            bg_q_even = QBrush(QColor("#1e2030"))
-            bg_q_odd = QBrush(QColor("#1a1c2c"))
-            for col, ci in enumerate(cells):
-                if col in (self.COL_LEMSA_QTY, self.COL_MASTER_QTY):
-                    ci.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
-                if col == self.COL_LEMSA_QTY:
-                    ci.setBackground(bg_q_odd if is_odd else bg_q_even)
-                    ci.setFlags(ci.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                elif col in self._readonly_cols:
-                    ci.setFlags(ci.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                    ci.setBackground(bg_ro_odd if is_odd else bg_ro_even)
-                else:
-                    ci.setBackground(bg_ed_odd if is_odd else bg_ed_even)
-                self._m_all_table.setItem(insert_at, col, ci)
+            self._insert_lemsa_row(insert_at, cells, split_from_key=key)
 
         self._status.showMessage(f"Split '{name}' into {len(new_items)} items")
+
+    def _remove_split(self, split_key):
+        """Remove a split entry and re-insert the original unsplit row inline."""
+        splits = self._load_splits()
+        info = splits.pop(split_key, None)
+        if info is None:
+            return
+        self._save_splits(splits)
+
+        # Remove split children's table edits
+        edits = self._load_table_edits()
+        for child in info.get("items", []):
+            edits.pop(child["name"].lower(), None)
+        self._save_table_edits(edits)
+
+        # Find all table rows belonging to this split and collect agency info
+        child_rows = []
+        agency_text = ""
+        agency_tip = ""
+        for r in range(self._m_all_table.rowCount()):
+            name_item = self._m_all_table.item(r, self.COL_NAME)
+            if name_item and name_item.data(Qt.ItemDataRole.UserRole) == split_key:
+                child_rows.append(r)
+                if not agency_text:
+                    ai = self._m_all_table.item(r, self.COL_LEMSA)
+                    if ai:
+                        agency_text = ai.text()
+                        agency_tip = ai.toolTip()
+
+        if not child_rows:
+            return
+        insert_at = child_rows[0]
+
+        # Remove child rows in reverse to preserve indices
+        for r in reversed(child_rows):
+            self._m_all_table.removeRow(r)
+
+        # Reconstruct original item — get qty from compiled cache or split info
+        orig_name = info.get("original_name", split_key)
+        orig_qty = max((it["qty"] for it in info.get("items", [])), default=1)
+        cached = self._load_compiled_list()
+        if cached and split_key in cached:
+            orig_qty = cached[split_key].get("qty", orig_qty)
+
+        # Insert original row
+        type_item = QTableWidgetItem("No Match")
+        type_item.setForeground(QBrush(QColor("#74b9ff")))
+        agency_cell = QTableWidgetItem(agency_text)
+        if agency_tip:
+            agency_cell.setToolTip(agency_tip)
+        cells = [
+            type_item,
+            agency_cell,
+            QTableWidgetItem(orig_name),
+            QTableWidgetItem(str(orig_qty)),
+            QTableWidgetItem(""),
+            QTableWidgetItem(""),
+            QTableWidgetItem(""),
+            QTableWidgetItem(""),
+            QTableWidgetItem(""),
+        ]
+        self._insert_lemsa_row(insert_at, cells)
+        self._status.showMessage(f"Removed split for '{orig_name}'")
+
+    def _add_to_split(self, split_key):
+        """Add another item to an existing split group (inline)."""
+        splits = self._load_splits()
+        info = splits.get(split_key)
+        if not info:
+            return
+        orig = info.get("original_name", split_key)
+        existing = info.get("items", [])
+        default_qty = existing[0]["qty"] if existing else 1
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle(f"Add to Split: {orig}")
+        dlg.setMinimumWidth(350)
+        layout = QVBoxLayout(dlg)
+        layout.addWidget(QLabel(f"Current items in split of '<b>{orig}</b>':"))
+        for it in existing:
+            layout.addWidget(QLabel(f"  • {it['name']}  (qty: {it['qty']})"))
+        layout.addWidget(QLabel("New item:"))
+        row_layout = QHBoxLayout()
+        name_edit = QLineEdit()
+        name_edit.setPlaceholderText("Item name")
+        name_edit.setMinimumWidth(220)
+        row_layout.addWidget(name_edit)
+        qty_spin = QSpinBox()
+        qty_spin.setRange(0, 9999)
+        qty_spin.setValue(default_qty)
+        qty_spin.setFixedWidth(70)
+        row_layout.addWidget(qty_spin)
+        layout.addLayout(row_layout)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dlg.accept)
+        buttons.rejected.connect(dlg.reject)
+        layout.addWidget(buttons)
+
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+        new_name = name_edit.text().strip()
+        if not new_name:
+            return
+        new_qty = qty_spin.value()
+
+        # Save to splits file
+        info["items"].append({"name": new_name, "qty": new_qty})
+        splits[split_key] = info
+        self._save_splits(splits)
+
+        # Find the last sibling row to insert after
+        last_sibling = -1
+        agency_text = ""
+        agency_tip = ""
+        for r in range(self._m_all_table.rowCount()):
+            name_item = self._m_all_table.item(r, self.COL_NAME)
+            if name_item and name_item.data(Qt.ItemDataRole.UserRole) == split_key:
+                last_sibling = r
+                if not agency_text:
+                    ai = self._m_all_table.item(r, self.COL_LEMSA)
+                    if ai:
+                        agency_text = ai.text()
+                        agency_tip = ai.toolTip()
+
+        insert_at = last_sibling + 1 if last_sibling >= 0 else self._m_all_table.rowCount()
+
+        # Insert new row
+        type_item = QTableWidgetItem("No Match")
+        type_item.setForeground(QBrush(QColor("#74b9ff")))
+        agency_cell = QTableWidgetItem(agency_text)
+        if agency_tip:
+            agency_cell.setToolTip(agency_tip)
+        cells = [
+            type_item,
+            agency_cell,
+            QTableWidgetItem(new_name),
+            QTableWidgetItem(str(new_qty)),
+            QTableWidgetItem(""),
+            QTableWidgetItem(""),
+            QTableWidgetItem(""),
+            QTableWidgetItem(""),
+            QTableWidgetItem(""),
+        ]
+        self._insert_lemsa_row(insert_at, cells, split_from_key=split_key)
+        self._status.showMessage(f"Added '{new_name}' to split of '{orig}'")
 
     def _on_qty_eq_click(self):
         """Copy LEMSA qty to Master qty for the hovered row."""
@@ -8510,13 +8676,13 @@ class App(QMainWindow):
             return False
         if self._m_all_table.isRowHidden(row):
             return False
-        # Exclude rows: only Status col is editable
+        # Exclude rows: only Exclude? col is editable
         if col in (self.COL_MASTER_QTY, self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY):
             status_item = self._m_all_table.item(row, self.COL_STATUS)
-            if status_item and status_item.text().strip() == "Exclude":
+            if status_item and status_item.text().strip() in ("Extraction Error", "Optional"):
                 return False
-        # Match rows: Master Name, Group, Category, Status are locked
-        if col in (self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY, self.COL_STATUS):
+        # Match rows: Master Name, Group, Category are locked (Exclude? stays editable)
+        if col in (self.COL_MASTER_NAME, self.COL_GROUP, self.COL_CATEGORY):
             type_item = self._m_all_table.item(row, self.COL_TYPE)
             if type_item and type_item.text().strip() == "Match":
                 return False
@@ -8537,13 +8703,18 @@ class App(QMainWindow):
             QTimer.singleShot(20, lambda: self._deferred_edit_item(item, attempt + 1))
             return
         try:
+            self._m_all_table.setEditTriggers(QAbstractItemView.EditTrigger.AllEditTriggers)
             self._m_all_table.editItem(item)
+            self._m_all_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         except RuntimeError:
             pass
 
     def _begin_cell_edit(self, row, col):
         """Start editing a cell if it's editable. Used by double-click and keyboard."""
         if not self._is_cell_editable(row, col):
+            return
+        # Don't start a new edit while one is still active
+        if self._m_all_table.state() == QAbstractItemView.State.EditingState:
             return
         self._edit_guard = True
         self._editing_cell = (row, col)
@@ -8559,7 +8730,9 @@ class App(QMainWindow):
             except TypeError:
                 pass
             self._m_all_table.cellChanged.connect(self._on_all_table_cell_changed)
+            self._m_all_table.setEditTriggers(QAbstractItemView.EditTrigger.AllEditTriggers)
             self._m_all_table.editItem(item)
+            self._m_all_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         finally:
             self._edit_guard = False
 
@@ -8708,12 +8881,15 @@ class App(QMainWindow):
             # Persist editable columns (sorting is off, row is correct)
             self._save_row_edit(row)
 
-            # Lock/unlock row if Status changed to/from Exclude
+            # Lock/unlock row if Exclude? changed (skip for Match rows — already locked)
             if col == self.COL_STATUS and item:
-                if item.text().strip() == "Exclude":
-                    self._lock_exclude_row(row)
-                else:
-                    self._unlock_exclude_row(row)
+                type_item = self._m_all_table.item(row, self.COL_TYPE)
+                is_match_row = type_item and type_item.text().strip() == "Match"
+                if not is_match_row:
+                    if item.text().strip() in ("Extraction Error", "Optional"):
+                        self._lock_exclude_row(row)
+                    else:
+                        self._unlock_exclude_row(row)
 
             # Re-enable sorting — the edited row may now move
             original_row = row
@@ -8748,7 +8924,7 @@ class App(QMainWindow):
             # Determine if the edited row is complete
             status_cell = self._m_all_table.item(row, self.COL_STATUS)
             status_text = status_cell.text().strip() if status_cell else ""
-            skip_scroll = status_text in ("Exclude", "Optional", "N/A")
+            skip_scroll = status_text in ("Extraction Error", "Optional")
             edited_row_complete = skip_scroll or _row_is_complete(row)
 
             # Special case: after setting Status, find next empty editable cell

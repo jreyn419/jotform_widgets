@@ -29,6 +29,21 @@
       }
     ]
   },
+  "adult endotracheal tube stylet": {
+    "original_name": "Adult Endotracheal Tube Stylet",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Adult Endotracheal Tube Stylet 12 Fr.",
+        "qty": 1
+      },
+      {
+        "name": "Adult Endotracheal Tube Stylet 10 Fr.",
+        "qty": 1
+      }
+    ]
+  },
   "adult laryngoscope handle with alkaline batteries or 2 disposable handles": {
     "original_name": "Adult laryngoscope handle with alkaline batteries or 2 disposable handles",
     "agency": "SJCEMSA",
@@ -39,7 +54,7 @@
         "qty": 1
       },
       {
-        "name": "Alkaline battery for laryngoscope",
+        "name": "Alkaline batteries for adult laryngoscope",
         "qty": 2
       }
     ]
@@ -63,41 +78,18 @@
       }
     ]
   },
-  "aed cables and pads for sizes adult and pediatric": {
-    "original_name": "AED cables and pads for sizes adult and pediatric",
-    "agency": "SJCEMSA",
-    "agency_tooltip": "San Joaquin EMS Agency",
+  "advanced airway tube/device holder": {
+    "original_name": "Advanced Airway Tube/Device Holder",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
     "items": [
       {
-        "name": "AED cables",
+        "name": "Advanced Airway Tube/Device Holder, Adult",
         "qty": 1
       },
       {
-        "name": "AED Pads, Adult",
+        "name": "Advanced Airway Tube/Device Holder, Pediatric",
         "qty": 1
-      },
-      {
-        "name": "AED Pads, Pediatric",
-        "qty": 1
-      }
-    ]
-  },
-  "adhesive tape 1\", 2\", or 3\"": {
-    "original_name": "Adhesive Tape 1\", 2\", or 3\"",
-    "agency": "YEMSA",
-    "agency_tooltip": "Yolo County EMS Agency",
-    "items": [
-      {
-        "name": "Adhesive Tape 1\"",
-        "qty": 2
-      },
-      {
-        "name": "Adhesive Tape 2\"",
-        "qty": 2
-      },
-      {
-        "name": "Adhesive Tape 3\"",
-        "qty": 2
       }
     ]
   },
@@ -116,18 +108,357 @@
       }
     ]
   },
+  "aed cables and pads for sizes adult and pediatric": {
+    "original_name": "AED cables and pads for sizes adult and pediatric",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "AED cables",
+        "qty": 1
+      },
+      {
+        "name": "Defib Pads for adult",
+        "qty": 1
+      },
+      {
+        "name": "Defib Pads for pediatric",
+        "qty": 1
+      }
+    ]
+  },
+  "cervical collars (hard) \u2013 sizes to fit all patients over one (1) year of age": {
+    "original_name": "Cervical Collars (hard) \u2013 sizes to fit all patients over one (1) year of age",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Cervical Collars (hard), adult",
+        "qty": 2
+      },
+      {
+        "name": "Cervical Collars (hard), pediatric",
+        "qty": 2
+      }
+    ]
+  },
   "cold packs & heat packs": {
     "original_name": "Cold Packs & Heat Packs",
     "agency": "SSVEMSA",
     "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
     "items": [
       {
-        "name": "Cold Pack",
+        "name": "Cold Packs",
         "qty": 4
       },
       {
-        "name": "Heat Pack",
+        "name": "Heat Packs",
         "qty": 4
+      }
+    ]
+  },
+  "blood pressure cuff - portable (sphygmomanometers) (adult/large arm/pediatric/infant)": {
+    "original_name": "Blood Pressure Cuff - Portable (sphygmomanometers) (adult/large arm/pediatric/infant)",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Blood Pressure Cuff - Portable (sphygmomanometers) , adult",
+        "qty": 1
+      },
+      {
+        "name": "Blood Pressure Cuff - Portable , large arm",
+        "qty": 1
+      },
+      {
+        "name": "Blood Pressure Cuff - Portable , pediatric",
+        "qty": 1
+      },
+      {
+        "name": "Blood Pressure Cuff - Portable , infant",
+        "qty": 1
+      }
+    ]
+  },
+  "cpap \u2013 masks (s, m, l)": {
+    "original_name": "CPAP \u2013 Masks (S, M, L)",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "CPAP \u2013 Masks Small",
+        "qty": 2
+      },
+      {
+        "name": "CPAP \u2013 Masks Medium",
+        "qty": 2
+      },
+      {
+        "name": "CPAP \u2013 Masks Large",
+        "qty": 2
+      }
+    ]
+  },
+  "cuffed endotracheal tubes: sizes 6.0, 6.5, 7.0, 7.5, 8.0, 8.5": {
+    "original_name": "Cuffed Endotracheal Tubes: Sizes 6.0, 6.5, 7.0, 7.5, 8.0, 8.5",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Cuffed Endotracheal Tubes: Sizes 6.0",
+        "qty": 2
+      },
+      {
+        "name": "Cuffed Endotracheal Tubes: Sizes 6.5",
+        "qty": 2
+      },
+      {
+        "name": "Cuffed Endotracheal Tubes: Sizes 7.0",
+        "qty": 2
+      },
+      {
+        "name": "Cuffed Endotracheal Tubes: Sizes 7.5",
+        "qty": 2
+      },
+      {
+        "name": "Cuffed Endotracheal Tubes: Sizes 8.0",
+        "qty": 2
+      },
+      {
+        "name": "Cuffed Endotracheal Tubes: Sizes 8.5",
+        "qty": 2
+      }
+    ]
+  },
+  "curved (macintosh) laryngoscope blades: sizes 3, 4": {
+    "original_name": "Curved (Macintosh) Laryngoscope Blades: Sizes 3, 4",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Curved (Macintosh) Laryngoscope Blades, size 3",
+        "qty": 1
+      },
+      {
+        "name": "Curved (Macintosh) Laryngoscope Blades, size 4",
+        "qty": 1
+      }
+    ]
+  },
+  "disposable macintosh laryngeal blades each size: #1, #2, #3, #4": {
+    "original_name": "Disposable Macintosh laryngeal blades each size: #1, #2, #3, #4",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Disposable Macintosh laryngeal blades each size: #1",
+        "qty": 1
+      },
+      {
+        "name": "Disposable Macintosh laryngeal blades each size: #2",
+        "qty": 1
+      },
+      {
+        "name": "Disposable Macintosh laryngeal blades each size: #3",
+        "qty": 1
+      },
+      {
+        "name": "Disposable Macintosh laryngeal blades each size: #4",
+        "qty": 1
+      }
+    ]
+  },
+  "disposable miller laryngeal blades each size: #0, #1, #2, #3, #4": {
+    "original_name": "Disposable Miller laryngeal blades each size: #0, #1, #2, #3, #4",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Disposable Miller laryngeal blades each size: #0",
+        "qty": 1
+      },
+      {
+        "name": "Disposable Miller laryngeal blades each size: #1",
+        "qty": 1
+      },
+      {
+        "name": "Disposable Miller laryngeal blades each size: #2",
+        "qty": 1
+      },
+      {
+        "name": "Disposable Miller laryngeal blades each size: #3",
+        "qty": 1
+      },
+      {
+        "name": "Disposable Miller laryngeal blades each size: #4",
+        "qty": 1
+      }
+    ]
+  },
+  "disposable suction canisters": {
+    "original_name": "Disposable suction canisters",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Disposable suction canister, tub",
+        "qty": 1
+      },
+      {
+        "name": "Disposable suction canister, lid",
+        "qty": 1
+      }
+    ]
+  },
+  "disposable syringes each size: 1ml sub-q, 3ml, 5ml/6ml, 10ml/12ml": {
+    "original_name": "Disposable syringes each size: 1ml sub-q, 3ml, 5ml/6ml, 10ml/12ml",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Disposable syringes, 1ml sub-q",
+        "qty": 2
+      },
+      {
+        "name": "Disposable syringes, 3ml",
+        "qty": 2
+      },
+      {
+        "name": "Disposable syringes, 5ml/6ml",
+        "qty": 2
+      },
+      {
+        "name": "Disposable syringes, 10ml/12ml",
+        "qty": 2
+      }
+    ]
+  },
+  "emesis basin or disposable emesis bags & covered waste container": {
+    "original_name": "Emesis Basin or Disposable Emesis Bags & Covered Waste Container",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Emesis Basin or Disposable Emesis Bags (sleeve; contains more than 10)",
+        "qty": 1
+      },
+      {
+        "name": "Covered Waste Container",
+        "qty": 1
+      }
+    ]
+  },
+  "endotracheal tubes each size: 6.0, 6.5, 7.0, 7.5, 8.0, 8.5": {
+    "original_name": "Endotracheal tubes each size: 6.0, 6.5, 7.0, 7.5, 8.0, 8.5",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Endotracheal tubes, 6.0",
+        "qty": 1
+      },
+      {
+        "name": "Endotracheal tubes, 6.5",
+        "qty": 1
+      },
+      {
+        "name": "Endotracheal tubes, 7.0",
+        "qty": 1
+      },
+      {
+        "name": "Endotracheal tubes, 7.5",
+        "qty": 1
+      },
+      {
+        "name": "Endotracheal tubes, 8.0",
+        "qty": 1
+      },
+      {
+        "name": "Endotracheal tubes, 8.5",
+        "qty": 1
+      }
+    ]
+  },
+  "ett securing device - adult/pediatric": {
+    "original_name": "ETT Securing Device - adult/pediatric",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "ETT Securing Device - adult",
+        "qty": 1
+      },
+      {
+        "name": "ETT Securing Device - pediatric",
+        "qty": 1
+      }
+    ]
+  },
+  "flex guide ett introducer": {
+    "original_name": "Flex Guide ETT Introducer",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "Flex Guide ETT Introducer, audlt",
+        "qty": 1
+      },
+      {
+        "name": "Flex Guide ETT Introducer, pediatric",
+        "qty": 1
+      }
+    ]
+  },
+  "hot & cold packs": {
+    "original_name": "Hot & Cold Packs",
+    "agency": "YEMSA",
+    "agency_tooltip": "Yolo County EMS Agency",
+    "items": [
+      {
+        "name": "Hot Packs",
+        "qty": 2
+      },
+      {
+        "name": "Cold Packs",
+        "qty": 2
+      }
+    ]
+  },
+  "hypodermic needles each size:, 21ga, 25ga": {
+    "original_name": "Hypodermic needles each size:, 21ga, 25ga",
+    "agency": "SJCEMSA",
+    "agency_tooltip": "San Joaquin EMS Agency",
+    "items": [
+      {
+        "name": "Hypodermic needles, 21ga",
+        "qty": 2
+      },
+      {
+        "name": "Hypodermic needles, 25ga",
+        "qty": 2
+      }
+    ]
+  },
+  "i-gel airway devices: sizes 1.0, 1.5, 2.0, 2.5": {
+    "original_name": "i-gel Airway Devices: Sizes 1.0, 1.5, 2.0, 2.5",
+    "agency": "SSVEMSA",
+    "agency_tooltip": "Sierra-Sacramento Valley EMS Agency",
+    "items": [
+      {
+        "name": "i-gel Airway Devices, 1.0,",
+        "qty": 1
+      },
+      {
+        "name": "i-gel Airway Devices, 1.5",
+        "qty": 1
+      },
+      {
+        "name": "i-gel Airway Devices, 2.0",
+        "qty": 1
+      },
+      {
+        "name": "i-gel Airway Devices, 2.5",
+        "qty": 1
       }
     ]
   }

@@ -1,24 +1,81 @@
 {
-  "arterial line equipment (swan-ganz, cvp, ivp, iabp)": {
+  "adult endotracheal tube stylet": {
+    "master_name": "12 Fr.",
+    "group": "Stylet",
+    "master_qty": "1",
+    "category": "Intubation Aids",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Adult Endotracheal Tube Stylet",
+      "lemsa": "Sierra-Sacramento Valley EMS Agency"
+    }
+  },
+  "adult ventilator circuits*": {
     "master_name": "",
     "group": "",
     "master_qty": "",
     "category": "",
     "status": "Exclude"
   },
-  "battery operated flashlight": {
-    "master_name": "",
-    "group": "",
-    "master_qty": "",
-    "category": "",
-    "status": ""
+  "advanced airway tube/device holder": {
+    "master_name": "Adult",
+    "group": "Thomas Tube Holder",
+    "master_qty": "1",
+    "category": "ET Tube Securement",
+    "status": "Name Difference",
+    "alias": {
+      "lemsa_name": "Advanced Airway Tube/Device Holder",
+      "lemsa": "Sierra-Sacramento Valley EMS Agency"
+    }
   },
-  "warming mattress": {
+  "als provider agency inventory requirements": {
     "master_name": "",
     "group": "",
     "master_qty": "",
     "category": "",
-    "status": "Optional"
+    "status": "Exclude"
+  },
+  "ambulance cot & vehicle securing equipment": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "ambulance gurney with mattress, capable of elevating the head,": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "ambulance mounted suction unit": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "ambulance mounted \u2018h\u2019 or \u2018m\u2019 oxygen tank": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "ambulance wall mounted oxygen regulator with liter flow": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
+  },
+  "arterial line equipment (swan-ganz, cvp, ivp, iabp)": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
   },
   "automated external defibrillator \u2013 compliant with the current aha": {
     "master_name": "",
@@ -27,27 +84,12 @@
     "category": "",
     "status": "Exclude"
   },
-  "commercial biohazard spill kit or equivalent": {
-    "master_name": "Infectious control cleanup kit",
+  "carpuject holder (only if utilizing capuject supplied medications)": {
+    "master_name": "",
     "group": "",
-    "master_qty": "1",
-    "category": "Decontamination",
-    "status": "Name Difference",
-    "alias": {
-      "lemsa_name": "Commercial Biohazard spill kit or equivalent",
-      "lemsa": "San Joaquin EMS Agency"
-    }
-  },
-  "connecting tubing for suction units": {
-    "master_name": "Yankauer Suction Tip + Tubing",
-    "group": "Suction Tips",
-    "master_qty": "3",
-    "category": "Suction",
-    "status": "Name Difference",
-    "alias": {
-      "lemsa_name": "Connecting tubing for suction units",
-      "lemsa": "San Joaquin EMS Agency"
-    }
+    "master_qty": "",
+    "category": "",
+    "status": "Exclude"
   },
   "controlled substances locking storage container": {
     "master_name": "",
@@ -63,33 +105,67 @@
     "category": "",
     "status": "Exclude"
   },
-  "covered waste container": {
+  "ecg portable monitor/defibrillator with invasive monitoring capabilities: strip chart recorder 12-lead synchronized cardioversion etco2 pulse ox pacing defibrillation (adult/pediatric)": {
     "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "effective: 10/01/2025": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Extraction Error"
+  },
+  "emesis basin or disposable emesis bags & covered waste container": {
+    "master_name": "Emesis Bags",
     "group": "",
     "master_qty": "",
     "category": "",
     "status": ""
   },
-  "chlorhexidine swabs/skin prep": {
-    "master_name": "Chlorhexidine Swab",
-    "group": "Disinfectant",
-    "master_qty": "5",
-    "category": "Prep",
-    "status": "Name Difference",
-    "alias": {
-      "lemsa_name": "Chlorhexidine Swabs/Skin Prep",
-      "lemsa": "Sierra-Sacramento Valley EMS Agency"
-    }
-  },
-  "heat pack": {
-    "master_name": "Heat Pack",
+  "esmolol 2000mg/100ml": {
+    "master_name": "",
     "group": "",
-    "master_qty": "4",
-    "category": "Temperature Management",
-    "status": "Name Difference",
-    "alias": {
-      "lemsa_name": "Heat Pack",
-      "lemsa": "Sierra-Sacramento Valley EMS Agency"
-    }
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "etomidate 40mg 20/ml": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "flex guide ett introducer": {
+    "master_name": "Adult",
+    "group": "Bougie-To-Go",
+    "master_qty": "2",
+    "category": "Intubation Aids",
+    "status": ""
+  },
+  "functional environmental controls for heat and air conditioning for": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "gurney, capable of elevating the head & being adjustable, straps for securing patient to gurney, wheels, non-permeable covering material, and means of securing gurney in vehicle (if applicable)": {
+    "master_name": "",
+    "group": "",
+    "master_qty": "",
+    "category": "",
+    "status": "Optional"
+  },
+  "i-gel airway devices, 1.0,": {
+    "master_name": "2-5 kg PINK",
+    "group": "iGels",
+    "master_qty": "1",
+    "category": "Advanced Airway",
+    "status": ""
   }
 }
