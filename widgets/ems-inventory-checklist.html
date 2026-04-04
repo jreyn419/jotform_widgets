@@ -1770,8 +1770,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.14.0';
+    var VERSION = '1.14.1';
     var CHANGELOG = [
+      { version: '1.14.1', date: '2026-04-04', changes: [
+        'Fixed: JSON files using object envelope format ({ _meta, areas }) were not parsed — only bare arrays were recognized',
+      ]},
       { version: '1.14.0', date: '2026-03-25', changes: [
         'Items now support an optional "group" field for item-type grouping (e.g. iGels, NPAs, Mac Blades)',
         'Groups render as collapsible sub-headers within their parent category',
@@ -2413,12 +2416,19 @@
 
     // Auto-detects format (JSON array vs markdown text) and parses accordingly.
     function parseInventoryAuto(content) {
-      // Try JSON first: if content starts with '[', attempt JSON parse
+      // Try JSON first: array or { areas: [] } envelope
       var trimmed = content.trim();
-      if (trimmed.charAt(0) === '[') {
+      if (trimmed.charAt(0) === '[' || trimmed.charAt(0) === '{') {
         try {
-          var jsonArray = JSON.parse(trimmed);
-          if (Array.isArray(jsonArray)) {
+          var parsed = JSON.parse(trimmed);
+          var jsonArray = null;
+          if (Array.isArray(parsed)) {
+            jsonArray = parsed;
+          } else if (parsed && Array.isArray(parsed.areas)) {
+            // Envelope format: { _meta: {...}, areas: [...] }
+            jsonArray = parsed.areas;
+          }
+          if (jsonArray) {
             console.log('[Widget] Detected JSON inventory format (' + jsonArray.length + ' areas)');
             return parseInventoryJSON(jsonArray);
           }
