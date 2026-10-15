@@ -192,6 +192,164 @@
       position: relative;
     }
     
+    /* Oxygen supply check (merged from the former oxygen-supply-check widget) */
+    .area-status.low {
+      background: #ffc107;
+      color: #333;
+    }
+
+    .o2-icon {
+      font-size: 20px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .o2-subtitle {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    .o2-content {
+      padding: 15px;
+    }
+
+    .o2-cylinder {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .o2-cylinder:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .o2-cylinder-label {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .o2-cylinder-label strong {
+      color: #0066cc;
+    }
+
+    .o2-check-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .o2-check-btn {
+      flex: 1;
+      padding: 16px 12px;
+      border: 2px solid #dee2e6;
+      border-radius: 12px;
+      background: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .o2-check-btn:hover {
+      border-color: #adb5bd;
+      background: #f8f9fa;
+    }
+
+    .o2-check-btn.yes { color: #155724; }
+    .o2-check-btn.yes:hover { border-color: #28a745; background: #d4edda; }
+    .o2-check-btn.yes.selected { border-color: #28a745; background: #28a745; color: white; }
+
+    .o2-check-btn.no { color: #856404; }
+    .o2-check-btn.no:hover { border-color: #ffc107; background: #fff3cd; }
+    .o2-check-btn.no.selected { border-color: #ffc107; background: #ffc107; color: #333; }
+
+    .o2-check-btn-icon { font-size: 28px; }
+    .o2-check-btn-text { font-size: 13px; }
+
+    /* Custom questions */
+    .q-content {
+      padding: 15px;
+    }
+
+    .q-choice-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .q-choice-btn {
+      flex: 1 1 calc(50% - 8px);
+      min-width: 110px;
+      padding: 12px 10px;
+      border: 2px solid #dee2e6;
+      border-radius: 10px;
+      background: white;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .q-choice-btn:hover {
+      border-color: #adb5bd;
+      background: #f8f9fa;
+    }
+
+    .q-choice-btn.selected {
+      border-color: #0066cc;
+      background: #0066cc;
+      color: white;
+    }
+
+    .q-input,
+    .q-textarea {
+      width: 100%;
+      font-size: 16px;
+      padding: 10px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      background: white;
+      color: #333;
+    }
+
+    .q-textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .q-done-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .q-done-btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      background: #28a745;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .q-done-btn:disabled {
+      background: #adb5bd;
+      cursor: default;
+    }
+
     /* Area sections */
     .area-section {
       background: white;
@@ -1770,8 +1928,17 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.14.1';
+    var VERSION = '1.15.0';
     var CHANGELOG = [
+      { version: '1.15.0', date: '2026-10-15', changes: [
+        'Oxygen Supply check merged into this widget — the separate oxygen-supply-check widget is retired',
+        'New setting enableOxygenCheck ("true"/"false") toggles the Oxygen Supply section per form; defaults to off',
+        'Existing O2 settings carry over unchanged: mainO2Threshold, mainO2Cylinders, stretcherO2Threshold, enableMedicalAir, medicalAirThreshold',
+        'O2 results are included in the submission report and saved with the rest of the checklist state',
+        'Completion popup now waits for the oxygen check when it is enabled',
+        'New setting customQuestions (inline JSON or .json path) adds yes/no, choice, number or text questions placed before the O2 check, after it, or after the inventory',
+        'Inventory JSON files may also carry a "questions" array; answers are saved, reported, and required ones gate completion',
+      ]},
       { version: '1.14.1', date: '2026-04-04', changes: [
         'Fixed: JSON files using object envelope format ({ _meta, areas }) were not parsed — only bare arrays were recognized',
       ]},
@@ -1964,6 +2131,29 @@
     var expandedGroup = null; // currently expanded parent group name
     var cachedFormID = null; // formID from JotForm ready event
 
+    // ---- Oxygen supply check (optional, toggled per form) ----
+    // Widget settings:
+    //   enableOxygenCheck     "true" shows the Oxygen Supply section (default: off)
+    //   mainO2Threshold       Minimum PSI for Main O2 (default: 1500)
+    //   mainO2Cylinders       Number of Main O2 cylinders, 1 or 2 (default: 1)
+    //   stretcherO2Threshold  Minimum PSI for Stretcher O2 (default: 1000)
+    //   enableMedicalAir      "true" adds a Medical Air cylinder (default: off)
+    //   medicalAirThreshold   Minimum PSI for Medical Air (default: 1500)
+    var enableOxygenCheck = false;
+    var o2Areas = []; // [{ id, name, icon, threshold, unit, cylinderCount }]
+    var o2States = {}; // areaId -> { cylinders: { index: true|false|null } }
+
+    // ---- Custom questions (optional) ----
+    // Setting customQuestions: inline JSON array, or a path to a .json file.
+    // The inventory JSON envelope may also carry a "questions" array.
+    // Question: { id?, label, type: yesno|choice|number|text,
+    //             position: beforeO2|afterO2|afterInventory,
+    //             options?: [..] (choice), required?: true, flagOn?: "No", placeholder?: "" }
+    var customQuestions = []; // normalized question list, in display order
+    var questionAnswers = {}; // questionId -> answer ('yes'|'no'|option|string)
+    var settingQuestionList = []; // raw questions from the customQuestions setting
+    var inventoryFileQuestions = []; // raw questions from the inventory JSON envelope
+
     // =====================================================
     // LOCAL PERSISTENCE (survives across form sessions)
     // =====================================================
@@ -1989,6 +2179,8 @@
           taggedAreas: taggedAreas,
           restockStatus: restockStatus,
           brokenSeals: brokenSeals,
+          o2States: o2States,
+          questionAnswers: questionAnswers,
           timestamp: Date.now()
         };
         localStorage.setItem(getStorageKey(), JSON.stringify(state));
@@ -2053,6 +2245,8 @@
             taggedAreas: taggedAreas,
             restockStatus: restockStatus,
             brokenSeals: brokenSeals,
+            o2States: o2States,
+            questionAnswers: questionAnswers,
             timestamp: Date.now()
           };
           // Prepend plain-text report so it's visible in JotForm Tables.
@@ -2417,6 +2611,7 @@
     // Auto-detects format (JSON array vs markdown text) and parses accordingly.
     function parseInventoryAuto(content) {
       // Try JSON first: array or { areas: [] } envelope
+      inventoryFileQuestions = [];
       var trimmed = content.trim();
       if (trimmed.charAt(0) === '[' || trimmed.charAt(0) === '{') {
         try {
@@ -2425,8 +2620,9 @@
           if (Array.isArray(parsed)) {
             jsonArray = parsed;
           } else if (parsed && Array.isArray(parsed.areas)) {
-            // Envelope format: { _meta: {...}, areas: [...] }
+            // Envelope format: { _meta: {...}, areas: [...], questions?: [...] }
             jsonArray = parsed.areas;
+            if (Array.isArray(parsed.questions)) inventoryFileQuestions = parsed.questions;
           }
           if (jsonArray) {
             console.log('[Widget] Detected JSON inventory format (' + jsonArray.length + ' areas)');
@@ -2643,6 +2839,12 @@
     function buildUI() {
       var container = document.getElementById('areasContainer');
       container.innerHTML = '';
+
+      // Slot order: questions before O2, the O2 check, questions after O2,
+      // then the inventory areas, then questions after the inventory.
+      buildQuestionSections(container, 'beforeO2');
+      buildOxygenSection(container);
+      buildQuestionSections(container, 'afterO2');
 
       // Determine rendering order: parent groups first (with children inside),
       // then standalone areas (not a child of any parent).
@@ -3057,6 +3259,8 @@
         container.appendChild(buildAreaSection(areaName));
       }
 
+      buildQuestionSections(container, 'afterInventory');
+
       updateAllStatuses();
       updateSummary();
 
@@ -3113,6 +3317,491 @@
     }
 
     // Check if a parent group is fully complete (all children sealed/ok, parent items ok/sealed)
+    // =====================================================
+    // CUSTOM QUESTIONS
+    // =====================================================
+
+    var QUESTION_POSITIONS = ['beforeO2', 'afterO2', 'afterInventory'];
+    var QUESTION_TYPES = ['yesno', 'choice', 'number', 'text'];
+
+    function slugify(s) {
+      return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'q';
+    }
+
+    function normalizeQuestionPosition(p) {
+      var s = String(p || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (s === 'beforeo2' || s === 'start' || s === 'top' || s === 'beforeoxygen') return 'beforeO2';
+      if (s === 'aftero2' || s === 'afteroxygen' || s === 'beforeinventory') return 'afterO2';
+      return 'afterInventory';
+    }
+
+    // Validate and fill in defaults for a raw question list.
+    function normalizeQuestions(list) {
+      var out = [];
+      var seen = {};
+      for (var i = 0; i < list.length; i++) {
+        var q = list[i];
+        if (!q || !q.label) continue;
+        var type = String(q.type || 'yesno').toLowerCase();
+        if (QUESTION_TYPES.indexOf(type) === -1) type = 'text';
+        var options = null;
+        if (type === 'choice') {
+          options = Array.isArray(q.options) ? q.options.map(function(o) { return String(o); }) : [];
+          if (options.length === 0) type = 'text';
+        }
+        var id = q.id ? String(q.id) : slugify(q.label);
+        var base = id, n = 2;
+        while (seen[id]) id = base + '_' + (n++);
+        seen[id] = true;
+        out.push({
+          id: id,
+          label: String(q.label),
+          type: type,
+          position: normalizeQuestionPosition(q.position),
+          options: options,
+          required: q.required === undefined ? true : isTruthySetting(q.required),
+          flagOn: (q.flagOn !== undefined && q.flagOn !== null) ? String(q.flagOn) : null,
+          placeholder: q.placeholder ? String(q.placeholder) : ''
+        });
+      }
+      return out;
+    }
+
+    function parseQuestionsText(text) {
+      try {
+        var parsed = JSON.parse(String(text).trim());
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && Array.isArray(parsed.questions)) return parsed.questions;
+      } catch (e) {
+        console.warn('[Widget] customQuestions is not valid JSON:', e.message);
+      }
+      return [];
+    }
+
+    // Loads the customQuestions setting: inline JSON, or a .json path fetched
+    // from the same origin as the widget. Always calls back with an array.
+    function loadCustomQuestions(rawSetting, callback) {
+      if (!rawSetting) { callback([]); return; }
+      var dec = document.createElement('textarea');
+      dec.innerHTML = rawSetting;
+      var text = dec.value;
+      if (isExternalFilePath(text)) {
+        fetchInventoryFile(text, function(content) {
+          callback(content ? parseQuestionsText(content) : []);
+        });
+        return;
+      }
+      callback(parseQuestionsText(text));
+    }
+
+    function findQuestion(id) {
+      for (var i = 0; i < customQuestions.length; i++) {
+        if (customQuestions[i].id === id) return customQuestions[i];
+      }
+      return null;
+    }
+
+    function isQuestionAnswered(q) {
+      var v = questionAnswers[q.id];
+      if (v === undefined || v === null) return false;
+      if (typeof v === 'string') return v.trim() !== '';
+      return true;
+    }
+
+    function areRequiredQuestionsAnswered() {
+      for (var i = 0; i < customQuestions.length; i++) {
+        if (customQuestions[i].required && !isQuestionAnswered(customQuestions[i])) return false;
+      }
+      return true;
+    }
+
+    function questionAnswerText(q) {
+      if (!isQuestionAnswered(q)) return '';
+      var v = questionAnswers[q.id];
+      if (q.type === 'yesno') return (v === true || v === 'yes') ? 'Yes' : 'No';
+      return String(v).trim();
+    }
+
+    function isQuestionFlagged(q) {
+      return q.flagOn !== null && isQuestionAnswered(q) &&
+        questionAnswerText(q).toLowerCase() === q.flagOn.toLowerCase();
+    }
+
+    function questionSectionId(id) {
+      return 'area_q_' + id.replace(/[^a-zA-Z0-9]/g, '_');
+    }
+
+    function applyQuestionHeader(q) {
+      var section = document.getElementById(questionSectionId(q.id));
+      if (!section) return;
+      var header = section.querySelector('.area-header');
+      var chip = section.querySelector('.area-status');
+      header.classList.remove('has-issues', 'all-ok');
+      chip.classList.remove('issues', 'ok', 'low');
+      if (isQuestionAnswered(q)) {
+        var text = questionAnswerText(q);
+        if (text.length > 24) text = text.substring(0, 22) + '\u2026';
+        if (isQuestionFlagged(q)) {
+          header.classList.add('has-issues');
+          chip.classList.add('low');
+        } else {
+          header.classList.add('all-ok');
+          chip.classList.add('ok');
+        }
+        chip.textContent = text;
+      } else {
+        chip.textContent = q.required ? 'Required' : 'Optional';
+      }
+    }
+
+    function buildQuestionSections(container, position) {
+      for (var i = 0; i < customQuestions.length; i++) {
+        var q = customQuestions[i];
+        if (q.position !== position) continue;
+
+        var section = document.createElement('div');
+        section.className = 'area-section question-section';
+        section.id = questionSectionId(q.id);
+
+        var header = document.createElement('div');
+        header.className = 'area-header';
+        header.innerHTML = '<span class="collapse-icon">\u25B6</span>' +
+          '<span class="o2-icon">\u2753</span>' +
+          '<span class="area-title">' + escapeHtml(q.label) + '</span>' +
+          '<span class="area-status"></span>';
+        header.onclick = (function(div) {
+          return function() { toggleArea(div, false); };
+        })(section);
+        section.appendChild(header);
+
+        var content = document.createElement('div');
+        content.className = 'area-content q-content';
+        var current = isQuestionAnswered(q) ? questionAnswers[q.id] : null;
+
+        if (q.type === 'yesno' || q.type === 'choice') {
+          var opts = q.type === 'yesno' ? ['yes', 'no'] : q.options;
+          var row = document.createElement('div');
+          row.className = q.type === 'yesno' ? 'o2-check-buttons' : 'q-choice-buttons';
+          for (var o = 0; o < opts.length; o++) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.setAttribute('data-value', opts[o]);
+            if (q.type === 'yesno') {
+              btn.className = 'o2-check-btn ' + opts[o] + (current === opts[o] ? ' selected' : '');
+              btn.innerHTML = '<span class="o2-check-btn-icon">' + (opts[o] === 'yes' ? '\u2713' : '\u2717') + '</span>' +
+                '<span class="o2-check-btn-text">' + (opts[o] === 'yes' ? 'Yes' : 'No') + '</span>';
+            } else {
+              btn.className = 'q-choice-btn' + (current === opts[o] ? ' selected' : '');
+              btn.textContent = opts[o];
+            }
+            btn.onclick = (function(id, value) {
+              return function() { setQuestionAnswer(id, value, false); };
+            })(q.id, opts[o]);
+            row.appendChild(btn);
+          }
+          content.appendChild(row);
+        } else {
+          var input = document.createElement(q.type === 'text' ? 'textarea' : 'input');
+          if (q.type === 'number') {
+            input.type = 'number';
+            input.inputMode = 'decimal';
+            input.className = 'q-input';
+          } else {
+            input.className = 'q-textarea';
+            input.rows = 3;
+          }
+          if (q.placeholder) input.placeholder = q.placeholder;
+          if (current !== null) input.value = current;
+          input.oninput = (function(id) {
+            return function() { setQuestionAnswer(id, this.value, true); };
+          })(q.id);
+          content.appendChild(input);
+
+          var doneRow = document.createElement('div');
+          doneRow.className = 'q-done-row';
+          var doneBtn = document.createElement('button');
+          doneBtn.type = 'button';
+          doneBtn.className = 'q-done-btn';
+          doneBtn.textContent = 'Done';
+          doneBtn.onclick = (function(qq) {
+            return function() { advanceFromQuestion(qq); };
+          })(q);
+          doneRow.appendChild(doneBtn);
+          content.appendChild(doneRow);
+        }
+
+        section.appendChild(content);
+        container.appendChild(section);
+        applyQuestionHeader(q);
+      }
+    }
+
+    function setQuestionAnswer(id, value, quiet) {
+      var q = findQuestion(id);
+      if (!q) return;
+      questionAnswers[id] = value;
+
+      var section = document.getElementById(questionSectionId(id));
+      if (section && (q.type === 'yesno' || q.type === 'choice')) {
+        var btns = section.querySelectorAll('button[data-value]');
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].classList.toggle('selected', btns[i].getAttribute('data-value') === value);
+        }
+      }
+      applyQuestionHeader(q);
+      if (stateReady) saveState();
+      if (!quiet) advanceFromQuestion(q);
+      checkForCompletion();
+    }
+
+    // Open the next unanswered question in the same slot, else collapse.
+    function advanceFromQuestion(q) {
+      var section = document.getElementById(questionSectionId(q.id));
+      var next = null;
+      var passed = false;
+      for (var i = 0; i < customQuestions.length; i++) {
+        var c = customQuestions[i];
+        if (c.id === q.id) { passed = true; continue; }
+        if (passed && c.position === q.position && !isQuestionAnswered(c)) { next = c; break; }
+      }
+      setTimeout(function() {
+        if (next) {
+          var nextSection = document.getElementById(questionSectionId(next.id));
+          if (nextSection && !nextSection.classList.contains('expanded')) toggleArea(nextSection, false);
+        } else if (section && section.classList.contains('expanded')) {
+          toggleArea(section, false);
+        }
+      }, 250);
+    }
+
+    // =====================================================
+    // OXYGEN SUPPLY CHECK
+    // =====================================================
+
+    function isTruthySetting(v) {
+      if (v === true) return true;
+      if (v === undefined || v === null) return false;
+      var s = String(v).trim().toLowerCase();
+      return s === 'true' || s === 'yes' || s === '1' || s === 'on';
+    }
+
+    // Build the oxygen areas from settings. getSetting is function(name) -> value
+    // so the same code serves the Jotform and standalone paths.
+    function configureOxygenCheck(getSetting) {
+      o2Areas = [];
+      enableOxygenCheck = isTruthySetting(getSetting('enableOxygenCheck'));
+      if (!enableOxygenCheck) return;
+
+      var mainThreshold = parseInt(getSetting('mainO2Threshold'), 10) || 1500;
+      var mainCylinders = parseInt(getSetting('mainO2Cylinders'), 10) || 1;
+      mainCylinders = Math.max(1, Math.min(2, mainCylinders));
+      o2Areas.push({ id: 'main_o2', name: 'Main O2', icon: '\uD83E\uDEC1', threshold: mainThreshold, unit: 'PSI', cylinderCount: mainCylinders });
+
+      var stretcherThreshold = parseInt(getSetting('stretcherO2Threshold'), 10) || 1000;
+      o2Areas.push({ id: 'stretcher_o2', name: 'Stretcher O2', icon: '\uD83D\uDECF\uFE0F', threshold: stretcherThreshold, unit: 'PSI', cylinderCount: 1 });
+
+      if (isTruthySetting(getSetting('enableMedicalAir'))) {
+        var airThreshold = parseInt(getSetting('medicalAirThreshold'), 10) || 1500;
+        o2Areas.push({ id: 'medical_air', name: 'Medical Air', icon: '\uD83D\uDCA8', threshold: airThreshold, unit: 'PSI', cylinderCount: 1 });
+      }
+    }
+
+    function findO2Area(areaId) {
+      for (var i = 0; i < o2Areas.length; i++) {
+        if (o2Areas[i].id === areaId) return o2Areas[i];
+      }
+      return null;
+    }
+
+    function ensureO2State(area) {
+      if (!o2States[area.id] || !o2States[area.id].cylinders) {
+        o2States[area.id] = { cylinders: {} };
+      }
+      var cyl = o2States[area.id].cylinders;
+      for (var c = 0; c < area.cylinderCount; c++) {
+        if (cyl[c] === undefined) cyl[c] = null;
+      }
+      return o2States[area.id];
+    }
+
+    // Returns 'unchecked' | 'low' | 'ok'
+    function getO2AreaStatus(areaId) {
+      var area = findO2Area(areaId);
+      if (!area) return 'unchecked';
+      var cyl = ensureO2State(area).cylinders;
+      var allChecked = true;
+      var allOk = true;
+      for (var c = 0; c < area.cylinderCount; c++) {
+        if (cyl[c] === null || cyl[c] === undefined) {
+          allChecked = false;
+        } else if (cyl[c] === false) {
+          allOk = false;
+        }
+      }
+      if (!allChecked) return 'unchecked';
+      return allOk ? 'ok' : 'low';
+    }
+
+    function getO2StatusText(status) {
+      if (status === 'ok') return 'OK';
+      if (status === 'low') return 'Low';
+      return 'Unchecked';
+    }
+
+    function isOxygenCheckComplete() {
+      for (var i = 0; i < o2Areas.length; i++) {
+        if (getO2AreaStatus(o2Areas[i].id) === 'unchecked') return false;
+      }
+      return true;
+    }
+
+    // Report-friendly summary of the oxygen check.
+    function getO2Summary() {
+      var summary = { enabled: enableOxygenCheck && o2Areas.length > 0, checked: true, low: [], areas: [] };
+      if (!summary.enabled) return summary;
+      for (var i = 0; i < o2Areas.length; i++) {
+        var area = o2Areas[i];
+        var status = getO2AreaStatus(area.id);
+        var cyl = ensureO2State(area).cylinders;
+        var lowCylinders = [];
+        for (var c = 0; c < area.cylinderCount; c++) {
+          if (cyl[c] === false) lowCylinders.push(c + 1);
+        }
+        if (status === 'unchecked') summary.checked = false;
+        if (status === 'low') summary.low.push(area.name);
+        summary.areas.push({
+          name: area.name,
+          threshold: area.threshold,
+          unit: area.unit,
+          cylinderCount: area.cylinderCount,
+          status: status,
+          lowCylinders: lowCylinders
+        });
+      }
+      return summary;
+    }
+
+    function o2SectionId(areaId) {
+      return 'area_o2_' + areaId;
+    }
+
+    function applyO2Header(areaId) {
+      var section = document.getElementById(o2SectionId(areaId));
+      if (!section) return;
+      var status = getO2AreaStatus(areaId);
+      var header = section.querySelector('.area-header');
+      var chip = section.querySelector('.area-status');
+      header.classList.remove('has-issues', 'all-ok');
+      chip.classList.remove('issues', 'ok', 'low');
+      if (status === 'ok') {
+        header.classList.add('all-ok');
+        chip.classList.add('ok');
+      } else if (status === 'low') {
+        header.classList.add('has-issues');
+        chip.classList.add('low');
+      }
+      chip.textContent = getO2StatusText(status);
+    }
+
+    function buildOxygenSection(container) {
+      if (!enableOxygenCheck || o2Areas.length === 0) return;
+
+      for (var i = 0; i < o2Areas.length; i++) {
+        var area = o2Areas[i];
+        ensureO2State(area);
+
+        var section = document.createElement('div');
+        section.className = 'area-section o2-section';
+        section.id = o2SectionId(area.id);
+
+        var subtitle = 'Min ' + area.threshold + ' ' + area.unit;
+        if (area.cylinderCount > 1) subtitle += ' \u00B7 ' + area.cylinderCount + ' cylinders';
+
+        var header = document.createElement('div');
+        header.className = 'area-header';
+        header.innerHTML = '<span class="collapse-icon">\u25B6</span>' +
+          '<span class="o2-icon">' + area.icon + '</span>' +
+          '<span class="area-title">' + escapeHtml(area.name) +
+            '<span class="o2-subtitle">' + escapeHtml(subtitle) + '</span></span>' +
+          '<span class="area-status"></span>';
+        header.onclick = (function(div) {
+          return function() { toggleArea(div, false); };
+        })(section);
+        section.appendChild(header);
+
+        var content = document.createElement('div');
+        content.className = 'area-content o2-content';
+        var cyl = o2States[area.id].cylinders;
+        var html = '';
+        for (var c = 0; c < area.cylinderCount; c++) {
+          var label = area.cylinderCount > 1 ? 'Cylinder ' + (c + 1) + ': ' : '';
+          html += '<div class="o2-cylinder">';
+          html += '<div class="o2-cylinder-label">' + label + 'Above <strong>' + area.threshold + ' ' + area.unit + '</strong>?</div>';
+          html += '<div class="o2-check-buttons">';
+          html += '<button type="button" class="o2-check-btn yes' + (cyl[c] === true ? ' selected' : '') +
+                  '" onclick="setO2CylinderStatus(\'' + area.id + '\', ' + c + ', true)">' +
+                  '<span class="o2-check-btn-icon">\u2713</span><span class="o2-check-btn-text">Yes</span></button>';
+          html += '<button type="button" class="o2-check-btn no' + (cyl[c] === false ? ' selected' : '') +
+                  '" onclick="setO2CylinderStatus(\'' + area.id + '\', ' + c + ', false)">' +
+                  '<span class="o2-check-btn-icon">!</span><span class="o2-check-btn-text">No</span></button>';
+          html += '</div></div>';
+        }
+        content.innerHTML = html;
+        section.appendChild(content);
+
+        container.appendChild(section);
+        applyO2Header(area.id);
+      }
+    }
+
+    function findNextUncheckedO2Area(currentId) {
+      var foundCurrent = false;
+      for (var i = 0; i < o2Areas.length; i++) {
+        if (o2Areas[i].id === currentId) { foundCurrent = true; continue; }
+        if (foundCurrent && getO2AreaStatus(o2Areas[i].id) === 'unchecked') return o2Areas[i].id;
+      }
+      for (var j = 0; j < o2Areas.length; j++) {
+        if (o2Areas[j].id === currentId) break;
+        if (getO2AreaStatus(o2Areas[j].id) === 'unchecked') return o2Areas[j].id;
+      }
+      return null;
+    }
+
+    function setO2CylinderStatus(areaId, cylinderIndex, isOk) {
+      var area = findO2Area(areaId);
+      if (!area) return;
+      ensureO2State(area).cylinders[cylinderIndex] = isOk;
+
+      var section = document.getElementById(o2SectionId(areaId));
+      if (section) {
+        var rows = section.querySelectorAll('.o2-cylinder');
+        if (rows[cylinderIndex]) {
+          var yesBtn = rows[cylinderIndex].querySelector('.o2-check-btn.yes');
+          var noBtn = rows[cylinderIndex].querySelector('.o2-check-btn.no');
+          yesBtn.classList.toggle('selected', isOk === true);
+          noBtn.classList.toggle('selected', isOk === false);
+        }
+      }
+      applyO2Header(areaId);
+      if (stateReady) saveState();
+
+      // Auto-advance: once this area is fully answered, open the next
+      // unchecked O2 area, or collapse when the whole O2 check is done.
+      if (getO2AreaStatus(areaId) !== 'unchecked') {
+        var nextId = findNextUncheckedO2Area(areaId);
+        setTimeout(function() {
+          if (nextId) {
+            var nextSection = document.getElementById(o2SectionId(nextId));
+            if (nextSection && !nextSection.classList.contains('expanded')) toggleArea(nextSection, false);
+          } else if (section && section.classList.contains('expanded')) {
+            toggleArea(section, false);
+          }
+        }, 300);
+      }
+
+      checkForCompletion();
+    }
+
     function isGroupComplete(groupName) {
       // Parent sealed means everything is done
       if (taggedAreas[groupName]) return true;
@@ -3558,6 +4247,9 @@
           }
         }
       }
+      // The oxygen check and question answers are per-session like item counts
+      o2States = {};
+      questionAnswers = {};
     }
 
     // Auto-break is intentionally NOT performed for overdue seals.
@@ -3799,6 +4491,8 @@
     }
 
     function isEverythingComplete() {
+      if (enableOxygenCheck && !isOxygenCheckComplete()) return false;
+      if (!areRequiredQuestionsAnswered()) return false;
       for (var areaName in INVENTORY) {
         if (taggedAreas[areaName]) continue;
         for (var catName in INVENTORY[areaName]) {
@@ -3950,6 +4644,8 @@
         brokenSeals = [];
         collapsedCategories = {};
         taggedAreas = {};
+        o2States = {};
+        questionAnswers = {};
         expandedArea = null;
         expandedGroup = null;
         try { localStorage.removeItem(getStorageKey()); } catch (e) {}
@@ -3991,6 +4687,8 @@
         itemStates = {};
         restockStatus = {};
         collapsedCategories = {};
+        o2States = {};
+        questionAnswers = {};
         try { localStorage.removeItem(getStorageKey()); } catch (e) {}
         try { localStorage.removeItem(getSealStorageKey()); } catch (e) {}
       } else {
@@ -4007,6 +4705,8 @@
           }
         }
         collapsedCategories = {};
+        o2States = {};
+        questionAnswers = {};
       }
 
       closeResetDialog();
@@ -5040,6 +5740,41 @@
       if (unavailableItems.length > 0) summaryParts.push(unavailableItems.length + ' unavailable');
       if (brokenSeals.length > 0) summaryParts.push(brokenSeals.length + ' broken seal' + (brokenSeals.length > 1 ? 's' : ''));
       if (taggedList.length > 0) summaryParts.push(taggedList.length + ' sealed area' + (taggedList.length > 1 ? 's' : ''));
+      var o2 = getO2Summary();
+      if (o2.enabled) {
+        if (!o2.checked) summaryParts.push('O2 not checked');
+        else if (o2.low.length > 0) summaryParts.push('O2 low: ' + o2.low.join(', '));
+      }
+
+      var unansweredRequired = 0;
+      var flaggedAnswers = 0;
+      for (var qi = 0; qi < customQuestions.length; qi++) {
+        if (customQuestions[qi].required && !isQuestionAnswered(customQuestions[qi])) unansweredRequired++;
+        if (isQuestionFlagged(customQuestions[qi])) flaggedAnswers++;
+      }
+      if (unansweredRequired > 0) summaryParts.push(unansweredRequired + ' unanswered question' + (unansweredRequired > 1 ? 's' : ''));
+      if (flaggedAnswers > 0) summaryParts.push(flaggedAnswers + ' flagged answer' + (flaggedAnswers > 1 ? 's' : ''));
+
+      // Helper: one-line description of a question's answer
+      var questionLineText = function(q) {
+        var text = q.label + ' \u2014 ';
+        if (!isQuestionAnswered(q)) return text + (q.required ? 'NOT ANSWERED' : 'skipped');
+        text += questionAnswerText(q);
+        if (isQuestionFlagged(q)) text += ' [FLAGGED]';
+        return text;
+      };
+
+      // Helper: one-line description of an O2 area's result
+      var o2LineText = function(a) {
+        var text = a.name + ' (min ' + a.threshold + ' ' + a.unit + ') \u2014 ';
+        if (a.status === 'unchecked') return text + 'NOT CHECKED';
+        if (a.status === 'ok') return text + 'OK';
+        text += 'LOW';
+        if (a.cylinderCount > 1 && a.lowCylinders.length > 0) {
+          text += ' (cylinder ' + a.lowCylinders.join(', ') + ')';
+        }
+        return text;
+      };
 
       // Build plain-text report (JotForm entity-encodes HTML, so plain text
       // is the only format that stays readable in submission views).
@@ -5054,6 +5789,26 @@
         lines.push('All items accounted for. No restock actions needed.');
       }
       lines.push('');
+
+      // --- Oxygen Supply ---
+      if (o2.enabled) {
+        lines.push('\uD83E\uDEC1 OXYGEN SUPPLY');
+        lines.push('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500');
+        for (var o = 0; o < o2.areas.length; o++) {
+          lines.push('  \u2022 ' + o2LineText(o2.areas[o]));
+        }
+        lines.push('');
+      }
+
+      // --- Questions ---
+      if (customQuestions.length > 0) {
+        lines.push('\uD83D\uDCDD QUESTIONS (' + customQuestions.length + ')');
+        lines.push('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500');
+        for (var ql = 0; ql < customQuestions.length; ql++) {
+          lines.push('  \u2022 ' + questionLineText(customQuestions[ql]));
+        }
+        lines.push('');
+      }
 
       // --- Broken Seals ---
       if (brokenSeals.length > 0) {
@@ -5137,6 +5892,28 @@
         htmlLines.push('<div style="margin-bottom:8px;">All items accounted for. No restock actions needed.</div>');
       }
 
+      if (o2.enabled) {
+        var o2Color = !o2.checked ? '#555' : (o2.low.length > 0 ? '#c00' : '#2a7d2a');
+        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:' + o2Color + ';">\uD83E\uDEC1 OXYGEN SUPPLY</div>');
+        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
+        for (var ho = 0; ho < o2.areas.length; ho++) {
+          var hoLine = o2LineText(o2.areas[ho]).replace(' \u2014 ', ' &mdash; ');
+          var hoStyle = o2.areas[ho].status === 'low' ? 'color:#c00;font-weight:bold;' : '';
+          htmlLines.push('<div style="padding-left:12px;' + hoStyle + '">&bull; ' + hoLine + '</div>');
+        }
+      }
+
+      if (customQuestions.length > 0) {
+        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#555;">\uD83D\uDCDD QUESTIONS (' + customQuestions.length + ')</div>');
+        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
+        for (var hq = 0; hq < customQuestions.length; hq++) {
+          var hqq = customQuestions[hq];
+          var hqStyle = (isQuestionFlagged(hqq) || (hqq.required && !isQuestionAnswered(hqq))) ? 'color:#c00;font-weight:bold;' : '';
+          var hqLine = escapeHtml(questionLineText(hqq)).replace(' \u2014 ', ' &mdash; ');
+          htmlLines.push('<div style="padding-left:12px;' + hqStyle + '">&bull; ' + hqLine + '</div>');
+        }
+      }
+
       if (brokenSeals.length > 0) {
         htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#c00;">⛔ BROKEN SEALS (' + brokenSeals.length + ')</div>');
         htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
@@ -5199,6 +5976,8 @@
         brokenSeals: brokenSeals,
         itemStates: itemStates,
         restockStatus: restockStatus,
+        o2States: o2States,
+        questionAnswers: questionAnswers,
         timestamp: Date.now()
       };
 
@@ -5273,6 +6052,14 @@
           console.log('[Widget] isExternalFilePath:', isExternalFilePath(inventoryText));
 
           function continueAfterInventoryLoad() {
+            // Optional oxygen supply check, toggled per form in widget settings
+            configureOxygenCheck(function(name) { return JFCustomWidget.getWidgetSetting(name); });
+            console.log('[Widget] oxygen check:', enableOxygenCheck ? o2Areas.length + ' area(s)' : 'disabled');
+
+            // Custom questions: setting first, then any carried by the inventory file
+            customQuestions = normalizeQuestions(settingQuestionList.concat(inventoryFileQuestions));
+            console.log('[Widget] custom questions:', customQuestions.length);
+
             // Derive tagged area support from per-area Sealable: config
             enableTaggedAreas = Object.keys(sealableAreas).length > 0;
             var reviewDay = JFCustomWidget.getWidgetSetting('sealReviewDay');
@@ -5311,6 +6098,18 @@
             }
             if (saved.brokenSeals) {
               brokenSeals = saved.brokenSeals;
+            }
+            if (saved.o2States && typeof saved.o2States === 'object') {
+              o2States = saved.o2States;
+            }
+            if (saved.questionAnswers && typeof saved.questionAnswers === 'object') {
+              // Decode entity-encoded keys and string answers alike
+              var _qa = {};
+              for (var qk in saved.questionAnswers) {
+                var qv = saved.questionAnswers[qk];
+                _qa[_decEnt(qk)] = typeof qv === 'string' ? _decEnt(qv) : qv;
+              }
+              questionAnswers = _qa;
             }
           }
 
@@ -5377,22 +6176,28 @@
           }
           } // end continueAfterInventoryLoad
 
-          // Branch: if the setting is an external file path (.md or .json),
-          // fetch it async; otherwise parse inline text synchronously.
-          if (isExternalFilePath(inventoryText)) {
-            fetchInventoryFile(inventoryText, function(fileContent) {
-              if (fileContent) {
-                INVENTORY = parseInventoryAuto(fileContent);
-              } else {
-                console.warn('[Widget] File fetch failed, falling back to DEFAULT_INVENTORY');
-                INVENTORY = parseInventoryAuto(DEFAULT_INVENTORY);
-              }
+          // Load optional custom questions (inline JSON or .json path) first,
+          // then the inventory. Both may involve a same-origin fetch.
+          loadCustomQuestions(JFCustomWidget.getWidgetSetting('customQuestions'), function(settingQuestions) {
+            settingQuestionList = settingQuestions || [];
+
+            // Branch: if the setting is an external file path (.md or .json),
+            // fetch it async; otherwise parse inline text synchronously.
+            if (isExternalFilePath(inventoryText)) {
+              fetchInventoryFile(inventoryText, function(fileContent) {
+                if (fileContent) {
+                  INVENTORY = parseInventoryAuto(fileContent);
+                } else {
+                  console.warn('[Widget] File fetch failed, falling back to DEFAULT_INVENTORY');
+                  INVENTORY = parseInventoryAuto(DEFAULT_INVENTORY);
+                }
+                continueAfterInventoryLoad();
+              });
+            } else {
+              INVENTORY = parseInventoryAuto(inventoryText);
               continueAfterInventoryLoad();
-            });
-          } else {
-            INVENTORY = parseInventoryAuto(inventoryText);
-            continueAfterInventoryLoad();
-          }
+            }
+          });
         });
 
         JFCustomWidget.subscribe('submit', function() {
@@ -5407,6 +6212,8 @@
             brokenSeals: brokenSeals,
             itemStates: itemStates,
             restockStatus: restockStatus,
+            o2States: o2States,
+            questionAnswers: questionAnswers,
             timestamp: Date.now()
           };
           var combinedValue = submitReport.report
@@ -5427,9 +6234,24 @@
         // (DEFAULT_INVENTORY could also be overridden to a .md/.json path for testing)
         var standaloneText = DEFAULT_INVENTORY;
 
+        // Standalone O2 defaults so the section can be exercised outside Jotform
+        var STANDALONE_O2_SETTINGS = {
+          enableOxygenCheck: 'true',
+          mainO2Cylinders: '2',
+          enableMedicalAir: 'true'
+        };
+        var STANDALONE_QUESTIONS = [
+          { label: 'Unit exterior clean?', type: 'yesno', position: 'beforeO2', flagOn: 'No' },
+          { label: 'Fuel level', type: 'choice', options: ['Full', '3/4', '1/2', '1/4'], position: 'afterO2' },
+          { label: 'Odometer', type: 'number', position: 'afterInventory' },
+          { label: 'Notes for next crew', type: 'text', position: 'afterInventory', required: false }
+        ];
+
         function continueStandalone(inventoryContent) {
           INVENTORY = parseInventoryAuto(inventoryContent);
           enableTaggedAreas = Object.keys(sealableAreas).length > 0;
+          configureOxygenCheck(function(name) { return STANDALONE_O2_SETTINGS[name]; });
+          customQuestions = normalizeQuestions(STANDALONE_QUESTIONS.concat(inventoryFileQuestions));
           buildUI();
 
           // Restore from localStorage in standalone mode
@@ -5439,6 +6261,8 @@
             if (saved.taggedAreas) taggedAreas = saved.taggedAreas;
             if (saved.restockStatus) restockStatus = saved.restockStatus;
             if (saved.brokenSeals) brokenSeals = saved.brokenSeals;
+            if (saved.o2States && typeof saved.o2States === 'object') o2States = saved.o2States;
+            if (saved.questionAnswers && typeof saved.questionAnswers === 'object') questionAnswers = saved.questionAnswers;
           }
 
           // Layer in dedicated sealed-state store
