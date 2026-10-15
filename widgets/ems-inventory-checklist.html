@@ -623,6 +623,135 @@
       color: #888;
     }
     
+    /* Progress strips under area / category headers */
+    .area-header,
+    .category-header,
+    .subcategory-header {
+      position: relative;
+    }
+
+    .progress-strip {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 3px;
+      background: rgba(0,0,0,0.06);
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .area-header .progress-strip {
+      border-radius: 0 0 8px 8px;
+    }
+
+    .area-section.expanded .area-header .progress-strip,
+    .area-header.tagged .progress-strip {
+      border-radius: 0;
+    }
+
+    .area-header.tagged .progress-strip {
+      display: none;
+    }
+
+    .progress-fill {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: #28a745;
+      transition: width 0.25s;
+    }
+
+    /* Focus row: the item the crew is working on right now */
+    .checklist-item {
+      transition: background 0.15s, padding 0.15s;
+    }
+
+    .checklist-item.checked:not(.focused) .item-name,
+    .checklist-item.restocked:not(.focused) .item-name,
+    .checklist-item.out-of-stock-item:not(.focused) .item-name {
+      color: #888;
+    }
+
+    .checklist-item.focused,
+    .checklist-item.focused.missing,
+    .checklist-item.focused.short,
+    .checklist-item.focused.checked {
+      flex-wrap: wrap;
+      padding: 14px 15px;
+      background: #eef5ff;
+      border-left: 4px solid #0066cc;
+      box-shadow: inset 0 0 0 1px #cfe0f7;
+    }
+
+    .subcategory-items .checklist-item.focused {
+      padding-left: 26px;
+    }
+
+    .checklist-item.focused .item-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.25;
+    }
+
+    .checklist-item.focused .item-required {
+      font-size: 15px;
+      padding: 6px 10px;
+    }
+
+    .checklist-item.focused .item-checkbox {
+      width: 26px;
+      height: 26px;
+    }
+
+    .checklist-item.focused .qty-btn {
+      width: 48px;
+      height: 48px;
+      font-size: 24px;
+    }
+
+    .checklist-item.focused .qty-value {
+      width: 56px;
+      height: 48px;
+      font-size: 20px;
+    }
+
+    .focus-extras {
+      display: none;
+      flex-basis: 100%;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .checklist-item.focused .focus-extras {
+      display: flex;
+    }
+
+    .all-present-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #28a745;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .all-present-btn:active {
+      background: #1e7e34;
+    }
+
+    .item-have {
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      white-space: nowrap;
+    }
+
     /* Checklist items */
     .checklist-item {
       display: flex;
@@ -1928,8 +2057,14 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.15.0';
+    var VERSION = '1.16.0';
     var CHANGELOG = [
+      { version: '1.16.0', date: '2026-10-15', changes: [
+        'Focus row: the item being checked is enlarged with bigger +/- controls, a "have X of N" label and an "All present" shortcut; focus moves to the next unfinished item as each one is completed',
+        'Tap an item name to move the focus there; completed items are dimmed',
+        'Thin progress strips under area, category and subcategory headers show how much of each is done',
+        'New setting focusRow ("false" turns the focus row off; default on)',
+      ]},
       { version: '1.15.0', date: '2026-10-15', changes: [
         'Oxygen Supply check merged into this widget — the separate oxygen-supply-check widget is retired',
         'New setting enableOxygenCheck ("true"/"false") toggles the Oxygen Supply section per form; defaults to off',
@@ -2153,6 +2288,11 @@
     var questionAnswers = {}; // questionId -> answer ('yes'|'no'|option|string)
     var settingQuestionList = []; // raw questions from the customQuestions setting
     var inventoryFileQuestions = []; // raw questions from the inventory JSON envelope
+
+    // ---- Focus row ----
+    // Setting focusRow: "false" disables the enlarged current-item row (default on)
+    var enableFocusRow = true;
+    var focusedKey = null; // item key currently enlarged, or null
 
     // =====================================================
     // LOCAL PERSISTENCE (survives across form sessions)
@@ -2702,6 +2842,7 @@
       var itemDiv = document.createElement('div');
       itemDiv.className = 'checklist-item';
       itemDiv.id = 'item_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+      itemDiv.setAttribute('data-key', key);
 
       var actual = itemStates[key].actual;
       var status = restockStatus[key] || {};
@@ -2719,6 +2860,10 @@
       var infoDiv = document.createElement('div');
       infoDiv.className = 'item-info';
       infoDiv.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>';
+      // Tapping the name moves the focus row here
+      infoDiv.onclick = (function(k) {
+        return function() { setFocusedItem(k, false); };
+      })(key);
 
       var reqLabel = document.createElement('span');
       reqLabel.className = 'item-required';
@@ -2803,6 +2948,23 @@
         stepperDiv.appendChild(incBtn);
         itemDiv.appendChild(stepperDiv);
 
+        // Extras shown only while this row is the focus row
+        var extras = document.createElement('div');
+        extras.className = 'focus-extras';
+        var allBtn = document.createElement('button');
+        allBtn.type = 'button';
+        allBtn.className = 'all-present-btn';
+        allBtn.textContent = 'All \u00D7' + item.required + ' present';
+        allBtn.onclick = (function(k, req) {
+          return function(e) { e.stopPropagation(); setItemValue(k, req); };
+        })(key, item.required);
+        var have = document.createElement('span');
+        have.className = 'item-have';
+        have.textContent = 'Have ' + actual + ' of ' + item.required;
+        extras.appendChild(allBtn);
+        extras.appendChild(have);
+        itemDiv.appendChild(extras);
+
         // Apply appropriate class based on state
         if (actual >= item.required) {
           itemDiv.classList.add('checked');
@@ -2812,6 +2974,9 @@
           itemDiv.classList.add('missing');
         }
       }
+
+      // Keep the focus row through row rebuilds
+      if (enableFocusRow && focusedKey === key) itemDiv.classList.add('focused');
 
       return itemDiv;
     }
@@ -2833,6 +2998,7 @@
           var newRow = buildItemRow(areaName, catName, item);
           itemDiv.parentNode.replaceChild(newRow, itemDiv);
         }
+        advanceFocus(key, false);
       }
     }
 
@@ -2861,7 +3027,8 @@
         headerDiv.className = 'area-header';
         headerDiv.innerHTML = '<span class="collapse-icon">▶</span>' +
           '<span class="area-title">' + escapeHtml(areaName) + '</span>' +
-          '<span class="area-status" id="status_' + areaDiv.id + '">0/0</span>';
+          '<span class="area-status" id="status_' + areaDiv.id + '">0/0</span>' +
+          '<span class="progress-strip"><span class="progress-fill"></span></span>';
 
         headerDiv.onclick = (function(div, isChild) {
           return function() { toggleArea(div, isChild); };
@@ -3008,6 +3175,7 @@
                   var icon = document.getElementById('cat_icon_' + catKey.replace(/[^a-zA-Z0-9]/g, '_'));
                   if (icon) icon.style.transform = 'rotate(90deg)';
                 }
+                advanceFocus(null, false);
               };
             })(areaName, catName, subCats);
 
@@ -3022,6 +3190,7 @@
             catHeader.appendChild(catCheckbox);
             catHeader.appendChild(catLabel);
             catHeader.appendChild(catStatus);
+            catHeader.appendChild(makeProgressStrip());
             contentDiv.appendChild(catHeader);
 
             // Items container (collapsible)
@@ -3080,6 +3249,7 @@
               subHeader.appendChild(subCheckbox);
               subHeader.appendChild(subLabel);
               subHeader.appendChild(subStatus);
+              subHeader.appendChild(makeProgressStrip());
               itemsContainer.appendChild(subHeader);
 
               // Subcategory items container
@@ -3313,10 +3483,144 @@
         }
       }
 
+      advanceFocus(focusedKey, false);
       updateStickyOffsets();
     }
 
     // Check if a parent group is fully complete (all children sealed/ok, parent items ok/sealed)
+    // =====================================================
+    // PROGRESS STRIPS
+    // =====================================================
+
+    function makeProgressStrip() {
+      var strip = document.createElement('span');
+      strip.className = 'progress-strip';
+      strip.innerHTML = '<span class="progress-fill"></span>';
+      return strip;
+    }
+
+    function setProgressStrip(headerEl, done, total) {
+      if (!headerEl) return;
+      var fill = headerEl.querySelector(':scope > .progress-strip > .progress-fill');
+      if (!fill) return;
+      var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    }
+
+    // =====================================================
+    // FOCUS ROW
+    // =====================================================
+
+    // An item is handled when its count is met, or it has been sent to
+    // restock / marked out of stock.
+    function isItemHandled(key) {
+      var parts = key.split('::');
+      var item = findItem(parts[0], parts[1], parts[2]);
+      if (!item) return true;
+      var actual = (itemStates[key] || { actual: 0 }).actual;
+      if (actual >= item.required) return true;
+      var st = restockStatus[key];
+      return !!(st && (st.restocked || st.outOfStock));
+    }
+
+    // Item rows that are currently visible (expanded area, open category), in order.
+    function getVisibleItemRows() {
+      var rows = document.querySelectorAll('#areasContainer .checklist-item[data-key]');
+      var out = [];
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i].offsetParent !== null) out.push(rows[i]);
+      }
+      return out;
+    }
+
+    function clearFocusedRow() {
+      var cur = document.querySelectorAll('.checklist-item.focused');
+      for (var i = 0; i < cur.length; i++) cur[i].classList.remove('focused');
+      focusedKey = null;
+    }
+
+    function updateFocusExtras(row, key) {
+      if (!row) return;
+      var have = row.querySelector('.item-have');
+      if (!have) return;
+      var parts = key.split('::');
+      var item = findItem(parts[0], parts[1], parts[2]);
+      if (!item) return;
+      var actual = (itemStates[key] || { actual: 0 }).actual;
+      have.textContent = 'Have ' + actual + ' of ' + item.required;
+    }
+
+    function setFocusedItem(key, scroll) {
+      if (!enableFocusRow) return;
+      var row = key ? document.getElementById('item_' + key.replace(/[^a-zA-Z0-9]/g, '_')) : null;
+      clearFocusedRow();
+      if (!row) return;
+      row.classList.add('focused');
+      focusedKey = key;
+      updateFocusExtras(row, key);
+      if (scroll) scrollRowIntoView(row);
+    }
+
+    // Scroll the areas container so the row sits below the sticky header
+    // stack, but only when it is not already fully visible.
+    function scrollRowIntoView(row) {
+      var container = document.getElementById('areasContainer');
+      if (!container) return;
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          var cRect = container.getBoundingClientRect();
+          var rRect = row.getBoundingClientRect();
+          var stickyBottom = 0;
+          var heads = container.querySelectorAll('.area-header, .category-header, .subcategory-header');
+          for (var i = 0; i < heads.length; i++) {
+            if (window.getComputedStyle(heads[i]).position !== 'sticky') continue;
+            var hr = heads[i].getBoundingClientRect();
+            var rel = hr.top - cRect.top;
+            if (rel >= -1 && rel < cRect.height / 2) {
+              stickyBottom = Math.max(stickyBottom, rel + hr.height);
+            }
+          }
+          var top = rRect.top - cRect.top;
+          var bottom = rRect.bottom - cRect.top;
+          if (top >= stickyBottom && bottom <= cRect.height) return;
+          var slack = Math.max(0, (cRect.height - stickyBottom - rRect.height) / 3);
+          var target = container.scrollTop + top - stickyBottom - slack;
+          container.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+        });
+      });
+    }
+
+    // Focus the next unhandled visible row after fromKey (wrapping around),
+    // or keep fromKey focused while it still needs work. With no fromKey,
+    // the first unhandled visible row is focused.
+    function advanceFocus(fromKey, scroll) {
+      if (!enableFocusRow) return;
+      var rows = getVisibleItemRows();
+      if (rows.length === 0) { clearFocusedRow(); return; }
+
+      var startIdx = -1;
+      if (fromKey) {
+        for (var i = 0; i < rows.length; i++) {
+          if (rows[i].getAttribute('data-key') === fromKey) { startIdx = i; break; }
+        }
+        if (startIdx !== -1 && !isItemHandled(fromKey)) {
+          setFocusedItem(fromKey, false);
+          return;
+        }
+      }
+
+      var n = rows.length;
+      for (var step = 1; step <= n; step++) {
+        var r = rows[(startIdx + step + n) % n];
+        var k = r.getAttribute('data-key');
+        if (!isItemHandled(k)) {
+          setFocusedItem(k, scroll !== false);
+          return;
+        }
+      }
+      clearFocusedRow();
+    }
+
     // =====================================================
     // CUSTOM QUESTIONS
     // =====================================================
@@ -3928,6 +4232,7 @@
         areaDiv.classList.add('expanded');
         expandedArea = areaName;
         updateStickyOffsets();
+        advanceFocus(null, false);
         setTimeout(function() {
           if (isChild) {
             // For child areas inside a group, we need to scroll so the child
@@ -3949,6 +4254,7 @@
         }, 50);
       } else {
         expandedArea = null;
+        clearFocusedRow();
       }
     }
 
@@ -3981,9 +4287,11 @@
         groupDiv.classList.add('expanded');
         expandedGroup = groupName;
         updateStickyOffsets();
+        advanceFocus(null, false);
       } else {
         expandedGroup = null;
         expandedArea = null;
+        clearFocusedRow();
       }
     }
     
@@ -4010,6 +4318,7 @@
         var icon = document.getElementById('cat_icon_' + catKey.replace(/[^a-zA-Z0-9]/g, '_'));
         if (icon) icon.style.transform = 'rotate(90deg)';
       }
+      advanceFocus(null, false);
     }
     
     function setItemValue(key, value, skipUpdate) {
@@ -4037,6 +4346,7 @@
           if (value >= item.required) itemDiv.classList.add('checked');
           else if (value > 0) itemDiv.classList.add('short');
           else itemDiv.classList.add('missing');
+          updateFocusExtras(itemDiv, key);
         }
       }
       
@@ -4050,6 +4360,13 @@
         var catName = parts[1];
         if (value >= (item ? item.required : 0)) {
           autoCategoryAdvance(areaName, catName);
+        }
+
+        // Move the focus row on. When the category just completed,
+        // autoCategoryAdvance already scrolls to the next category, so
+        // only scroll here when focus stays within the same category.
+        if (enableFocusRow) {
+          advanceFocus(key, !isCategoryComplete(areaName, catName));
         }
 
         checkForCompletion();
@@ -4727,6 +5044,7 @@
       if (icon) {
         icon.style.transform = collapsedCategories[key] ? 'rotate(0deg)' : 'rotate(90deg)';
       }
+      advanceFocus(focusedKey, false);
     }
 
     function tagArea(areaName) {
@@ -5052,6 +5370,7 @@
                 }
               }
               catStatusEl.textContent = '(' + parentOk + '/' + parentTotal + ')';
+              setProgressStrip(catStatusEl.parentElement, parentOk, parentTotal);
 
               // Update parent category checkbox
               var catCb = catStatusEl.parentElement ? catStatusEl.parentElement.querySelector('.category-checkbox') : null;
@@ -5063,6 +5382,7 @@
               }
             } else {
               catStatusEl.textContent = '(' + catOk + '/' + items.length + ')';
+              setProgressStrip(catStatusEl.parentElement, catOk, items.length);
 
               // Update subcategory checkbox
               var catCb = catStatusEl.parentElement ? catStatusEl.parentElement.querySelector('.category-checkbox') : null;
@@ -5082,6 +5402,7 @@
           statusEl.classList.remove('issues', 'ok', 'tagged', 'review-needed');
 
           statusEl.textContent = areaOk + '/' + areaTotal;
+          setProgressStrip(header, areaOk, areaTotal);
 
           if (areaOk === areaTotal) {
             header.classList.add('all-ok');
@@ -5543,6 +5864,7 @@
           var newRow = buildItemRow(areaName, catName, item);
           itemDiv.parentNode.replaceChild(newRow, itemDiv);
         }
+        advanceFocus(key, false);
       }
     }
     
@@ -6059,6 +6381,11 @@
             // Custom questions: setting first, then any carried by the inventory file
             customQuestions = normalizeQuestions(settingQuestionList.concat(inventoryFileQuestions));
             console.log('[Widget] custom questions:', customQuestions.length);
+
+            var focusSetting = JFCustomWidget.getWidgetSetting('focusRow');
+            if (focusSetting !== undefined && focusSetting !== null && focusSetting !== '') {
+              enableFocusRow = isTruthySetting(focusSetting);
+            }
 
             // Derive tagged area support from per-area Sealable: config
             enableTaggedAreas = Object.keys(sealableAreas).length > 0;
