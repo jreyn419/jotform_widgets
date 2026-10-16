@@ -802,37 +802,13 @@
       "categories": [
         {
           "name": "Left",
-          "items": [
-            {
-              "name": "Triage Tags",
-              "qty": 50,
-              "group": "MCI Bag"
-            },
-            {
-              "name": "Medical Group Supervisor Vest",
-              "qty": 1,
-              "group": "MCI Bag"
-            },
-            {
-              "name": "Triage Unit Leader Vest",
-              "qty": 1,
-              "group": "MCI Bag"
-            }
-          ]
+          "items": []
         },
         {
           "name": "Right",
           "items": [
             {
-              "name": "Backboard",
-              "qty": 2
-            },
-            {
               "name": "Breakaway Stretcher",
-              "qty": 1
-            },
-            {
-              "name": "Scoop Stretcher",
               "qty": 1
             },
             {
