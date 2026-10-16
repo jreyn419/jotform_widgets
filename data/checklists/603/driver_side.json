@@ -542,67 +542,7 @@
       "area": "Front Cabinet",
       "categories": [
         {
-          "name": "Left",
-          "items": [
-            {
-              "name": "Suction Canister Tub",
-              "qty": 3
-            },
-            {
-              "name": "Suction Canister Lid",
-              "qty": 3
-            },
-            {
-              "name": "Yankauer Suction Tip + Tubing",
-              "qty": 3
-            },
-            {
-              "name": "6 Fr.",
-              "qty": 1,
-              "group": "French Suction Catheters"
-            },
-            {
-              "name": "8 Fr.",
-              "qty": 1,
-              "group": "French Suction Catheters"
-            },
-            {
-              "name": "10 Fr.",
-              "qty": 1,
-              "group": "French Suction Catheters"
-            },
-            {
-              "name": "12 Fr.",
-              "qty": 1,
-              "group": "French Suction Catheters"
-            },
-            {
-              "name": "14 Fr.",
-              "qty": 1,
-              "group": "French Suction Catheters"
-            },
-            {
-              "name": "16 Fr.",
-              "qty": 1,
-              "group": "French Suction Catheters"
-            },
-            {
-              "name": "18 Fr.",
-              "qty": 1,
-              "group": "French Suction Catheters"
-            },
-            {
-              "name": "Emesis Bags",
-              "qty": 1
-            },
-            {
-              "name": "Emesis Basins",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "name": "Right",
+          "name": "Right (frontmost)",
           "items": [
             {
               "name": "Adult NRB",
@@ -661,6 +601,84 @@
               "qty": 3
             }
           ]
+        },
+        {
+          "name": "Left (rear half)",
+          "items": [
+            {
+              "name": "Suction Canister Tub",
+              "qty": 3
+            },
+            {
+              "name": "Suction Canister Lid",
+              "qty": 3
+            },
+            {
+              "name": "Yankauer Suction Tip + Tubing",
+              "qty": 3
+            },
+            {
+              "name": "6 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "8 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "10 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "12 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "14 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "16 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "18 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "Emesis Bags",
+              "qty": 1
+            },
+            {
+              "name": "Emesis Basins",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Action Area (below front cabinet)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Unused Suction Canister Tub + Lid",
+              "qty": 1
+            },
+            {
+              "name": "Yankauer Suction Tip + Tubing",
+              "qty": 1
+            }
+          ]
         }
       ]
     },
@@ -688,36 +706,6 @@
             },
             {
               "name": "Paper Towels, roll (or stack of napkins)",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "Action Area",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Unused Suction Container",
-              "qty": 1
-            },
-            {
-              "name": "Unused Suction Tubing & Suction Tip",
-              "qty": 1
-            },
-            {
-              "name": "Getac",
-              "qty": 1
-            },
-            {
-              "name": "Getac Charger",
-              "qty": 1
-            },
-            {
-              "name": "Monitor Charger",
               "qty": 1
             }
           ]
@@ -1031,6 +1019,23 @@
             {
               "name": "Baby Cap (if not included in OB kit)",
               "qty": 2
+            }
+          ]
+        },
+        {
+          "name": "Electronics (was action area)",
+          "items": [
+            {
+              "name": "Getac",
+              "qty": 1
+            },
+            {
+              "name": "Getac Charger",
+              "qty": 1
+            },
+            {
+              "name": "Monitor Charger",
+              "qty": 1
             }
           ]
         }
