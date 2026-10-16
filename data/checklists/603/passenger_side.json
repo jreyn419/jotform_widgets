@@ -364,6 +364,55 @@
       ]
     },
     {
+      "area": "Rear External Cabinet",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Scoop Stretcher",
+              "qty": 1
+            },
+            {
+              "name": "Rigid Backboard",
+              "qty": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Short Rear Cabinet",
+      "categories": [
+        {
+          "name": "General"
+        }
+      ]
+    },
+    {
+      "area": "MCI Bag",
+      "childOf": "Short Rear Cabinet",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Triage Tags",
+              "qty": 50
+            },
+            {
+              "name": "Supervisor Vest",
+              "qty": 1
+            },
+            {
+              "name": "Logistics Vest",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "area": "C (Clear Cabinet, Right)",
       "categories": [
         {

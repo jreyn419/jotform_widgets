@@ -272,6 +272,20 @@
           ]
         }
       ]
+    },
+    {
+      "area": "Was MCI bag (602)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Triage Unit Leader Vest",
+              "qty": 1
+            }
+          ]
+        }
+      ]
     }
   ]
 }
