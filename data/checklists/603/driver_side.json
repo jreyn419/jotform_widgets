@@ -255,11 +255,19 @@
       "categories": [
         {
           "name": "Top Shelf",
-          "items": []
-        },
-        {
-          "name": "Bottom Shelf",
           "items": [
+            {
+              "name": "Goggles",
+              "qty": 3
+            },
+            {
+              "name": "Face Shield",
+              "qty": 3
+            },
+            {
+              "name": "Isolation Gown",
+              "qty": 10
+            },
             {
               "name": "N95 Mask",
               "qty": 6
@@ -267,30 +275,31 @@
             {
               "name": "Surgical Mask",
               "qty": 10
+            }
+          ]
+        },
+        {
+          "name": "Bottom Shelf",
+          "items": [
+            {
+              "name": "Biohazard Bags",
+              "qty": 2
             },
             {
-              "name": "Isolation Gown",
-              "qty": 10
+              "name": "Commode",
+              "qty": 1
             },
             {
-              "name": "Face Shield",
+              "name": "Male Urinal",
               "qty": 3
             },
             {
-              "name": "Goggles",
-              "qty": 3
-            },
-            {
-              "name": "Cavicide Wipes Container",
+              "name": "Infectious control cleanup kit",
               "qty": 1
             },
             {
-              "name": "Cavicide Spray Bottle",
-              "qty": 1
-            },
-            {
-              "name": "Bleach Wipes Container",
-              "qty": 1
+              "name": "Obstetrical Kit",
+              "qty": 2
             }
           ]
         }
@@ -677,10 +686,6 @@
           "name": "Left Side",
           "items": [
             {
-              "name": "Infectious control cleanup kit",
-              "qty": 1
-            },
-            {
               "name": "Posey restraints (red-ankle)",
               "qty": 2
             },
@@ -702,16 +707,8 @@
               "qty": 3
             },
             {
-              "name": "Urinals",
-              "qty": 3
-            },
-            {
               "name": "Bedpans",
               "qty": 3
-            },
-            {
-              "name": "Obstetrical Kit",
-              "qty": 2
             },
             {
               "name": "Baby Cap (if not included in OB kit)",
@@ -742,10 +739,6 @@
             {
               "name": "Hand Sanitizer",
               "qty": 1
-            },
-            {
-              "name": "Biohazard Bags",
-              "qty": 2
             },
             {
               "name": "Paper Towels, roll (or stack of napkins)",
@@ -953,6 +946,23 @@
             {
               "name": "MAD",
               "qty": 4
+            }
+          ]
+        },
+        {
+          "name": "Disinfectants (was bottom rear cabinet)",
+          "items": [
+            {
+              "name": "Cavicide Wipes Container",
+              "qty": 1
+            },
+            {
+              "name": "Cavicide Spray Bottle",
+              "qty": 1
+            },
+            {
+              "name": "Bleach Wipes Container",
+              "qty": 1
             }
           ]
         }
