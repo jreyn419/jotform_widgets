@@ -542,36 +542,123 @@
       "area": "Front Cabinet",
       "categories": [
         {
-          "name": "Left Side",
+          "name": "Left",
           "items": [
             {
-              "name": "Posey restraints (red-ankle)",
-              "qty": 2
+              "name": "Suction Canister Tub",
+              "qty": 3
             },
             {
-              "name": "Posey restraints (blue-wrist)",
-              "qty": 2
+              "name": "Suction Canister Lid",
+              "qty": 3
+            },
+            {
+              "name": "Yankauer Suction Tip + Tubing",
+              "qty": 3
+            },
+            {
+              "name": "6 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "8 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "10 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "12 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "14 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "16 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "18 Fr.",
+              "qty": 1,
+              "group": "French Suction Catheters"
+            },
+            {
+              "name": "Emesis Bags",
+              "qty": 1
+            },
+            {
+              "name": "Emesis Basins",
+              "qty": 1
             }
           ]
         },
         {
-          "name": "Right Side",
+          "name": "Right",
           "items": [
             {
-              "name": "Spit Hoods",
+              "name": "Adult NRB",
               "qty": 3
             },
             {
-              "name": "Posey Soft Restraints",
+              "name": "Pediatric NRB",
               "qty": 3
             },
             {
-              "name": "Bedpans",
+              "name": "Adult Nasal Cannula",
               "qty": 3
             },
             {
-              "name": "Baby Cap (if not included in OB kit)",
+              "name": "Pediatric Nasal Cannula",
+              "qty": 3
+            },
+            {
+              "name": "Adult Nebulizer Mask",
+              "qty": 3
+            },
+            {
+              "name": "Pediatric Nebulizer Mask",
+              "qty": 3
+            },
+            {
+              "name": "Adult EtCO2 Nasal Cannula",
+              "qty": 3
+            },
+            {
+              "name": "Pediatric EtCO2 Nasal Cannula",
+              "qty": 3
+            },
+            {
+              "name": "Handheld Nebulizer Kit",
+              "qty": 3
+            },
+            {
+              "name": "Breath-Actuated Nebulizer",
+              "qty": 1
+            },
+            {
+              "name": "Adult BVM",
               "qty": 2
+            },
+            {
+              "name": "Pediatric BVM",
+              "qty": 2
+            },
+            {
+              "name": "Infant BVM",
+              "qty": 2
+            },
+            {
+              "name": "PEEP Valve",
+              "qty": 3
             }
           ]
         }
@@ -768,58 +855,6 @@
           "name": "Airway supplies (was middle cabinet)",
           "items": [
             {
-              "name": "Adult BVM",
-              "qty": 2
-            },
-            {
-              "name": "Pediatric BVM",
-              "qty": 2
-            },
-            {
-              "name": "Infant BVM",
-              "qty": 2
-            },
-            {
-              "name": "Handheld Nebulizer Kit",
-              "qty": 3
-            },
-            {
-              "name": "PEEP Valve",
-              "qty": 3
-            },
-            {
-              "name": "Adult EtCO2 Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Adult Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Adult NRB",
-              "qty": 3
-            },
-            {
-              "name": "Adult Nebulizer Mask",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric EtCO2 Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric NRB",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric Nebulizer Mask",
-              "qty": 3
-            },
-            {
               "name": "lubricant packet",
               "qty": 6
             },
@@ -967,6 +1002,35 @@
             {
               "name": "Zoll Monitor",
               "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Restraints etc. (was front cabinet)",
+          "items": [
+            {
+              "name": "Posey restraints (red-ankle)",
+              "qty": 2
+            },
+            {
+              "name": "Posey restraints (blue-wrist)",
+              "qty": 2
+            },
+            {
+              "name": "Spit Hoods",
+              "qty": 3
+            },
+            {
+              "name": "Posey Soft Restraints",
+              "qty": 3
+            },
+            {
+              "name": "Bedpans",
+              "qty": 3
+            },
+            {
+              "name": "Baby Cap (if not included in OB kit)",
+              "qty": 2
             }
           ]
         }
