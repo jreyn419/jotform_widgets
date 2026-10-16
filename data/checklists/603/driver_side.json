@@ -520,44 +520,19 @@
       "area": "Bench",
       "categories": [
         {
-          "name": "In Bench",
+          "name": "General",
           "items": [
             {
-              "name": "Pillow",
-              "qty": 3
-            },
-            {
-              "name": "Pillow case (disposable)",
-              "qty": 3
-            },
-            {
-              "name": "Blanket",
+              "name": "Blankets",
               "qty": 6
             },
             {
-              "name": "Emergency Blanket",
-              "qty": 2
-            },
-            {
-              "name": "Oxygen Cylinder, Type D",
+              "name": "Pillows",
               "qty": 3
-            }
-          ]
-        },
-        {
-          "name": "Top of Bench",
-          "items": [
-            {
-              "name": "Yellow Table",
-              "qty": 1
             },
             {
-              "name": "Medslinger Bag",
-              "qty": 1
-            },
-            {
-              "name": "Zoll Monitor",
-              "qty": 1
+              "name": "Pillowcases (disposable)",
+              "qty": 3
             }
           ]
         }
@@ -967,6 +942,31 @@
               "name": "2-5kg PINK",
               "qty": 1,
               "group": "iGels"
+            }
+          ]
+        },
+        {
+          "name": "Was bench / top of bench",
+          "items": [
+            {
+              "name": "Emergency Blanket",
+              "qty": 2
+            },
+            {
+              "name": "Oxygen Cylinder, Type D",
+              "qty": 3
+            },
+            {
+              "name": "Yellow Table",
+              "qty": 1
+            },
+            {
+              "name": "Medslinger Bag",
+              "qty": 1
+            },
+            {
+              "name": "Zoll Monitor",
+              "qty": 1
             }
           ]
         }
