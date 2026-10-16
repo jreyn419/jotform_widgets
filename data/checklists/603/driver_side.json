@@ -429,20 +429,69 @@
       "area": "Middle Cabinet",
       "categories": [
         {
-          "name": "Left Side",
+          "name": "Trauma",
           "items": [
             {
-              "name": "Adult BVM",
+              "name": "Nose Clamp",
+              "qty": 5
+            },
+            {
+              "name": "Elastic Bandage Roll (Dukal)",
               "qty": 2
             },
             {
-              "name": "Pediatric BVM",
+              "name": "Triangular Bandage",
+              "qty": 4
+            },
+            {
+              "name": "Israeli Bandage",
               "qty": 2
             },
             {
-              "name": "Infant BVM",
+              "name": "Gauze Rolls",
+              "qty": 3
+            },
+            {
+              "name": "Chest Seal",
               "qty": 2
             },
+            {
+              "name": "Petrolatum Dressing",
+              "qty": 2
+            },
+            {
+              "name": "4\"x4\" Quickclot Dressing",
+              "qty": 3
+            },
+            {
+              "name": "Trauma Tourniquet",
+              "qty": 4
+            },
+            {
+              "name": "Ring Cutter",
+              "qty": 1
+            },
+            {
+              "name": "Chest Decompression Needle",
+              "qty": 2
+            },
+            {
+              "name": "Center Punch Tool",
+              "qty": 1
+            },
+            {
+              "name": "Trauma Dressing",
+              "qty": 2
+            },
+            {
+              "name": "Sterile Burn Sheet",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "name": "Airway",
+          "items": [
             {
               "name": "Large Adult CPAP Mask",
               "qty": 2
@@ -452,181 +501,16 @@
               "qty": 2
             },
             {
+              "name": "Jet Insufflator (Manual Jet Ventilator)",
+              "qty": 1
+            },
+            {
               "name": "Cricothyrotomy Kit",
               "qty": 1
             },
             {
-              "name": "Manual Jet Ventilator",
+              "name": "Colorimetric CO2 Detector",
               "qty": 1
-            },
-            {
-              "name": "Handheld Nebulizer Kit",
-              "qty": 3
-            },
-            {
-              "name": "PEEP Valve",
-              "qty": 3
-            }
-          ]
-        },
-        {
-          "name": "Right Side",
-          "items": [
-            {
-              "name": "Adult EtCO2 Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Adult Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Adult NRB",
-              "qty": 3
-            },
-            {
-              "name": "Adult Nebulizer Mask",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric EtCO2 Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric NRB",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric Nebulizer Mask",
-              "qty": 3
-            },
-            {
-              "name": "lubricant packet",
-              "qty": 6
-            },
-            {
-              "name": "20 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "22 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "24 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "26 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "28 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "30 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "32 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "34 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "36 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "40mm PINK",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "50mm BLUE",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "60mm GRAY",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "70mm WHITE",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "80mm GREEN",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "90mm YELLOW",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "100mm PINK",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "110mm ORANGE",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "90kg ORANGE",
-              "qty": 1,
-              "group": "iGels"
-            },
-            {
-              "name": "50-90kg GREEN",
-              "qty": 1,
-              "group": "iGels"
-            },
-            {
-              "name": "30-60kg YELLOW",
-              "qty": 1,
-              "group": "iGels"
-            },
-            {
-              "name": "25-35kg WHITE",
-              "qty": 1,
-              "group": "iGels"
-            },
-            {
-              "name": "10-25kg GRAY",
-              "qty": 1,
-              "group": "iGels"
-            },
-            {
-              "name": "5-12kg BLUE",
-              "qty": 1,
-              "group": "iGels"
-            },
-            {
-              "name": "2-5kg PINK",
-              "qty": 1,
-              "group": "iGels"
             }
           ]
         }
@@ -844,67 +728,6 @@
       "area": "Unplaced (from 602 layout)",
       "categories": [
         {
-          "name": "Wound care & trauma (was top rear, top shelf)",
-          "items": [
-            {
-              "name": "Nose Clamp",
-              "qty": 5
-            },
-            {
-              "name": "Elastic Bandage Roll (Dukal)",
-              "qty": 2
-            },
-            {
-              "name": "Triangular Bandage",
-              "qty": 4
-            },
-            {
-              "name": "Israeli Bandage",
-              "qty": 2
-            },
-            {
-              "name": "Gauze Rolls",
-              "qty": 3
-            },
-            {
-              "name": "Chest Seal",
-              "qty": 2
-            },
-            {
-              "name": "Petrolatum Dressing",
-              "qty": 2
-            },
-            {
-              "name": "4\"x4\" Quickclot Dressing",
-              "qty": 3
-            },
-            {
-              "name": "Trauma Tourniquet",
-              "qty": 4
-            },
-            {
-              "name": "Ring Cutter",
-              "qty": 1
-            },
-            {
-              "name": "Chest Decompression Needle",
-              "qty": 2
-            },
-            {
-              "name": "Center Punch Tool",
-              "qty": 1
-            },
-            {
-              "name": "Trauma Dressing",
-              "qty": 2
-            },
-            {
-              "name": "Sterile Burn Sheet",
-              "qty": 2
-            }
-          ]
-        },
-        {
           "name": "Misc (was top rear, bottom shelf)",
           "items": [
             {
@@ -963,6 +786,187 @@
             {
               "name": "Bleach Wipes Container",
               "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Airway supplies (was middle cabinet)",
+          "items": [
+            {
+              "name": "Adult BVM",
+              "qty": 2
+            },
+            {
+              "name": "Pediatric BVM",
+              "qty": 2
+            },
+            {
+              "name": "Infant BVM",
+              "qty": 2
+            },
+            {
+              "name": "Handheld Nebulizer Kit",
+              "qty": 3
+            },
+            {
+              "name": "PEEP Valve",
+              "qty": 3
+            },
+            {
+              "name": "Adult EtCO2 Nasal Cannula",
+              "qty": 3
+            },
+            {
+              "name": "Adult Nasal Cannula",
+              "qty": 3
+            },
+            {
+              "name": "Adult NRB",
+              "qty": 3
+            },
+            {
+              "name": "Adult Nebulizer Mask",
+              "qty": 3
+            },
+            {
+              "name": "Pediatric EtCO2 Nasal Cannula",
+              "qty": 3
+            },
+            {
+              "name": "Pediatric Nasal Cannula",
+              "qty": 3
+            },
+            {
+              "name": "Pediatric NRB",
+              "qty": 3
+            },
+            {
+              "name": "Pediatric Nebulizer Mask",
+              "qty": 3
+            },
+            {
+              "name": "lubricant packet",
+              "qty": 6
+            },
+            {
+              "name": "20 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "22 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "24 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "26 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "28 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "30 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "32 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "34 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "36 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "40mm PINK",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "50mm BLUE",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "60mm GRAY",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "70mm WHITE",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "80mm GREEN",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "90mm YELLOW",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "100mm PINK",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "110mm ORANGE",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "90kg ORANGE",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "50-90kg GREEN",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "30-60kg YELLOW",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "25-35kg WHITE",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "10-25kg GRAY",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "5-12kg BLUE",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "2-5kg PINK",
+              "qty": 1,
+              "group": "iGels"
             }
           ]
         }
