@@ -10,108 +10,40 @@
           "name": "Top Shelf",
           "items": [
             {
-              "name": "Alcohol Prep Pads Box",
-              "qty": 1
-            },
-            {
-              "name": "Chlorhexidine Swabs Box",
-              "qty": 1
-            },
-            {
-              "name": "Curad Adhesive Bandages Box",
-              "qty": 1
-            },
-            {
-              "name": "Nail Polish Remover Box",
-              "qty": 1
-            },
-            {
-              "name": "1\" Tape (Cloth/Synthetic)",
+              "name": "Sterile Distilled Water for Irrigation Box 500mL",
               "qty": 2
             },
             {
-              "name": "2\" Tape (Cloth/Synthetic)",
+              "name": "Sterile NS Water for Irrigation Box 500mL",
               "qty": 2
             },
             {
-              "name": "Nose Clamp",
-              "qty": 5
-            },
-            {
-              "name": "Coban",
-              "qty": 6
-            },
-            {
-              "name": "Elastic Bandage Roll (Dukal)",
-              "qty": 2
-            },
-            {
-              "name": "Triangular Bandage",
-              "qty": 4
-            },
-            {
-              "name": "Israeli Bandage",
-              "qty": 2
-            },
-            {
-              "name": "2\"x2\" Sterile Sponge",
-              "qty": 10
-            },
-            {
-              "name": "4\"x4\" Sterile Sponge",
-              "qty": 10
-            },
-            {
-              "name": "Gauze Rolls",
-              "qty": 3
-            },
-            {
-              "name": "Chest Seal",
-              "qty": 2
-            },
-            {
-              "name": "Petrolatum Dressing",
-              "qty": 2
-            },
-            {
-              "name": "4\"x4\" Quickclot Dressing",
-              "qty": 3
-            },
-            {
-              "name": "Non-Sterile 2\"x2\" Gauze Sponges Sleeve",
+              "name": "Saline pillow for humidification",
               "qty": 1
             },
             {
-              "name": "Non-Sterile 4\"x4\" Gauze Sponges Sleeve",
+              "name": "Potable Water",
               "qty": 1
             },
             {
-              "name": "Trauma Tourniquet",
-              "qty": 4
-            },
-            {
-              "name": "Ring Cutter",
+              "name": "Manual BP Cuff - Infant",
               "qty": 1
             },
             {
-              "name": "Shears",
+              "name": "Manual BP Cuff - Child",
               "qty": 1
             },
             {
-              "name": "Chest Decompression Needle",
-              "qty": 2
-            },
-            {
-              "name": "Center Punch Tool",
+              "name": "Manual BP Cuff - Small Adult",
               "qty": 1
             },
             {
-              "name": "Trauma Dressing",
-              "qty": 2
+              "name": "Manual BP Cuff - Large Adult",
+              "qty": 1
             },
             {
-              "name": "Sterile Burn Sheet",
-              "qty": 2
+              "name": "Manual BP Cuff – Thigh",
+              "qty": 1
             }
           ]
         },
@@ -119,48 +51,29 @@
           "name": "Bottom Shelf",
           "items": [
             {
-              "name": "Activated Charcoal 25g/120mL",
-              "qty": 1
+              "name": "I/O stabilizer",
+              "qty": 1,
+              "group": "IO Drill Kit"
             },
             {
-              "name": "Ibuprofen Oral Suspension",
-              "qty": 4
+              "name": "15mm I/O needle",
+              "qty": 1,
+              "group": "IO Drill Kit"
             },
             {
-              "name": "Microdot Glucometer Test Strip Containers",
-              "qty": 2
+              "name": "45mm I/O needle",
+              "qty": 1,
+              "group": "IO Drill Kit"
             },
             {
-              "name": "Lancets",
-              "qty": 6
+              "name": "25mm I/O needle",
+              "qty": 1,
+              "group": "IO Drill Kit"
             },
             {
-              "name": "Sterile Water for Inhalation Bag 1000mL",
-              "qty": 3
-            },
-            {
-              "name": "NS Bag 1000mL",
-              "qty": 6
-            },
-            {
-              "name": "NS Bag 250mL",
-              "qty": 2
-            },
-            {
-              "name": "NS Bag 100 mL",
-              "qty": 5
-            },
-            {
-              "name": "Pressure Infusion Bag",
-              "qty": 2
-            },
-            {
-              "name": "Arm Board (Short)",
-              "qty": 2
-            },
-            {
-              "name": "Arm Board (Long)",
-              "qty": 2
+              "name": "I/O drill",
+              "qty": 1,
+              "group": "IO Drill Kit"
             },
             {
               "name": "10-Drop Set",
@@ -171,12 +84,24 @@
               "qty": 4
             },
             {
-              "name": "Invasive BP Clamp Mount",
+              "name": "Pressure Infusion Bag",
+              "qty": 2
+            },
+            {
+              "name": "Activated Charcoal 25g/120mL",
               "qty": 1
             },
             {
-              "name": "MAD",
+              "name": "Ibuprofen Oral Suspension",
               "qty": 4
+            },
+            {
+              "name": "Epinephrine auto-injector (adult) 0.3mg",
+              "qty": 1
+            },
+            {
+              "name": "Epinephrine auto-injector (pediatric) 0.15mg",
+              "qty": 1
             }
           ]
         }
@@ -327,14 +252,6 @@
         {
           "name": "Top Shelf",
           "items": [
-            {
-              "name": "Sterile Distilled Water for Irrigation Box 500mL",
-              "qty": 2
-            },
-            {
-              "name": "Sterile NS Water for Irrigation Box 500mL",
-              "qty": 2
-            },
             {
               "name": "Heat Pack",
               "qty": 4
@@ -645,31 +562,6 @@
           "name": "Left Side",
           "items": [
             {
-              "name": "I/O stabilizer",
-              "qty": 1,
-              "group": "IO Drill Kit"
-            },
-            {
-              "name": "15mm I/O needle",
-              "qty": 1,
-              "group": "IO Drill Kit"
-            },
-            {
-              "name": "45mm I/O needle",
-              "qty": 1,
-              "group": "IO Drill Kit"
-            },
-            {
-              "name": "25mm I/O needle",
-              "qty": 1,
-              "group": "IO Drill Kit"
-            },
-            {
-              "name": "I/O drill",
-              "qty": 1,
-              "group": "IO Drill Kit"
-            },
-            {
               "name": "Infectious control cleanup kit",
               "qty": 1
             },
@@ -835,6 +727,165 @@
             {
               "name": "Short Cardboard Splint",
               "qty": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Unplaced (from 602 layout)",
+      "categories": [
+        {
+          "name": "Wound care & trauma (was top rear, top shelf)",
+          "items": [
+            {
+              "name": "Alcohol Prep Pads Box",
+              "qty": 1
+            },
+            {
+              "name": "Chlorhexidine Swabs Box",
+              "qty": 1
+            },
+            {
+              "name": "Curad Adhesive Bandages Box",
+              "qty": 1
+            },
+            {
+              "name": "Nail Polish Remover Box",
+              "qty": 1
+            },
+            {
+              "name": "1\" Tape (Cloth/Synthetic)",
+              "qty": 2
+            },
+            {
+              "name": "2\" Tape (Cloth/Synthetic)",
+              "qty": 2
+            },
+            {
+              "name": "Nose Clamp",
+              "qty": 5
+            },
+            {
+              "name": "Coban",
+              "qty": 6
+            },
+            {
+              "name": "Elastic Bandage Roll (Dukal)",
+              "qty": 2
+            },
+            {
+              "name": "Triangular Bandage",
+              "qty": 4
+            },
+            {
+              "name": "Israeli Bandage",
+              "qty": 2
+            },
+            {
+              "name": "2\"x2\" Sterile Sponge",
+              "qty": 10
+            },
+            {
+              "name": "4\"x4\" Sterile Sponge",
+              "qty": 10
+            },
+            {
+              "name": "Gauze Rolls",
+              "qty": 3
+            },
+            {
+              "name": "Chest Seal",
+              "qty": 2
+            },
+            {
+              "name": "Petrolatum Dressing",
+              "qty": 2
+            },
+            {
+              "name": "4\"x4\" Quickclot Dressing",
+              "qty": 3
+            },
+            {
+              "name": "Non-Sterile 2\"x2\" Gauze Sponges Sleeve",
+              "qty": 1
+            },
+            {
+              "name": "Non-Sterile 4\"x4\" Gauze Sponges Sleeve",
+              "qty": 1
+            },
+            {
+              "name": "Trauma Tourniquet",
+              "qty": 4
+            },
+            {
+              "name": "Ring Cutter",
+              "qty": 1
+            },
+            {
+              "name": "Shears",
+              "qty": 1
+            },
+            {
+              "name": "Chest Decompression Needle",
+              "qty": 2
+            },
+            {
+              "name": "Center Punch Tool",
+              "qty": 1
+            },
+            {
+              "name": "Trauma Dressing",
+              "qty": 2
+            },
+            {
+              "name": "Sterile Burn Sheet",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "name": "Misc (was top rear, bottom shelf)",
+          "items": [
+            {
+              "name": "Microdot Glucometer Test Strip Containers",
+              "qty": 2
+            },
+            {
+              "name": "Lancets",
+              "qty": 6
+            },
+            {
+              "name": "Sterile Water for Inhalation Bag 1000mL",
+              "qty": 3
+            },
+            {
+              "name": "NS Bag 1000mL",
+              "qty": 6
+            },
+            {
+              "name": "NS Bag 250mL",
+              "qty": 2
+            },
+            {
+              "name": "NS Bag 100 mL",
+              "qty": 5
+            },
+            {
+              "name": "Arm Board (Short)",
+              "qty": 2
+            },
+            {
+              "name": "Arm Board (Long)",
+              "qty": 2
+            },
+            {
+              "name": "Invasive BP Clamp Mount",
+              "qty": 1
+            },
+            {
+              "name": "MAD",
+              "qty": 4
             }
           ]
         }
