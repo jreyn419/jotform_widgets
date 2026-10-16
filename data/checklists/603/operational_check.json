@@ -1,0 +1,170 @@
+{
+  "_meta": {
+    "name": "Operational Check"
+  },
+  "areas": [
+    {
+      "area": "Lights & Sirens",
+      "categories": [
+        {
+          "name": "Exterior Lights",
+          "items": [
+            {
+              "name": "Headlights",
+              "qty": 1,
+              "type": "check"
+            },
+            {
+              "name": "Blinkers",
+              "qty": 1,
+              "type": "check"
+            },
+            {
+              "name": "Hazards",
+              "qty": 1,
+              "type": "check"
+            },
+            {
+              "name": "Flood Lights",
+              "qty": 1,
+              "type": "check"
+            }
+          ]
+        },
+        {
+          "name": "Emergency",
+          "items": [
+            {
+              "name": "Code 3 Lights",
+              "qty": 1,
+              "type": "check"
+            },
+            {
+              "name": "Sirens",
+              "qty": 1,
+              "type": "check"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Tires",
+      "categories": [
+        {
+          "name": "Front",
+          "items": [
+            {
+              "name": "Left Front",
+              "qty": 1,
+              "type": "gauge",
+              "unit": "PSI",
+              "min": 0,
+              "max": 130,
+              "step": 1,
+              "target": 75,
+              "zones": {
+                "green": 70,
+                "yellow": 60
+              }
+            },
+            {
+              "name": "Right Front",
+              "qty": 1,
+              "type": "gauge",
+              "unit": "PSI",
+              "min": 0,
+              "max": 130,
+              "step": 1,
+              "target": 75,
+              "zones": {
+                "green": 70,
+                "yellow": 60
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rear",
+          "items": [
+            {
+              "name": "Left Rear Outer",
+              "qty": 1,
+              "type": "gauge",
+              "unit": "PSI",
+              "min": 0,
+              "max": 130,
+              "step": 1,
+              "target": 80,
+              "zones": {
+                "green": 75,
+                "yellow": 65
+              }
+            },
+            {
+              "name": "Left Rear Inner",
+              "qty": 1,
+              "type": "gauge",
+              "unit": "PSI",
+              "min": 0,
+              "max": 130,
+              "step": 1,
+              "target": 80,
+              "zones": {
+                "green": 75,
+                "yellow": 65
+              }
+            },
+            {
+              "name": "Right Rear Outer",
+              "qty": 1,
+              "type": "gauge",
+              "unit": "PSI",
+              "min": 0,
+              "max": 130,
+              "step": 1,
+              "target": 80,
+              "zones": {
+                "green": 75,
+                "yellow": 65
+              }
+            },
+            {
+              "name": "Right Rear Inner",
+              "qty": 1,
+              "type": "gauge",
+              "unit": "PSI",
+              "min": 0,
+              "max": 130,
+              "step": 1,
+              "target": 80,
+              "zones": {
+                "green": 75,
+                "yellow": 65
+              }
+            }
+          ]
+        },
+        {
+          "name": "Spare",
+          "items": [
+            {
+              "name": "Spare Tire",
+              "qty": 1,
+              "type": "gauge",
+              "unit": "PSI",
+              "min": 0,
+              "max": 130,
+              "step": 1,
+              "target": 80,
+              "zones": {
+                "green": 75,
+                "yellow": 65
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

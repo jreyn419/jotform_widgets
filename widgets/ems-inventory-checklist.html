@@ -752,6 +752,268 @@
       white-space: nowrap;
     }
 
+    /* Out-of-service banner (any gauge in the red zone) */
+    .oos-banner {
+      display: none;
+      background: #dc3545;
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 10px 15px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .oos-banner.show {
+      display: block;
+    }
+
+    /* Area header states driven by gauge readings */
+    .area-header.gauge-yellow {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+    }
+
+    .area-status.gauge-yellow {
+      background: #ffc107;
+      color: #333;
+    }
+
+    .area-header.gauge-red {
+      background: #f8d7da;
+      border-left: 4px solid #dc3545;
+    }
+
+    .area-status.gauge-red {
+      background: #dc3545;
+      color: white;
+    }
+
+    /* Check items: working / faulty */
+    .checklist-item.check-item {
+      flex-wrap: wrap;
+    }
+
+    .checklist-item.check-item.result-ok { background: #f0fff0; }
+    .checklist-item.check-item.result-fail { background: #fff0f0; }
+    .checklist-item.check-item.unset { background: white; }
+
+    .check-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .check-head .item-info {
+      flex: 1;
+    }
+
+    .check-buttons {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .check-btn {
+      min-width: 92px;
+      padding: 10px 12px;
+      border: 2px solid #dee2e6;
+      border-radius: 10px;
+      background: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .check-btn.ok { color: #155724; }
+    .check-btn.ok:hover { border-color: #28a745; background: #d4edda; }
+    .check-btn.ok.selected { border-color: #28a745; background: #28a745; color: white; }
+    .check-btn.fail { color: #721c24; }
+    .check-btn.fail:hover { border-color: #dc3545; background: #f8d7da; }
+    .check-btn.fail.selected { border-color: #dc3545; background: #dc3545; color: white; }
+
+    .checklist-item.focused .check-btn {
+      min-width: 110px;
+      padding: 14px 12px;
+      font-size: 15px;
+    }
+
+    .check-fail-text {
+      width: 100%;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* Gauge items: a reading on a green / yellow / red scale */
+    .checklist-item.gauge-item {
+      flex-wrap: wrap;
+      align-items: flex-start;
+      padding: 12px 15px 14px;
+    }
+
+    .checklist-item.gauge-item.zone-green { background: #f0fff0; }
+    .checklist-item.gauge-item.zone-yellow { background: #fffbeb; }
+    .checklist-item.gauge-item.zone-red { background: #fff0f0; }
+    .checklist-item.gauge-item.unset { background: white; }
+
+    .gauge-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .gauge-head .item-info {
+      flex: 1;
+    }
+
+    .gauge-readout {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .gauge-value {
+      width: 78px;
+      height: 46px;
+      border: 2px solid #ced4da;
+      border-radius: 10px;
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      color: #333;
+      background: white;
+      -moz-appearance: textfield;
+    }
+
+    .gauge-value::-webkit-outer-spin-button,
+    .gauge-value::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .gauge-value::placeholder {
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+    }
+
+    .gauge-value.zone-green { border-color: #28a745; color: #155724; }
+    .gauge-value.zone-yellow { border-color: #ffc107; color: #856404; }
+    .gauge-value.zone-red { border-color: #dc3545; color: #721c24; }
+
+    .gauge-unit {
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+    }
+
+    .gauge-track-wrap {
+      position: relative;
+      width: 100%;
+      margin-top: 30px;
+    }
+
+    .gauge-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+      width: 100%;
+      height: 14px;
+      border-radius: 7px;
+      outline: none;
+      margin: 0;
+      background: #e9ecef;
+    }
+
+    .gauge-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #6c757d;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      cursor: pointer;
+    }
+
+    .gauge-slider::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #6c757d;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      cursor: pointer;
+    }
+
+    .gauge-item.unset .gauge-slider::-webkit-slider-thumb { opacity: 0.4; }
+    .gauge-item.unset .gauge-slider::-moz-range-thumb { opacity: 0.4; }
+    .gauge-item.zone-green .gauge-slider::-webkit-slider-thumb { border-color: #28a745; }
+    .gauge-item.zone-green .gauge-slider::-moz-range-thumb { border-color: #28a745; }
+    .gauge-item.zone-yellow .gauge-slider::-webkit-slider-thumb { border-color: #ffc107; }
+    .gauge-item.zone-yellow .gauge-slider::-moz-range-thumb { border-color: #ffc107; }
+    .gauge-item.zone-red .gauge-slider::-webkit-slider-thumb { border-color: #dc3545; }
+    .gauge-item.zone-red .gauge-slider::-moz-range-thumb { border-color: #dc3545; }
+
+    .gauge-target {
+      position: absolute;
+      top: -6px;
+      width: 2px;
+      height: 26px;
+      background: #333;
+      pointer-events: none;
+    }
+
+    .gauge-target-label {
+      position: absolute;
+      top: -24px;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 600;
+      color: #555;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .gauge-scale {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-size: 10px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .gauge-zone-text {
+      width: 100%;
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #e9ecef;
+      color: #495057;
+    }
+
+    .gauge-item.zone-green .gauge-zone-text { background: #d4edda; color: #155724; }
+    .gauge-item.zone-yellow .gauge-zone-text { background: #fff3cd; color: #856404; }
+    .gauge-item.zone-red .gauge-zone-text { background: #f8d7da; color: #721c24; }
+
+    .gauge-prev {
+      width: 100%;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #666;
+    }
+
     /* Checklist items */
     .checklist-item {
       display: flex;
@@ -1921,6 +2183,8 @@
       <button class="settings-btn" onclick="openResetDialog()" title="Settings">&#9881;</button>
     </div>
 
+    <div class="oos-banner" id="oosBanner"></div>
+
     <div class="main-content">
       <div class="areas-container" id="areasContainer">
         <!-- Areas will be generated here -->
@@ -2057,8 +2321,16 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.16.0';
+    var VERSION = '1.17.0';
     var CHANGELOG = [
+      { version: '1.17.0', date: '2026-10-16', changes: [
+        'New "gauge" item type for readings such as tire pressure: a slider with green, yellow and red zones, a typed readout, a placard target mark, and action text per zone',
+        'Yellow zone text is day-aware: weekdays say to notify Fleet, weekends say Fleet is closed, notify the supervisor and go Monday morning',
+        'A red reading shows an OUT OF SERVICE banner at the top of the widget and the report, and marks the area header',
+        'Readings appear in the report under READINGS; unrecorded gauges block the completion popup but never count as restock items',
+        'With a Jotform API key configured, each gauge shows the reading from the last submission',
+        'New "check" item type for working / faulty items such as lights and sirens; faults are listed in the report and an item marked "oos": true puts the unit out of service when faulty',
+      ]},
       { version: '1.16.0', date: '2026-10-15', changes: [
         'Focus row: the item being checked is enlarged with bigger +/- controls, a "have X of N" label and an "All present" shortcut; focus moves to the next unfinished item as each one is completed',
         'Tap an item name to move the focus there; completed items are dimmed',
@@ -2539,6 +2811,9 @@
             if (parsed.itemStates) parsed.itemStates = decodeParsedKeys(parsed.itemStates);
             if (parsed.restockStatus) parsed.restockStatus = decodeParsedKeys(parsed.restockStatus);
 
+            // Side effect: remember gauge readings from the last submission
+            if (parsed.itemStates) capturePreviousReadings(parsed.itemStates, parsed.timestamp || 0);
+
             var taggedKeys = parsed.taggedAreas ? Object.keys(parsed.taggedAreas) : [];
             if (parsed && parsed.taggedAreas && taggedKeys.length > 0) {
               callback({
@@ -2737,10 +3012,24 @@
               targetCat = qualifiedName;
             }
 
-            result[areaName][targetCat].push({
-              name: itemObj.name,
-              required: itemObj.qty || 1
-            });
+            var entry = { name: itemObj.name, required: itemObj.qty || 1 };
+            if (itemObj.type === 'gauge') {
+              // A gauge is "complete" once a reading is recorded (actual 1 of 1)
+              entry.type = 'gauge';
+              entry.required = 1;
+              entry.gauge = normalizeGaugeConfig(itemObj);
+            } else if (itemObj.type === 'check') {
+              // A check is "complete" once answered, working or faulty
+              entry.type = 'check';
+              entry.required = 1;
+              entry.check = {
+                oos: isTruthySetting(itemObj.oos),
+                okText: itemObj.okText ? String(itemObj.okText) : 'Working',
+                failText: itemObj.failText ? String(itemObj.failText) : 'Faulty',
+                failNote: itemObj.failNote ? String(itemObj.failNote) : null
+              };
+            }
+            result[areaName][targetCat].push(entry);
           }
         }
       }
@@ -2843,6 +3132,13 @@
       itemDiv.className = 'checklist-item';
       itemDiv.id = 'item_' + key.replace(/[^a-zA-Z0-9]/g, '_');
       itemDiv.setAttribute('data-key', key);
+
+      if (item.type === 'gauge' || item.type === 'check') {
+        if (item.type === 'gauge') buildGaugeRow(itemDiv, key, item);
+        else buildCheckRow(itemDiv, key, item);
+        if (enableFocusRow && focusedKey === key) itemDiv.classList.add('focused');
+        return itemDiv;
+      }
 
       var actual = itemStates[key].actual;
       var status = restockStatus[key] || {};
@@ -3488,6 +3784,411 @@
     }
 
     // Check if a parent group is fully complete (all children sealed/ok, parent items ok/sealed)
+    // =====================================================
+    // GAUGE ITEMS (a reading with green / yellow / red zones)
+    // =====================================================
+    // JSON item:
+    //   { "name": "Left Front", "type": "gauge", "unit": "PSI", "min": 0, "max": 130, "step": 1,
+    //     "target": 75, "zones": { "green": 70, "yellow": 60, "greenMax": 95 },
+    //     "yellowText": "...", "yellowWeekendText": "...", "redText": "...", "greenText": "..." }
+    // reading >= zones.green is green, >= zones.yellow is yellow, below is red;
+    // above zones.greenMax (optional) is yellow. Missing zone bounds fall back to the target.
+
+    var GAUGE_TEXT = {
+      green: 'OK',
+      yellow: 'Passable. Notify Fleet as soon as possible.',
+      yellowWeekend: 'Fleet is closed. Notify the supervisor and go Monday morning.',
+      red: 'Out of service.',
+      unset: 'Tap the number or drag the slider to record a reading'
+    };
+    var previousReadings = null; // key -> { reading, timestamp } from the last submission
+
+    function numOrNull(v) {
+      var n = parseFloat(v);
+      return isFinite(n) ? n : null;
+    }
+
+    function normalizeGaugeConfig(o) {
+      var zones = o.zones || {};
+      var min = numOrNull(o.min); if (min === null) min = 0;
+      var max = numOrNull(o.max); if (max === null) max = 100;
+      var g = {
+        unit: o.unit ? String(o.unit) : '',
+        min: min, max: max,
+        step: numOrNull(o.step) || 1,
+        target: numOrNull(o.target),
+        green: numOrNull(zones.green),
+        yellow: numOrNull(zones.yellow),
+        greenMax: numOrNull(zones.greenMax),
+        greenText: o.greenText ? String(o.greenText) : null,
+        yellowText: o.yellowText ? String(o.yellowText) : null,
+        yellowWeekendText: o.yellowWeekendText ? String(o.yellowWeekendText) : null,
+        redText: o.redText ? String(o.redText) : null
+      };
+      if (g.green === null) g.green = g.target !== null ? g.target : min;
+      if (g.yellow === null) g.yellow = g.green;
+      return g;
+    }
+
+    function isWeekend() {
+      var day = new Date().getDay();
+      return day === 0 || day === 6;
+    }
+
+    function gaugeZone(g, reading) {
+      if (reading === null || reading === undefined || isNaN(reading)) return null;
+      if (reading < g.yellow) return 'red';
+      if (reading < g.green) return 'yellow';
+      if (g.greenMax !== null && reading > g.greenMax) return 'yellow';
+      return 'green';
+    }
+
+    function gaugeZoneText(g, zone) {
+      if (zone === 'green') return g.greenText || GAUGE_TEXT.green;
+      if (zone === 'yellow') {
+        return isWeekend() ? (g.yellowWeekendText || GAUGE_TEXT.yellowWeekend) : (g.yellowText || GAUGE_TEXT.yellow);
+      }
+      if (zone === 'red') return g.redText || GAUGE_TEXT.red;
+      return GAUGE_TEXT.unset;
+    }
+
+    function gaugeReading(key) {
+      var s = itemStates[key];
+      return (s && s.reading !== undefined && s.reading !== null) ? s.reading : null;
+    }
+
+    function gaugePercent(g, v) {
+      var span = (g.max - g.min) || 1;
+      return Math.max(0, Math.min(100, ((v - g.min) / span) * 100));
+    }
+
+    function gaugeTrackGradient(g) {
+      var y = gaugePercent(g, g.yellow), gr = gaugePercent(g, g.green);
+      var stops = ['#dc3545 0%', '#dc3545 ' + y + '%', '#ffc107 ' + y + '%', '#ffc107 ' + gr + '%', '#28a745 ' + gr + '%'];
+      if (g.greenMax !== null) {
+        var gm = gaugePercent(g, g.greenMax);
+        stops.push('#28a745 ' + gm + '%', '#ffc107 ' + gm + '%', '#ffc107 100%');
+      } else {
+        stops.push('#28a745 100%');
+      }
+      return 'linear-gradient(to right, ' + stops.join(', ') + ')';
+    }
+
+    // Every gauge with its current reading and zone, in inventory order.
+    function collectGaugeReadings() {
+      var out = [];
+      for (var areaName in INVENTORY) {
+        for (var catName in INVENTORY[areaName]) {
+          var items = INVENTORY[areaName][catName];
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].type !== 'gauge') continue;
+            var key = generateKey(areaName, catName, items[i].name);
+            var r = gaugeReading(key);
+            out.push({
+              key: key, area: areaName, category: catName, name: items[i].name,
+              reading: r, zone: gaugeZone(items[i].gauge, r),
+              unit: items[i].gauge.unit, gauge: items[i].gauge
+            });
+          }
+        }
+      }
+      return out;
+    }
+
+    function worstGaugeZoneInArea(areaName) {
+      var list = collectGaugeReadings();
+      var worst = null;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].area !== areaName) continue;
+        if (list[i].zone === 'red') return 'red';
+        if (list[i].zone === 'yellow') worst = 'yellow';
+      }
+      var checks = collectCheckResults();
+      for (var c = 0; c < checks.length; c++) {
+        if (checks[c].area !== areaName || checks[c].result !== 'fail') continue;
+        if (checks[c].oos) return 'red';
+        worst = 'yellow';
+      }
+      return worst;
+    }
+
+    // Every check item with its result: [{ key, area, name, result: 'ok'|'fail'|null, oos, check }]
+    function collectCheckResults() {
+      var out = [];
+      for (var areaName in INVENTORY) {
+        for (var catName in INVENTORY[areaName]) {
+          var items = INVENTORY[areaName][catName];
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].type !== 'check') continue;
+            var key = generateKey(areaName, catName, items[i].name);
+            var s = itemStates[key];
+            var result = (s && (s.result === 'ok' || s.result === 'fail')) ? s.result : null;
+            out.push({ key: key, area: areaName, category: catName, name: items[i].name,
+                       result: result, oos: items[i].check.oos, check: items[i].check });
+          }
+        }
+      }
+      return out;
+    }
+
+    function buildCheckRow(itemDiv, key, item) {
+      var s = itemStates[key];
+      var result = (s && (s.result === 'ok' || s.result === 'fail')) ? s.result : null;
+      itemDiv.classList.add('check-item');
+      itemDiv.classList.remove('checked', 'short', 'missing');
+      itemDiv.classList.add(result ? 'result-' + result : 'unset');
+
+      var head = document.createElement('div');
+      head.className = 'check-head';
+      var info = document.createElement('div');
+      info.className = 'item-info';
+      info.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>';
+      info.onclick = (function(k) { return function() { setFocusedItem(k, false); }; })(key);
+      head.appendChild(info);
+
+      var btns = document.createElement('div');
+      btns.className = 'check-buttons';
+      var okBtn = document.createElement('button');
+      okBtn.type = 'button';
+      okBtn.className = 'check-btn ok' + (result === 'ok' ? ' selected' : '');
+      okBtn.textContent = '\u2713 ' + item.check.okText;
+      okBtn.onclick = (function(k) { return function(e) { e.stopPropagation(); setCheckResult(k, 'ok'); }; })(key);
+      var failBtn = document.createElement('button');
+      failBtn.type = 'button';
+      failBtn.className = 'check-btn fail' + (result === 'fail' ? ' selected' : '');
+      failBtn.textContent = '\u2717 ' + item.check.failText;
+      failBtn.onclick = (function(k) { return function(e) { e.stopPropagation(); setCheckResult(k, 'fail'); }; })(key);
+      btns.appendChild(okBtn);
+      btns.appendChild(failBtn);
+      head.appendChild(btns);
+      itemDiv.appendChild(head);
+
+      var note = document.createElement('div');
+      note.className = 'check-fail-text';
+      note.textContent = checkFailText(item);
+      note.style.display = result === 'fail' ? '' : 'none';
+      itemDiv.appendChild(note);
+    }
+
+    function checkFailText(item) {
+      if (item.check.failNote) return item.check.failNote;
+      return item.check.oos ? 'Out of service. Notify the supervisor.' : 'Report to Fleet.';
+    }
+
+    function refreshCheckRow(key, item) {
+      var row = document.getElementById('item_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (!row) return;
+      var s = itemStates[key];
+      var result = (s && (s.result === 'ok' || s.result === 'fail')) ? s.result : null;
+      row.classList.remove('result-ok', 'result-fail', 'unset', 'checked', 'short', 'missing');
+      row.classList.add(result ? 'result-' + result : 'unset');
+      var okBtn = row.querySelector('.check-btn.ok');
+      var failBtn = row.querySelector('.check-btn.fail');
+      if (okBtn) okBtn.classList.toggle('selected', result === 'ok');
+      if (failBtn) failBtn.classList.toggle('selected', result === 'fail');
+      var note = row.querySelector('.check-fail-text');
+      if (note) note.style.display = result === 'fail' ? '' : 'none';
+    }
+
+    function setCheckResult(key, result, quiet) {
+      var parts = key.split('::');
+      var item = findItem(parts[0], parts[1], parts[2]);
+      if (!item || item.type !== 'check') return;
+      if (result === 'ok' || result === 'fail') {
+        itemStates[key] = { actual: 1, result: result };
+      } else {
+        itemStates[key] = { actual: 0, result: null };
+      }
+      refreshCheckRow(key, item);
+      if (quiet) return;
+
+      updateAllStatuses();
+      updateSummary();
+      if (stateReady) saveState();
+      if (itemStates[key].actual >= 1) autoCategoryAdvance(parts[0], parts[1]);
+      if (enableFocusRow) advanceFocus(key, !isCategoryComplete(parts[0], parts[1]));
+      checkForCompletion();
+    }
+
+    function updateOosBanner() {
+      var el = document.getElementById('oosBanner');
+      if (!el) return;
+      var list = collectGaugeReadings();
+      var reds = [];
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].zone === 'red') reds.push(list[i].name + ' ' + list[i].reading + ' ' + list[i].unit);
+      }
+      var checks = collectCheckResults();
+      for (var c = 0; c < checks.length; c++) {
+        if (checks[c].result === 'fail' && checks[c].oos) reds.push(checks[c].name + ' faulty');
+      }
+      if (reds.length === 0) {
+        el.classList.remove('show');
+        el.textContent = '';
+      } else {
+        el.textContent = 'OUT OF SERVICE: ' + reds.join(', ');
+        el.classList.add('show');
+      }
+    }
+
+    function previousReadingText(key, g) {
+      if (!previousReadings || !previousReadings[key]) return '';
+      var p = previousReadings[key];
+      var label = 'last check';
+      if (p.timestamp) {
+        try { label = new Date(p.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); } catch (e) {}
+      }
+      return 'Last reading: ' + p.reading + ' ' + g.unit + ' (' + label + ')';
+    }
+
+    // Called with itemStates from the most recent submission.
+    function capturePreviousReadings(states, timestamp) {
+      var found = {};
+      var n = 0;
+      for (var k in states) {
+        var s = states[k];
+        if (s && s.reading !== undefined && s.reading !== null) {
+          found[k] = { reading: s.reading, timestamp: timestamp || 0 };
+          n++;
+        }
+      }
+      if (n === 0) return;
+      previousReadings = found;
+      var rows = document.querySelectorAll('.checklist-item.gauge-item[data-key]');
+      for (var i = 0; i < rows.length; i++) {
+        var key = rows[i].getAttribute('data-key');
+        var parts = key.split('::');
+        var item = findItem(parts[0], parts[1], parts[2]);
+        var prev = rows[i].querySelector('.gauge-prev');
+        if (!prev || !item || !item.gauge) continue;
+        var text = previousReadingText(key, item.gauge);
+        prev.textContent = text;
+        prev.style.display = text ? '' : 'none';
+      }
+    }
+
+    function buildGaugeRow(itemDiv, key, item) {
+      var g = item.gauge;
+      var reading = gaugeReading(key);
+      var zone = gaugeZone(g, reading);
+      itemDiv.classList.add('gauge-item');
+      itemDiv.classList.remove('checked', 'short', 'missing');
+      itemDiv.classList.add(zone ? 'zone-' + zone : 'unset');
+
+      var head = document.createElement('div');
+      head.className = 'gauge-head';
+      var info = document.createElement('div');
+      info.className = 'item-info';
+      info.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>';
+      info.onclick = (function(k) { return function() { setFocusedItem(k, false); }; })(key);
+      var readout = document.createElement('div');
+      readout.className = 'gauge-readout';
+      var num = document.createElement('input');
+      num.type = 'number';
+      num.inputMode = 'decimal';
+      num.className = 'gauge-value' + (zone ? ' zone-' + zone : '');
+      num.min = g.min; num.max = g.max; num.step = g.step;
+      num.placeholder = 'Tap';
+      if (reading !== null) num.value = reading;
+      num.onchange = (function(k) { return function() { setGaugeReading(k, this.value); }; })(key);
+      var unit = document.createElement('span');
+      unit.className = 'gauge-unit';
+      unit.textContent = g.unit;
+      readout.appendChild(num);
+      readout.appendChild(unit);
+      head.appendChild(info);
+      head.appendChild(readout);
+      itemDiv.appendChild(head);
+
+      var wrap = document.createElement('div');
+      wrap.className = 'gauge-track-wrap';
+      var slider = document.createElement('input');
+      slider.type = 'range';
+      slider.className = 'gauge-slider';
+      slider.min = g.min; slider.max = g.max; slider.step = g.step;
+      slider.value = reading !== null ? reading : (g.target !== null ? g.target : g.min);
+      slider.style.background = gaugeTrackGradient(g);
+      slider.oninput = (function(k) { return function() { setGaugeReading(k, this.value, true); }; })(key);
+      slider.onchange = (function(k) { return function() { setGaugeReading(k, this.value); }; })(key);
+      wrap.appendChild(slider);
+      if (g.target !== null) {
+        // The thumb travels (track width - thumb width), so map the target onto that span
+        var frac = gaugePercent(g, g.target) / 100;
+        var left = 'calc(16px + (100% - 32px) * ' + frac + ')';
+        var tick = document.createElement('span');
+        tick.className = 'gauge-target';
+        tick.style.left = left;
+        var lbl = document.createElement('span');
+        lbl.className = 'gauge-target-label';
+        lbl.style.left = left;
+        lbl.textContent = 'target ' + g.target;
+        wrap.appendChild(tick);
+        wrap.appendChild(lbl);
+      }
+      itemDiv.appendChild(wrap);
+
+      var scale = document.createElement('div');
+      scale.className = 'gauge-scale';
+      scale.innerHTML = '<span>' + g.min + '</span><span>red &lt; ' + g.yellow + ' \u00B7 yellow &lt; ' + g.green + ' \u00B7 green</span><span>' + g.max + '</span>';
+      itemDiv.appendChild(scale);
+
+      var zt = document.createElement('div');
+      zt.className = 'gauge-zone-text';
+      zt.textContent = gaugeZoneText(g, zone);
+      itemDiv.appendChild(zt);
+
+      var prev = document.createElement('div');
+      prev.className = 'gauge-prev';
+      var prevText = previousReadingText(key, g);
+      prev.textContent = prevText;
+      if (!prevText) prev.style.display = 'none';
+      itemDiv.appendChild(prev);
+    }
+
+    function refreshGaugeRow(key, item) {
+      var row = document.getElementById('item_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (!row) return;
+      var g = item.gauge;
+      var r = gaugeReading(key);
+      var zone = gaugeZone(g, r);
+      row.classList.remove('zone-green', 'zone-yellow', 'zone-red', 'unset', 'checked', 'short', 'missing');
+      row.classList.add(zone ? 'zone-' + zone : 'unset');
+      var num = row.querySelector('.gauge-value');
+      if (num) {
+        if (document.activeElement !== num) num.value = r !== null ? r : '';
+        num.classList.remove('zone-green', 'zone-yellow', 'zone-red');
+        if (zone) num.classList.add('zone-' + zone);
+      }
+      var slider = row.querySelector('.gauge-slider');
+      if (slider && r !== null && document.activeElement !== slider) slider.value = r;
+      var zt = row.querySelector('.gauge-zone-text');
+      if (zt) zt.textContent = gaugeZoneText(g, zone);
+    }
+
+    // quiet = live slider drag: update the row only, no save or navigation
+    function setGaugeReading(key, value, quiet) {
+      var parts = key.split('::');
+      var item = findItem(parts[0], parts[1], parts[2]);
+      if (!item || item.type !== 'gauge') return;
+      var g = item.gauge;
+      var v = parseFloat(value);
+      if (value === '' || value === null || value === undefined || isNaN(v)) {
+        itemStates[key] = { actual: 0, reading: null };
+      } else {
+        v = Math.max(g.min, Math.min(g.max, v));
+        itemStates[key] = { actual: 1, reading: v };
+      }
+      refreshGaugeRow(key, item);
+      if (quiet) return;
+
+      updateAllStatuses();
+      updateSummary();
+      if (stateReady) saveState();
+      if (itemStates[key].actual >= 1) autoCategoryAdvance(parts[0], parts[1]);
+      if (enableFocusRow) advanceFocus(key, !isCategoryComplete(parts[0], parts[1]));
+      checkForCompletion();
+    }
+
     // =====================================================
     // PROGRESS STRIPS
     // =====================================================
@@ -4324,6 +5025,16 @@
     function setItemValue(key, value, skipUpdate) {
       var parts = key.split('::');
       var item = findItem(parts[0], parts[1], parts[2]);
+      if (item && item.type === 'gauge') {
+        // Gauges are only completed by a real reading; a batch "check all"
+        // cannot invent one. Clearing to zero does clear the reading.
+        if (value <= 0) setGaugeReading(key, '', skipUpdate);
+        return;
+      }
+      if (item && item.type === 'check') {
+        if (value <= 0) setCheckResult(key, null, skipUpdate);
+        return;
+      }
       var maxValue = item ? item.required : 9999;
       
       value = Math.max(0, Math.min(maxValue, value));
@@ -5298,6 +6009,7 @@
     // =====================================================
     
     function updateAllStatuses() {
+      updateOosBanner();
       for (var areaName in INVENTORY) {
         var areaId = 'area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
         var areaDiv = document.getElementById(areaId);
@@ -5410,6 +6122,20 @@
           } else {
             header.classList.add('has-issues');
             statusEl.classList.add('issues');
+          }
+
+          // Gauge readings override the header colour: red beats yellow beats counts
+          header.classList.remove('gauge-red', 'gauge-yellow');
+          statusEl.classList.remove('gauge-red', 'gauge-yellow');
+          var worstZone = worstGaugeZoneInArea(areaName);
+          if (worstZone === 'red') {
+            header.classList.add('gauge-red');
+            statusEl.classList.add('gauge-red');
+            statusEl.textContent = 'OUT OF SERVICE';
+          } else if (worstZone === 'yellow') {
+            header.classList.add('gauge-yellow');
+            statusEl.classList.add('gauge-yellow');
+            statusEl.textContent = areaOk + '/' + areaTotal + ' \u00B7 NOTIFY';
           }
         }
 
@@ -5563,6 +6289,11 @@
             var actual = (itemStates[key] || { actual: 0 }).actual;
             var required = items[i].required;
             
+            if (items[i].type === 'gauge' || items[i].type === 'check') {
+              if (actual >= required) okCount++;
+              continue;
+            }
+
             if (actual >= required) {
               okCount++;
             } else {
@@ -6068,6 +6799,39 @@
         else if (o2.low.length > 0) summaryParts.push('O2 low: ' + o2.low.join(', '));
       }
 
+      // Gauge readings (tire pressure etc.)
+      var gaugeList = collectGaugeReadings();
+      var gaugeRed = [], gaugeYellow = [], gaugeUnset = [];
+      for (var gi = 0; gi < gaugeList.length; gi++) {
+        if (gaugeList[gi].zone === 'red') gaugeRed.push(gaugeList[gi]);
+        else if (gaugeList[gi].zone === 'yellow') gaugeYellow.push(gaugeList[gi]);
+        else if (gaugeList[gi].zone === null) gaugeUnset.push(gaugeList[gi]);
+      }
+      if (gaugeRed.length > 0) summaryParts.push(gaugeRed.length + ' OUT OF SERVICE reading' + (gaugeRed.length > 1 ? 's' : ''));
+      if (gaugeYellow.length > 0) summaryParts.push(gaugeYellow.length + ' reading' + (gaugeYellow.length > 1 ? 's' : '') + ' to report');
+      if (gaugeUnset.length > 0) summaryParts.push(gaugeUnset.length + ' reading' + (gaugeUnset.length > 1 ? 's' : '') + ' not recorded');
+      var checkList = collectCheckResults();
+      var checkFails = [], checkUnset = [], checkOos = [];
+      for (var ci = 0; ci < checkList.length; ci++) {
+        if (checkList[ci].result === 'fail') { checkFails.push(checkList[ci]); if (checkList[ci].oos) checkOos.push(checkList[ci]); }
+        else if (checkList[ci].result === null) checkUnset.push(checkList[ci]);
+      }
+      if (checkOos.length > 0) summaryParts.push(checkOos.length + ' OUT OF SERVICE fault' + (checkOos.length > 1 ? 's' : ''));
+      if (checkFails.length - checkOos.length > 0) summaryParts.push((checkFails.length - checkOos.length) + ' fault' + (checkFails.length - checkOos.length > 1 ? 's' : '') + ' to report');
+      if (checkUnset.length > 0) summaryParts.push(checkUnset.length + ' check' + (checkUnset.length > 1 ? 's' : '') + ' not done');
+      var checkLineText = function(r) {
+        var text = r.area + ' > ' + r.name + ' \u2014 ';
+        if (r.result === null) return text + 'NOT CHECKED';
+        if (r.result === 'ok') return text + r.check.okText;
+        return text + r.check.failText.toUpperCase() + (r.oos ? ' [OUT OF SERVICE]' : '');
+      };
+
+      var gaugeLineText = function(r) {
+        var text = r.area + ' > ' + r.name + ' \u2014 ';
+        if (r.zone === null) return text + 'NOT RECORDED';
+        return text + r.reading + ' ' + r.unit + ' [' + r.zone.toUpperCase() + '] ' + gaugeZoneText(r.gauge, r.zone);
+      };
+
       var unansweredRequired = 0;
       var flaggedAnswers = 0;
       for (var qi = 0; qi < customQuestions.length; qi++) {
@@ -6111,6 +6875,39 @@
         lines.push('All items accounted for. No restock actions needed.');
       }
       lines.push('');
+
+      // --- Out of service (red gauge readings, faulty OOS checks) ---
+      if (gaugeRed.length > 0 || checkOos.length > 0) {
+        lines.push('\u26D4 OUT OF SERVICE');
+        lines.push('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500');
+        for (var gr = 0; gr < gaugeRed.length; gr++) {
+          lines.push('  \u2022 ' + gaugeRed[gr].name + ' \u2014 ' + gaugeRed[gr].reading + ' ' + gaugeRed[gr].unit);
+        }
+        for (var co = 0; co < checkOos.length; co++) {
+          lines.push('  \u2022 ' + checkOos[co].name + ' \u2014 ' + checkOos[co].check.failText);
+        }
+        lines.push('');
+      }
+
+      // --- Checks (working / faulty) ---
+      if (checkList.length > 0) {
+        lines.push('\u2699 CHECKS (' + checkList.length + ')');
+        lines.push('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500');
+        for (var cl = 0; cl < checkList.length; cl++) {
+          lines.push('  \u2022 ' + checkLineText(checkList[cl]));
+        }
+        lines.push('');
+      }
+
+      // --- Readings ---
+      if (gaugeList.length > 0) {
+        lines.push('\uD83D\uDCDF READINGS (' + gaugeList.length + ')');
+        lines.push('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500');
+        for (var gl = 0; gl < gaugeList.length; gl++) {
+          lines.push('  \u2022 ' + gaugeLineText(gaugeList[gl]));
+        }
+        lines.push('');
+      }
 
       // --- Oxygen Supply ---
       if (o2.enabled) {
@@ -6212,6 +7009,34 @@
         htmlLines.push('<div style="margin-bottom:8px;"><b>Summary:</b> ' + summaryParts.join(', ') + '</div>');
       } else {
         htmlLines.push('<div style="margin-bottom:8px;">All items accounted for. No restock actions needed.</div>');
+      }
+
+      if (gaugeRed.length > 0 || checkOos.length > 0) {
+        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#fff;background:#c00;padding:4px 8px;">\u26D4 OUT OF SERVICE</div>');
+        for (var hgr = 0; hgr < gaugeRed.length; hgr++) {
+          htmlLines.push('<div style="padding-left:12px;color:#c00;font-weight:bold;">&bull; ' + escapeHtml(gaugeRed[hgr].name + ' \u2014 ' + gaugeRed[hgr].reading + ' ' + gaugeRed[hgr].unit) + '</div>');
+        }
+        for (var hco = 0; hco < checkOos.length; hco++) {
+          htmlLines.push('<div style="padding-left:12px;color:#c00;font-weight:bold;">&bull; ' + escapeHtml(checkOos[hco].name + ' \u2014 ' + checkOos[hco].check.failText) + '</div>');
+        }
+      }
+
+      if (checkList.length > 0) {
+        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#555;">\u2699 CHECKS (' + checkList.length + ')</div>');
+        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
+        for (var hcl = 0; hcl < checkList.length; hcl++) {
+          var hcColor = checkList[hcl].result === 'fail' ? '#c00' : (checkList[hcl].result === 'ok' ? '#2a7d2a' : '#555');
+          htmlLines.push('<div style="padding-left:12px;color:' + hcColor + ';">&bull; ' + escapeHtml(checkLineText(checkList[hcl])).replace(' \u2014 ', ' &mdash; ') + '</div>');
+        }
+      }
+
+      if (gaugeList.length > 0) {
+        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#555;">\uD83D\uDCDF READINGS (' + gaugeList.length + ')</div>');
+        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
+        for (var hgl = 0; hgl < gaugeList.length; hgl++) {
+          var hgColor = gaugeList[hgl].zone === 'red' ? '#c00' : (gaugeList[hgl].zone === 'yellow' ? '#856404' : (gaugeList[hgl].zone === 'green' ? '#2a7d2a' : '#555'));
+          htmlLines.push('<div style="padding-left:12px;color:' + hgColor + ';">&bull; ' + escapeHtml(gaugeLineText(gaugeList[hgl])).replace(' \u2014 ', ' &mdash; ') + '</div>');
+        }
       }
 
       if (o2.enabled) {
