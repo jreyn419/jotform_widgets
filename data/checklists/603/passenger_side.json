@@ -4,7 +4,222 @@
   },
   "areas": [
     {
-      "area": "A (Upper CCT Cabinet)",
+      "area": "Top Cabinet",
+      "categories": [
+        {
+          "name": "General"
+        }
+      ]
+    },
+    {
+      "area": "Bench",
+      "categories": [
+        {
+          "name": "Right: Large Box",
+          "items": [
+            {
+              "name": "SpO2 Sensor, Clip",
+              "qty": 1
+            },
+            {
+              "name": "Monitor-to-SpO2 Cable",
+              "qty": 1
+            },
+            {
+              "name": "Montor-to-BP-cuff connector",
+              "qty": 1
+            },
+            {
+              "name": "4-lead cord",
+              "qty": 1
+            },
+            {
+              "name": "BP cuff connector tubing (short, bifurcated tubing)",
+              "qty": 1
+            },
+            {
+              "name": "Monitor Battery (charged)",
+              "qty": 2
+            },
+            {
+              "name": "Electrode Bag",
+              "qty": 1
+            },
+            {
+              "name": "Lancets",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Sterile 2x2",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Adhesive Bandages",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Alcohol Prep Pads",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Glucometer Test Strip",
+              "qty": 1,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Glucometer",
+              "qty": 1,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "7",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "8",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "9",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "10",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "11",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "11L",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "12",
+              "qty": 1,
+              "group": "BP Cuffs"
+            }
+          ]
+        },
+        {
+          "name": "Right: Small Box",
+          "items": [
+            {
+              "name": "Adult/Neonatal Adhesive SpO2 Sensor",
+              "qty": 3
+            },
+            {
+              "name": "Infant Adhesive SpO2 Sensor",
+              "qty": 3
+            },
+            {
+              "name": "Monitor Printer Paper Rolls",
+              "qty": 2
+            },
+            {
+              "name": "W/A Temp Probe Sheaths",
+              "qty": 2
+            },
+            {
+              "name": "Razors (For EKG Prep)",
+              "qty": 2
+            },
+            {
+              "name": "Adult/Child Defib Pads",
+              "qty": 1
+            },
+            {
+              "name": "Infant/Pediatric Defib Pads",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Right: Shelf, Left",
+          "items": [
+            {
+              "name": "Extrication Collars Bag",
+              "qty": 1
+            },
+            {
+              "name": "Pedi-Mate",
+              "qty": 1
+            },
+            {
+              "name": "Pelvic Sling",
+              "qty": 1
+            },
+            {
+              "name": "L",
+              "qty": 1,
+              "group": "Soft Collars"
+            },
+            {
+              "name": "M",
+              "qty": 1,
+              "group": "Soft Collars"
+            },
+            {
+              "name": "S",
+              "qty": 1,
+              "group": "Soft Collars"
+            }
+          ]
+        },
+        {
+          "name": "Left",
+          "items": [
+            {
+              "name": "Responder Bag",
+              "qty": 1
+            },
+            {
+              "name": "IV Fluid Warmer",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Extrication Collars Bag",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Head Bed + Triangles",
+              "qty": 3
+            },
+            {
+              "name": "Adult C-Collar",
+              "qty": 3
+            },
+            {
+              "name": "Pediatric C-Collar",
+              "qty": 3
+            },
+            {
+              "name": "Adult XCollar",
+              "qty": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Top Equipment Cabinet",
       "categories": [
         {
           "name": "General",
@@ -73,7 +288,15 @@
       ]
     },
     {
-      "area": "B (Lower CCT Cabinet)",
+      "area": "Drawer",
+      "categories": [
+        {
+          "name": "General"
+        }
+      ]
+    },
+    {
+      "area": "Bottom Equipment Cabinet",
       "categories": [
         {
           "name": "Upper Shelf",
@@ -251,218 +474,6 @@
             },
             {
               "name": "18 Fr.",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "E (Bench, Right)",
-      "categories": [
-        {
-          "name": "Large Box",
-          "items": [
-            {
-              "name": "SpO2 Sensor, Clip",
-              "qty": 1
-            },
-            {
-              "name": "Monitor-to-SpO2 Cable",
-              "qty": 1
-            },
-            {
-              "name": "Montor-to-BP-cuff connector",
-              "qty": 1
-            },
-            {
-              "name": "4-lead cord",
-              "qty": 1
-            },
-            {
-              "name": "BP cuff connector tubing (short, bifurcated tubing)",
-              "qty": 1
-            },
-            {
-              "name": "Monitor Battery (charged)",
-              "qty": 2
-            },
-            {
-              "name": "Electrode Bag",
-              "qty": 1
-            },
-            {
-              "name": "Lancets",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Sterile 2x2",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Adhesive Bandages",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Alcohol Prep Pads",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Glucometer Test Strip",
-              "qty": 1,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Glucometer",
-              "qty": 1,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "7",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "8",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "9",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "10",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "11",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "11L",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "12",
-              "qty": 1,
-              "group": "BP Cuffs"
-            }
-          ]
-        },
-        {
-          "name": "Small Box",
-          "items": [
-            {
-              "name": "Adult/Neonatal Adhesive SpO2 Sensor",
-              "qty": 3
-            },
-            {
-              "name": "Infant Adhesive SpO2 Sensor",
-              "qty": 3
-            },
-            {
-              "name": "Monitor Printer Paper Rolls",
-              "qty": 2
-            },
-            {
-              "name": "W/A Temp Probe Sheaths",
-              "qty": 2
-            },
-            {
-              "name": "Razors (For EKG Prep)",
-              "qty": 2
-            },
-            {
-              "name": "Adult/Child Defib Pads",
-              "qty": 1
-            },
-            {
-              "name": "Infant/Pediatric Defib Pads",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "name": "Shelf, Left",
-          "items": [
-            {
-              "name": "Extrication Collars Bag",
-              "qty": 1
-            },
-            {
-              "name": "Pedi-Mate",
-              "qty": 1
-            },
-            {
-              "name": "Pelvic Sling",
-              "qty": 1
-            },
-            {
-              "name": "L",
-              "qty": 1,
-              "group": "Soft Collars"
-            },
-            {
-              "name": "M",
-              "qty": 1,
-              "group": "Soft Collars"
-            },
-            {
-              "name": "S",
-              "qty": 1,
-              "group": "Soft Collars"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "Extrication Collars Bag",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Head Bed + Triangles",
-              "qty": 3
-            },
-            {
-              "name": "Adult C-Collar",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric C-Collar",
-              "qty": 3
-            },
-            {
-              "name": "Adult XCollar",
-              "qty": 4
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "F (Bench, Left)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Responder Bag",
-              "qty": 1
-            },
-            {
-              "name": "IV Fluid Warmer",
               "qty": 1
             }
           ]

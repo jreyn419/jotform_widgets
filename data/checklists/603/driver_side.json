@@ -4,7 +4,7 @@
   },
   "areas": [
     {
-      "area": "G (Top Cabinet Towards Back Door)",
+      "area": "Top Rear Cabinet",
       "categories": [
         {
           "name": "Top Shelf",
@@ -307,41 +307,7 @@
       ]
     },
     {
-      "area": "H",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Surgical Masks Box",
-              "qty": 1
-            },
-            {
-              "name": "Medium Gloves",
-              "qty": 1
-            },
-            {
-              "name": "Large Gloves",
-              "qty": 1
-            },
-            {
-              "name": "Hand Sanitizer",
-              "qty": 1
-            },
-            {
-              "name": "Biohazard Bags",
-              "qty": 2
-            },
-            {
-              "name": "Paper Towels, roll (or stack of napkins)",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "I (Bottom Shelves Towards Back Door)",
+      "area": "Bottom Rear Cabinet",
       "categories": [
         {
           "name": "Top Shelf",
@@ -404,59 +370,7 @@
       ]
     },
     {
-      "area": "J (Bench)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Pillow",
-              "qty": 3
-            },
-            {
-              "name": "Pillow case (disposable)",
-              "qty": 3
-            },
-            {
-              "name": "Blanket",
-              "qty": 6
-            },
-            {
-              "name": "Emergency Blanket",
-              "qty": 2
-            },
-            {
-              "name": "Oxygen Cylinder, Type D",
-              "qty": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "Top of Bench",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Yellow Table",
-              "qty": 1
-            },
-            {
-              "name": "Medslinger Bag",
-              "qty": 1
-            },
-            {
-              "name": "Zoll Monitor",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "K (Airway Cabinet)",
+      "area": "Middle Cabinet",
       "categories": [
         {
           "name": "Left Side",
@@ -663,29 +577,46 @@
       ]
     },
     {
-      "area": "Action Area",
+      "area": "Bench",
       "categories": [
         {
-          "name": "General",
+          "name": "In Bench",
           "items": [
             {
-              "name": "Unused Suction Container",
+              "name": "Pillow",
+              "qty": 3
+            },
+            {
+              "name": "Pillow case (disposable)",
+              "qty": 3
+            },
+            {
+              "name": "Blanket",
+              "qty": 6
+            },
+            {
+              "name": "Emergency Blanket",
+              "qty": 2
+            },
+            {
+              "name": "Oxygen Cylinder, Type D",
+              "qty": 3
+            }
+          ]
+        },
+        {
+          "name": "Top of Bench",
+          "items": [
+            {
+              "name": "Yellow Table",
               "qty": 1
             },
             {
-              "name": "Unused Suction Tubing & Suction Tip",
+              "name": "Medslinger Bag",
               "qty": 1
             },
             {
-              "name": "Getac",
-              "qty": 1
-            },
-            {
-              "name": "Getac Charger",
-              "qty": 1
-            },
-            {
-              "name": "Monitor Charger",
+              "name": "Zoll Monitor",
               "qty": 1
             }
           ]
@@ -693,7 +624,7 @@
       ]
     },
     {
-      "area": "L (Action Area Cabinet)",
+      "area": "Front Cabinet",
       "categories": [
         {
           "name": "Left Side",
@@ -763,6 +694,70 @@
             {
               "name": "Baby Cap (if not included in OB kit)",
               "qty": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "H",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Surgical Masks Box",
+              "qty": 1
+            },
+            {
+              "name": "Medium Gloves",
+              "qty": 1
+            },
+            {
+              "name": "Large Gloves",
+              "qty": 1
+            },
+            {
+              "name": "Hand Sanitizer",
+              "qty": 1
+            },
+            {
+              "name": "Biohazard Bags",
+              "qty": 2
+            },
+            {
+              "name": "Paper Towels, roll (or stack of napkins)",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Action Area",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Unused Suction Container",
+              "qty": 1
+            },
+            {
+              "name": "Unused Suction Tubing & Suction Tip",
+              "qty": 1
+            },
+            {
+              "name": "Getac",
+              "qty": 1
+            },
+            {
+              "name": "Getac Charger",
+              "qty": 1
+            },
+            {
+              "name": "Monitor Charger",
+              "qty": 1
             }
           ]
         }
