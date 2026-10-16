@@ -861,7 +861,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.9.0"
+VERSION = "6.10.0"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1005,11 +1005,14 @@ _LEMSA_DATA_DEFAULT = [
 # == Data model ==============================================================
 
 class Item:
-    __slots__ = ("name", "qty", "group")
-    def __init__(self, name, qty, group=None):
+    __slots__ = ("name", "qty", "group", "extra")
+    def __init__(self, name, qty, group=None, extra=None):
         self.name = name
         self.qty = qty
         self.group = group
+        # Fields the editor does not model (e.g. type/unit/zones on gauge and
+        # check items) are kept here and written back unchanged on save.
+        self.extra = dict(extra) if extra else {}
 
 class Category:
     __slots__ = ("name", "items")
@@ -1068,7 +1071,8 @@ class InventoryFile:
                     cat.items.append(Item(
                         item_obj.get("name", ""),
                         item_obj.get("qty", 1),
-                        item_obj.get("group")
+                        item_obj.get("group"),
+                        {k: v for k, v in item_obj.items() if k not in ("name", "qty", "group")}
                     ))
                 area.categories.append(cat)
             areas.append(area)
@@ -1092,6 +1096,8 @@ class InventoryFile:
                         item_obj = {"name": it.name, "qty": it.qty}
                         if it.group:
                             item_obj["group"] = it.group
+                        for k, v in it.extra.items():
+                            item_obj[k] = v
                         items.append(item_obj)
                     cat_obj["items"] = items
                 cats.append(cat_obj)
