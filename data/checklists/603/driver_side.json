@@ -255,16 +255,7 @@
       "categories": [
         {
           "name": "Top Shelf",
-          "items": [
-            {
-              "name": "Heat Pack",
-              "qty": 4
-            },
-            {
-              "name": "Cold Pack",
-              "qty": 4
-            }
-          ]
+          "items": []
         },
         {
           "name": "Bottom Shelf",
@@ -300,6 +291,126 @@
             {
               "name": "Bleach Wipes Container",
               "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Rear Tabletop",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Heat Pack",
+              "qty": 4
+            },
+            {
+              "name": "Cold Pack",
+              "qty": 4
+            },
+            {
+              "name": "Nail Polish Remover Box",
+              "qty": 1
+            },
+            {
+              "name": "Chlorhexidine Swabs Box",
+              "qty": 1
+            },
+            {
+              "name": "Alcohol Prep Pads Box",
+              "qty": 1
+            },
+            {
+              "name": "Iodine (Betadine) Prep Pads",
+              "qty": 4
+            },
+            {
+              "name": "IV start kits",
+              "qty": 4
+            },
+            {
+              "name": "14G ORANGE",
+              "qty": 6,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "16G GRAY",
+              "qty": 6,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "18G GREEN",
+              "qty": 6,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "20G PINK",
+              "qty": 6,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "22G BLUE",
+              "qty": 4,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "24G YELLOW",
+              "qty": 4,
+              "group": "IV Catheter"
+            },
+            {
+              "name": "Rubber (Elastic) Tourniquet",
+              "qty": 6
+            },
+            {
+              "name": "Tegaderm",
+              "qty": 6
+            },
+            {
+              "name": "NS Flush",
+              "qty": 10
+            },
+            {
+              "name": "IV Extension Set",
+              "qty": 6
+            },
+            {
+              "name": "1\" Tape (Cloth/Synthetic)",
+              "qty": 2
+            },
+            {
+              "name": "2\" Tape (Cloth/Synthetic)",
+              "qty": 2
+            },
+            {
+              "name": "Coban",
+              "qty": 6
+            },
+            {
+              "name": "Non-Sterile 4\"x4\" Gauze Sponges Sleeve",
+              "qty": 1
+            },
+            {
+              "name": "Non-Sterile 2\"x2\" Gauze Sponges Sleeve",
+              "qty": 1
+            },
+            {
+              "name": "Curad Adhesive Bandages Box",
+              "qty": 1
+            },
+            {
+              "name": "Shears",
+              "qty": 1
+            },
+            {
+              "name": "4\"x4\" Sterile Sponge",
+              "qty": 10
+            },
+            {
+              "name": "2\"x2\" Sterile Sponge",
+              "qty": 10
             }
           ]
         }
@@ -743,36 +854,8 @@
           "name": "Wound care & trauma (was top rear, top shelf)",
           "items": [
             {
-              "name": "Alcohol Prep Pads Box",
-              "qty": 1
-            },
-            {
-              "name": "Chlorhexidine Swabs Box",
-              "qty": 1
-            },
-            {
-              "name": "Curad Adhesive Bandages Box",
-              "qty": 1
-            },
-            {
-              "name": "Nail Polish Remover Box",
-              "qty": 1
-            },
-            {
-              "name": "1\" Tape (Cloth/Synthetic)",
-              "qty": 2
-            },
-            {
-              "name": "2\" Tape (Cloth/Synthetic)",
-              "qty": 2
-            },
-            {
               "name": "Nose Clamp",
               "qty": 5
-            },
-            {
-              "name": "Coban",
-              "qty": 6
             },
             {
               "name": "Elastic Bandage Roll (Dukal)",
@@ -785,14 +868,6 @@
             {
               "name": "Israeli Bandage",
               "qty": 2
-            },
-            {
-              "name": "2\"x2\" Sterile Sponge",
-              "qty": 10
-            },
-            {
-              "name": "4\"x4\" Sterile Sponge",
-              "qty": 10
             },
             {
               "name": "Gauze Rolls",
@@ -811,23 +886,11 @@
               "qty": 3
             },
             {
-              "name": "Non-Sterile 2\"x2\" Gauze Sponges Sleeve",
-              "qty": 1
-            },
-            {
-              "name": "Non-Sterile 4\"x4\" Gauze Sponges Sleeve",
-              "qty": 1
-            },
-            {
               "name": "Trauma Tourniquet",
               "qty": 4
             },
             {
               "name": "Ring Cutter",
-              "qty": 1
-            },
-            {
-              "name": "Shears",
               "qty": 1
             },
             {

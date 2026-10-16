@@ -475,10 +475,6 @@
               "qty": 5
             },
             {
-              "name": "IV start kits",
-              "qty": 4
-            },
-            {
               "name": "Stethoscope",
               "qty": 1
             },
@@ -489,14 +485,6 @@
             {
               "name": "60mL Syringe (Luer-Lock Tip)",
               "qty": 2
-            },
-            {
-              "name": "NS Flush",
-              "qty": 10
-            },
-            {
-              "name": "IV Extension Set",
-              "qty": 6
             },
             {
               "name": "Coban",
@@ -537,10 +525,6 @@
               "qty": 20
             },
             {
-              "name": "Betadine Pads",
-              "qty": 4
-            },
-            {
               "name": "Nail Polish Remover",
               "qty": 10
             },
@@ -574,10 +558,6 @@
               "qty": 6
             },
             {
-              "name": "Tegaderm",
-              "qty": 6
-            },
-            {
               "name": "3mL Syringe (With BD TwinPak)",
               "qty": 8
             },
@@ -592,36 +572,6 @@
             {
               "name": "Temporal Thermometer",
               "qty": 1
-            },
-            {
-              "name": "24G YELLOW",
-              "qty": 4,
-              "group": "IV Catheter"
-            },
-            {
-              "name": "22G BLUE",
-              "qty": 4,
-              "group": "IV Catheter"
-            },
-            {
-              "name": "20G PINK",
-              "qty": 6,
-              "group": "IV Catheter"
-            },
-            {
-              "name": "18G GREEN",
-              "qty": 6,
-              "group": "IV Catheter"
-            },
-            {
-              "name": "16G GRAY",
-              "qty": 6,
-              "group": "IV Catheter"
-            },
-            {
-              "name": "14G ORANGE",
-              "qty": 6,
-              "group": "IV Catheter"
             }
           ]
         },
@@ -631,10 +581,6 @@
             {
               "name": "Curos Strips",
               "qty": 3
-            },
-            {
-              "name": "Elastic Tourniquet",
-              "qty": 6
             },
             {
               "name": "Tape, 1\"",
