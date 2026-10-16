@@ -683,6 +683,85 @@
       ]
     },
     {
+      "area": "Rear External Cabinet",
+      "categories": [
+        {
+          "name": "Top Shelf",
+          "items": [
+            {
+              "name": "Cavicide Wipes Container",
+              "qty": 1
+            },
+            {
+              "name": "Cavicide Spray Bottle",
+              "qty": 1
+            },
+            {
+              "name": "Bleach Wipes Container",
+              "qty": 1
+            },
+            {
+              "name": "Gloves - S",
+              "qty": 1,
+              "group": "Gloves"
+            },
+            {
+              "name": "Gloves - M",
+              "qty": 1,
+              "group": "Gloves"
+            },
+            {
+              "name": "Gloves - L",
+              "qty": 1,
+              "group": "Gloves"
+            },
+            {
+              "name": "Gloves - XL",
+              "qty": 1,
+              "group": "Gloves"
+            },
+            {
+              "name": "Stretcher Sheets (pack)",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "name": "Bottom Area",
+          "items": [
+            {
+              "name": "Stair Chair",
+              "qty": 1
+            },
+            {
+              "name": "Red Bag",
+              "qty": 1
+            },
+            {
+              "name": "Adult Traction Splint",
+              "qty": 2
+            },
+            {
+              "name": "Pediatric Traction Splint",
+              "qty": 1
+            },
+            {
+              "name": "Pedi-Board (orange)",
+              "qty": 1
+            },
+            {
+              "name": "Baby-Board (green)",
+              "qty": 1
+            },
+            {
+              "name": "KED",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "area": "H",
       "categories": [
         {
@@ -690,14 +769,6 @@
           "items": [
             {
               "name": "Surgical Masks Box",
-              "qty": 1
-            },
-            {
-              "name": "Medium Gloves",
-              "qty": 1
-            },
-            {
-              "name": "Large Gloves",
               "qty": 1
             },
             {
@@ -718,18 +789,6 @@
         {
           "name": "Left",
           "items": [
-            {
-              "name": "Pediatric Board (orange)",
-              "qty": 1
-            },
-            {
-              "name": "Infant Board (green)",
-              "qty": 1
-            },
-            {
-              "name": "Traction Splint",
-              "qty": 2
-            },
             {
               "name": "Triage Tags",
               "qty": 50,
@@ -819,23 +878,6 @@
             {
               "name": "MAD",
               "qty": 4
-            }
-          ]
-        },
-        {
-          "name": "Disinfectants (was bottom rear cabinet)",
-          "items": [
-            {
-              "name": "Cavicide Wipes Container",
-              "qty": 1
-            },
-            {
-              "name": "Cavicide Spray Bottle",
-              "qty": 1
-            },
-            {
-              "name": "Bleach Wipes Container",
-              "qty": 1
             }
           ]
         },
