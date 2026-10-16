@@ -1,0 +1,277 @@
+{
+  "_meta": {
+    "name": "Unplaced (603 reference)"
+  },
+  "areas": [
+    {
+      "area": "Misc (was top rear, bottom shelf)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Microdot Glucometer Test Strip Containers",
+              "qty": 2
+            },
+            {
+              "name": "Lancets",
+              "qty": 6
+            },
+            {
+              "name": "Sterile Water for Inhalation Bag 1000mL",
+              "qty": 3
+            },
+            {
+              "name": "NS Bag 1000mL",
+              "qty": 6
+            },
+            {
+              "name": "NS Bag 250mL",
+              "qty": 2
+            },
+            {
+              "name": "NS Bag 100 mL",
+              "qty": 5
+            },
+            {
+              "name": "Arm Board (Short)",
+              "qty": 2
+            },
+            {
+              "name": "Arm Board (Long)",
+              "qty": 2
+            },
+            {
+              "name": "Invasive BP Clamp Mount",
+              "qty": 1
+            },
+            {
+              "name": "MAD",
+              "qty": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Airway supplies (was middle cabinet)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "lubricant packet",
+              "qty": 6
+            },
+            {
+              "name": "20 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "22 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "24 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "26 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "28 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "30 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "32 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "34 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "36 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "40mm PINK",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "50mm BLUE",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "60mm GRAY",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "70mm WHITE",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "80mm GREEN",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "90mm YELLOW",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "100mm PINK",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "110mm ORANGE",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "90kg ORANGE",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "50-90kg GREEN",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "30-60kg YELLOW",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "25-35kg WHITE",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "10-25kg GRAY",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "5-12kg BLUE",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "2-5kg PINK",
+              "qty": 1,
+              "group": "iGels"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Was bench / top of bench",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Emergency Blanket",
+              "qty": 2
+            },
+            {
+              "name": "Oxygen Cylinder, Type D",
+              "qty": 3
+            },
+            {
+              "name": "Yellow Table",
+              "qty": 1
+            },
+            {
+              "name": "Medslinger Bag",
+              "qty": 1
+            },
+            {
+              "name": "Zoll Monitor",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Restraints etc. (was front cabinet)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Posey restraints (red-ankle)",
+              "qty": 2
+            },
+            {
+              "name": "Posey restraints (blue-wrist)",
+              "qty": 2
+            },
+            {
+              "name": "Spit Hoods",
+              "qty": 3
+            },
+            {
+              "name": "Posey Soft Restraints",
+              "qty": 3
+            },
+            {
+              "name": "Bedpans",
+              "qty": 3
+            },
+            {
+              "name": "Baby Cap (if not included in OB kit)",
+              "qty": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Electronics (was action area)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Getac",
+              "qty": 1
+            },
+            {
+              "name": "Getac Charger",
+              "qty": 1
+            },
+            {
+              "name": "Monitor Charger",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
