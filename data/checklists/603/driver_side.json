@@ -762,6 +762,20 @@
       ]
     },
     {
+      "area": "Front External Cabinet",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Spare Tire",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "area": "H",
       "categories": [
         {
