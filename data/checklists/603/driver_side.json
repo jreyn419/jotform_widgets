@@ -119,12 +119,78 @@
           "name": "Bottom Shelf",
           "items": [
             {
-              "name": "Acetaminophen Bag 1000mg/100mL",
+              "name": "Activated Charcoal 25g/120mL",
+              "qty": 1
+            },
+            {
+              "name": "Ibuprofen Oral Suspension",
+              "qty": 4
+            },
+            {
+              "name": "Microdot Glucometer Test Strip Containers",
               "qty": 2
             },
             {
-              "name": "Activated Charcoal 25g/120mL",
+              "name": "Lancets",
+              "qty": 6
+            },
+            {
+              "name": "Sterile Water for Inhalation Bag 1000mL",
+              "qty": 3
+            },
+            {
+              "name": "NS Bag 1000mL",
+              "qty": 6
+            },
+            {
+              "name": "NS Bag 250mL",
+              "qty": 2
+            },
+            {
+              "name": "NS Bag 100 mL",
+              "qty": 5
+            },
+            {
+              "name": "Pressure Infusion Bag",
+              "qty": 2
+            },
+            {
+              "name": "Arm Board (Short)",
+              "qty": 2
+            },
+            {
+              "name": "Arm Board (Long)",
+              "qty": 2
+            },
+            {
+              "name": "10-Drop Set",
+              "qty": 4
+            },
+            {
+              "name": "60-Drop Set",
+              "qty": 4
+            },
+            {
+              "name": "Invasive BP Clamp Mount",
               "qty": 1
+            },
+            {
+              "name": "MAD",
+              "qty": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Middle Rear Cabinet",
+      "categories": [
+        {
+          "name": "Medications",
+          "items": [
+            {
+              "name": "Acetaminophen Bag 1000mg/100mL",
+              "qty": 2
             },
             {
               "name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
@@ -133,10 +199,6 @@
             {
               "name": "Ipratropium Bromide Inhalation Solution 0.5mg/2.5mL",
               "qty": 6
-            },
-            {
-              "name": "Ibuprofen Oral Suspension",
-              "qty": 4
             },
             {
               "name": "Aspirin Bottle 81 mg/tablet",
@@ -149,10 +211,6 @@
             {
               "name": "Diphenhydramine 50mg/mL",
               "qty": 2
-            },
-            {
-              "name": "Sodium Bicarbonate Preload 50mEq/50mL",
-              "qty": 1
             },
             {
               "name": "Labetalol 100mg/20mL",
@@ -219,51 +277,16 @@
               "qty": 2
             },
             {
-              "name": "Microdot Glucometer Test Strip Containers",
+              "name": "Glucagon Injection Kits 1mg/1mL",
               "qty": 2
-            },
+            }
+          ]
+        },
+        {
+          "name": "Preloads",
+          "items": [
             {
-              "name": "Lancets",
-              "qty": 6
-            },
-            {
-              "name": "Sterile Water for Inhalation Bag 1000mL",
-              "qty": 3
-            },
-            {
-              "name": "NS Bag 1000mL",
-              "qty": 6
-            },
-            {
-              "name": "NS Bag 250mL",
-              "qty": 2
-            },
-            {
-              "name": "NS Bag 100 mL",
-              "qty": 5
-            },
-            {
-              "name": "Pressure Infusion Bag",
-              "qty": 2
-            },
-            {
-              "name": "Arm Board (Short)",
-              "qty": 2
-            },
-            {
-              "name": "Arm Board (Long)",
-              "qty": 2
-            },
-            {
-              "name": "10-Drop Set",
-              "qty": 4
-            },
-            {
-              "name": "60-Drop Set",
-              "qty": 4
-            },
-            {
-              "name": "Invasive BP Clamp Mount",
+              "name": "Sodium Bicarbonate Preload 50mEq/50mL",
               "qty": 1
             },
             {
@@ -287,20 +310,12 @@
               "qty": 4
             },
             {
-              "name": "MAD",
-              "qty": 4
-            },
-            {
               "name": "Dextrose Preload 25g/50mL",
               "qty": 2
             },
             {
               "name": "Dextrose 25g/250mL",
               "qty": 3
-            },
-            {
-              "name": "Glucagon Injection Kits 1mg/1mL",
-              "qty": 2
             }
           ]
         }
