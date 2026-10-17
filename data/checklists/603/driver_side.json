@@ -391,6 +391,45 @@
               "name": "Twinpak (Or blunt needle)",
               "qty": 5,
               "group": "Needles"
+            },
+            {
+              "name": "20 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 1,
+              "group": "Syringes"
+            },
+            {
+              "name": "60mL Syringe (Luer-Lock Tip)",
+              "qty": 2,
+              "group": "Syringes"
+            },
+            {
+              "name": "1 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3,
+              "group": "Syringes"
+            },
+            {
+              "name": "3 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3,
+              "group": "Syringes"
+            },
+            {
+              "name": "5 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3,
+              "group": "Syringes"
+            },
+            {
+              "name": "10 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3,
+              "group": "Syringes"
+            },
+            {
+              "name": "3-Way Stopcocks",
+              "qty": 2
+            },
+            {
+              "name": "3mL Syringe (With BD TwinPak)",
+              "qty": 8,
+              "group": "Syringes"
             }
           ]
         }
