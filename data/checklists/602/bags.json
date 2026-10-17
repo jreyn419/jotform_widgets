@@ -104,10 +104,15 @@
     },
     {
       "area": "Large Blue Bag: “Responder”",
+      "categories": []
+    },
+    {
+      "area": "Top Zippered Pocket",
       "sealable": true,
+      "childOf": "Large Blue Bag: “Responder”",
       "categories": [
         {
-          "name": "Top Zippered Pocket",
+          "name": "General",
           "items": [
             {
               "name": "Thomas Tube Holder - Adult",
@@ -122,9 +127,16 @@
               "qty": 2
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "area": "Main Compartment",
+      "sealable": true,
+      "childOf": "Large Blue Bag: “Responder”",
+      "categories": [
         {
-          "name": "Main Compartment",
+          "name": "Loose",
           "items": [
             {
               "name": "Adult Bougie-To-Go (left of cells)",
@@ -153,7 +165,7 @@
           ]
         },
         {
-          "name": "Main Compartment, Mesh Pocket; iGels",
+          "name": "Mesh Pocket",
           "items": [
             {
               "name": "90+ kgs ORANGE",
@@ -184,234 +196,6 @@
               "qty": 1
             }
           ]
-        },
-        {
-          "name": "Left-Side Zippered Pocket",
-          "items": [
-            {
-              "name": "DuCanto Suction Tip",
-              "qty": 1
-            },
-            {
-              "name": "60 mL Syringe, Catheter Tip",
-              "qty": 1
-            },
-            {
-              "name": "6 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "8 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "10 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "12 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "14 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "16 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "18 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "6 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "8 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "10 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "12 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "14 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "16 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "18 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            }
-          ]
-        },
-        {
-          "name": "Right-Side Zippered Pocket",
-          "items": [
-            {
-              "name": "Colorimetric CO2 Detector",
-              "qty": 1
-            },
-            {
-              "name": "Chest Decompression Needle",
-              "qty": 3
-            },
-            {
-              "name": "NC - Adult",
-              "qty": 1
-            },
-            {
-              "name": "EtCO2 NC - Adult",
-              "qty": 1
-            },
-            {
-              "name": "Nebulizer Mask - Adult",
-              "qty": 1
-            },
-            {
-              "name": "NRB - Adult",
-              "qty": 1
-            },
-            {
-              "name": "NC - Pediatric",
-              "qty": 1
-            },
-            {
-              "name": "EtCO2 NC - Pediatric",
-              "qty": 1
-            },
-            {
-              "name": "Nebulizer Mask - Pediatric",
-              "qty": 1
-            },
-            {
-              "name": "NRB – Pediatric",
-              "qty": 1
-            },
-            {
-              "name": "14 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "16 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "18 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "20 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "22 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "24 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "26 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "28 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "30 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "32 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "34 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "36 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "40mm (Pink)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Light Blue)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Black)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (White)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Green)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Yellow)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Red)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Orange)",
-              "qty": 1,
-              "group": "OPAs"
-            }
-          ]
         }
       ]
     },
@@ -420,6 +204,113 @@
       "sealable": true,
       "childOf": "Large Blue Bag: “Responder”",
       "categories": [
+        {
+          "name": "Vial Storage",
+          "items": [
+            {
+              "name": "Norepinephrine Bitartrate 4mg/4mL",
+              "qty": 2
+            },
+            {
+              "name": "Labetalol 100mg/20mL",
+              "qty": 1
+            },
+            {
+              "name": "Ondansetron 4mg/2mL",
+              "qty": 2
+            },
+            {
+              "name": "Amiodarone 150mg/3mL",
+              "qty": 3
+            },
+            {
+              "name": "Magnesium Sulfate 5g/10mL",
+              "qty": 2
+            },
+            {
+              "name": "Adenosine 6mg/2mL",
+              "qty": 3
+            },
+            {
+              "name": "Hydralazine 20mg/1mL",
+              "qty": 2
+            },
+            {
+              "name": "Lidocaine 100mg/5mL",
+              "qty": 1
+            },
+            {
+              "name": "Calcium Gluconate 1g/10mL",
+              "qty": 1
+            },
+            {
+              "name": "Diphenhydramine 50mg/1mL",
+              "qty": 2
+            },
+            {
+              "name": "Dopamine Vial 400mg/10mL",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Mesh Pocket",
+          "items": [
+            {
+              "name": "Epinephrine 1mg/1mL",
+              "qty": 3
+            },
+            {
+              "name": "MADs",
+              "qty": 2
+            },
+            {
+              "name": "Medication Labels",
+              "qty": 6
+            },
+            {
+              "name": "3-Way Stopcocks",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "name": "Main Compartment",
+          "items": [
+            {
+              "name": "Sodium Bicarbonate Preload 50mEq/50mL",
+              "qty": 1
+            },
+            {
+              "name": "Calcium Chloride 10% Preload",
+              "qty": 1
+            },
+            {
+              "name": "D50W Preload 25g/50mL",
+              "qty": 1
+            },
+            {
+              "name": "Atropine Sulfate Preload 1mg/10mL",
+              "qty": 1
+            },
+            {
+              "name": "Epinephrine Preload 1mg/10mL",
+              "qty": 1
+            },
+            {
+              "name": "Naloxone Hydrochloride Preload 2mg/2mL",
+              "qty": 1
+            },
+            {
+              "name": "NS Bag 100mL",
+              "qty": 1
+            },
+            {
+              "name": "NS Bag 250mL",
+              "qty": 1
+            }
+          ]
+        },
         {
           "name": "Elastic Pouch",
           "items": [
@@ -433,7 +324,15 @@
           "name": "Syringe Storage",
           "items": [
             {
-              "name": "10mL Syringe, Luer-Lock tip, Without Needle",
+              "name": "3mL Syringe, With Twinpak",
+              "qty": 2
+            },
+            {
+              "name": "Standalone Twinpaks",
+              "qty": 4
+            },
+            {
+              "name": "1mL Syringe, Luer-Lock tip, Without Needle",
               "qty": 2
             },
             {
@@ -441,138 +340,11 @@
               "qty": 2
             },
             {
-              "name": "3mL Syringe, With Twinpak",
-              "qty": 4
-            },
-            {
-              "name": "1mL Syringe, Luer-Lock tip, Without Needle",
-              "qty": 4
-            },
-            {
-              "name": "Standalone Twinpaks",
-              "qty": 6
-            }
-          ]
-        },
-        {
-          "name": "Main Compartment",
-          "items": [
-            {
-              "name": "Atropine Sulfate Preload",
-              "qty": 1
-            },
-            {
-              "name": "Calcium Chloride 10% Preload",
-              "qty": 1
-            },
-            {
-              "name": "D50W Preload",
-              "qty": 1
-            },
-            {
-              "name": "Lidocaine HCl Preload",
-              "qty": 1
-            },
-            {
-              "name": "Naloxone Hydrochloride Preload",
-              "qty": 1
-            },
-            {
-              "name": "Epinephrine Preload",
-              "qty": 1
-            },
-            {
-              "name": "NS Bag 100mL",
-              "qty": 1
-            },
-            {
-              "name": "NS Bag 250mL",
-              "qty": 1
-            },
-            {
-              "name": "Calcium Gluconate 1g/10mL",
-              "qty": 1
-            },
-            {
-              "name": "Labetalol 100mg/20mL",
-              "qty": 1
-            },
-            {
-              "name": "Magnesium Sulfate 5g/10mL",
-              "qty": 1
-            },
-            {
-              "name": "Sodium Bicarbonate Vial 50mEq/50mL",
-              "qty": 1
-            },
-            {
-              "name": "Dopamine Vial 400mg/10mL",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "name": "Small Vials",
-          "items": [
-            {
-              "name": "Epinephrine 1mg/1mL",
-              "qty": 3
-            },
-            {
-              "name": "Norepinephrine Bitartrate 4mg/4mL",
-              "qty": 3
-            },
-            {
-              "name": "Adenosine 6mg/2mL",
-              "qty": 3
-            },
-            {
-              "name": "Amiodarone 150mg/3mL",
-              "qty": 3
-            },
-            {
-              "name": "Atropine Sulfate 1mg/1mL",
+              "name": "10mL Syringe, Luer-Lock tip, Without Needle",
               "qty": 2
             },
             {
-              "name": "Ondansetron 4mg/2mL",
-              "qty": 2
-            },
-            {
-              "name": "Diphenhydramine 50mg/1mL",
-              "qty": 2
-            },
-            {
-              "name": "Hydralazine 20mg/1mL",
-              "qty": 2
-            }
-          ]
-        },
-        {
-          "name": "Misc. Storage, Zippered Pocket",
-          "items": [
-            {
-              "name": "Epinephrine 1mg/1mL",
-              "qty": 2
-            },
-            {
-              "name": "Norepinephrine Bitartrate 4mg/4mL",
-              "qty": 1
-            },
-            {
-              "name": "Ondansetron 4mg/2mL",
-              "qty": 1
-            },
-            {
-              "name": "MADs",
-              "qty": 2
-            },
-            {
-              "name": "Medication Labels",
-              "qty": 6
-            },
-            {
-              "name": "3-Way Stopcocks",
+              "name": "3mL Syringe, With 23G Hypodermic Needle",
               "qty": 2
             }
           ]
@@ -931,6 +703,248 @@
             {
               "name": "Hyperangulated Stylets",
               "qty": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Left Side Zippered Pocket",
+      "sealable": true,
+      "childOf": "Large Blue Bag: “Responder”",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "DuCanto Suction Tip",
+              "qty": 1
+            },
+            {
+              "name": "60 mL Syringe, Catheter Tip",
+              "qty": 1
+            },
+            {
+              "name": "6 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "8 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "10 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "12 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "14 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "16 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "18 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "6 Fr.",
+              "qty": 2,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "8 Fr.",
+              "qty": 2,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "10 Fr.",
+              "qty": 2,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "12 Fr.",
+              "qty": 2,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "14 Fr.",
+              "qty": 2,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "16 Fr.",
+              "qty": 2,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "18 Fr.",
+              "qty": 2,
+              "group": "OGTs/NGTs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Right Side Zippered Pocket",
+      "sealable": true,
+      "childOf": "Large Blue Bag: “Responder”",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Colorimetric CO2 Detector",
+              "qty": 1
+            },
+            {
+              "name": "Chest Decompression Needle",
+              "qty": 3
+            },
+            {
+              "name": "NC - Adult",
+              "qty": 1
+            },
+            {
+              "name": "EtCO2 NC - Adult",
+              "qty": 1
+            },
+            {
+              "name": "Nebulizer Mask - Adult",
+              "qty": 1
+            },
+            {
+              "name": "NRB - Adult",
+              "qty": 1
+            },
+            {
+              "name": "NC - Pediatric",
+              "qty": 1
+            },
+            {
+              "name": "EtCO2 NC - Pediatric",
+              "qty": 1
+            },
+            {
+              "name": "Nebulizer Mask - Pediatric",
+              "qty": 1
+            },
+            {
+              "name": "NRB – Pediatric",
+              "qty": 1
+            },
+            {
+              "name": "14 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "16 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "18 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "20 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "22 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "24 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "26 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "28 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "30 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "32 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "34 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "36 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "40mm (Pink)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Light Blue)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Black)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (White)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Green)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Yellow)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Red)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Orange)",
+              "qty": 1,
+              "group": "OPAs"
             }
           ]
         }
