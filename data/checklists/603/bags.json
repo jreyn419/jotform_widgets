@@ -246,10 +246,6 @@
             {
               "name": "Diphenhydramine 50mg/1mL",
               "qty": 2
-            },
-            {
-              "name": "Dopamine Vial 400mg/10mL",
-              "qty": 1
             }
           ]
         },
@@ -307,6 +303,10 @@
             },
             {
               "name": "NS Bag 250mL",
+              "qty": 1
+            },
+            {
+              "name": "Dopamine Bag",
               "qty": 1
             }
           ]
