@@ -470,6 +470,18 @@
             {
               "name": "Epinephrine 1mg/1mL",
               "qty": 3
+            },
+            {
+              "name": "MADs",
+              "qty": 2
+            },
+            {
+              "name": "Medication Labels",
+              "qty": 6
+            },
+            {
+              "name": "3-Way Stopcocks",
+              "qty": 2
             }
           ]
         },
@@ -478,6 +490,10 @@
           "items": [
             {
               "name": "Sodium Bicarbonate Preload 50mEq/50mL",
+              "qty": 1
+            },
+            {
+              "name": "Calcium Chloride 10% Preload",
               "qty": 1
             },
             {
