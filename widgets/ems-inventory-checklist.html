@@ -3198,8 +3198,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.32.0';
+    var VERSION = '1.32.1';
     var CHANGELOG = [
+      { version: '1.32.1', date: '2026-10-17', changes: [
+        'A count left unfinished on a device now counts as in progress for 4 hours after the last change instead of 8',
+      ]},
       { version: '1.32.0', date: '2026-10-17', changes: [
         'Four paths nothing uses any more are gone: the relay widget hand-off (the HTML copy of the report and its localStorage key), the native-dropdown rig and checklist selector (rigFieldId, checklistFieldId), the single-checklist inventoryItems setting with its Markdown format and .md files, and the customQuestions setting. The in-widget picker is the one way a checklist is chosen; questions and the oxygen check come from the checklist file alone',
         'The oxygen-check widget settings (enableOxygenCheck, mainO2Threshold, mainO2Cylinders, stretcherO2Threshold, enableMedicalAir, medicalAirThreshold) are no longer read; a checklist file\u2019s oxygenCheck block is the only source',
@@ -3679,7 +3682,7 @@
       syncToJotForm();
     }
 
-    var STATE_EXPIRY_MS = 8 * 60 * 60 * 1000; // 8 hours
+    var STATE_EXPIRY_MS = 4 * 60 * 60 * 1000; // 4 hours
 
     function loadState() {
       try {
