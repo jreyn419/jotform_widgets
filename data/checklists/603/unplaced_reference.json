@@ -189,14 +189,6 @@
           "name": "General",
           "items": [
             {
-              "name": "Getac",
-              "qty": 1
-            },
-            {
-              "name": "Getac Charger",
-              "qty": 1
-            },
-            {
               "name": "Monitor Charger",
               "qty": 1
             }
