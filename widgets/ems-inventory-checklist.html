@@ -2492,8 +2492,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.20.0';
+    var VERSION = '1.21.0';
     var CHANGELOG = [
+      { version: '1.21.0', date: '2026-10-17', changes: [
+        'The oxygen check is configured per checklist: a top-level "oxygenCheck" block in the checklist JSON turns it on for that file only',
+        'In picker and dropdown modes the widget-level oxygen and customQuestions settings are ignored; the checklist file decides. Single-checklist forms still honour them as a fallback',
+      ]},
       { version: '1.20.0', date: '2026-10-17', changes: [
         'The rig and checklist picker is now the default: with no settings the widget loads data/checklists/index.json. A form with inventoryItems set stays a single checklist, and rigIndex set to "none" turns the picker off',
       ]},
@@ -2746,6 +2750,8 @@
     var questionAnswers = {}; // questionId -> answer ('yes'|'no'|option|string)
     var settingQuestionList = []; // raw questions from the customQuestions setting
     var inventoryFileQuestions = []; // raw questions from the inventory JSON envelope
+    // Per-checklist oxygen check: { mainO2Threshold, mainO2Cylinders, stretcherO2Threshold, medicalAir, medicalAirThreshold }
+    var inventoryFileOxygen = null;
 
     // ---- Rig / checklist selector ----
     // Settings: rigFieldId and checklistFieldId are the question IDs of two
@@ -3280,6 +3286,7 @@
     function parseInventoryAuto(content) {
       // Try JSON first: array or { areas: [] } envelope
       inventoryFileQuestions = [];
+      inventoryFileOxygen = null;
       inventoryTitle = '';
       var trimmed = content.trim();
       if (trimmed.charAt(0) === '[' || trimmed.charAt(0) === '{') {
@@ -3293,6 +3300,8 @@
             jsonArray = parsed.areas;
             if (parsed._meta && parsed._meta.name) inventoryTitle = String(parsed._meta.name);
             if (Array.isArray(parsed.questions)) inventoryFileQuestions = parsed.questions;
+            if (parsed.oxygenCheck === true) inventoryFileOxygen = {};
+            else if (parsed.oxygenCheck && typeof parsed.oxygenCheck === 'object') inventoryFileOxygen = parsed.oxygenCheck;
           }
           if (jsonArray) {
             console.log('[Widget] Detected JSON inventory format (' + jsonArray.length + ' areas)');
@@ -5386,6 +5395,16 @@
         var airThreshold = parseInt(getSetting('medicalAirThreshold'), 10) || 1500;
         o2Areas.push({ id: 'medical_air', name: 'Medical Air', icon: '\uD83D\uDCA8', threshold: airThreshold, unit: 'PSI', cylinderCount: 1 });
       }
+    }
+
+    // Adapts a checklist file's oxygenCheck block to the setting-name getter
+    // configureOxygenCheck expects.
+    function fileOxygenSettingGetter(block) {
+      return function(name) {
+        if (name === 'enableOxygenCheck') return 'true';
+        if (name === 'enableMedicalAir') return block.medicalAir === undefined ? 'false' : block.medicalAir;
+        return block[name];
+      };
     }
 
     function findO2Area(areaId) {
@@ -7983,12 +8002,19 @@
           console.log('[Widget] isExternalFilePath:', isExternalFilePath(inventoryText));
 
           function continueAfterInventoryLoad() {
-            // Optional oxygen supply check, toggled per form in widget settings
-            configureOxygenCheck(function(name) { return JFCustomWidget.getWidgetSetting(name); });
+            // Oxygen supply check: the checklist file's oxygenCheck block wins;
+            // widget settings only apply on a single-checklist form.
+            if (inventoryFileOxygen) {
+              configureOxygenCheck(fileOxygenSettingGetter(inventoryFileOxygen));
+            } else if (!selectorActive) {
+              configureOxygenCheck(function(name) { return JFCustomWidget.getWidgetSetting(name); });
+            } else {
+              configureOxygenCheck(function() { return undefined; });
+            }
             console.log('[Widget] oxygen check:', enableOxygenCheck ? o2Areas.length + ' area(s)' : 'disabled');
 
-            // Custom questions: setting first, then any carried by the inventory file
-            customQuestions = normalizeQuestions(settingQuestionList.concat(inventoryFileQuestions));
+            // Custom questions: the file's own, plus the widget setting on a single-checklist form
+            customQuestions = normalizeQuestions((selectorActive ? [] : settingQuestionList).concat(inventoryFileQuestions));
             console.log('[Widget] custom questions:', customQuestions.length);
 
             var focusSetting = JFCustomWidget.getWidgetSetting('focusRow');

@@ -862,7 +862,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.12.0"
+VERSION = "6.13.0"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1045,6 +1045,9 @@ class InventoryFile:
         self.display_name = ""
         # _meta fields other than name (e.g. order, hidden) are kept as-is
         self.meta_extra = {}
+        # Top-level keys other than _meta/areas (e.g. questions, oxygenCheck)
+        # are kept as-is and written back on save
+        self.extra_top = {}
 
     @property
     def filename(self):
@@ -1059,6 +1062,7 @@ class InventoryFile:
             meta = data.get("_meta", {})
             inv.display_name = meta.get("name", "")
             inv.meta_extra = {k: v for k, v in meta.items() if k != "name"}
+            inv.extra_top = {k: v for k, v in data.items() if k not in ("_meta", "areas")}
             inv.areas = cls._parse_json(data["areas"])
         else:
             inv.areas = cls._parse_json(data)
@@ -1121,10 +1125,9 @@ class InventoryFile:
     def save(self):
         meta = {"name": self.display_name}
         meta.update(self.meta_extra)
-        file_data = {
-            "_meta": meta,
-            "areas": self.to_json_data()
-        }
+        file_data = {"_meta": meta}
+        file_data.update(self.extra_top)
+        file_data["areas"] = self.to_json_data()
         with open(self.path, "w", encoding="utf-8") as f:
             json.dump(file_data, f, indent=2, ensure_ascii=False)
             f.write("\n")

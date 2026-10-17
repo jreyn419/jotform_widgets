@@ -3,6 +3,12 @@
     "name": "Driver Side",
     "order": 1
   },
+  "oxygenCheck": {
+    "mainO2Threshold": 1600,
+    "mainO2Cylinders": 2,
+    "stretcherO2Threshold": 1000,
+    "medicalAir": false
+  },
   "areas": [
     {
       "area": "G (Top Cabinet Towards Back Door)",
