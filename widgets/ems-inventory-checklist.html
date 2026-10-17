@@ -752,6 +752,36 @@
       white-space: nowrap;
     }
 
+    /* Today-status strip and rig/checklist selector prompt */
+    .status-strip {
+      display: none;
+      padding: 8px 15px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .status-strip.show { display: block; }
+    .status-strip.submitted { background: #d4edda; color: #155724; }
+    .status-strip.open { background: #dbe9ff; color: #0b3d91; }
+    .status-strip.pending { background: #e9ecef; color: #495057; }
+    .status-strip.info { background: #e9ecef; color: #495057; }
+    .status-strip.prompt { background: #fff3cd; color: #856404; }
+
+    .selector-prompt {
+      margin: 30px 20px;
+      padding: 24px;
+      text-align: center;
+      background: white;
+      border-radius: 10px;
+      color: #555;
+      font-size: 15px;
+      line-height: 1.4;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
     /* Out-of-service banner (any gauge in the red zone) */
     .oos-banner {
       display: none;
@@ -2184,6 +2214,7 @@
     </div>
 
     <div class="oos-banner" id="oosBanner"></div>
+    <div class="status-strip" id="statusStrip"></div>
 
     <div class="main-content">
       <div class="areas-container" id="areasContainer">
@@ -2321,8 +2352,14 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.17.0';
+    var VERSION = '1.18.0';
     var CHANGELOG = [
+      { version: '1.18.0', date: '2026-10-17', changes: [
+        'Rig and checklist can be chosen with two native Jotform dropdowns: set rigFieldId and checklistFieldId to their question IDs and the widget loads data/checklists/{rig}/{checklist}.json, reloading when either changes',
+        'Saved state and seals are scoped per rig and checklist, and seal sync / restore use the latest submission for the selected rig and checklist',
+        'Status strip under the header: submitted today at HH:MM, in progress on this device, or not yet submitted today (needs jotformApiKey)',
+        'Report title uses the checklist name and carries the rig; sync data stamps rig and checklist',
+      ]},
       { version: '1.17.0', date: '2026-10-16', changes: [
         'New "gauge" item type for readings such as tire pressure: a slider with green, yellow and red zones, a typed readout, a placard target mark, and action text per zone',
         'Yellow zone text is day-aware: weekdays say to notify Fleet, weekends say Fleet is closed, notify the supervisor and go Monday morning',
@@ -2561,6 +2598,18 @@
     var settingQuestionList = []; // raw questions from the customQuestions setting
     var inventoryFileQuestions = []; // raw questions from the inventory JSON envelope
 
+    // ---- Rig / checklist selector ----
+    // Settings: rigFieldId and checklistFieldId are the question IDs of two
+    // native Jotform dropdowns; checklistPathTemplate defaults to
+    // data/checklists/{rig}/{checklist}.json. Dropdown values are normalised
+    // (lower case, spaces to underscores) before being put in the path.
+    var selectorActive = false;
+    var currentRig = null;
+    var currentChecklist = null;
+    var selectorFieldIds = { rig: null, checklist: null };
+    var inventoryTitle = ''; // _meta.name of the loaded checklist file
+    var restoredLocalTs = null; // timestamp of the local state restored this load, if any
+
     // ---- Focus row ----
     // Setting focusRow: "false" disables the enlarged current-item row (default on)
     var enableFocusRow = true;
@@ -2577,10 +2626,16 @@
         if (src) {
           // Extract a stable identifier from the URL (formID, qid, etc.)
           var match = src.match(/[?&](?:formID|qid)=([^&]+)/);
-          if (match) return 'ems_checklist_' + match[1];
+          if (match) return 'ems_checklist_' + match[1] + selectorKeySuffix();
         }
       } catch (e) {}
-      return 'ems_checklist_state';
+      return 'ems_checklist_state' + selectorKeySuffix();
+    }
+
+    // In selector mode every rig + checklist pair keeps its own state and seals
+    function selectorKeySuffix() {
+      if (!selectorActive || !currentRig || !currentChecklist) return '';
+      return '_' + currentRig + '_' + currentChecklist;
     }
 
     function saveState() {
@@ -2593,6 +2648,8 @@
           brokenSeals: brokenSeals,
           o2States: o2States,
           questionAnswers: questionAnswers,
+          rig: currentRig,
+          checklist: currentChecklist,
           timestamp: Date.now()
         };
         localStorage.setItem(getStorageKey(), JSON.stringify(state));
@@ -2659,6 +2716,8 @@
             brokenSeals: brokenSeals,
             o2States: o2States,
             questionAnswers: questionAnswers,
+            rig: currentRig,
+            checklist: currentChecklist,
             timestamp: Date.now()
           };
           // Prepend plain-text report so it's visible in JotForm Tables.
@@ -2761,7 +2820,7 @@
       if (!formID || !apiKey) { callback(null); return; }
       var url = apiBase + '/form/' + encodeURIComponent(formID)
               + '/submissions?apiKey=' + encodeURIComponent(apiKey)
-              + '&limit=1&orderby=id&direction=desc';
+              + '&limit=' + (selectorActive ? 50 : 1) + '&orderby=id&direction=desc';
       try {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
@@ -2771,7 +2830,9 @@
           try {
             var resp = JSON.parse(xhr.responseText);
             if (!resp.content || resp.content.length === 0) { callback(null); return; }
-            var answers = resp.content[0].answers || {};
+            var sub = selectorActive ? findSubmissionForSelection(resp.content) : resp.content[0];
+            if (!sub) { callback(null); return; }
+            var answers = sub.answers || {};
             var raw = null;
 
             // Prefer the exact question id when available.
@@ -3041,6 +3102,7 @@
     function parseInventoryAuto(content) {
       // Try JSON first: array or { areas: [] } envelope
       inventoryFileQuestions = [];
+      inventoryTitle = '';
       var trimmed = content.trim();
       if (trimmed.charAt(0) === '[' || trimmed.charAt(0) === '{') {
         try {
@@ -3051,6 +3113,7 @@
           } else if (parsed && Array.isArray(parsed.areas)) {
             // Envelope format: { _meta: {...}, areas: [...], questions?: [...] }
             jsonArray = parsed.areas;
+            if (parsed._meta && parsed._meta.name) inventoryTitle = String(parsed._meta.name);
             if (Array.isArray(parsed.questions)) inventoryFileQuestions = parsed.questions;
           }
           if (jsonArray) {
@@ -3784,6 +3847,259 @@
     }
 
     // Check if a parent group is fully complete (all children sealed/ok, parent items ok/sealed)
+    // =====================================================
+    // RIG / CHECKLIST SELECTOR AND TODAY STATUS
+    // =====================================================
+
+    function normalizeSelection(v) {
+      if (v === undefined || v === null) return '';
+      return String(v).trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_\-]/g, '');
+    }
+
+    // Jotform's field-value callbacks are loosely documented; accept the
+    // shapes seen in practice: { id: { value } }, { id: value }, { id: { answer } },
+    // [{ id, value }], { values: {...} }.
+    function fieldValueFrom(raw, id) {
+      if (!raw) return '';
+      var pick = function(v) {
+        if (v === undefined || v === null) return '';
+        if (typeof v === 'string' || typeof v === 'number') return String(v);
+        if (typeof v === 'object') {
+          if (v.value !== undefined) return pick(v.value);
+          if (v.answer !== undefined) return pick(v.answer);
+          if (v.prettyFormat !== undefined) return pick(v.prettyFormat);
+        }
+        return '';
+      };
+      if (Array.isArray(raw)) {
+        for (var i = 0; i < raw.length; i++) {
+          if (raw[i] && String(raw[i].id || raw[i].qid || raw[i].name || '').replace(/^input_/, '') === String(id)) return pick(raw[i]);
+        }
+        return '';
+      }
+      if (raw[id] !== undefined) return pick(raw[id]);
+      if (raw['input_' + id] !== undefined) return pick(raw['input_' + id]);
+      if (raw.values) return fieldValueFrom(raw.values, id);
+      if (raw.data) return fieldValueFrom(raw.data, id);
+      return '';
+    }
+
+    function readSelectorFields(callback) {
+      var ids = [selectorFieldIds.rig, selectorFieldIds.checklist];
+      try {
+        JFCustomWidget.getFieldsValueById(ids, function(res) {
+          console.log('[Widget] selector fields raw:', JSON.stringify(res).substring(0, 300));
+          callback(fieldValueFrom(res, selectorFieldIds.rig), fieldValueFrom(res, selectorFieldIds.checklist));
+        });
+      } catch (e) {
+        console.warn('[Widget] getFieldsValueById failed:', e.message);
+        callback('', '');
+      }
+    }
+
+    function selectionPath() {
+      var template = JFCustomWidget.getWidgetSetting('checklistPathTemplate') || 'data/checklists/{rig}/{checklist}.json';
+      var dec = document.createElement('textarea');
+      dec.innerHTML = template;
+      return dec.value.replace('{rig}', currentRig).replace('{checklist}', currentChecklist);
+    }
+
+    // Forget everything from the previously loaded checklist
+    function resetRuntimeState() {
+      stateReady = false;
+      INVENTORY = {};
+      itemStates = {}; restockStatus = {}; taggedAreas = {}; brokenSeals = [];
+      collapsedCategories = {}; o2States = {}; questionAnswers = {}; customQuestions = [];
+      categoryMeta = {}; sealableAreas = {}; areaHierarchy = {}; areaParent = {};
+      inventoryFileQuestions = []; previousReadings = null; restoredLocalTs = null;
+      expandedArea = null; expandedGroup = null; focusedKey = null;
+      closeRestockModal();
+      updateOosBanner();
+    }
+
+    function showSelectorPrompt() {
+      resetRuntimeState();
+      var container = document.getElementById('areasContainer');
+      if (container) {
+        container.innerHTML = '<div class="selector-prompt">Select a rig and a checklist above to begin.</div>';
+      }
+      updateSummary();
+      setStatusStrip('prompt', 'No rig or checklist selected');
+      resizeWidget();
+    }
+
+    function initSelector(data, start) {
+      var rigId = JFCustomWidget.getWidgetSetting('rigFieldId');
+      var clId = JFCustomWidget.getWidgetSetting('checklistFieldId');
+      if (!rigId || !clId) {
+        selectorActive = false;
+        start(data, null);
+        return;
+      }
+      selectorActive = true;
+      selectorFieldIds = { rig: String(rigId).replace(/^input_/, ''), checklist: String(clId).replace(/^input_/, '') };
+      console.log('[Widget] selector mode: rig field', selectorFieldIds.rig, 'checklist field', selectorFieldIds.checklist);
+
+      var applySelection = function(rig, checklist, isChange) {
+        rig = normalizeSelection(rig);
+        checklist = normalizeSelection(checklist);
+        if (!rig || !checklist) {
+          currentRig = null; currentChecklist = null;
+          showSelectorPrompt();
+          return;
+        }
+        if (rig === currentRig && checklist === currentChecklist) return;
+        currentRig = rig; currentChecklist = checklist;
+        resetRuntimeState();
+        // Jotform's saved value only applies to the first load; a change mid-form starts fresh
+        start(isChange ? { value: '', formID: data && data.formID } : data, selectionPath());
+      };
+
+      readSelectorFields(function(rig, checklist) { applySelection(rig, checklist, false); });
+
+      var onFieldChange = function() {
+        readSelectorFields(function(rig, checklist) { applySelection(rig, checklist, true); });
+      };
+      try {
+        JFCustomWidget.listenFromField('input_' + selectorFieldIds.rig, 'change', onFieldChange);
+        JFCustomWidget.listenFromField('input_' + selectorFieldIds.checklist, 'change', onFieldChange);
+      } catch (e) {
+        console.warn('[Widget] listenFromField failed:', e.message);
+      }
+    }
+
+    function answerText(ans) {
+      if (!ans) return '';
+      if (typeof ans === 'string') return ans;
+      if (typeof ans.answer === 'string') return ans.answer;
+      if (typeof ans.prettyFormat === 'string') return ans.prettyFormat;
+      return '';
+    }
+
+    function submissionMatchesSelection(sub) {
+      if (!selectorActive) return true;
+      var a = sub.answers || {};
+      return normalizeSelection(answerText(a[selectorFieldIds.rig])) === currentRig &&
+             normalizeSelection(answerText(a[selectorFieldIds.checklist])) === currentChecklist;
+    }
+
+    function findSubmissionForSelection(list) {
+      for (var i = 0; i < list.length; i++) {
+        if (submissionMatchesSelection(list[i])) return list[i];
+      }
+      return null;
+    }
+
+    function reportTitle() {
+      return (inventoryTitle ? inventoryTitle.toUpperCase() : 'INVENTORY CHECK') + ' REPORT';
+    }
+
+    function reportSubtitle() {
+      return 'Rig ' + currentRig + ' \u00B7 ' + (inventoryTitle || currentChecklist);
+    }
+
+    function setStatusStrip(kind, text) {
+      var el = document.getElementById('statusStrip');
+      if (!el) return;
+      el.className = 'status-strip ' + kind + (text ? ' show' : '');
+      el.textContent = text || '';
+    }
+
+    function localDateString(d) {
+      var m = d.getMonth() + 1, day = d.getDate();
+      return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+    }
+
+    function clockText(hours, minutes) {
+      var h = hours % 12 || 12;
+      return h + ':' + (minutes < 10 ? '0' : '') + minutes + ' ' + (hours >= 12 ? 'PM' : 'AM');
+    }
+
+    // created_at from the API looks like "2026-10-17 06:42:10" in the account's time zone
+    function createdAtClock(createdAt) {
+      var m = /(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2})/.exec(createdAt || '');
+      return m ? clockText(parseInt(m[2], 10), parseInt(m[3], 10)) : '';
+    }
+
+    // Today's submissions for this form, newest first. Asks the API to
+    // filter by created_at and filters again client-side to be safe.
+    function fetchTodaySubmissions(apiBase, formID, apiKey, callback) {
+      if (!formID || !apiKey) { callback(null); return; }
+      var today = localDateString(new Date());
+      var filter = encodeURIComponent(JSON.stringify({ 'created_at:gt': today + ' 00:00:00' }));
+      var url = apiBase + '/form/' + encodeURIComponent(formID)
+              + '/submissions?apiKey=' + encodeURIComponent(apiKey)
+              + '&limit=100&orderby=id&direction=desc&filter=' + filter;
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.timeout = 5000;
+        xhr.onload = function() {
+          if (xhr.status !== 200) { callback(null); return; }
+          try {
+            var resp = JSON.parse(xhr.responseText);
+            var list = resp.content || [];
+            var out = [];
+            for (var i = 0; i < list.length; i++) {
+              if (String(list[i].created_at || '').indexOf(today) === 0) out.push(list[i]);
+            }
+            callback(out);
+          } catch (e) { callback(null); }
+        };
+        xhr.onerror = function() { callback(null); };
+        xhr.ontimeout = function() { callback(null); };
+        xhr.send();
+      } catch (e) { callback(null); }
+    }
+
+    // Fills the status strip: submitted today / in progress here / not yet.
+    function refreshTodayStatus() {
+      var label = selectorActive && currentRig
+        ? 'Rig ' + currentRig + ' \u00B7 ' + (inventoryTitle || currentChecklist)
+        : (inventoryTitle || '');
+      var prefix = label ? label + ': ' : '';
+      var localText = null;
+      if (restoredLocalTs) {
+        var d = new Date(restoredLocalTs);
+        if (localDateString(d) === localDateString(new Date())) {
+          localText = 'in progress on this device, last change ' + clockText(d.getHours(), d.getMinutes());
+        }
+      }
+
+      var apiKey = typeof JFCustomWidget !== 'undefined' && JFCustomWidget.getWidgetSetting ? JFCustomWidget.getWidgetSetting('jotformApiKey') : null;
+      if (!apiKey) {
+        if (localText) setStatusStrip('open', prefix + localText);
+        else if (selectorActive && label) setStatusStrip('info', label);
+        else setStatusStrip('info', '');
+        return;
+      }
+
+      setStatusStrip('info', prefix + 'checking today\u2019s submissions\u2026');
+      var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
+      var fp = getFormParams();
+      var formID = fp.formID || cachedFormID || null;
+      fetchTodaySubmissions(apiBase, formID, apiKey, function(list) {
+        if (list === null) {
+          setStatusStrip(localText ? 'open' : 'info', prefix + (localText || 'could not reach Jotform to check today\u2019s submissions'));
+          return;
+        }
+        var matches = [];
+        for (var i = 0; i < list.length; i++) {
+          if (submissionMatchesSelection(list[i])) matches.push(list[i]);
+        }
+        if (matches.length > 0) {
+          var when = createdAtClock(matches[0].created_at);
+          var text = 'submitted today' + (when ? ' at ' + when : '') + (matches.length > 1 ? ' (' + matches.length + ' times)' : '');
+          if (localText) text += '; ' + localText;
+          setStatusStrip('submitted', prefix + text);
+        } else if (localText) {
+          setStatusStrip('open', prefix + localText);
+        } else {
+          setStatusStrip('pending', prefix + 'not yet submitted today');
+        }
+      });
+    }
+
     // =====================================================
     // GAUGE ITEMS (a reading with green / yellow / red zones)
     // =====================================================
@@ -6865,7 +7181,8 @@
       // Build plain-text report (JotForm entity-encodes HTML, so plain text
       // is the only format that stays readable in submission views).
       var lines = [];
-      lines.push('INVENTORY CHECK REPORT');
+      lines.push(reportTitle());
+      if (selectorActive && currentRig) lines.push(reportSubtitle());
       lines.push(dateHeader);
       lines.push('════════════════════════════════════════');
 
@@ -7001,7 +7318,8 @@
       // in the relay widget's submitted value.
       var htmlLines = [];
       htmlLines.push('<div style="font-family:Courier New,monospace;font-size:12px;line-height:1.5;color:#333;">');
-      htmlLines.push('<div style="font-weight:bold;font-size:14px;">INVENTORY CHECK REPORT</div>');
+      htmlLines.push('<div style="font-weight:bold;font-size:14px;">' + escapeHtml(reportTitle()) + '</div>');
+      if (selectorActive && currentRig) htmlLines.push('<div style="font-weight:bold;">' + escapeHtml(reportSubtitle()) + '</div>');
       htmlLines.push('<div style="color:#666;">' + dateHeader + '</div>');
       htmlLines.push('<hr style="border:none;border-top:2px double #999;margin:8px 0;">');
 
@@ -7125,6 +7443,8 @@
         restockStatus: restockStatus,
         o2States: o2States,
         questionAnswers: questionAnswers,
+        rig: currentRig,
+        checklist: currentChecklist,
         timestamp: Date.now()
       };
 
@@ -7186,11 +7506,14 @@
           var fp = getFormParams();
           cachedFormID = fp.formID || (data && data.formID) || null;
 
+          // Everything below runs once per checklist load. In selector mode it
+          // runs again whenever the rig or checklist dropdown changes.
+          function startChecklist(data, inventoryOverride) {
           // Load inventory from widget settings — supports inline text
           // or a path to an external .md or .json file on the same GitHub Pages origin.
           // Decode HTML entities first: JotForm encodes setting values
           // (e.g. / becomes &#x2F;) which would break path detection.
-          var _rawInventory = JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
+          var _rawInventory = inventoryOverride || JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
           var _decodeEl = document.createElement('textarea');
           _decodeEl.innerHTML = _rawInventory;
           var inventoryText = _decodeEl.value;
@@ -7226,11 +7549,14 @@
           var isLocalRestore = false;
           if (data.value) {
             saved = extractSyncData(data.value);
+            // A value saved for a different rig or checklist is not ours
+            if (saved && selectorActive && (saved.rig !== currentRig || saved.checklist !== currentChecklist)) saved = null;
           }
           if (!saved) {
             saved = loadState();
             if (saved) isLocalRestore = true;
           }
+          restoredLocalTs = (isLocalRestore && saved && saved.timestamp) ? saved.timestamp : null;
           if (saved) {
             // Decode HTML entities that Jotform may have injected into keys
             var _decEnt = function(s) { var t = document.createElement('textarea'); t.innerHTML = s; return t.value; };
@@ -7301,6 +7627,7 @@
           stateReady = true;
           saveState();
           resizeWidget();
+          refreshTodayStatus();
 
           // ---- Cross-device: fetch sealed state from most recent submission ----
           // Requires the form admin to set a "jotformApiKey" widget setting
@@ -7350,6 +7677,9 @@
               continueAfterInventoryLoad();
             }
           });
+          } // end startChecklist
+
+          initSelector(data, startChecklist);
         });
 
         JFCustomWidget.subscribe('submit', function() {
@@ -7366,6 +7696,8 @@
             restockStatus: restockStatus,
             o2States: o2States,
             questionAnswers: questionAnswers,
+            rig: currentRig,
+            checklist: currentChecklist,
             timestamp: Date.now()
           };
           var combinedValue = submitReport.report
