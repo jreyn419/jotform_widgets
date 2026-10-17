@@ -2452,6 +2452,42 @@
       background: #117a8b;
     }
 
+    /* Seal sheet: one row per sealable area */
+    .seal-intro {
+      padding: 14px 20px 6px;
+      font-size: 13px;
+      color: #666;
+      line-height: 1.4;
+    }
+    .seal-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid #eee;
+    }
+    .seal-row-info { flex: 1; min-width: 0; }
+    .seal-row-name { font-size: 15px; font-weight: 600; color: #222; }
+    .seal-row-path { font-size: 12px; color: #888; margin-top: 1px; }
+    .seal-row-status { font-size: 13px; margin-top: 3px; color: #666; }
+    .seal-row-status.ready { color: #17a2b8; font-weight: 600; }
+    .seal-row-status.sealed { color: #28a745; font-weight: 600; }
+    .seal-row-status.blocked { color: #b45309; }
+    .seal-row-btn {
+      flex-shrink: 0;
+      padding: 10px 16px;
+      background: #17a2b8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .seal-row-btn:active { background: #117a8b; }
+    .seal-row.sealed .seal-row-name { color: #28a745; }
+    #sealSheetFooter .seal-all-btn { margin-top: 0; }
+
     /* Collapsible Categories */
     .category-header {
       cursor: pointer;
@@ -2687,8 +2723,21 @@
           <button class="restock-all-btn" onclick="restockAllItems()">
             <span>✓</span> Mark All Restocked
           </button>
-          <button class="seal-all-btn" id="sealAllBtn" onclick="sealAllAreas()" style="display:none">
-            <span>&#x1F512;</span> Seal All Eligible Areas
+        </div>
+      </div>
+    </div>
+
+    <!-- Seal Sheet: the last step, after counting and restocking -->
+    <div class="modal-overlay" id="sealOverlay" onclick="closeSealSheet()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Seal Areas</h2>
+          <button class="modal-close" onclick="closeSealSheet()">×</button>
+        </div>
+        <div class="modal-body" id="sealSheetContent"></div>
+        <div class="modal-footer" id="sealSheetFooter" style="display:none">
+          <button class="seal-all-btn" id="sealAllBtn" onclick="sealAllAreas()">
+            <span>&#x1F512;</span> Seal All Ready Areas
           </button>
         </div>
       </div>
@@ -2790,8 +2839,14 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.27.1';
+    var VERSION = '1.28.0';
     var CHANGELOG = [
+      { version: '1.28.0', date: '2026-10-17', changes: [
+        'Sealing is now the last step, after counting and restocking: no seal prompts or jumps during the count, and an all-OK sealable area no longer holds the focus',
+        'Once every item is counted and every shortage handled, the footer button reads "Seal" with the number of areas left (or "Finish" when there is nothing to seal) and opens one list of sealable areas with a Seal button per ready area, a reason for each one not ready, and Seal All',
+        'Finishing the restock list opens the seal list; Seal All moved there from the restock list',
+        'In-area Seal buttons still exist but only appear in the seal step',
+      ]},
       { version: '1.27.1', date: '2026-10-17', changes: [
         'Fixed: "Done today at" showed the Jotform account\u2019s time zone. The time, and the test for "today", now use the moment the tablet submitted, stored in the widget\u2019s own value',
       ]},
@@ -4171,6 +4226,7 @@
             var tagBtn = document.createElement('button');
             tagBtn.className = 'tag-area-btn';
             tagBtn.id = 'tag_btn_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
+            tagBtn.style.display = 'none';
             tagBtn.textContent = 'Seal This Area';
             tagBtn.onclick = (function(name) {
               return function(e) {
@@ -4293,6 +4349,7 @@
           var tagBtn = document.createElement('button');
           tagBtn.className = 'tag-area-btn';
           tagBtn.id = 'tag_btn_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_');
+          tagBtn.style.display = 'none';
           tagBtn.textContent = 'Seal ' + parentName;
           tagBtn.onclick = (function(name) {
             return function(e) {
@@ -4371,8 +4428,8 @@
       } else if (expandedArea) {
         var areaDiv = document.getElementById('area_' + expandedArea.replace(/[^a-zA-Z0-9]/g, '_'));
         if (areaDiv) {
-          // Keep open if area still has work to do (items unchecked, or sealable but not yet sealed)
-          var stillHasWork = !taggedAreas[expandedArea] && (!isAreaAllOk(expandedArea) || (sealableAreas[expandedArea] && isAreaSealable(expandedArea)));
+          // Keep open only while items are still unchecked; sealing is its own step at the end
+          var stillHasWork = !taggedAreas[expandedArea] && !isAreaAllOk(expandedArea);
           if (stillHasWork) {
             areaDiv.classList.add('expanded');
           } else {
@@ -5680,8 +5737,6 @@
       var parts = fromKey.split('::');
       var areaName = parts[0], catName = parts[1];
       if (!INVENTORY[areaName]) return false;
-      // A sealable area that is ready to seal keeps the crew here
-      if (sealableAreas[areaName] && !taggedAreas[areaName] && isAreaAllOk(areaName)) return false;
 
       var cats = Object.keys(INVENTORY[areaName]);
       var passed = false;
@@ -6329,8 +6384,6 @@
       }
       // Check parent's own items
       if (INVENTORY[groupName] && !isAreaAllOk(groupName)) return false;
-      // If sealable and everything is ready to seal but not sealed yet, not complete
-      if (sealableAreas[groupName] && isAreaSealable(groupName)) return false;
       return true;
     }
     
@@ -6873,40 +6926,20 @@
         }
       }
       if (sealed > 0) {
-        closeRestockModal();
         expandedArea = null;
         expandedGroup = null;
         buildUI();
-        var nextSealable = findFirstUnsealedSealableArea();
-        if (nextSealable) {
-          setTimeout(function() {
-            navigateToSealableArea(nextSealable);
-          }, 150);
-        } else {
-          showCompletionPopup();
-        }
+        afterSealChange();
       }
     }
 
-    // Find the first sealable area that is not yet sealed but is ready to seal
-    // Find the next sealable area that is unsealed and ready to seal.
-    // For parent groups, children must be sealed before the parent:
-    //   1. Standalone sealable areas (in config order)
-    //   2. For parent groups: unsealed sealable children first, then the parent
-    function findFirstUnsealedSealableArea() {
-      // Build an ordered list: iterate INVENTORY in config order, but when
-      // we encounter a parent group, insert its sealable children before
-      // the parent itself.
+    // Sealable areas in display order: a group's sealable children first, then the group
+    function orderedSealableAreas() {
       var ordered = [];
       var visited = {};
-
       for (var areaName in INVENTORY) {
         if (visited[areaName]) continue;
-
-        // If this area is a child, it will be handled when we process its parent
         if (areaParent[areaName]) continue;
-
-        // If this is a parent area with children, enqueue children first
         if (areaHierarchy[areaName]) {
           var children = areaHierarchy[areaName];
           for (var c = 0; c < children.length; c++) {
@@ -6915,119 +6948,141 @@
               visited[children[c]] = true;
             }
           }
-          // Then the parent itself
-          if (sealableAreas[areaName]) {
-            ordered.push(areaName);
-            visited[areaName] = true;
-          }
-        } else {
-          // Standalone area
-          if (sealableAreas[areaName]) {
-            ordered.push(areaName);
-            visited[areaName] = true;
-          }
+          if (sealableAreas[areaName]) ordered.push(areaName);
+          visited[areaName] = true;
+        } else if (sealableAreas[areaName]) {
+          ordered.push(areaName);
+          visited[areaName] = true;
         }
       }
-
-      // Return the first area that is unsealed and ready to seal
-      for (var i = 0; i < ordered.length; i++) {
-        var name = ordered[i];
-        if (!taggedAreas[name] && isAreaSealable(name)) {
-          return name;
-        }
-      }
-      return null;
+      return ordered;
     }
 
-    // Navigate to an area: expand its parent group if needed, then expand the area
-    // and scroll so the seal button is visible.
-    function navigateToSealableArea(areaName) {
-      var parentName = areaParent[areaName] || null;
-      var safeName = areaName.replace(/[^a-zA-Z0-9]/g, '_');
-
-      function scrollToSealButton(aName) {
-        var btnId = areaHierarchy[aName]
-          ? 'tag_btn_group_' + aName.replace(/[^a-zA-Z0-9]/g, '_')
-          : 'tag_btn_' + aName.replace(/[^a-zA-Z0-9]/g, '_');
-        var btn = document.getElementById(btnId);
-        if (btn) {
-          btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+    function countUnsealedSealableAreas() {
+      if (!enableTaggedAreas) return 0;
+      var list = orderedSealableAreas();
+      var n = 0;
+      for (var i = 0; i < list.length; i++) {
+        if (!taggedAreas[list[i]]) n++;
       }
+      return n;
+    }
 
-      // Ensure a parent group is expanded (without toggling it closed if already open)
-      function ensureGroupExpanded(groupName) {
-        var groupDiv = document.getElementById('area_group_' + groupName.replace(/[^a-zA-Z0-9]/g, '_'));
-        if (!groupDiv) return;
-        if (!groupDiv.classList.contains('expanded')) {
-          toggleAreaGroup(groupDiv);
-        }
-      }
+    // The seal step opens only once everything is counted and every shortage is handled
+    function sealPhaseActive() {
+      return enableTaggedAreas && stateReady && isEverythingComplete();
+    }
 
-      // If it's a parent-level sealable area (has children), expand the group
-      // and scroll to the parent seal button at the bottom
+    // One line saying why an area cannot be sealed yet
+    function sealBlockReason(areaName) {
       if (areaHierarchy[areaName]) {
-        ensureGroupExpanded(areaName);
-        // Collapse any expanded child areas so the parent seal button is nearer
-        var groupDiv = document.getElementById('area_group_' + safeName);
-        if (groupDiv) {
-          var expandedChildren = groupDiv.querySelectorAll('.area-section.expanded');
-          for (var i = 0; i < expandedChildren.length; i++) {
-            expandedChildren[i].classList.remove('expanded');
-          }
-          expandedArea = null;
+        var children = areaHierarchy[areaName];
+        var waiting = 0;
+        for (var c = 0; c < children.length; c++) {
+          if (sealableAreas[children[c]] && !taggedAreas[children[c]]) waiting++;
         }
-        setTimeout(function() { scrollToSealButton(areaName); }, 200);
-        return;
+        if (waiting > 0) return waiting === 1 ? 'Seal the area inside it first' : 'Seal the ' + waiting + ' areas inside it first';
       }
-
-      // If it's a child area, expand the parent group then the child
-      if (parentName) {
-        ensureGroupExpanded(parentName);
-        // Collapse any currently expanded sibling children
-        var groupDiv = document.getElementById('area_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_'));
-        if (groupDiv) {
-          var expandedChildren = groupDiv.querySelectorAll('.area-section.expanded');
-          for (var i = 0; i < expandedChildren.length; i++) {
-            expandedChildren[i].classList.remove('expanded');
+      if (INVENTORY[areaName]) {
+        for (var catName in INVENTORY[areaName]) {
+          var items = INVENTORY[areaName][catName];
+          for (var i = 0; i < items.length; i++) {
+            var key = generateKey(areaName, catName, items[i].name);
+            var st = itemStates[key] || { actual: 0 };
+            if (st.actual >= items[i].required) continue;
+            var status = restockStatus[key];
+            if (status && (status.restocked || status.outOfStock)) continue;
+            if (!st.touched && !st.actual) return 'Not counted yet: ' + items[i].name;
+            return 'Short: ' + items[i].name + ' (' + st.actual + ' of ' + items[i].required + ')';
           }
         }
-        var areaDiv = document.getElementById('area_' + safeName);
-        if (areaDiv) {
-          areaDiv.classList.add('expanded');
-          expandedArea = areaName;
-          updateStickyOffsets();
-          setTimeout(function() { scrollToSealButton(areaName); }, 200);
-        }
-        return;
       }
+      return 'Not ready';
+    }
 
-      // Standalone area
-      var areaDiv = document.getElementById('area_' + safeName);
-      if (areaDiv) {
-        toggleArea(areaDiv, false);
-        setTimeout(function() { scrollToSealButton(areaName); }, 200);
+    function formatSealTime(ms) {
+      var d = new Date(ms);
+      var h = d.getHours();
+      var m = d.getMinutes();
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12; if (h === 0) h = 12;
+      return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+    }
+
+    function openSealSheet() {
+      renderSealSheet();
+      document.getElementById('sealOverlay').classList.add('open');
+    }
+
+    function closeSealSheet() {
+      document.getElementById('sealOverlay').classList.remove('open');
+    }
+
+    function sealSheetOpen() {
+      return document.getElementById('sealOverlay').classList.contains('open');
+    }
+
+    function renderSealSheet() {
+      var body = document.getElementById('sealSheetContent');
+      var footer = document.getElementById('sealSheetFooter');
+      var list = orderedSealableAreas();
+      var anyReady = false;
+      var html = '';
+      if (list.length === 0) {
+        html = '<div class="summary-empty"><div class="icon">✓</div><div>Nothing to seal on this checklist.</div></div>';
+      } else {
+        html += '<div class="seal-intro">Seal each area once its contents are back in place.</div>';
+        for (var i = 0; i < list.length; i++) {
+          var name = list[i];
+          var parent = areaParent[name];
+          var rowClass = 'seal-row';
+          var statusHtml = '';
+          var btnHtml = '';
+          if (taggedAreas[name]) {
+            rowClass += ' sealed';
+            statusHtml = '<div class="seal-row-status sealed">Sealed at ' + formatSealTime(taggedAreas[name].taggedTimestamp) + '</div>';
+          } else if (isAreaSealable(name)) {
+            anyReady = true;
+            statusHtml = '<div class="seal-row-status ready">Ready to seal</div>';
+            btnHtml = '<button class="seal-row-btn" onclick="sealFromSheet(' + JSON.stringify(name).replace(/"/g, '&quot;') + ')">Seal</button>';
+          } else {
+            statusHtml = '<div class="seal-row-status blocked">' + escapeHtml(sealBlockReason(name)) + '</div>';
+          }
+          html += '<div class="' + rowClass + '"><div class="seal-row-info">' +
+            '<div class="seal-row-name">' + escapeHtml(name) + '</div>' +
+            (parent ? '<div class="seal-row-path">' + escapeHtml(parent) + '</div>' : '') +
+            statusHtml + '</div>' + btnHtml + '</div>';
+        }
+      }
+      body.innerHTML = html;
+      footer.style.display = anyReady ? 'block' : 'none';
+    }
+
+    function sealFromSheet(areaName) {
+      tagArea(areaName);
+    }
+
+    // After any seal: refresh the sheet if it is open; when nothing is left, finish
+    function afterSealChange() {
+      updateSummary();
+      if (countUnsealedSealableAreas() === 0) {
+        closeSealSheet();
+        showCompletionPopup();
+      } else if (sealSheetOpen()) {
+        renderSealSheet();
       }
     }
 
-    // After all shortages are resolved, check if there are unsealed sealable
-    // areas.  If so, close the restock modal and navigate to the first one
-    // instead of showing the completion popup.
+    // After the last shortage is handled: leave the restock list and move to sealing
     function handleRestockComplete() {
       if (!isEverythingComplete()) return false;
-
-      var nextSealable = findFirstUnsealedSealableArea();
-      if (nextSealable) {
-        closeRestockModal();
-        setTimeout(function() {
-          navigateToSealableArea(nextSealable);
-        }, 150);
-        return true;
-      }
-
-      // No unsealed areas — original behavior
       closeRestockModal();
-      showCompletionPopup();
+      updateSummary();
+      if (countUnsealedSealableAreas() > 0) {
+        setTimeout(openSealSheet, 150);
+      } else {
+        showCompletionPopup();
+      }
       return true;
     }
 
@@ -7285,28 +7340,17 @@
         taggedTimestamp: now.getTime()
       };
 
-      // If everything is complete, we handle navigation ourselves after
-      // buildUI, so clear expanded state to prevent buildUI's own
-      // auto-advance from interfering. Otherwise let buildUI handle it
-      // normally (e.g. advancing to next incomplete child).
-      var willAutoAdvance = isEverythingComplete();
-      if (willAutoAdvance) {
+      // Sealing happens after the count, so collapse the sealed area and stay put
+      var finishing = isEverythingComplete();
+      if (finishing) {
         expandedArea = null;
         expandedGroup = null;
       }
 
       buildUI();
 
-      // Auto-advance to next sealable area or show completion
-      if (willAutoAdvance) {
-        var nextSealable = findFirstUnsealedSealableArea();
-        if (nextSealable) {
-          setTimeout(function() {
-            navigateToSealableArea(nextSealable);
-          }, 150);
-        } else {
-          showCompletionPopup();
-        }
+      if (finishing) {
+        afterSealChange();
       } else if (expandedArea) {
         // buildUI's own auto-advance opened the next area; scroll it into view
         // accounting for any sticky group header above it.
@@ -7528,6 +7572,7 @@
     
     function updateAllStatuses() {
       updateOosBanner();
+      var showSealButtons = sealPhaseActive();
       for (var areaName in INVENTORY) {
         var areaId = 'area_' + areaName.replace(/[^a-zA-Z0-9]/g, '_');
         var areaDiv = document.getElementById(areaId);
@@ -7659,7 +7704,7 @@
         if (sealableAreas[areaName]) {
           var tagBtn = document.getElementById('tag_btn_' + areaName.replace(/[^a-zA-Z0-9]/g, '_'));
           if (tagBtn) {
-            tagBtn.style.display = isAreaSealable(areaName) ? 'block' : 'none';
+            tagBtn.style.display = (showSealButtons && isAreaSealable(areaName)) ? 'block' : 'none';
           }
         }
       }
@@ -7750,7 +7795,7 @@
         if (sealableAreas[parentName]) {
           var tagBtn = document.getElementById('tag_btn_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_'));
           if (tagBtn) {
-            tagBtn.style.display = isAreaSealable(parentName) ? 'block' : 'none';
+            tagBtn.style.display = (showSealButtons && isAreaSealable(parentName)) ? 'block' : 'none';
           }
         }
       }
@@ -7877,10 +7922,17 @@
         restockBtn.querySelector('.restock-icon').textContent = '!';
         restockBtn.querySelector('span:nth-child(2)').textContent = 'Restock';
       } else if (unmarkedCount === 0) {
-        // Every item counted and nothing left short
+        // Every item counted and nothing left short: the last step is sealing, then finishing
         restockBtn.classList.add('all-ok');
-        restockBtn.querySelector('.restock-icon').textContent = '✓';
-        restockBtn.querySelector('span:nth-child(2)').textContent = 'All stocked';
+        var unsealedLeft = countUnsealedSealableAreas();
+        if (unsealedLeft > 0) {
+          restockBtn.querySelector('.restock-icon').innerHTML = '&#x1F512;';
+          restockBtn.querySelector('span:nth-child(2)').textContent = 'Seal';
+          restockCount.textContent = unsealedLeft;
+        } else {
+          restockBtn.querySelector('.restock-icon').textContent = '✓';
+          restockBtn.querySelector('span:nth-child(2)').textContent = 'Finish';
+        }
       } else {
         // Nothing left short yet: stay quiet
         restockBtn.classList.add('idle');
@@ -7890,21 +7942,9 @@
       var summaryContent = document.getElementById('summaryContent');
       var modalFooter = document.getElementById('modalFooter');
       
-      // Show/hide seal-all button in modal
-      var sealAllBtn = document.getElementById('sealAllBtn');
-      if (sealAllBtn) {
-        var anySealable = false;
-        if (enableTaggedAreas) {
-          for (var sArea in INVENTORY) {
-            if (sealableAreas[sArea] && isAreaSealable(sArea)) { anySealable = true; break; }
-          }
-        }
-        sealAllBtn.style.display = anySealable ? 'flex' : 'none';
-      }
-
       if (shortages.length === 0) {
         summaryContent.innerHTML = '<div class="summary-empty"><div class="icon">✓</div><div>All items fully stocked!</div></div>';
-        modalFooter.style.display = (sealAllBtn && anySealable) ? 'block' : 'none';
+        modalFooter.style.display = 'none';
       } else {
         modalFooter.style.display = 'block';
         
@@ -8074,14 +8114,8 @@
       if (!stateReady) return;
       if (!isEverythingComplete()) return;
 
-      var nextSealable = findFirstUnsealedSealableArea();
-      if (nextSealable) {
-        // Navigate to the sealable area instead of showing completion
-        setTimeout(function() {
-          navigateToSealableArea(nextSealable);
-        }, 300);
-        return;
-      }
+      // Areas still to seal: the footer button now reads "Seal" and the user takes it from there
+      if (countUnsealedSealableAreas() > 0) return;
 
       // Small delay so the last category collapse/scroll finishes first
       setTimeout(function() {
@@ -8097,9 +8131,8 @@
     
     function openRestockModal() {
       if (isEverythingComplete()) {
-        var nextSealable = findFirstUnsealedSealableArea();
-        if (nextSealable) {
-          navigateToSealableArea(nextSealable);
+        if (countUnsealedSealableAreas() > 0) {
+          openSealSheet();
         } else {
           showCompletionPopup();
         }
@@ -8121,7 +8154,7 @@
       updateChecklistItem(key);
       updateAllStatuses();
       updateSummary();
-      // Check if everything is now complete (may navigate to sealable area)
+      // Everything handled? Move on to sealing
       handleRestockComplete();
     }
     
@@ -8201,7 +8234,7 @@
           closeOutOfStockDialog();
           updateAllStatuses();
           updateSummary();
-          // Check if everything is now complete (may navigate to sealable area)
+          // Everything handled? Move on to sealing
           handleRestockComplete();
         }
       }
@@ -8250,7 +8283,7 @@
       }
       updateAllStatuses();
       updateSummary();
-      // After restocking all, check if everything is complete (may navigate to sealable area)
+      // Everything handled? Move on to sealing
       handleRestockComplete();
     }
 
