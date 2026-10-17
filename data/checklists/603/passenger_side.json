@@ -3,6 +3,12 @@
     "name": "Passenger Side",
     "order": 2
   },
+  "oxygenCheck": {
+    "mainO2Threshold": 1600,
+    "mainO2Cylinders": 1,
+    "stretcherO2Threshold": 1000,
+    "medicalAir": false
+  },
   "areas": [
     {
       "area": "Top Cabinet",
