@@ -23,7 +23,37 @@
       "categories": [
         {
           "name": "General",
-          "items": []
+          "items": [
+            {
+              "name": "Stethoscope",
+              "qty": 1
+            },
+            {
+              "name": "Infant",
+              "qty": 1,
+              "group": "Manual BP Cuffs"
+            },
+            {
+              "name": "Child",
+              "qty": 1,
+              "group": "Manual BP Cuffs"
+            },
+            {
+              "name": "Small Adult",
+              "qty": 1,
+              "group": "Manual BP Cuffs"
+            },
+            {
+              "name": "Large Adult",
+              "qty": 1,
+              "group": "Manual BP Cuffs"
+            },
+            {
+              "name": "Thigh",
+              "qty": 1,
+              "group": "Manual BP Cuffs"
+            }
+          ]
         }
       ]
     },
@@ -430,37 +460,7 @@
       "categories": [
         {
           "name": "General",
-          "items": [
-            {
-              "name": "Stethoscope",
-              "qty": 1
-            },
-            {
-              "name": "Infant",
-              "qty": 1,
-              "group": "Manual BP Cuffs"
-            },
-            {
-              "name": "Child",
-              "qty": 1,
-              "group": "Manual BP Cuffs"
-            },
-            {
-              "name": "Small Adult",
-              "qty": 1,
-              "group": "Manual BP Cuffs"
-            },
-            {
-              "name": "Large Adult",
-              "qty": 1,
-              "group": "Manual BP Cuffs"
-            },
-            {
-              "name": "Thigh",
-              "qty": 1,
-              "group": "Manual BP Cuffs"
-            }
-          ]
+          "items": []
         }
       ]
     },
