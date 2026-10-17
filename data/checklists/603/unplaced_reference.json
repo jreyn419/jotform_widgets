@@ -17,38 +17,6 @@
             {
               "name": "Lancets",
               "qty": 6
-            },
-            {
-              "name": "Sterile Water for Inhalation Bag 1000mL",
-              "qty": 3
-            },
-            {
-              "name": "NS Bag 1000mL",
-              "qty": 6
-            },
-            {
-              "name": "NS Bag 250mL",
-              "qty": 2
-            },
-            {
-              "name": "NS Bag 100 mL",
-              "qty": 5
-            },
-            {
-              "name": "Arm Board (Short)",
-              "qty": 2
-            },
-            {
-              "name": "Arm Board (Long)",
-              "qty": 2
-            },
-            {
-              "name": "Invasive BP Clamp Mount",
-              "qty": 1
-            },
-            {
-              "name": "MAD",
-              "qty": 4
             }
           ]
         }
@@ -215,24 +183,6 @@
       ]
     },
     {
-      "area": "Restraints etc. (was front cabinet)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Bedpans",
-              "qty": 3
-            },
-            {
-              "name": "Baby Cap (if not included in OB kit)",
-              "qty": 2
-            }
-          ]
-        }
-      ]
-    },
-    {
       "area": "Electronics (was action area)",
       "categories": [
         {
@@ -249,117 +199,6 @@
             {
               "name": "Monitor Charger",
               "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "Was MCI bag (602)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Triage Unit Leader Vest",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "Was H (603 driver side)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Surgical Masks Box",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "Was passenger bench shelf (603)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "L",
-              "qty": 1,
-              "group": "Soft Collars"
-            },
-            {
-              "name": "M",
-              "qty": 1,
-              "group": "Soft Collars"
-            },
-            {
-              "name": "S",
-              "qty": 1,
-              "group": "Soft Collars"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "Was the IV/med delivery pouch (603 passenger side)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Yellow Tags",
-              "qty": 20
-            },
-            {
-              "name": "White Tags",
-              "qty": 5
-            },
-            {
-              "name": "Stethoscope",
-              "qty": 1
-            },
-            {
-              "name": "Coban",
-              "qty": 1
-            },
-            {
-              "name": "Alcohol Prep Pads",
-              "qty": 20
-            },
-            {
-              "name": "Nail Polish Remover",
-              "qty": 10
-            },
-            {
-              "name": "Sterile 2x2",
-              "qty": 6
-            },
-            {
-              "name": "Sterile 4x4",
-              "qty": 6
-            },
-            {
-              "name": "Pen light",
-              "qty": 2
-            },
-            {
-              "name": "Pen",
-              "qty": 1
-            },
-            {
-              "name": "Curos Strips",
-              "qty": 3
-            },
-            {
-              "name": "Tape, 1\"",
-              "qty": 2
             }
           ]
         }

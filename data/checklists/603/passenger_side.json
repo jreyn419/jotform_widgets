@@ -191,16 +191,27 @@
           "name": "Under Bench",
           "items": [
             {
-              "name": "X Collars",
-              "qty": 4
-            },
-            {
               "name": "Pelvic Binder",
               "qty": 1
             },
             {
               "name": "Pedi-Mate",
               "qty": 1
+            },
+            {
+              "name": "L",
+              "qty": 1,
+              "group": "X Collars"
+            },
+            {
+              "name": "M",
+              "qty": 1,
+              "group": "X Collars"
+            },
+            {
+              "name": "S",
+              "qty": 1,
+              "group": "X Collars"
             }
           ]
         }
@@ -303,7 +314,28 @@
       "categories": [
         {
           "name": "General",
-          "items": []
+          "items": [
+            {
+              "name": "Sterile Water for Inhalation Bag 1000mL",
+              "qty": 3
+            },
+            {
+              "name": "NS Bag 1000mL",
+              "qty": 6
+            },
+            {
+              "name": "NS Bag 250mL",
+              "qty": 2
+            },
+            {
+              "name": "NS Bag 100 mL",
+              "qty": 5
+            },
+            {
+              "name": "D10W Bag 25g/250mL",
+              "qty": 3
+            }
+          ]
         }
       ]
     },
@@ -398,7 +430,37 @@
       "categories": [
         {
           "name": "General",
-          "items": []
+          "items": [
+            {
+              "name": "Stethoscope",
+              "qty": 1
+            },
+            {
+              "name": "Infant",
+              "qty": 1,
+              "group": "Manual BP Cuffs"
+            },
+            {
+              "name": "Child",
+              "qty": 1,
+              "group": "Manual BP Cuffs"
+            },
+            {
+              "name": "Small Adult",
+              "qty": 1,
+              "group": "Manual BP Cuffs"
+            },
+            {
+              "name": "Large Adult",
+              "qty": 1,
+              "group": "Manual BP Cuffs"
+            },
+            {
+              "name": "Thigh",
+              "qty": 1,
+              "group": "Manual BP Cuffs"
+            }
+          ]
         }
       ]
     },
@@ -437,6 +499,10 @@
             },
             {
               "name": "Logistics Vest",
+              "qty": 1
+            },
+            {
+              "name": "Triage Unit Leader Vest",
               "qty": 1
             }
           ]

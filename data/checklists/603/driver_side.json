@@ -34,26 +34,6 @@
             {
               "name": "Potable Water",
               "qty": 1
-            },
-            {
-              "name": "Manual BP Cuff - Infant",
-              "qty": 1
-            },
-            {
-              "name": "Manual BP Cuff - Child",
-              "qty": 1
-            },
-            {
-              "name": "Manual BP Cuff - Small Adult",
-              "qty": 1
-            },
-            {
-              "name": "Manual BP Cuff - Large Adult",
-              "qty": 1
-            },
-            {
-              "name": "Manual BP Cuff – Thigh",
-              "qty": 1
             }
           ]
         },
@@ -112,6 +92,14 @@
             {
               "name": "Epinephrine auto-injector (pediatric) 0.15mg",
               "qty": 1
+            },
+            {
+              "name": "Arm Board (Short)",
+              "qty": 2
+            },
+            {
+              "name": "Arm Board (Long)",
+              "qty": 2
             }
           ]
         }
@@ -249,8 +237,8 @@
               "qty": 2
             },
             {
-              "name": "Dextrose 25g/250mL",
-              "qty": 3
+              "name": "MADs",
+              "qty": 4
             }
           ]
         }
@@ -430,6 +418,10 @@
               "name": "3mL Syringe (With BD TwinPak)",
               "qty": 8,
               "group": "Syringes"
+            },
+            {
+              "name": "Curos Caps",
+              "qty": 3
             }
           ]
         }
@@ -461,6 +453,10 @@
             {
               "name": "Surgical Mask",
               "qty": 10
+            },
+            {
+              "name": "Surgical Masks Box",
+              "qty": 1
             }
           ]
         },
@@ -485,6 +481,18 @@
             },
             {
               "name": "Obstetrical Kit",
+              "qty": 2
+            },
+            {
+              "name": "Bedpans",
+              "qty": 3
+            },
+            {
+              "name": "Emesis Basins",
+              "qty": 1
+            },
+            {
+              "name": "Baby Caps (in the OB kits)",
               "qty": 2
             }
           ]
@@ -728,10 +736,6 @@
             {
               "name": "Emesis Bags",
               "qty": 1
-            },
-            {
-              "name": "Emesis Basins",
-              "qty": 1
             }
           ]
         }
@@ -799,6 +803,27 @@
             {
               "name": "Posey restraints (blue-wrist)",
               "qty": 2
+            }
+          ]
+        },
+        {
+          "name": "Rear Area",
+          "items": [
+            {
+              "name": "Yellow Triage Tags",
+              "qty": 20
+            },
+            {
+              "name": "White Triage Tags",
+              "qty": 5
+            },
+            {
+              "name": "Pen light",
+              "qty": 2
+            },
+            {
+              "name": "Pen",
+              "qty": 1
             }
           ]
         }
