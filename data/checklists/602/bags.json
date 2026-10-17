@@ -54,6 +54,15 @@
           ]
         },
         {
+          "name": "Main Compartment, Mesh Pocket",
+          "items": [
+            {
+              "name": "Invasive Monitoring Clamp",
+              "qty": 1
+            }
+          ]
+        },
+        {
           "name": "Secondary Compartment",
           "items": [
             {
