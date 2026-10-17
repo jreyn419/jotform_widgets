@@ -371,6 +371,26 @@
             {
               "name": "2\"x2\" Sterile Sponge",
               "qty": 10
+            },
+            {
+              "name": "22G Safety Needle",
+              "qty": 4,
+              "group": "Needles"
+            },
+            {
+              "name": "25G Safety Needle",
+              "qty": 4,
+              "group": "Needles"
+            },
+            {
+              "name": "18G Filter Needle",
+              "qty": 2,
+              "group": "Needles"
+            },
+            {
+              "name": "Twinpak (Or blunt needle)",
+              "qty": 5,
+              "group": "Needles"
             }
           ]
         }
