@@ -287,6 +287,50 @@
           ]
         }
       ]
+    },
+    {
+      "area": "Was H (603 driver side)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Surgical Masks Box",
+              "qty": 1
+            },
+            {
+              "name": "Hand Sanitizer",
+              "qty": 1
+            },
+            {
+              "name": "Paper Towels, roll (or stack of napkins)",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Was External Backboard Cabinet (603 driver side)",
+      "categories": [
+        {
+          "name": "Right",
+          "items": [
+            {
+              "name": "Breakaway Stretcher",
+              "qty": 1
+            },
+            {
+              "name": "Long Cardboard Splint",
+              "qty": 2
+            },
+            {
+              "name": "Short Cardboard Splint",
+              "qty": 2
+            }
+          ]
+        }
+      ]
     }
   ]
 }
