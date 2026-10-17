@@ -248,61 +248,6 @@
       ]
     },
     {
-      "area": "Bottom Rear Cabinet",
-      "categories": [
-        {
-          "name": "Top Shelf",
-          "items": [
-            {
-              "name": "Goggles",
-              "qty": 3
-            },
-            {
-              "name": "Face Shield",
-              "qty": 3
-            },
-            {
-              "name": "Isolation Gown",
-              "qty": 10
-            },
-            {
-              "name": "N95 Mask",
-              "qty": 6
-            },
-            {
-              "name": "Surgical Mask",
-              "qty": 10
-            }
-          ]
-        },
-        {
-          "name": "Bottom Shelf",
-          "items": [
-            {
-              "name": "Biohazard Bags",
-              "qty": 2
-            },
-            {
-              "name": "Commode",
-              "qty": 1
-            },
-            {
-              "name": "Male Urinal",
-              "qty": 3
-            },
-            {
-              "name": "Infectious control cleanup kit",
-              "qty": 1
-            },
-            {
-              "name": "Obstetrical Kit",
-              "qty": 2
-            }
-          ]
-        }
-      ]
-    },
-    {
       "area": "Rear Tabletop",
       "categories": [
         {
@@ -417,6 +362,61 @@
             {
               "name": "2\"x2\" Sterile Sponge",
               "qty": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Bottom Rear Cabinet",
+      "categories": [
+        {
+          "name": "Top Shelf",
+          "items": [
+            {
+              "name": "Goggles",
+              "qty": 3
+            },
+            {
+              "name": "Face Shield",
+              "qty": 3
+            },
+            {
+              "name": "Isolation Gown",
+              "qty": 10
+            },
+            {
+              "name": "N95 Mask",
+              "qty": 6
+            },
+            {
+              "name": "Surgical Mask",
+              "qty": 10
+            }
+          ]
+        },
+        {
+          "name": "Bottom Shelf",
+          "items": [
+            {
+              "name": "Biohazard Bags",
+              "qty": 2
+            },
+            {
+              "name": "Commode",
+              "qty": 1
+            },
+            {
+              "name": "Male Urinal",
+              "qty": 3
+            },
+            {
+              "name": "Infectious control cleanup kit",
+              "qty": 1
+            },
+            {
+              "name": "Obstetrical Kit",
+              "qty": 2
             }
           ]
         }
@@ -767,54 +767,6 @@
             {
               "name": "Spare Tire",
               "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "H",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Surgical Masks Box",
-              "qty": 1
-            },
-            {
-              "name": "Hand Sanitizer",
-              "qty": 1
-            },
-            {
-              "name": "Paper Towels, roll (or stack of napkins)",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "External Backboard Cabinet",
-      "categories": [
-        {
-          "name": "Left",
-          "items": []
-        },
-        {
-          "name": "Right",
-          "items": [
-            {
-              "name": "Breakaway Stretcher",
-              "qty": 1
-            },
-            {
-              "name": "Long Cardboard Splint",
-              "qty": 2
-            },
-            {
-              "name": "Short Cardboard Splint",
-              "qty": 2
             }
           ]
         }
