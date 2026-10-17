@@ -1141,6 +1141,16 @@
       animation: ems-fadein 0.15s ease-out;
     }
 
+    /* Arrival cue when the focus lands in a new area */
+    @keyframes ems-land {
+      0% { box-shadow: inset 0 0 0 999px rgba(0, 102, 204, 0.22); }
+      100% { box-shadow: inset 0 0 0 999px rgba(0, 102, 204, 0); }
+    }
+
+    .area-header.landed {
+      animation: ems-land 0.7s ease-out;
+    }
+
     /* Today-status strip and rig/checklist selector prompt */
     .status-strip {
       display: none;
@@ -2780,8 +2790,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.26.0';
+    var VERSION = '1.27.0';
     var CHANGELOG = [
+      { version: '1.27.0', date: '2026-10-17', changes: [
+        'Moving to the next category or area is one scroll, computed after the layout settles: the focused row lands just under the sticky headers, long moves jump instantly, short moves glide, and the new area header flashes briefly',
+      ]},
       { version: '1.26.0', date: '2026-10-17', changes: [
         'No more flash on load: the widget starts in a loading state that hides the footer, dock and strip until the first real render, with a spinner only if loading takes longer than 200ms and content fading in',
         'Switching checklists from the picker uses the same loading state',
@@ -5487,7 +5500,7 @@
       };
     }
 
-    function setFocusedItem(key, scroll) {
+    function setFocusedItem(key, scroll, force) {
       if (!enableFocusRow) return;
       var row = key ? document.getElementById('item_' + key.replace(/[^a-zA-Z0-9]/g, '_')) : null;
       clearFocusedRow();
@@ -5495,36 +5508,67 @@
       row.classList.add('focused');
       focusedKey = key;
       updateFocusDock();
-      if (scroll) scrollRowIntoView(row);
+      if (scroll) scrollRowIntoView(row, !!force);
     }
 
     // Scroll the areas container so the row sits below the sticky header
     // stack, but only when it is not already fully visible.
-    function scrollRowIntoView(row) {
+    // Set while the widget itself opens areas, so the toggles' own delayed
+    // scrolls stay quiet and the landing below is the only scroll.
+    var suppressToggleScroll = false;
+
+    // Height of the headers that will sit above this row once it is at the
+    // top: group header, area header, and category header.
+    function stickyStackFor(row) {
+      var h = 0;
+      var section = row.closest('.area-section');
+      var group = row.closest('.area-group.expanded');
+      if (group) {
+        var gh = group.querySelector(':scope > .area-header');
+        if (gh) h += gh.getBoundingClientRect().height;
+      }
+      if (section) {
+        var ah = section.querySelector(':scope > .area-header');
+        if (ah) h += ah.getBoundingClientRect().height;
+      }
+      var items = row.closest('.category-items');
+      var ch = items ? items.previousElementSibling : null;
+      if (ch && ch.classList.contains('category-header')) h += ch.getBoundingClientRect().height;
+      return h;
+    }
+
+    // Land the row just under the sticky headers. One scroll, computed after
+    // layout: a jump when the move is longer than a screen, a short glide
+    // otherwise. Without force, a row already fully in view stays put.
+    function scrollRowIntoView(row, force) {
       var container = document.getElementById('areasContainer');
       if (!container) return;
       requestAnimationFrame(function() {
         requestAnimationFrame(function() {
           var cRect = container.getBoundingClientRect();
           var rRect = row.getBoundingClientRect();
-          var stickyBottom = 0;
-          var heads = container.querySelectorAll('.area-header, .category-header, .subcategory-header');
-          for (var i = 0; i < heads.length; i++) {
-            if (window.getComputedStyle(heads[i]).position !== 'sticky') continue;
-            var hr = heads[i].getBoundingClientRect();
-            var rel = hr.top - cRect.top;
-            if (rel >= -1 && rel < cRect.height / 2) {
-              stickyBottom = Math.max(stickyBottom, rel + hr.height);
-            }
-          }
+          var stack = stickyStackFor(row);
           var top = rRect.top - cRect.top;
           var bottom = rRect.bottom - cRect.top;
-          if (top >= stickyBottom && bottom <= cRect.height) return;
-          var slack = Math.max(0, (cRect.height - stickyBottom - rRect.height) / 3);
-          var target = container.scrollTop + top - stickyBottom - slack;
-          container.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+          if (!force && top >= stack && bottom <= cRect.height) return;
+          var target = Math.max(0, container.scrollTop + top - stack - 8);
+          var distance = Math.abs(target - container.scrollTop);
+          if (distance < 1) return;
+          if (distance > cRect.height) {
+            container.scrollTop = target;
+          } else {
+            container.scrollTo({ top: target, behavior: 'smooth' });
+          }
         });
       });
+    }
+
+    function flashHeader(header) {
+      if (!header) return;
+      header.classList.remove('landed');
+      void header.offsetWidth; // restart the animation
+      header.classList.add('landed');
+      setTimeout(function() { header.classList.remove('landed'); }, 800);
     }
 
     // Focus the next unhandled visible row after fromKey (wrapping around),
@@ -5616,7 +5660,8 @@
         var target = firstUnhandledIn(areaName, cats[ci]);
         if (!target) continue;
         openCategory(areaName, cats[ci]);
-        setFocusedItem(target, scroll);
+        updateStickyOffsets();
+        setFocusedItem(target, scroll, true);
         return true;
       }
 
@@ -5632,14 +5677,21 @@
         var next = firstUnhandledInArea(name);
         if (!next) continue;
         var groupDiv = node.parentElement && node.parentElement.classList.contains('area-group-content') ? node.closest('.area-group') : null;
-        if (groupDiv && !groupDiv.classList.contains('expanded')) toggleAreaGroup(groupDiv);
-        if (!groupDiv) {
-          var leaving = section ? section.closest('.area-group') : null;
-          if (leaving) { leaving.classList.remove('expanded'); expandedGroup = null; }
+        suppressToggleScroll = true;
+        try {
+          if (groupDiv && !groupDiv.classList.contains('expanded')) toggleAreaGroup(groupDiv);
+          if (!groupDiv) {
+            var leaving = section ? section.closest('.area-group') : null;
+            if (leaving) { leaving.classList.remove('expanded'); expandedGroup = null; }
+          }
+          if (!node.classList.contains('expanded')) toggleArea(node, !!groupDiv);
+          openCategory(name, next.split('::')[1]);
+          updateStickyOffsets();
+        } finally {
+          suppressToggleScroll = false;
         }
-        if (!node.classList.contains('expanded')) toggleArea(node, !!groupDiv);
-        openCategory(name, next.split('::')[1]);
-        setFocusedItem(next, scroll);
+        setFocusedItem(next, scroll, true);
+        flashHeader(node.querySelector(':scope > .area-header'));
         return true;
       }
       return false;
@@ -5694,8 +5746,19 @@
         setTimeout(function() {
           pre.classList.remove('expanded');
           var next = pre.nextElementSibling;
-          if (next && next.classList.contains('area-group')) toggleAreaGroup(next);
-          else if (next && next.classList.contains('area-section')) toggleArea(next, false);
+          suppressToggleScroll = true;
+          try {
+            if (next && next.classList.contains('area-group')) toggleAreaGroup(next);
+            else if (next && next.classList.contains('area-section')) toggleArea(next, false);
+            updateStickyOffsets();
+          } finally {
+            suppressToggleScroll = false;
+          }
+          if (focusedKey) {
+            var landedRow = document.getElementById('item_' + focusedKey.replace(/[^a-zA-Z0-9]/g, '_'));
+            if (landedRow) scrollRowIntoView(landedRow, true);
+          }
+          if (next) flashHeader(next.querySelector(':scope > .area-header'));
         }, 350);
       }
     }
@@ -6351,7 +6414,7 @@
         expandedArea = areaName;
         updateStickyOffsets();
         advanceFocus(null, false);
-        setTimeout(function() {
+        if (!suppressToggleScroll) setTimeout(function() {
           if (isChild) {
             // For child areas inside a group, we need to scroll so the child
             // area header appears just below the parent group's sticky header.
