@@ -2492,8 +2492,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.21.0';
+    var VERSION = '1.21.1';
     var CHANGELOG = [
+      { version: '1.21.1', date: '2026-10-17', changes: [
+        'Plainer status wording: "Done today at 6:42 AM", "Not done today", "In progress on this device"',
+      ]},
       { version: '1.21.0', date: '2026-10-17', changes: [
         'The oxygen check is configured per checklist: a top-level "oxygenCheck" block in the checklist JSON turns it on for that file only',
         'In picker and dropdown modes the widget-level oxygen and customQuestions settings are ignored; the checklist file decides. Single-checklist forms still honour them as a fallback',
@@ -4112,7 +4115,7 @@
         container.innerHTML = '<div class="selector-prompt">Select a rig and a checklist above to begin.</div>';
       }
       updateSummary();
-      setStatusStrip('prompt', 'No rig or checklist selected');
+      setStatusStrip('prompt', 'Select a rig and a checklist');
       resizeWidget();
     }
 
@@ -4330,7 +4333,7 @@
         name.textContent = cl.name || cl.id;
         var status = document.createElement('span');
         status.className = 'picker-row-status checking';
-        status.textContent = 'checking\u2026';
+        status.textContent = 'Checking\u2026';
         row.appendChild(name);
         row.appendChild(status);
         row.onclick = (function(r, k) { return function() { choosePair(r, k); }; })(rig.id, cl.id);
@@ -4363,22 +4366,22 @@
           if (submittedAt) {
             el.classList.add('submitted');
             var when = createdAtClock(submittedAt);
-            el.textContent = 'Submitted today' + (when ? ' ' + when : '') + (submittedCount > 1 ? ' (\u00D7' + submittedCount + ')' : '')
-              + (localTs ? ' \u00B7 in progress here' : '');
+            el.textContent = 'Done today' + (when ? ' at ' + when : '') + (submittedCount > 1 ? ' (' + submittedCount + ' submissions)' : '')
+              + (localTs ? ' \u00B7 reopened on this device' : '');
           } else if (localTs) {
             el.classList.add('open');
             var ld = new Date(localTs);
-            el.textContent = 'In progress here, ' + clockText(ld.getHours(), ld.getMinutes());
+            el.textContent = 'In progress on this device, ' + clockText(ld.getHours(), ld.getMinutes());
           } else if (list === undefined) {
             el.textContent = '';
             el.style.display = 'none';
           } else {
             el.classList.add('pending');
-            el.textContent = list === null ? 'status unavailable' : 'Not yet today';
+            el.textContent = list === null ? 'Status unavailable' : 'Not done today';
           }
         }
-        note.textContent = list === undefined ? 'Add a Jotform API key to show what has been submitted today.'
-                         : (list === null ? 'Could not reach Jotform to check today\u2019s submissions.' : '');
+        note.textContent = list === undefined ? 'Add a Jotform API key to show which checklists are done today.'
+                         : (list === null ? 'Could not reach Jotform to check which checklists are done today.' : '');
       };
       getTodaySubmissions(applyStatuses);
     }
@@ -4535,7 +4538,7 @@
       if (restoredLocalTs) {
         var d = new Date(restoredLocalTs);
         if (localDateString(d) === localDateString(new Date())) {
-          localText = 'in progress on this device, last change ' + clockText(d.getHours(), d.getMinutes());
+          localText = 'In progress on this device, last change ' + clockText(d.getHours(), d.getMinutes());
         }
       }
 
@@ -4547,10 +4550,10 @@
         return;
       }
 
-      setStatusStrip('info', prefix + 'checking today\u2019s submissions\u2026');
+      setStatusStrip('info', prefix + 'Checking today\u2019s status\u2026');
       getTodaySubmissions(function(list) {
         if (list === null || list === undefined) {
-          setStatusStrip(localText ? 'open' : 'info', prefix + (localText || 'could not reach Jotform to check today\u2019s submissions'));
+          setStatusStrip(localText ? 'open' : 'info', prefix + (localText || 'Could not reach Jotform to check today\u2019s status'));
           return;
         }
         var matches = [];
@@ -4559,13 +4562,13 @@
         }
         if (matches.length > 0) {
           var when = createdAtClock(matches[0].created_at);
-          var text = 'submitted today' + (when ? ' at ' + when : '') + (matches.length > 1 ? ' (' + matches.length + ' times)' : '');
-          if (localText) text += '; ' + localText;
+          var text = 'Done today' + (when ? ' at ' + when : '') + (matches.length > 1 ? ' (' + matches.length + ' submissions)' : '');
+          if (localText) text += '. Reopened on this device, last change ' + clockText(new Date(restoredLocalTs).getHours(), new Date(restoredLocalTs).getMinutes());
           setStatusStrip('submitted', prefix + text);
         } else if (localText) {
           setStatusStrip('open', prefix + localText);
         } else {
-          setStatusStrip('pending', prefix + 'not yet submitted today');
+          setStatusStrip('pending', prefix + 'Not done today');
         }
       });
     }
