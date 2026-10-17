@@ -2492,8 +2492,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.19.0';
+    var VERSION = '1.20.0';
     var CHANGELOG = [
+      { version: '1.20.0', date: '2026-10-17', changes: [
+        'The rig and checklist picker is now the default: with no settings the widget loads data/checklists/index.json. A form with inventoryItems set stays a single checklist, and rigIndex set to "none" turns the picker off',
+      ]},
       { version: '1.19.0', date: '2026-10-17', changes: [
         'In-widget rig and checklist picker: set rigIndex to data/checklists/index.json and the widget opens with rig tiles, then checklist rows that already show submitted today / in progress / not yet today before anything is chosen',
         'The last rig used on a device is remembered, and a Change button in the header returns to the picker',
@@ -2754,7 +2757,15 @@
     var currentChecklist = null;
     var selectorFieldIds = { rig: null, checklist: null };
     var inventoryTitle = ''; // _meta.name of the loaded checklist file
-    // Picker mode (setting rigIndex = path to data/checklists/index.json)
+    // Picker mode is the default. Setting rigIndex overrides the index path;
+    // "none" / "off" / "false" disables the picker; a form with inventoryItems
+    // set is treated as a single checklist and skips the picker too.
+    var DEFAULT_RIG_INDEX = 'data/checklists/index.json';
+    var DEFAULT_PATH_TEMPLATE = 'data/checklists/{rig}/{checklist}.json';
+    // Relative paths resolve against the widget's own folder (widgets/), while
+    // the data folder sits at the repo root, so the default index is looked
+    // for at '', '../' and '../../'; the prefix that works is reused for checklists.
+    var defaultPathPrefix = '';
     var pickerActive = false;
     var rigIndexData = null; // { rigs: [{ id, name, checklists: [{ id, name }] }] }
     var pickerStart = null; // startChecklist from the ready handler
@@ -4065,7 +4076,8 @@
     }
 
     function selectionPath() {
-      var template = JFCustomWidget.getWidgetSetting('checklistPathTemplate') || 'data/checklists/{rig}/{checklist}.json';
+      var setting = JFCustomWidget.getWidgetSetting('checklistPathTemplate');
+      var template = setting ? setting : defaultPathPrefix + DEFAULT_PATH_TEMPLATE;
       var dec = document.createElement('textarea');
       dec.innerHTML = template;
       return dec.value.replace('{rig}', currentRig).replace('{checklist}', currentChecklist);
@@ -4100,8 +4112,9 @@
       var clId = JFCustomWidget.getWidgetSetting('checklistFieldId');
       var rigIndex = JFCustomWidget.getWidgetSetting('rigIndex');
       if (!rigId || !clId) {
-        if (rigIndex) {
-          initPicker(rigIndex, data, start);
+        var indexPath = resolveRigIndexSetting(rigIndex, JFCustomWidget.getWidgetSetting('inventoryItems'));
+        if (indexPath) {
+          initPicker(indexPath, data, start);
           return;
         }
         selectorActive = false;
@@ -4142,6 +4155,17 @@
 
     // ---------------- In-widget picker ----------------
 
+    // Which index file to use, or null for no picker
+    function resolveRigIndexSetting(rigIndex, inventorySetting) {
+      var v = (rigIndex === undefined || rigIndex === null) ? '' : String(rigIndex).trim();
+      var off = v.toLowerCase();
+      if (off === 'none' || off === 'off' || off === 'false' || off === '0') return null;
+      if (v) return v;
+      // No explicit index: default to the picker unless the form supplies its own checklist
+      if (inventorySetting !== undefined && inventorySetting !== null && String(inventorySetting).trim() !== '') return null;
+      return DEFAULT_RIG_INDEX;
+    }
+
     function lastRigKey() {
       var fp = getFormParams();
       return 'ems_last_rig_' + (fp.formID || cachedFormID || 'form');
@@ -4157,10 +4181,27 @@
       dec.innerHTML = indexSetting;
       var indexPath = dec.value;
       setStatusStrip('prompt', 'Loading rigs\u2026');
-      fetchInventoryFile(indexPath, function(content) {
-        var parsed = content ? parseJsonLoose(content) : null;
-        if (!parsed || !Array.isArray(parsed.rigs)) {
+      // The default index is searched upward from the widget folder; an explicit
+      // setting is used as given.
+      var prefixes = indexPath === DEFAULT_RIG_INDEX ? ['', '../', '../../'] : [''];
+      var attempt = 0;
+      var tryNext = function() {
+        var prefix = prefixes[attempt];
+        fetchInventoryFile(prefix + indexPath, function(content) {
+          var parsed = content ? parseJsonLoose(content) : null;
+          if (parsed && Array.isArray(parsed.rigs)) {
+            defaultPathPrefix = prefix;
+            onIndexLoaded(parsed);
+            return;
+          }
+          attempt++;
+          if (attempt < prefixes.length) { tryNext(); return; }
           console.warn('[Widget] rig index could not be loaded from', indexPath);
+          onIndexLoaded(null);
+        });
+      };
+      var onIndexLoaded = function(parsed) {
+        if (!parsed) {
           rigIndexData = { rigs: [] };
         } else {
           rigIndexData = parsed;
@@ -4169,7 +4210,8 @@
         try { lastRig = localStorage.getItem(lastRigKey()); } catch (e) {}
         var known = lastRig && findRig(lastRig);
         renderPicker(known ? lastRig : null);
-      });
+      };
+      tryNext();
     }
 
     function findRig(rigId) {
