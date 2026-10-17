@@ -449,6 +449,28 @@
       z-index: 8;
     }
 
+    /* A group inside another group's content */
+    .area-group-content > .area-group {
+      margin-left: 0;
+      margin-right: 0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    /* Only the innermost expanded group header sticks; the ones above it scroll away */
+    .area-group.expanded.outer-group > .area-header {
+      position: static;
+      box-shadow: none;
+    }
+
+    /* Where a nested group sits, shown under its name once its parent header has scrolled away */
+    .area-path {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: #6c757d;
+      margin-top: 1px;
+    }
+
     .parent-own-items {
       background: white;
       border-radius: 0;
@@ -2839,8 +2861,14 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.28.0';
+    var VERSION = '1.29.0';
     var CHANGELOG = [
+      { version: '1.29.0', date: '2026-10-17', changes: [
+        'Areas can nest more than one level deep: childOf may point at an area that is itself inside another, so a compartment can hold the cells and bags that sit in it',
+        'Sealing follows the nesting: a container can be sealed only once everything sealable inside it is sealed, Seal All works innermost first, breaking an inner seal opens every container around it, and breaking a container offers to open everything inside',
+        'Only the innermost open group header sticks while counting; a nested group shows where it sits under its name',
+        'Areas now render in file order instead of groups first',
+      ]},
       { version: '1.28.0', date: '2026-10-17', changes: [
         'Sealing is now the last step, after counting and restocking: no seal prompts or jumps during the count, and an all-OK sealable area no longer holds the focus',
         'Once every item is counted and every shortage handled, the footer button reads "Seal" with the number of areas left (or "Finish" when there is nothing to seal) and opens one list of sealable areas with a Seal button per ready area, a reason for each one not ready, and Seal All',
@@ -3109,7 +3137,80 @@
     var collapsedCategories = {}; // "area::category" -> true if collapsed
     var sealableAreas = {}; // areaName -> true if area can be sealed
     var areaHierarchy = {}; // parentAreaName -> [childAreaName, ...]
-    var areaParent = {}; // childAreaName -> parentAreaName
+    var areaParent = {}; // childAreaName -> parentAreaName (chains allowed: a child can hold children)
+
+    // Drop childOf links that point at a missing area or form a loop
+    function pruneHierarchy(areas) {
+      for (var name in areaParent) {
+        var bad = !areas[areaParent[name]];
+        var p = areaParent[name], hops = 0;
+        while (p && !bad) {
+          if (p === name || ++hops > 50) bad = true;
+          p = areaParent[p];
+        }
+        if (bad) {
+          var kids = areaHierarchy[areaParent[name]];
+          if (kids) {
+            var at = kids.indexOf(name);
+            if (at !== -1) kids.splice(at, 1);
+            if (kids.length === 0) delete areaHierarchy[areaParent[name]];
+          }
+          delete areaParent[name];
+        }
+      }
+    }
+
+    function areaAncestors(name) {
+      var out = [];
+      var p = areaParent[name], hops = 0;
+      while (p && hops++ < 50) { out.unshift(p); p = areaParent[p]; }
+      return out;
+    }
+
+    function areaPathLabel(name) {
+      return areaAncestors(name).concat([name]).join(' \u203A ');
+    }
+
+    function descendantAreas(name) {
+      var out = [];
+      var kids = areaHierarchy[name] || [];
+      for (var i = 0; i < kids.length; i++) {
+        out.push(kids[i]);
+        out = out.concat(descendantAreas(kids[i]));
+      }
+      return out;
+    }
+
+    function groupNameForDiv(div) {
+      if (!div) return null;
+      for (var name in areaHierarchy) {
+        if (div.id === 'area_group_' + name.replace(/[^a-zA-Z0-9]/g, '_')) return name;
+      }
+      return null;
+    }
+
+    function enclosingGroupDiv(el) {
+      return el && el.parentElement ? el.parentElement.closest('.area-group') : null;
+    }
+
+    // Expand a group and every group around it, outermost first
+    function ensureGroupChainExpanded(groupDiv) {
+      var chain = [];
+      var g = groupDiv;
+      while (g) { chain.unshift(g); g = enclosingGroupDiv(g); }
+      for (var i = 0; i < chain.length; i++) {
+        if (!chain[i].classList.contains('expanded')) toggleAreaGroup(chain[i]);
+      }
+    }
+
+    // A group whose content holds an expanded group loses its sticky header
+    function markOuterGroups() {
+      var groups = document.querySelectorAll('.area-group');
+      for (var i = 0; i < groups.length; i++) {
+        var outer = groups[i].classList.contains('expanded') && !!groups[i].querySelector('.area-group.expanded');
+        groups[i].classList.toggle('outer-group', outer);
+      }
+    }
     var brokenSeals = []; // [{ area, reason, taggedDate, brokenTimestamp }]
     var stateReady = false; // true after initial state load is complete
     var expandedArea = null; // currently expanded area name (standalone or child)
@@ -3621,7 +3722,7 @@
           var catObj = categories[c];
           var catName = catObj.name || 'General';
 
-          // Register top-level category
+          // Register top-level category (JSON)
           if (!result[areaName][catName]) {
             result[areaName][catName] = [];
           }
@@ -3667,6 +3768,7 @@
         }
       }
 
+      pruneHierarchy(result);
       return result;
     }
 
@@ -3965,9 +4067,15 @@
         }
       }
 
-      // Determine rendering order: parent groups first (with children inside),
-      // then standalone areas (not a child of any parent).
+      // Areas render in file order; a parent renders as a group with its
+      // children (groups or plain areas) inside.
       var rendered = {}; // track which areas have been rendered
+
+      function buildNode(areaName) {
+        var kids = areaHierarchy[areaName];
+        if (kids && kids.length > 0) return buildParentGroup(areaName, kids);
+        return buildAreaSection(areaName);
+      }
 
       // Helper: build a single area section (used for both standalone and child areas)
       function buildAreaSection(areaName) {
@@ -4251,8 +4359,11 @@
         // Parent header
         var headerDiv = document.createElement('div');
         headerDiv.className = 'area-header';
+        var pathHtml = areaParent[parentName]
+          ? '<span class="area-path">' + escapeHtml(areaAncestors(parentName).join(' \u203A ')) + '</span>'
+          : '';
         headerDiv.innerHTML = '<span class="collapse-icon">▶</span>' +
-          '<span class="area-title">' + escapeHtml(parentName) + '</span>' +
+          '<span class="area-title">' + escapeHtml(parentName) + pathHtml + '</span>' +
           '<span class="area-status" id="status_group_' + parentName.replace(/[^a-zA-Z0-9]/g, '_') + '">0/0</span>';
 
         headerDiv.onclick = (function(div) {
@@ -4339,7 +4450,7 @@
         for (var c = 0; c < children.length; c++) {
           var childName = children[c];
           if (INVENTORY[childName]) {
-            contentDiv.appendChild(buildAreaSection(childName));
+            contentDiv.appendChild(buildNode(childName));
             rendered[childName] = true;
           }
         }
@@ -4364,24 +4475,11 @@
         return groupDiv;
       }
 
-      // Render parent groups first (in order they appeared in config)
-      // We need to preserve insertion order, so iterate areaHierarchy keys
-      // which were added in parse order.
-      for (var parentName in areaHierarchy) {
-        var children = areaHierarchy[parentName];
-        if (children.length > 0) {
-          container.appendChild(buildParentGroup(parentName, children));
-          rendered[parentName] = true;
-          for (var ci = 0; ci < children.length; ci++) {
-            rendered[children[ci]] = true;
-          }
-        }
-      }
-
-      // Render standalone areas (not part of any group)
+      // Top-level areas in file order; children render inside their parents
       for (var areaName in INVENTORY) {
-        if (rendered[areaName]) continue;
-        container.appendChild(buildAreaSection(areaName));
+        if (rendered[areaName] || areaParent[areaName]) continue;
+        container.appendChild(buildNode(areaName));
+        rendered[areaName] = true;
       }
 
       buildQuestionSections(container, 'afterInventory');
@@ -4397,17 +4495,19 @@
             expandedGroup = null;
             expandedArea = null;
           } else {
-            groupDiv.classList.add('expanded');
+            // The group and every group around it
+            var gUp = groupDiv;
+            while (gUp) { gUp.classList.add('expanded'); gUp = enclosingGroupDiv(gUp); }
 
             if (expandedArea) {
               var childDiv = document.getElementById('area_' + expandedArea.replace(/[^a-zA-Z0-9]/g, '_'));
               if (childDiv && groupDiv.contains(childDiv)) {
-                if (taggedAreas[expandedArea] || (INVENTORY[expandedArea] && isAreaAllOk(expandedArea))) {
-                  // Current child is done — advance to next incomplete child
+                if (isAreaDone(expandedArea)) {
+                  // Current child is done: move on to the next unfinished plain child
                   var children = areaHierarchy[expandedGroup] || [];
                   var nextChild = null;
                   for (var nc = 0; nc < children.length; nc++) {
-                    if (!taggedAreas[children[nc]] && INVENTORY[children[nc]] && !isAreaAllOk(children[nc])) {
+                    if (!areaHierarchy[children[nc]] && INVENTORY[children[nc]] && !isAreaDone(children[nc])) {
                       nextChild = children[nc]; break;
                     }
                   }
@@ -5752,25 +5852,35 @@
       }
 
       var row = document.getElementById('item_' + fromKey.replace(/[^a-zA-Z0-9]/g, '_'));
-      var section = row ? row.closest('.area-section') : null;
-      var nodes = Array.prototype.slice.call(document.querySelectorAll('.areas-container > .area-section, .areas-container > .area-group, .area-group-content > .area-section'));
+      // A row in a group's own items has no section: its node is the group itself
+      var section = row ? (row.closest('.area-section') || row.closest('.area-group')) : null;
+      var nodes = Array.prototype.slice.call(document.querySelectorAll('.areas-container > .area-section, .areas-container > .area-group, .area-group-content > .area-section, .area-group-content > .area-group'));
       var idx = section ? nodes.indexOf(section) : -1;
       for (var ni = idx + 1; ni < nodes.length; ni++) {
         var node = nodes[ni];
-        if (!node.classList.contains('area-section')) continue; // groups are entered through their children
-        var name = areaNameForSection(node);
+        var isGroup = node.classList.contains('area-group');
+        var name = isGroup ? groupNameForDiv(node) : areaNameForSection(node);
         if (!name || taggedAreas[name]) continue;
-        var next = firstUnhandledInArea(name);
+        var next = firstUnhandledInArea(name); // for a group: its own items, shown at the top of the group
         if (!next) continue;
-        var groupDiv = node.parentElement && node.parentElement.classList.contains('area-group-content') ? node.closest('.area-group') : null;
+        var groupDiv = isGroup ? node : enclosingGroupDiv(node);
         suppressToggleScroll = true;
         try {
-          if (groupDiv && !groupDiv.classList.contains('expanded')) toggleAreaGroup(groupDiv);
+          if (groupDiv) ensureGroupChainExpanded(groupDiv);
           if (!groupDiv) {
+            // Leaving a group for a standalone area: fold every group that was open
             var leaving = section ? section.closest('.area-group') : null;
-            if (leaving) { leaving.classList.remove('expanded'); expandedGroup = null; }
+            while (leaving) { leaving.classList.remove('expanded'); leaving = enclosingGroupDiv(leaving); }
+            expandedGroup = null;
           }
-          if (!node.classList.contains('expanded')) toggleArea(node, !!groupDiv);
+          if (isGroup) {
+            // Fold whatever is open inside so the group's own items are in view
+            var openInside = node.querySelectorAll('.expanded');
+            for (var oi = 0; oi < openInside.length; oi++) openInside[oi].classList.remove('expanded');
+            expandedArea = null;
+          } else if (!node.classList.contains('expanded')) {
+            toggleArea(node, !!groupDiv);
+          }
           openCategory(name, next.split('::')[1]);
           updateStickyOffsets();
         } finally {
@@ -6374,22 +6484,40 @@
     }
 
     function isGroupComplete(groupName) {
-      // Parent sealed means everything is done
-      if (taggedAreas[groupName]) return true;
+      return isAreaDone(groupName);
+    }
 
-      var children = areaHierarchy[groupName] || [];
-      for (var i = 0; i < children.length; i++) {
-        if (!INVENTORY[children[i]]) continue;
-        if (!taggedAreas[children[i]] && !isAreaAllOk(children[i])) return false;
+    // Sealed, or own items all present and everything inside it done
+    function isAreaDone(name) {
+      if (taggedAreas[name]) return true;
+      if (INVENTORY[name] && !isAreaAllOk(name)) return false;
+      var kids = areaHierarchy[name] || [];
+      for (var i = 0; i < kids.length; i++) {
+        if (!INVENTORY[kids[i]]) continue;
+        if (!isAreaDone(kids[i])) return false;
       }
-      // Check parent's own items
-      if (INVENTORY[groupName] && !isAreaAllOk(groupName)) return false;
       return true;
+    }
+
+    // Sealable areas inside name that are still open, looking through
+    // containers that are not themselves sealable
+    function unsealedSealableInside(name) {
+      var out = [];
+      var kids = areaHierarchy[name] || [];
+      for (var i = 0; i < kids.length; i++) {
+        if (sealableAreas[kids[i]]) {
+          if (!taggedAreas[kids[i]]) out.push(kids[i]);
+        } else {
+          out = out.concat(unsealedSealableInside(kids[i]));
+        }
+      }
+      return out;
     }
     
     // Dynamically measure sticky header heights and set subcategory top values.
     // Called after any area is expanded so the DOM is ready for measurement.
     function updateStickyOffsets() {
+      markOuterGroups();
       // Find all expanded area-sections and set sticky tops
       var expandedSections = document.querySelectorAll('.area-section.expanded');
       for (var i = 0; i < expandedSections.length; i++) {
@@ -6479,11 +6607,12 @@
       }
       
       if (isChild) {
-        // Child areas within a parent group: only collapse sibling children
-        var siblings = areaDiv.parentElement.querySelectorAll('.area-section');
+        // Inside a group: collapse the siblings (areas and nested groups) and what is inside them
+        var siblings = areaDiv.parentElement.querySelectorAll('.area-section, .area-group');
         for (var i = 0; i < siblings.length; i++) {
           siblings[i].classList.remove('expanded');
         }
+        expandedGroup = groupNameForDiv(enclosingGroupDiv(areaDiv));
       } else {
         // Standalone areas: close all other standalone areas
         var allAreas = document.querySelectorAll('.areas-container > .area-section');
@@ -6520,32 +6649,39 @@
       } else {
         expandedArea = null;
         clearFocusedRow();
+        updateStickyOffsets();
       }
     }
 
     function toggleAreaGroup(groupDiv) {
       var wasExpanded = groupDiv.classList.contains('expanded');
-      // Extract group name from the div's id
-      var groupName = null;
-      for (var name in areaHierarchy) {
-        if (groupDiv.id === 'area_group_' + name.replace(/[^a-zA-Z0-9]/g, '_')) {
-          groupName = name; break;
-        }
-      }
+      var groupName = groupNameForDiv(groupDiv);
+      var outerDiv = enclosingGroupDiv(groupDiv);
 
-      // Close all top-level groups and standalone areas
-      var allGroups = document.querySelectorAll('.areas-container > .area-group');
-      for (var i = 0; i < allGroups.length; i++) {
-        allGroups[i].classList.remove('expanded');
-        // Also collapse any expanded children inside
-        var childAreas = allGroups[i].querySelectorAll('.area-section.expanded');
-        for (var j = 0; j < childAreas.length; j++) {
-          childAreas[j].classList.remove('expanded');
+      if (outerDiv) {
+        // A group inside a group: close only its siblings, keep the groups around it open
+        var sibs = groupDiv.parentElement.children;
+        for (var si = 0; si < sibs.length; si++) {
+          if (sibs[si] === groupDiv) continue;
+          sibs[si].classList.remove('expanded');
+          var inner = sibs[si].querySelectorAll('.expanded');
+          for (var ii = 0; ii < inner.length; ii++) inner[ii].classList.remove('expanded');
         }
-      }
-      var allStandalone = document.querySelectorAll('.areas-container > .area-section');
-      for (var i = 0; i < allStandalone.length; i++) {
-        allStandalone[i].classList.remove('expanded');
+      } else {
+        // Close all top-level groups and standalone areas
+        var allGroups = document.querySelectorAll('.areas-container > .area-group');
+        for (var i = 0; i < allGroups.length; i++) {
+          allGroups[i].classList.remove('expanded');
+          // Also collapse anything expanded inside
+          var childAreas = allGroups[i].querySelectorAll('.expanded');
+          for (var j = 0; j < childAreas.length; j++) {
+            childAreas[j].classList.remove('expanded');
+          }
+        }
+        var allStandalone = document.querySelectorAll('.areas-container > .area-section');
+        for (var i = 0; i < allStandalone.length; i++) {
+          allStandalone[i].classList.remove('expanded');
+        }
       }
 
       if (!wasExpanded) {
@@ -6554,9 +6690,13 @@
         updateStickyOffsets();
         advanceFocus(null, false);
       } else {
-        expandedGroup = null;
+        var open = groupDiv.querySelectorAll('.expanded');
+        for (var oi = 0; oi < open.length; oi++) open[oi].classList.remove('expanded');
+        groupDiv.classList.remove('expanded');
+        expandedGroup = groupNameForDiv(outerDiv);
         expandedArea = null;
         clearFocusedRow();
+        updateStickyOffsets();
       }
     }
     
@@ -6872,15 +7012,8 @@
     function isAreaSealable(areaName) {
       if (taggedAreas[areaName]) return false;
 
-      // For parent areas: all sealable children must already be sealed
-      if (areaHierarchy[areaName]) {
-        var children = areaHierarchy[areaName];
-        for (var c = 0; c < children.length; c++) {
-          if (sealableAreas[children[c]] && !taggedAreas[children[c]]) {
-            return false;
-          }
-        }
-      }
+      // Everything sealable inside it must already be sealed
+      if (unsealedSealableInside(areaName).length > 0) return false;
 
       // Own items must be OK or handled
       if (INVENTORY[areaName]) {
@@ -6901,22 +7034,11 @@
 
     function sealAllAreas() {
       var sealed = 0;
-      // Seal children first, then parents (parents require children to be sealed)
-      // Pass 1: non-parent areas
-      for (var areaName in INVENTORY) {
-        if (areaHierarchy[areaName]) continue; // skip parents for now
-        if (sealableAreas[areaName] && isAreaSealable(areaName)) {
-          var now = new Date();
-          taggedAreas[areaName] = {
-            taggedDate: now.toISOString().split('T')[0],
-            taggedTimestamp: now.getTime()
-          };
-          sealed++;
-        }
-      }
-      // Pass 2: parent areas (now that children may be sealed)
-      for (var areaName in areaHierarchy) {
-        if (sealableAreas[areaName] && isAreaSealable(areaName)) {
+      // Innermost areas first, so a container becomes sealable once what is inside it is sealed
+      var list = orderedSealableAreas();
+      for (var i = 0; i < list.length; i++) {
+        var areaName = list[i];
+        if (!taggedAreas[areaName] && isAreaSealable(areaName)) {
           var now = new Date();
           taggedAreas[areaName] = {
             taggedDate: now.toISOString().split('T')[0],
@@ -6933,27 +7055,16 @@
       }
     }
 
-    // Sealable areas in display order: a group's sealable children first, then the group
+    // Sealable areas in display order, what is inside a container before the container itself
     function orderedSealableAreas() {
       var ordered = [];
-      var visited = {};
+      function visit(name) {
+        var kids = areaHierarchy[name] || [];
+        for (var i = 0; i < kids.length; i++) visit(kids[i]);
+        if (sealableAreas[name]) ordered.push(name);
+      }
       for (var areaName in INVENTORY) {
-        if (visited[areaName]) continue;
-        if (areaParent[areaName]) continue;
-        if (areaHierarchy[areaName]) {
-          var children = areaHierarchy[areaName];
-          for (var c = 0; c < children.length; c++) {
-            if (sealableAreas[children[c]]) {
-              ordered.push(children[c]);
-              visited[children[c]] = true;
-            }
-          }
-          if (sealableAreas[areaName]) ordered.push(areaName);
-          visited[areaName] = true;
-        } else if (sealableAreas[areaName]) {
-          ordered.push(areaName);
-          visited[areaName] = true;
-        }
+        if (!areaParent[areaName]) visit(areaName);
       }
       return ordered;
     }
@@ -6975,14 +7086,8 @@
 
     // One line saying why an area cannot be sealed yet
     function sealBlockReason(areaName) {
-      if (areaHierarchy[areaName]) {
-        var children = areaHierarchy[areaName];
-        var waiting = 0;
-        for (var c = 0; c < children.length; c++) {
-          if (sealableAreas[children[c]] && !taggedAreas[children[c]]) waiting++;
-        }
-        if (waiting > 0) return waiting === 1 ? 'Seal the area inside it first' : 'Seal the ' + waiting + ' areas inside it first';
-      }
+      var waiting = unsealedSealableInside(areaName).length;
+      if (waiting > 0) return waiting === 1 ? 'Seal the area inside it first' : 'Seal the ' + waiting + ' areas inside it first';
       if (INVENTORY[areaName]) {
         for (var catName in INVENTORY[areaName]) {
           var items = INVENTORY[areaName][catName];
@@ -7034,7 +7139,8 @@
         html += '<div class="seal-intro">Seal each area once its contents are back in place.</div>';
         for (var i = 0; i < list.length; i++) {
           var name = list[i];
-          var parent = areaParent[name];
+          var ancestors = areaAncestors(name);
+          var parent = ancestors.length ? ancestors.join(' \u203A ') : null;
           var rowClass = 'seal-row';
           var statusHtml = '';
           var btnHtml = '';
@@ -7048,7 +7154,7 @@
           } else {
             statusHtml = '<div class="seal-row-status blocked">' + escapeHtml(sealBlockReason(name)) + '</div>';
           }
-          html += '<div class="' + rowClass + '"><div class="seal-row-info">' +
+          html += '<div class="' + rowClass + '" style="padding-left:' + (20 + ancestors.length * 14) + 'px"><div class="seal-row-info">' +
             '<div class="seal-row-name">' + escapeHtml(name) + '</div>' +
             (parent ? '<div class="seal-row-path">' + escapeHtml(parent) + '</div>' : '') +
             statusHtml + '</div>' + btnHtml + '</div>';
@@ -7378,19 +7484,46 @@
       }
     }
 
+    // Opening something inside a sealed container opens the container too
+    function breakAncestorSeals(areaName) {
+      var up = areaParent[areaName];
+      while (up) {
+        if (taggedAreas[up]) {
+          brokenSeals.push({
+            area: up,
+            reason: 'child_broken',
+            taggedDate: taggedAreas[up].taggedDate,
+            brokenTimestamp: Date.now()
+          });
+          delete taggedAreas[up];
+          if (INVENTORY[up]) {
+            for (var catName in INVENTORY[up]) {
+              var items = INVENTORY[up][catName];
+              for (var i = 0; i < items.length; i++) {
+                var key = generateKey(up, catName, items[i].name);
+                itemStates[key] = { actual: 0 };
+                delete restockStatus[key];
+              }
+            }
+          }
+        }
+        up = areaParent[up];
+      }
+    }
+
     function breakSeal(areaName, reason) {
-      // For parent areas, offer choice to also break child seals
+      // For containers, offer to also break the seals inside
       if (areaHierarchy[areaName]) {
         var hasSealableChildren = false;
-        var children = areaHierarchy[areaName];
+        var children = descendantAreas(areaName);
         for (var c = 0; c < children.length; c++) {
           if (sealableAreas[children[c]]) { hasSealableChildren = true; break; }
         }
 
         if (hasSealableChildren) {
           var choice = reason === 'missing'
-            ? confirm('The seal for "' + areaName + '" is missing.\n\nPress OK to break ALL seals (parent + all children).\nPress Cancel to break only the parent seal.')
-            : confirm('Breaking the seal for "' + areaName + '".\n\nPress OK to break ALL seals (parent + all children).\nPress Cancel to break only the parent seal.');
+            ? confirm('The seal for "' + areaName + '" is missing.\n\nPress OK to break ALL seals (this one and everything inside it).\nPress Cancel to break only this seal.')
+            : confirm('Breaking the seal for "' + areaName + '".\n\nPress OK to break ALL seals (this one and everything inside it).\nPress Cancel to break only this seal.');
 
           // First confirm they actually want to break the parent
           var proceedMsg = reason === 'missing'
@@ -7419,7 +7552,9 @@
             }
           }
 
-          // If user chose to break all children too
+          breakAncestorSeals(areaName);
+
+          // If user chose to break everything inside too
           if (choice) {
             for (var c = 0; c < children.length; c++) {
               var childName = children[c];
@@ -7480,30 +7615,8 @@
         }
       }
 
-      // If this is a child area, also break the parent seal
-      if (areaParent[areaName] && taggedAreas[areaParent[areaName]]) {
-        var parentName = areaParent[areaName];
-        var parentTagInfo = taggedAreas[parentName];
-        brokenSeals.push({
-          area: parentName,
-          reason: 'child_broken',
-          taggedDate: parentTagInfo ? parentTagInfo.taggedDate : null,
-          brokenTimestamp: Date.now()
-        });
-        delete taggedAreas[parentName];
-
-        // Reset parent's own items too
-        if (INVENTORY[parentName]) {
-          for (var catName in INVENTORY[parentName]) {
-            var items = INVENTORY[parentName][catName];
-            for (var i = 0; i < items.length; i++) {
-              var key = generateKey(parentName, catName, items[i].name);
-              itemStates[key] = { actual: 0 };
-              delete restockStatus[key];
-            }
-          }
-        }
-      }
+      // Anything sealed around this area is open now too
+      breakAncestorSeals(areaName);
 
       buildUI();
     }
@@ -7752,7 +7865,7 @@
             if (isReviewOverdue(taggedAreas[childName].taggedTimestamp)) {
               anyReviewNeeded = true;
             }
-          } else if (isAreaAllOk(childName)) {
+          } else if (isAreaDone(childName)) {
             okChildren++;
           }
         }
@@ -7969,11 +8082,7 @@
           var area = areaOrder[ai];
           var cats = byArea[area];
 
-          // Check if this area is a child of a parent group
-          var parentName = areaParent[area] || null;
-          var areaLabel = parentName
-            ? escapeHtml(parentName) + ' &rsaquo; ' + escapeHtml(area)
-            : escapeHtml(area);
+          var areaLabel = escapeHtml(areaPathLabel(area));
 
           html += '<div class="shortage-group">';
           html += '<div class="shortage-group-header">' + areaLabel + '</div>';

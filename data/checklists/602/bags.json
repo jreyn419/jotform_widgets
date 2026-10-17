@@ -202,7 +202,7 @@
     {
       "area": "Medicine StatPacks Cell",
       "sealable": true,
-      "childOf": "Large Blue Bag: “Responder”",
+      "childOf": "Main Compartment",
       "categories": [
         {
           "name": "Vial Storage",
@@ -354,7 +354,7 @@
     {
       "area": "Universal StatPacks Cell",
       "sealable": true,
-      "childOf": "Large Blue Bag: “Responder”",
+      "childOf": "Main Compartment",
       "categories": [
         {
           "name": "Loose",
@@ -473,7 +473,7 @@
     {
       "area": "Blue Airway Bag",
       "sealable": true,
-      "childOf": "Large Blue Bag: “Responder”",
+      "childOf": "Main Compartment",
       "categories": [
         {
           "name": "ET Tube Bundle",
@@ -649,7 +649,7 @@
     {
       "area": "Glidescope Bag",
       "sealable": true,
-      "childOf": "Large Blue Bag: “Responder”",
+      "childOf": "Main Compartment",
       "categories": [
         {
           "name": "Transparent Pocket",
