@@ -1,6 +1,7 @@
 {
   "_meta": {
-    "name": "Passenger Side"
+    "name": "Passenger Side",
+    "order": 2
   },
   "areas": [
     {

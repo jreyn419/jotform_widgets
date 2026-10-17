@@ -862,7 +862,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.11.0"
+VERSION = "6.12.0"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1043,6 +1043,8 @@ class InventoryFile:
         self.path = path
         self.areas = []
         self.display_name = ""
+        # _meta fields other than name (e.g. order, hidden) are kept as-is
+        self.meta_extra = {}
 
     @property
     def filename(self):
@@ -1056,6 +1058,7 @@ class InventoryFile:
         if isinstance(data, dict) and "areas" in data:
             meta = data.get("_meta", {})
             inv.display_name = meta.get("name", "")
+            inv.meta_extra = {k: v for k, v in meta.items() if k != "name"}
             inv.areas = cls._parse_json(data["areas"])
         else:
             inv.areas = cls._parse_json(data)
@@ -1116,8 +1119,10 @@ class InventoryFile:
         return result
 
     def save(self):
+        meta = {"name": self.display_name}
+        meta.update(self.meta_extra)
         file_data = {
-            "_meta": {"name": self.display_name},
+            "_meta": meta,
             "areas": self.to_json_data()
         }
         with open(self.path, "w", encoding="utf-8") as f:

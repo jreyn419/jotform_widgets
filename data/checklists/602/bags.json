@@ -1,6 +1,7 @@
 {
   "_meta": {
-    "name": "Bags"
+    "name": "Bags",
+    "order": 3
   },
   "areas": [
     {

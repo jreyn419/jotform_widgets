@@ -4,7 +4,8 @@ in-widget picker reads.
 Every sub-folder of the checklists directory is a rig. Every .json file in a
 rig folder is a checklist, named by its _meta.name (or the file stem). A file
 whose _meta has "hidden": true is left out, which is how reference files
-such as unplaced_reference.json stay off the picker.
+such as unplaced_reference.json stay off the picker. Checklists are listed
+by _meta.order (lowest first), then by name.
 
 No Qt dependency so it can run on its own:
 
@@ -35,7 +36,15 @@ def build_index(checklists_dir):
             meta = data.get("_meta", {}) if isinstance(data, dict) else {}
             if meta.get("hidden"):
                 continue
-            checklists.append({"id": stem, "name": meta.get("name") or stem})
+            order = meta.get("order")
+            try:
+                order = float(order)
+            except (TypeError, ValueError):
+                order = float("inf")
+            checklists.append({"id": stem, "name": meta.get("name") or stem, "_order": order})
+        checklists.sort(key=lambda c: (c["_order"], c["name"].lower()))
+        for c in checklists:
+            del c["_order"]
         if checklists:
             rigs.append({"id": rig_name, "name": rig_name, "checklists": checklists})
     return {"generated": date.today().isoformat(), "rigs": rigs}

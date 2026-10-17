@@ -1,6 +1,7 @@
 {
   "_meta": {
-    "name": "Driver Side"
+    "name": "Driver Side",
+    "order": 1
   },
   "areas": [
     {
