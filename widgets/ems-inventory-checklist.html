@@ -966,7 +966,8 @@
       display: inline-block;
     }
 
-    .widget-container.picker-open .restock-footer {
+    .widget-container.picker-open .restock-footer,
+    .restock-footer.hidden {
       display: none;
     }
 
@@ -2724,8 +2725,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.23.0';
+    var VERSION = '1.24.0';
     var CHANGELOG = [
+      { version: '1.24.0', date: '2026-10-17', changes: [
+        'With the focus row on, the Restock button appears only once every item has been marked: counted, skipped with Next, or already handled',
+      ]},
       { version: '1.23.0', date: '2026-10-17', changes: [
         'Calmer layout: with the focus row on, item rows are a plain name and "have X of N"; tap a row to focus it and count in the dock',
         'Headers say status once: neutral until complete, then green; progress strip and a plain count. Yellow and red are reserved for gauge warnings, faults and out of service',
@@ -7491,6 +7495,7 @@
 
       var shortages = [];
       var okCount = 0, shortCount = 0, missingCount = 0;
+      var unmarkedCount = 0; // count items nobody has counted, skipped or handled yet
 
       for (var areaName in INVENTORY) {
         if (taggedAreas[areaName]) continue; // Skip sealed areas
@@ -7511,7 +7516,7 @@
             } else {
               // An item nobody has counted yet is not a shortage, just unchecked
               var st = itemStates[key];
-              if (!(st && st.touched) && !restockStatus[key]) continue;
+              if (!(st && st.touched) && !restockStatus[key]) { unmarkedCount++; continue; }
               var shortage = required - actual;
               if (actual > 0) {
                 shortCount++;
@@ -7549,11 +7554,16 @@
       
       restockCount.textContent = unhandledCount;
 
+      // With the focus row on, the button only appears once the last item is marked
+      var footer = document.querySelector('.restock-footer');
+      if (footer) footer.classList.toggle('hidden', enableFocusRow && unmarkedCount > 0);
+
       restockBtn.classList.remove('all-ok', 'idle');
       if (unhandledCount > 0) {
         restockBtn.querySelector('.restock-icon').textContent = '!';
         restockBtn.querySelector('span:nth-child(2)').textContent = 'Restock';
-      } else if (isEverythingComplete()) {
+      } else if (unmarkedCount === 0) {
+        // Every item counted and nothing left short
         restockBtn.classList.add('all-ok');
         restockBtn.querySelector('.restock-icon').textContent = '✓';
         restockBtn.querySelector('span:nth-child(2)').textContent = 'All stocked';
