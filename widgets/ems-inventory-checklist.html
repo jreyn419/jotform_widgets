@@ -609,16 +609,45 @@
       z-index: 9;
     }
     
+    /* The category "all" pill is still a checkbox underneath, so the existing
+       check-all logic keeps working; it is just drawn as a small button. */
     .category-checkbox {
-      width: 22px;
-      height: 22px;
+      -webkit-appearance: none;
+      appearance: none;
+      order: 2;
+      margin: 0 0 0 auto;
+      width: auto;
+      height: auto;
+      min-width: 36px;
+      padding: 3px 9px;
+      border: 1px solid #ced4da;
+      border-radius: 10px;
+      background: white;
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      text-align: center;
       cursor: pointer;
-      accent-color: #28a745;
       flex-shrink: 0;
+    }
+
+    .category-checkbox::before {
+      content: 'all';
+    }
+
+    .category-checkbox:checked {
+      background: #28a745;
+      border-color: #28a745;
+      color: white;
+    }
+
+    .category-checkbox:checked::before {
+      content: '\2713';
     }
     
     .category-status {
-      margin-left: auto;
+      order: 3;
+      margin-left: 8px;
       font-weight: normal;
       color: #888;
     }
@@ -673,26 +702,59 @@
       color: #888;
     }
 
-    /* Unfocused rows sit a little tighter so the focused one stands out */
+    /* With the focus row on, rows are plain lines: name and "have X of N".
+       All counting happens in the dock. */
+    .item-count {
+      display: none;
+      font-size: 14px;
+      font-weight: 600;
+      color: #777;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .focus-active .item-count {
+      display: inline;
+    }
+
+    .focus-active .checklist-item .item-checkbox,
+    .focus-active .checklist-item .item-required,
+    .focus-active .checklist-item .qty-stepper {
+      display: none;
+    }
+
+    .focus-active .checklist-item.restocked .item-count,
+    .focus-active .checklist-item.out-of-stock-item .item-count {
+      display: none;
+    }
+
+    .focus-active .checklist-item {
+      cursor: pointer;
+    }
+
     .focus-active .checklist-item:not(.focused):not(.gauge-item):not(.check-item) {
-      padding-top: 8px;
-      padding-bottom: 8px;
+      padding-top: 10px;
+      padding-bottom: 10px;
     }
 
     .focus-active .checklist-item:not(.focused) .item-name {
-      font-size: 13px;
+      font-size: 14px;
     }
 
-    .focus-active .checklist-item:not(.focused) .qty-btn {
-      width: 32px;
-      height: 32px;
-      font-size: 16px;
+    .focus-active .checklist-item.missing {
+      background: white;
     }
 
-    .focus-active .checklist-item:not(.focused) .qty-value {
-      width: 40px;
-      height: 32px;
-      font-size: 13px;
+    .focus-active .checklist-item.checked .item-count {
+      color: #28a745;
+    }
+
+    .focus-active .checklist-item.checked:not(.focused) .item-name {
+      color: #999;
+    }
+
+    .focus-active .checklist-item.short .item-count {
+      color: #b8860b;
     }
 
     .checklist-item.focused,
@@ -724,6 +786,11 @@
     .checklist-item.focused .item-checkbox {
       width: 28px;
       height: 28px;
+    }
+
+    .checklist-item.focused .item-count {
+      font-size: 18px;
+      color: #333;
     }
 
     /* The dock carries the controls for the focused count item */
@@ -774,16 +841,15 @@
       max-width: 45%;
     }
 
-    .dock-counter {
+    .dock-controls {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 12px;
+      gap: 8px;
     }
 
     .dock-btn {
-      width: 60px;
-      height: 56px;
+      width: 48px;
+      height: 52px;
       border: none;
       border-radius: 12px;
       background: #e9ecef;
@@ -798,13 +864,21 @@
       background: #d0d4d8;
     }
 
+    .dock-count-wrap {
+      position: relative;
+      width: 100px;
+      height: 52px;
+      flex-shrink: 0;
+    }
+
     .dock-value {
-      width: 84px;
-      height: 56px;
+      width: 100%;
+      height: 100%;
+      padding: 0 44px 0 8px;
       border: 2px solid #ced4da;
       border-radius: 12px;
-      text-align: center;
-      font-size: 26px;
+      text-align: right;
+      font-size: 24px;
       font-weight: 700;
       color: #1a1a1a;
       background: white;
@@ -817,34 +891,20 @@
     }
 
     .dock-of {
-      font-size: 15px;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
       font-weight: 600;
-      color: #555;
+      color: #777;
       white-space: nowrap;
-    }
-
-    .dock-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .dock-back {
-      flex: 0 0 auto;
-      height: 48px;
-      padding: 0 14px;
-      border: 1px solid #ced4da;
-      border-radius: 10px;
-      background: white;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-      cursor: pointer;
+      pointer-events: none;
     }
 
     .dock-all {
       flex: 1;
-      height: 48px;
+      height: 52px;
       border: none;
       border-radius: 10px;
       background: #28a745;
@@ -860,7 +920,7 @@
 
     .dock-next {
       flex: 1;
-      height: 48px;
+      height: 52px;
       border: none;
       border-radius: 10px;
       background: #0066cc;
@@ -1010,6 +1070,23 @@
       font-size: 12px;
       color: #888;
       text-align: center;
+    }
+
+    /* "Before you start": questions and the O2 check in one collapsible block */
+    .pre-group {
+      background: #e8edf3;
+    }
+
+    .pre-group > .area-header {
+      background: #e3e9f0;
+    }
+
+    .pre-content > .area-section {
+      margin: 8px 8px 0 8px;
+    }
+
+    .pre-content > .area-section:last-child {
+      margin-bottom: 8px;
     }
 
     /* Today-status strip and rig/checklist selector prompt */
@@ -1565,6 +1642,21 @@
       background: #c82333;
     }
     
+    .restock-btn.idle {
+      background: #e9ecef;
+      color: #555;
+      box-shadow: none;
+    }
+
+    .restock-btn.idle:hover {
+      background: #dde1e5;
+    }
+
+    .restock-btn.idle .restock-icon,
+    .restock-btn.idle .restock-count {
+      display: none;
+    }
+
     .restock-btn.all-ok {
       background: #28a745;
     }
@@ -2332,7 +2424,7 @@
     }
 
     .area-section.expanded .subcategory-header {
-      position: sticky;
+      position: static;
       /* top value set dynamically by updateStickyOffsets() */
       z-index: 8;
     }
@@ -2343,9 +2435,9 @@
       height: 12px;
     }
 
-    .subcategory-header .category-checkbox {
-      width: 14px;
-      height: 14px;
+    .subcategory-header .category-checkbox,
+    .subcategory-header .category-status {
+      display: none;
     }
 
     .subcategory-items .checklist-item {
@@ -2491,15 +2583,14 @@
         <div class="dock-name" id="dockName"></div>
         <div class="dock-path" id="dockPath"></div>
       </div>
-      <div class="dock-counter">
+      <div class="dock-controls">
         <button type="button" class="dock-btn" id="dockMinus" title="One less">&minus;</button>
-        <input type="number" class="dock-value" id="dockValue" inputmode="numeric" min="0">
-        <span class="dock-of" id="dockOf"></span>
+        <div class="dock-count-wrap">
+          <input type="number" class="dock-value" id="dockValue" inputmode="numeric" min="0">
+          <span class="dock-of" id="dockOf"></span>
+        </div>
         <button type="button" class="dock-btn" id="dockPlus" title="One more">+</button>
-      </div>
-      <div class="dock-actions">
-        <button type="button" class="dock-back" id="dockBack">&lsaquo; Back</button>
-        <button type="button" class="dock-all" id="dockAll">All present</button>
+        <button type="button" class="dock-all" id="dockAll" title="All present">All &#10003;</button>
         <button type="button" class="dock-next" id="dockNext">Next &rsaquo;</button>
       </div>
     </div>
@@ -2633,8 +2724,16 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.22.0';
+    var VERSION = '1.23.0';
     var CHANGELOG = [
+      { version: '1.23.0', date: '2026-10-17', changes: [
+        'Calmer layout: with the focus row on, item rows are a plain name and "have X of N"; tap a row to focus it and count in the dock',
+        'Headers say status once: neutral until complete, then green; progress strip and a plain count. Yellow and red are reserved for gauge warnings, faults and out of service',
+        'Category check-all is a small "all" pill on the right; subcategory headers lose the checkbox and count and no longer stick',
+        'The Restock button stays gray until an item is actually left short; it only counts items the crew has counted or skipped',
+        'The dock is two rows: name and location, then minus / count / plus, All, Next. Back is gone; tap any row instead',
+        'Questions and the O2 check sit in one "Before you start" block that collapses when done and opens the first cabinet',
+      ]},
       { version: '1.22.0', date: '2026-10-17', changes: [
         'Focus dock: a fixed bar above the Restock button carries the focused item\u2019s name, a large minus / count / plus, All present, Back and Next, so the controls never move while working down a cabinet',
         'Next moves on with whatever count is recorded, so a short item no longer traps the focus; Enter in the count box also moves on',
@@ -3555,10 +3654,18 @@
       var infoDiv = document.createElement('div');
       infoDiv.className = 'item-info';
       infoDiv.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>';
-      // Tapping the name moves the focus row here
-      infoDiv.onclick = (function(k) {
-        return function() { setFocusedItem(k, false); };
+
+      // Tapping anywhere on the row (not a control) moves the focus here
+      itemDiv.onclick = (function(k) {
+        return function(e) {
+          if (e.target.closest && e.target.closest('.qty-stepper, .item-checkbox, .restocked-tag, .out-of-stock-tag, button, input')) return;
+          setFocusedItem(k, false);
+        };
       })(key);
+
+      var countEl = document.createElement('span');
+      countEl.className = 'item-count';
+      countEl.textContent = countText(actual, item.required);
 
       var reqLabel = document.createElement('span');
       reqLabel.className = 'item-required';
@@ -3566,6 +3673,7 @@
 
       itemDiv.appendChild(checkbox);
       itemDiv.appendChild(infoDiv);
+      itemDiv.appendChild(countEl);
       itemDiv.appendChild(reqLabel);
 
       if (isRestocked) {
@@ -3659,6 +3767,10 @@
       return itemDiv;
     }
 
+    function countText(actual, required) {
+      return (actual >= required ? '\u2713 ' : '') + actual + ' of ' + required;
+    }
+
     // Remove restocked designation from checklist
     function removeRestockedFromChecklist(key) {
       delete restockStatus[key];
@@ -3684,11 +3796,34 @@
       var container = document.getElementById('areasContainer');
       container.innerHTML = '';
 
-      // Slot order: questions before O2, the O2 check, questions after O2,
-      // then the inventory areas, then questions after the inventory.
-      buildQuestionSections(container, 'beforeO2');
-      buildOxygenSection(container);
-      buildQuestionSections(container, 'afterO2');
+      // "Before you start": questions before O2, the O2 check and questions
+      // after O2 live in one collapsible block ahead of the inventory areas.
+      // Questions after the inventory follow the areas.
+      var pre = document.createElement('div');
+      pre.className = 'area-group pre-group';
+      pre.id = 'pre_group';
+      var preHeader = document.createElement('div');
+      preHeader.className = 'area-header';
+      preHeader.innerHTML = '<span class="collapse-icon">\u25B6</span>' +
+        '<span class="area-title">Before you start</span>' +
+        '<span class="area-status" id="status_pre_group">0/0</span>' +
+        '<span class="progress-strip"><span class="progress-fill"></span></span>';
+      preHeader.onclick = function() { toggleAreaGroup(pre); };
+      var preContent = document.createElement('div');
+      preContent.className = 'area-group-content pre-content';
+      buildQuestionSections(preContent, 'beforeO2');
+      buildOxygenSection(preContent);
+      buildQuestionSections(preContent, 'afterO2');
+      if (preContent.children.length > 0) {
+        pre.appendChild(preHeader);
+        pre.appendChild(preContent);
+        container.appendChild(pre);
+        // The section headers were built while detached; fill their chips now
+        for (var oi = 0; oi < o2Areas.length; oi++) applyO2Header(o2Areas[oi].id);
+        for (var qi = 0; qi < customQuestions.length; qi++) {
+          if (customQuestions[qi].position !== 'afterInventory') applyQuestionHeader(customQuestions[qi]);
+        }
+      }
 
       // Determine rendering order: parent groups first (with children inside),
       // then standalone areas (not a child of any parent).
@@ -4159,6 +4294,13 @@
             expandedArea = null;
           }
         }
+      }
+
+      // Open "Before you start" while it still has work and nothing else is open
+      updatePreGroup(false);
+      var preDiv = document.getElementById('pre_group');
+      if (preDiv && !expandedArea && !expandedGroup && !preGroupComplete()) {
+        preDiv.classList.add('expanded');
       }
 
       advanceFocus(focusedKey, false);
@@ -5187,7 +5329,6 @@
       if (document.activeElement !== valueEl) valueEl.value = actual;
       valueEl.max = item.required;
       document.getElementById('dockOf').textContent = 'of ' + item.required;
-      document.getElementById('dockAll').textContent = 'All \u00D7' + item.required + ' present';
       dock.classList.add('show');
     }
 
@@ -5213,6 +5354,11 @@
     function focusNext() {
       if (!focusedKey) return;
       var current = focusedKey;
+      if (itemStates[current] && !itemStates[current].touched) {
+        itemStates[current].touched = true;
+        if (stateReady) saveState();
+        updateSummary();
+      }
       advanceFocus(current, true, true);
       if (focusedKey === current) clearFocusedRow();
       updateFocusDock();
@@ -5237,7 +5383,6 @@
       document.getElementById('dockPlus').onclick = function() { dockAdjust(1); };
       document.getElementById('dockAll').onclick = dockAllPresent;
       document.getElementById('dockNext').onclick = focusNext;
-      document.getElementById('dockBack').onclick = focusPrevious;
       var valueEl = document.getElementById('dockValue');
       valueEl.onchange = function() { dockSetValue(this.value); };
       valueEl.onkeydown = function(e) {
@@ -5322,6 +5467,61 @@
         }
       }
       clearFocusedRow();
+    }
+
+    // =====================================================
+    // "BEFORE YOU START" BLOCK
+    // =====================================================
+
+    function preGroupProgress() {
+      var done = 0, total = 0;
+      for (var i = 0; i < o2Areas.length; i++) {
+        total++;
+        if (getO2AreaStatus(o2Areas[i].id) !== 'unchecked') done++;
+      }
+      for (var q = 0; q < customQuestions.length; q++) {
+        if (customQuestions[q].position === 'afterInventory') continue;
+        total++;
+        if (isQuestionAnswered(customQuestions[q]) || !customQuestions[q].required) done++;
+      }
+      return { done: done, total: total };
+    }
+
+    function preGroupComplete() {
+      var p = preGroupProgress();
+      return p.total === 0 || p.done === p.total;
+    }
+
+    // A section inside the block closes its siblings, not the top-level areas
+    function sectionIsNested(el) {
+      return !!(el && el.parentElement && el.parentElement.classList.contains('pre-content'));
+    }
+
+    // Refresh the block header; when it just became complete, fold it and
+    // open whatever comes next.
+    function updatePreGroup(autoAdvance) {
+      var pre = document.getElementById('pre_group');
+      if (!pre) return;
+      var p = preGroupProgress();
+      var header = pre.querySelector(':scope > .area-header');
+      var chip = document.getElementById('status_pre_group');
+      var complete = p.total > 0 && p.done === p.total;
+      if (chip) {
+        chip.textContent = complete ? '\u2713' : p.done + '/' + p.total;
+        chip.classList.toggle('ok', complete);
+      }
+      if (header) {
+        header.classList.toggle('all-ok', complete);
+        setProgressStrip(header, p.done, p.total);
+      }
+      if (autoAdvance && complete && pre.classList.contains('expanded')) {
+        setTimeout(function() {
+          pre.classList.remove('expanded');
+          var next = pre.nextElementSibling;
+          if (next && next.classList.contains('area-group')) toggleAreaGroup(next);
+          else if (next && next.classList.contains('area-section')) toggleArea(next, false);
+        }, 350);
+      }
     }
 
     // =====================================================
@@ -5477,7 +5677,7 @@
           '<span class="area-title">' + escapeHtml(q.label) + '</span>' +
           '<span class="area-status"></span>';
         header.onclick = (function(div) {
-          return function() { toggleArea(div, false); };
+          return function() { toggleArea(div, sectionIsNested(div)); };
         })(section);
         section.appendChild(header);
 
@@ -5574,11 +5774,12 @@
       setTimeout(function() {
         if (next) {
           var nextSection = document.getElementById(questionSectionId(next.id));
-          if (nextSection && !nextSection.classList.contains('expanded')) toggleArea(nextSection, false);
+          if (nextSection && !nextSection.classList.contains('expanded')) toggleArea(nextSection, sectionIsNested(nextSection));
         } else if (section && section.classList.contains('expanded')) {
-          toggleArea(section, false);
+          toggleArea(section, sectionIsNested(section));
         }
       }, 250);
+      updatePreGroup(true);
     }
 
     // =====================================================
@@ -5742,7 +5943,7 @@
             '<span class="o2-subtitle">' + escapeHtml(subtitle) + '</span></span>' +
           '<span class="area-status"></span>';
         header.onclick = (function(div) {
-          return function() { toggleArea(div, false); };
+          return function() { toggleArea(div, sectionIsNested(div)); };
         })(section);
         section.appendChild(header);
 
@@ -5809,12 +6010,13 @@
         setTimeout(function() {
           if (nextId) {
             var nextSection = document.getElementById(o2SectionId(nextId));
-            if (nextSection && !nextSection.classList.contains('expanded')) toggleArea(nextSection, false);
+            if (nextSection && !nextSection.classList.contains('expanded')) toggleArea(nextSection, sectionIsNested(nextSection));
           } else if (section && section.classList.contains('expanded')) {
-            toggleArea(section, false);
+            toggleArea(section, sectionIsNested(section));
           }
         }, 300);
       }
+      updatePreGroup(true);
 
       checkForCompletion();
     }
@@ -6050,7 +6252,7 @@
       var maxValue = item ? item.required : 9999;
       
       value = Math.max(0, Math.min(maxValue, value));
-      itemStates[key] = { actual: value };
+      itemStates[key] = { actual: value, touched: true };
       
       // Update input
       var input = document.getElementById('input_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
@@ -6069,6 +6271,8 @@
           if (value >= item.required) itemDiv.classList.add('checked');
           else if (value > 0) itemDiv.classList.add('short');
           else itemDiv.classList.add('missing');
+          var countEl = itemDiv.querySelector('.item-count');
+          if (countEl) countEl.textContent = countText(value, item.required);
           updateFocusExtras(itemDiv, key);
         }
       }
@@ -7131,10 +7335,8 @@
           if (areaOk === areaTotal) {
             header.classList.add('all-ok');
             statusEl.classList.add('ok');
-          } else {
-            header.classList.add('has-issues');
-            statusEl.classList.add('issues');
           }
+          // An unfinished area is neutral: unchecked is not an issue
 
           // Gauge readings override the header colour: red beats yellow beats counts
           header.classList.remove('gauge-red', 'gauge-yellow');
@@ -7236,8 +7438,6 @@
             groupStatusEl.textContent = '✓';
           }
         } else {
-          groupHeader.classList.add('has-issues');
-          groupStatusEl.classList.add('issues');
           var parts = [];
           if (totalChildren > 0) parts.push((sealedChildren + okChildren) + '/' + totalChildren + ' areas');
           if (parentTotal > 0) parts.push(parentOk + '/' + parentTotal + ' items');
@@ -7309,6 +7509,9 @@
             if (actual >= required) {
               okCount++;
             } else {
+              // An item nobody has counted yet is not a shortage, just unchecked
+              var st = itemStates[key];
+              if (!(st && st.touched) && !restockStatus[key]) continue;
               var shortage = required - actual;
               if (actual > 0) {
                 shortCount++;
@@ -7345,14 +7548,18 @@
       }
       
       restockCount.textContent = unhandledCount;
-      
-      if (totalIssues === 0 || unhandledCount === 0) {
+
+      restockBtn.classList.remove('all-ok', 'idle');
+      if (unhandledCount > 0) {
+        restockBtn.querySelector('.restock-icon').textContent = '!';
+        restockBtn.querySelector('span:nth-child(2)').textContent = 'Restock';
+      } else if (isEverythingComplete()) {
         restockBtn.classList.add('all-ok');
         restockBtn.querySelector('.restock-icon').textContent = '✓';
-        restockBtn.querySelector('span:nth-child(2)').textContent = 'All Stocked';
+        restockBtn.querySelector('span:nth-child(2)').textContent = 'All stocked';
       } else {
-        restockBtn.classList.remove('all-ok');
-        restockBtn.querySelector('.restock-icon').textContent = '!';
+        // Nothing left short yet: stay quiet
+        restockBtn.classList.add('idle');
         restockBtn.querySelector('span:nth-child(2)').textContent = 'Restock';
       }
       
