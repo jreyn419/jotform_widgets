@@ -294,32 +294,8 @@
           "name": "General",
           "items": [
             {
-              "name": "Calcium Chloride 10% Preload",
-              "qty": 1
-            },
-            {
               "name": "Lidocaine HCl Preload",
               "qty": 1
-            },
-            {
-              "name": "Dopamine Vial 400mg/10mL",
-              "qty": 1
-            },
-            {
-              "name": "Atropine Sulfate 1mg/1mL",
-              "qty": 2
-            },
-            {
-              "name": "MADs",
-              "qty": 2
-            },
-            {
-              "name": "Medication Labels",
-              "qty": 6
-            },
-            {
-              "name": "3-Way Stopcocks",
-              "qty": 2
             }
           ]
         }
