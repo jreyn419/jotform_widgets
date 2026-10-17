@@ -2790,8 +2790,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.27.0';
+    var VERSION = '1.27.1';
     var CHANGELOG = [
+      { version: '1.27.1', date: '2026-10-17', changes: [
+        'Fixed: "Done today at" showed the Jotform account\u2019s time zone. The time, and the test for "today", now use the moment the tablet submitted, stored in the widget\u2019s own value',
+      ]},
       { version: '1.27.0', date: '2026-10-17', changes: [
         'Moving to the next category or area is one scroll, computed after the layout settles: the focused row lands just under the sticky headers, long moves jump instantly, short moves glide, and the new area header flashes briefly',
       ]},
@@ -4726,7 +4729,7 @@
               var sel = submissionSelection(list[s]);
               if (sel.rig === rigNorm && sel.checklist === k) {
                 submittedCount++;
-                if (!submittedAt) submittedAt = list[s].created_at;
+                if (!submittedAt) submittedAt = list[s];
               }
             }
           }
@@ -4734,7 +4737,7 @@
           el.classList.remove('checking', 'submitted', 'open', 'pending');
           if (submittedAt) {
             el.classList.add('submitted');
-            var when = createdAtClock(submittedAt);
+            var when = submissionClock(submittedAt);
             el.textContent = 'Done today' + (when ? ' at ' + when : '') + (submittedCount > 1 ? ' (' + submittedCount + ' submissions)' : '')
               + (localTs ? ' \u00B7 reopened on this device' : '');
           } else if (localTs) {
@@ -4789,12 +4792,10 @@
 
     // Which rig / checklist a submission was for: native dropdown answers when
     // configured, otherwise the stamps inside this widget's own answer.
-    function submissionSelection(sub) {
+    // The widget's own answer inside a submission, parsed: carries the rig
+    // and checklist stamps and the device's submit time (epoch ms).
+    function submissionSyncData(sub) {
       var a = sub.answers || {};
-      if (selectorFieldIds.rig && selectorFieldIds.checklist && (a[selectorFieldIds.rig] || a[selectorFieldIds.checklist])) {
-        return { rig: normalizeSelection(answerText(a[selectorFieldIds.rig])),
-                 checklist: normalizeSelection(answerText(a[selectorFieldIds.checklist])) };
-      }
       var fp = getFormParams();
       var raw = fp.qid && a[fp.qid] ? answerText(a[fp.qid]) : '';
       if (!raw || raw.indexOf('___SYNC_DATA___') === -1) {
@@ -4804,9 +4805,36 @@
           if (t && t.indexOf('___SYNC_DATA___') !== -1) { raw = t; break; }
         }
       }
-      var parsed = raw ? extractSyncData(raw) : null;
-      if (!parsed) return { rig: '', checklist: '' };
-      return { rig: normalizeSelection(parsed.rig), checklist: normalizeSelection(parsed.checklist) };
+      return raw ? extractSyncData(raw) : null;
+    }
+
+    function submissionSelection(sub) {
+      var a = sub.answers || {};
+      var parsed = submissionSyncData(sub);
+      var ts = parsed && isFinite(parseFloat(parsed.timestamp)) && parseFloat(parsed.timestamp) > 1e12 ? parseFloat(parsed.timestamp) : null;
+      if (selectorFieldIds.rig && selectorFieldIds.checklist && (a[selectorFieldIds.rig] || a[selectorFieldIds.checklist])) {
+        return { rig: normalizeSelection(answerText(a[selectorFieldIds.rig])),
+                 checklist: normalizeSelection(answerText(a[selectorFieldIds.checklist])), timestamp: ts };
+      }
+      if (!parsed) return { rig: '', checklist: '', timestamp: null };
+      return { rig: normalizeSelection(parsed.rig), checklist: normalizeSelection(parsed.checklist), timestamp: ts };
+    }
+
+    // When a submission happened, in the device's own time: the submit
+    // timestamp the widget stored, else Jotform's created_at (account zone).
+    function submissionClock(sub) {
+      var sel = submissionSelection(sub);
+      if (sel.timestamp) {
+        var d = new Date(sel.timestamp);
+        return clockText(d.getHours(), d.getMinutes());
+      }
+      return createdAtClock(sub.created_at);
+    }
+
+    function submissionIsToday(sub, today) {
+      var sel = submissionSelection(sub);
+      if (sel.timestamp) return localDateString(new Date(sel.timestamp)) === today;
+      return String(sub.created_at || '').indexOf(today) === 0;
     }
 
     function submissionMatchesSelection(sub) {
@@ -4858,7 +4886,10 @@
     function fetchTodaySubmissions(apiBase, formID, apiKey, callback) {
       if (!formID || !apiKey) { callback(null); return; }
       var today = localDateString(new Date());
-      var filter = encodeURIComponent(JSON.stringify({ 'created_at:gt': today + ' 00:00:00' }));
+      // Ask from yesterday on: created_at is in the account's zone, which may
+      // sit a day either side of the device's; the real test happens below.
+      var since = localDateString(new Date(Date.now() - 36 * 3600 * 1000));
+      var filter = encodeURIComponent(JSON.stringify({ 'created_at:gt': since + ' 00:00:00' }));
       var url = apiBase + '/form/' + encodeURIComponent(formID)
               + '/submissions?apiKey=' + encodeURIComponent(apiKey)
               + '&limit=100&orderby=id&direction=desc&filter=' + filter;
@@ -4873,7 +4904,7 @@
             var list = resp.content || [];
             var out = [];
             for (var i = 0; i < list.length; i++) {
-              if (String(list[i].created_at || '').indexOf(today) === 0) out.push(list[i]);
+              if (submissionIsToday(list[i], today)) out.push(list[i]);
             }
             callback(out);
           } catch (e) { callback(null); }
@@ -4935,7 +4966,7 @@
           if (submissionMatchesSelection(list[i])) matches.push(list[i]);
         }
         if (matches.length > 0) {
-          var when = createdAtClock(matches[0].created_at);
+          var when = submissionClock(matches[0]);
           var text = 'Done today' + (when ? ' at ' + when : '') + (matches.length > 1 ? ' (' + matches.length + ' submissions)' : '');
           if (localText) text += '. Reopened on this device, last change ' + clockText(new Date(restoredLocalTs).getHours(), new Date(restoredLocalTs).getMinutes());
           setStatusStrip('submitted', prefix + text);
