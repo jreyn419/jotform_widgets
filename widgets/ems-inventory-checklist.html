@@ -752,6 +752,144 @@
       white-space: nowrap;
     }
 
+    /* In-widget rig / checklist picker */
+    .widget-header.has-selection {
+      justify-content: space-between;
+    }
+
+    .selection-label {
+      display: none;
+      font-size: 14px;
+      font-weight: 700;
+      color: #333;
+      padding-left: 5px;
+    }
+
+    .change-btn {
+      display: none;
+      margin-left: auto;
+      margin-right: 6px;
+      padding: 5px 10px;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      background: white;
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .widget-header.has-selection .selection-label,
+    .widget-header.has-selection .change-btn {
+      display: inline-block;
+    }
+
+    .widget-container.picker-open .restock-footer {
+      display: none;
+    }
+
+    .picker {
+      padding: 10px;
+    }
+
+    .picker-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #333;
+      margin: 6px 4px 12px;
+    }
+
+    .picker-back {
+      border: 1px solid #ced4da;
+      background: white;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+
+    .picker-tile {
+      padding: 22px 10px;
+      border: 2px solid #dee2e6;
+      border-radius: 12px;
+      background: white;
+      font-size: 22px;
+      font-weight: 700;
+      color: #333;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .picker-tile:active {
+      border-color: #0066cc;
+      background: #eef5ff;
+    }
+
+    .picker-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .picker-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 14px 15px;
+      border: 2px solid #dee2e6;
+      border-radius: 12px;
+      background: white;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .picker-row:active {
+      border-color: #0066cc;
+      background: #eef5ff;
+    }
+
+    .picker-row-name {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .picker-row-status {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: #e9ecef;
+      color: #495057;
+      white-space: nowrap;
+    }
+
+    .picker-row-status.submitted { background: #d4edda; color: #155724; }
+    .picker-row-status.open { background: #dbe9ff; color: #0b3d91; }
+    .picker-row-status.pending { background: #e9ecef; color: #495057; }
+    .picker-row-status.checking { background: #f8f9fa; color: #999; }
+
+    .picker-note {
+      margin: 12px 4px 0;
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+    }
+
     /* Today-status strip and rig/checklist selector prompt */
     .status-strip {
       display: none;
@@ -2209,7 +2347,9 @@
 <body>
   <div class="widget-container">
 
-    <div class="widget-header">
+    <div class="widget-header" id="widgetHeader">
+      <span class="selection-label" id="selectionLabel"></span>
+      <button class="change-btn" id="changeSelectionBtn" onclick="openPicker()">Change</button>
       <button class="settings-btn" onclick="openResetDialog()" title="Settings">&#9881;</button>
     </div>
 
@@ -2352,8 +2492,14 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.18.0';
+    var VERSION = '1.19.0';
     var CHANGELOG = [
+      { version: '1.19.0', date: '2026-10-17', changes: [
+        'In-widget rig and checklist picker: set rigIndex to data/checklists/index.json and the widget opens with rig tiles, then checklist rows that already show submitted today / in progress / not yet today before anything is chosen',
+        'The last rig used on a device is remembered, and a Change button in the header returns to the picker',
+        'Submissions are matched to a rig and checklist by the stamps in the widget\u2019s own value, so no native dropdowns are needed; the dropdown mode from 1.18.0 still works',
+        'Sync data embedded in API responses is parsed even when Jotform entity-encodes it',
+      ]},
       { version: '1.18.0', date: '2026-10-17', changes: [
         'Rig and checklist can be chosen with two native Jotform dropdowns: set rigFieldId and checklistFieldId to their question IDs and the widget loads data/checklists/{rig}/{checklist}.json, reloading when either changes',
         'Saved state and seals are scoped per rig and checklist, and seal sync / restore use the latest submission for the selected rig and checklist',
@@ -2608,6 +2754,13 @@
     var currentChecklist = null;
     var selectorFieldIds = { rig: null, checklist: null };
     var inventoryTitle = ''; // _meta.name of the loaded checklist file
+    // Picker mode (setting rigIndex = path to data/checklists/index.json)
+    var pickerActive = false;
+    var rigIndexData = null; // { rigs: [{ id, name, checklists: [{ id, name }] }] }
+    var pickerStart = null; // startChecklist from the ready handler
+    var pickerData = null; // the ready-event data, used for the first load only
+    var pickerLoadedOnce = false;
+    var todaySubsCache = null; // { ts, list }
     var restoredLocalTs = null; // timestamp of the local state restored this load, if any
 
     // ---- Focus row ----
@@ -2619,23 +2772,25 @@
     // LOCAL PERSISTENCE (survives across form sessions)
     // =====================================================
 
-    function getStorageKey() {
+    function getStorageKey(rig, checklist) {
       try {
         // Scope to the widget's iframe src for uniqueness across forms
         var src = window.location.href || '';
         if (src) {
           // Extract a stable identifier from the URL (formID, qid, etc.)
           var match = src.match(/[?&](?:formID|qid)=([^&]+)/);
-          if (match) return 'ems_checklist_' + match[1] + selectorKeySuffix();
+          if (match) return 'ems_checklist_' + match[1] + selectorKeySuffix(rig, checklist);
         }
       } catch (e) {}
-      return 'ems_checklist_state' + selectorKeySuffix();
+      return 'ems_checklist_state' + selectorKeySuffix(rig, checklist);
     }
 
-    // In selector mode every rig + checklist pair keeps its own state and seals
-    function selectorKeySuffix() {
-      if (!selectorActive || !currentRig || !currentChecklist) return '';
-      return '_' + currentRig + '_' + currentChecklist;
+    // In selector mode every rig + checklist pair keeps its own state and seals.
+    // Pass a pair to get another pair's key (the picker uses this).
+    function selectorKeySuffix(rig, checklist) {
+      if (rig === undefined) { rig = currentRig; checklist = currentChecklist; }
+      if (!selectorActive || !rig || !checklist) return '';
+      return '_' + rig + '_' + checklist;
     }
 
     function saveState() {
@@ -2763,6 +2918,17 @@
     //  (d) plain text with __SYNC__ marker (transitional format).
     //  (c) HTML report with sync data in an HTML comment.
     // Returns the parsed data object, or null on failure.
+    // JSON.parse that also copes with Jotform entity-encoding the text
+    function parseJsonLoose(text) {
+      try { return JSON.parse(text); } catch (e) {}
+      try {
+        var t = document.createElement('textarea');
+        t.innerHTML = text;
+        return JSON.parse(t.value);
+      } catch (e2) {}
+      return null;
+    }
+
     function extractSyncData(raw) {
       if (!raw || typeof raw !== 'string') return null;
       // Try pure JSON first (old format / draft saves)
@@ -2771,7 +2937,8 @@
       var syncMarker = '\n\n___SYNC_DATA___\n';
       var si = raw.indexOf(syncMarker);
       if (si !== -1) {
-        try { return JSON.parse(raw.substring(si + syncMarker.length)); } catch (e) {}
+        var parsedLoose = parseJsonLoose(raw.substring(si + syncMarker.length));
+        if (parsedLoose) return parsedLoose;
       }
       // Legacy: HTML comment format (may appear raw or entity-encoded)
       var commentVariants = ['<!--__SYNC__:', '&lt;!--__SYNC__:'];
@@ -3931,7 +4098,12 @@
     function initSelector(data, start) {
       var rigId = JFCustomWidget.getWidgetSetting('rigFieldId');
       var clId = JFCustomWidget.getWidgetSetting('checklistFieldId');
+      var rigIndex = JFCustomWidget.getWidgetSetting('rigIndex');
       if (!rigId || !clId) {
+        if (rigIndex) {
+          initPicker(rigIndex, data, start);
+          return;
+        }
         selectorActive = false;
         start(data, null);
         return;
@@ -3968,6 +4140,221 @@
       }
     }
 
+    // ---------------- In-widget picker ----------------
+
+    function lastRigKey() {
+      var fp = getFormParams();
+      return 'ems_last_rig_' + (fp.formID || cachedFormID || 'form');
+    }
+
+    function initPicker(indexSetting, data, start) {
+      pickerActive = true;
+      selectorActive = true;
+      selectorFieldIds = { rig: null, checklist: null };
+      pickerStart = start;
+      pickerData = data;
+      var dec = document.createElement('textarea');
+      dec.innerHTML = indexSetting;
+      var indexPath = dec.value;
+      setStatusStrip('prompt', 'Loading rigs\u2026');
+      fetchInventoryFile(indexPath, function(content) {
+        var parsed = content ? parseJsonLoose(content) : null;
+        if (!parsed || !Array.isArray(parsed.rigs)) {
+          console.warn('[Widget] rig index could not be loaded from', indexPath);
+          rigIndexData = { rigs: [] };
+        } else {
+          rigIndexData = parsed;
+        }
+        var lastRig = null;
+        try { lastRig = localStorage.getItem(lastRigKey()); } catch (e) {}
+        var known = lastRig && findRig(lastRig);
+        renderPicker(known ? lastRig : null);
+      });
+    }
+
+    function findRig(rigId) {
+      if (!rigIndexData) return null;
+      for (var i = 0; i < rigIndexData.rigs.length; i++) {
+        if (normalizeSelection(rigIndexData.rigs[i].id) === normalizeSelection(rigId)) return rigIndexData.rigs[i];
+      }
+      return null;
+    }
+
+    function openPicker() {
+      if (!pickerActive) return;
+      if (stateReady) saveState();
+      resetRuntimeState();
+      setSelectionLabel('');
+      renderPicker(currentRig);
+    }
+
+    function setSelectionLabel(text) {
+      var header = document.getElementById('widgetHeader');
+      var label = document.getElementById('selectionLabel');
+      if (!header || !label) return;
+      label.textContent = text || '';
+      header.classList.toggle('has-selection', !!text);
+    }
+
+    // Timestamp of local in-progress state for a pair, if it is from today
+    function localProgressFor(rigId, checklistId) {
+      try {
+        var stored = localStorage.getItem(getStorageKey(normalizeSelection(rigId), normalizeSelection(checklistId)));
+        if (!stored) return null;
+        var parsed = JSON.parse(stored);
+        if (!parsed.timestamp) return null;
+        if ((Date.now() - parsed.timestamp) > STATE_EXPIRY_MS) return null;
+        var d = new Date(parsed.timestamp);
+        if (localDateString(d) !== localDateString(new Date())) return null;
+        return parsed.timestamp;
+      } catch (e) { return null; }
+    }
+
+    function renderPicker(rigId) {
+      var container = document.getElementById('areasContainer');
+      var widget = document.querySelector('.widget-container');
+      if (!container) return;
+      if (widget) widget.classList.add('picker-open');
+      container.innerHTML = '';
+      updateSummary();
+
+      var picker = document.createElement('div');
+      picker.className = 'picker';
+      var rigs = (rigIndexData && rigIndexData.rigs) || [];
+      var rig = rigId ? findRig(rigId) : null;
+
+      if (!rig) {
+        setStatusStrip('prompt', 'Choose a rig');
+        var title = document.createElement('div');
+        title.className = 'picker-title';
+        title.textContent = 'Which rig?';
+        picker.appendChild(title);
+        var grid = document.createElement('div');
+        grid.className = 'picker-grid';
+        for (var i = 0; i < rigs.length; i++) {
+          var tile = document.createElement('button');
+          tile.type = 'button';
+          tile.className = 'picker-tile';
+          tile.textContent = rigs[i].name || rigs[i].id;
+          tile.onclick = (function(id) { return function() { renderPicker(id); }; })(rigs[i].id);
+          grid.appendChild(tile);
+        }
+        if (rigs.length === 0) {
+          var none = document.createElement('div');
+          none.className = 'picker-note';
+          none.textContent = 'No rigs found in the index file.';
+          picker.appendChild(none);
+        }
+        picker.appendChild(grid);
+        container.appendChild(picker);
+        resizeWidget();
+        return;
+      }
+
+      setStatusStrip('prompt', 'Rig ' + (rig.name || rig.id) + ': choose a checklist');
+      var head = document.createElement('div');
+      head.className = 'picker-title';
+      var back = document.createElement('button');
+      back.type = 'button';
+      back.className = 'picker-back';
+      back.textContent = '\u2039 Rigs';
+      back.onclick = function() { renderPicker(null); };
+      head.appendChild(back);
+      var headText = document.createElement('span');
+      headText.textContent = 'Rig ' + (rig.name || rig.id);
+      head.appendChild(headText);
+      picker.appendChild(head);
+
+      var list = document.createElement('div');
+      list.className = 'picker-list';
+      var checklists = rig.checklists || [];
+      var statusEls = {};
+      for (var c = 0; c < checklists.length; c++) {
+        var cl = checklists[c];
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'picker-row';
+        var name = document.createElement('span');
+        name.className = 'picker-row-name';
+        name.textContent = cl.name || cl.id;
+        var status = document.createElement('span');
+        status.className = 'picker-row-status checking';
+        status.textContent = 'checking\u2026';
+        row.appendChild(name);
+        row.appendChild(status);
+        row.onclick = (function(r, k) { return function() { choosePair(r, k); }; })(rig.id, cl.id);
+        list.appendChild(row);
+        statusEls[normalizeSelection(cl.id)] = status;
+      }
+      picker.appendChild(list);
+      var note = document.createElement('div');
+      note.className = 'picker-note';
+      picker.appendChild(note);
+      container.appendChild(picker);
+      resizeWidget();
+
+      var rigNorm = normalizeSelection(rig.id);
+      var applyStatuses = function(list) {
+        for (var k in statusEls) {
+          var el = statusEls[k];
+          var submittedAt = null, submittedCount = 0;
+          if (list) {
+            for (var s = 0; s < list.length; s++) {
+              var sel = submissionSelection(list[s]);
+              if (sel.rig === rigNorm && sel.checklist === k) {
+                submittedCount++;
+                if (!submittedAt) submittedAt = list[s].created_at;
+              }
+            }
+          }
+          var localTs = localProgressFor(rig.id, k);
+          el.classList.remove('checking', 'submitted', 'open', 'pending');
+          if (submittedAt) {
+            el.classList.add('submitted');
+            var when = createdAtClock(submittedAt);
+            el.textContent = 'Submitted today' + (when ? ' ' + when : '') + (submittedCount > 1 ? ' (\u00D7' + submittedCount + ')' : '')
+              + (localTs ? ' \u00B7 in progress here' : '');
+          } else if (localTs) {
+            el.classList.add('open');
+            var ld = new Date(localTs);
+            el.textContent = 'In progress here, ' + clockText(ld.getHours(), ld.getMinutes());
+          } else if (list === undefined) {
+            el.textContent = '';
+            el.style.display = 'none';
+          } else {
+            el.classList.add('pending');
+            el.textContent = list === null ? 'status unavailable' : 'Not yet today';
+          }
+        }
+        note.textContent = list === undefined ? 'Add a Jotform API key to show what has been submitted today.'
+                         : (list === null ? 'Could not reach Jotform to check today\u2019s submissions.' : '');
+      };
+      getTodaySubmissions(applyStatuses);
+    }
+
+    function choosePair(rigId, checklistId) {
+      var rig = findRig(rigId);
+      var rigNorm = normalizeSelection(rigId), clNorm = normalizeSelection(checklistId);
+      if (!rigNorm || !clNorm) return;
+      try { localStorage.setItem(lastRigKey(), rigNorm); } catch (e) {}
+      var widget = document.querySelector('.widget-container');
+      if (widget) widget.classList.remove('picker-open');
+      currentRig = rigNorm;
+      currentChecklist = clNorm;
+      var clName = clNorm;
+      if (rig) {
+        for (var i = 0; i < (rig.checklists || []).length; i++) {
+          if (normalizeSelection(rig.checklists[i].id) === clNorm) clName = rig.checklists[i].name || clNorm;
+        }
+      }
+      setSelectionLabel('Rig ' + (rig ? (rig.name || rig.id) : rigNorm) + ' \u00B7 ' + clName);
+      resetRuntimeState();
+      // Jotform's saved value only applies to the first load of the form
+      var data = pickerLoadedOnce ? { value: '', formID: pickerData && pickerData.formID } : pickerData;
+      pickerLoadedOnce = true;
+      pickerStart(data, selectionPath());
+    }
+
     function answerText(ans) {
       if (!ans) return '';
       if (typeof ans === 'string') return ans;
@@ -3976,11 +4363,32 @@
       return '';
     }
 
+    // Which rig / checklist a submission was for: native dropdown answers when
+    // configured, otherwise the stamps inside this widget's own answer.
+    function submissionSelection(sub) {
+      var a = sub.answers || {};
+      if (selectorFieldIds.rig && selectorFieldIds.checklist && (a[selectorFieldIds.rig] || a[selectorFieldIds.checklist])) {
+        return { rig: normalizeSelection(answerText(a[selectorFieldIds.rig])),
+                 checklist: normalizeSelection(answerText(a[selectorFieldIds.checklist])) };
+      }
+      var fp = getFormParams();
+      var raw = fp.qid && a[fp.qid] ? answerText(a[fp.qid]) : '';
+      if (!raw || raw.indexOf('___SYNC_DATA___') === -1) {
+        raw = '';
+        for (var k in a) {
+          var t = answerText(a[k]);
+          if (t && t.indexOf('___SYNC_DATA___') !== -1) { raw = t; break; }
+        }
+      }
+      var parsed = raw ? extractSyncData(raw) : null;
+      if (!parsed) return { rig: '', checklist: '' };
+      return { rig: normalizeSelection(parsed.rig), checklist: normalizeSelection(parsed.checklist) };
+    }
+
     function submissionMatchesSelection(sub) {
       if (!selectorActive) return true;
-      var a = sub.answers || {};
-      return normalizeSelection(answerText(a[selectorFieldIds.rig])) === currentRig &&
-             normalizeSelection(answerText(a[selectorFieldIds.checklist])) === currentChecklist;
+      var sel = submissionSelection(sub);
+      return sel.rig === currentRig && sel.checklist === currentChecklist;
     }
 
     function findSubmissionForSelection(list) {
@@ -4052,6 +4460,20 @@
       } catch (e) { callback(null); }
     }
 
+    // Today's submissions, cached for a minute so the picker and the strip share one fetch.
+    function getTodaySubmissions(callback) {
+      var apiKey = typeof JFCustomWidget !== 'undefined' && JFCustomWidget.getWidgetSetting ? JFCustomWidget.getWidgetSetting('jotformApiKey') : null;
+      if (!apiKey) { callback(undefined); return; } // undefined = no API configured
+      if (todaySubsCache && (Date.now() - todaySubsCache.ts) < 60000) { callback(todaySubsCache.list); return; }
+      var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
+      var fp = getFormParams();
+      var formID = fp.formID || cachedFormID || null;
+      fetchTodaySubmissions(apiBase, formID, apiKey, function(list) {
+        if (list !== null) todaySubsCache = { ts: Date.now(), list: list };
+        callback(list);
+      });
+    }
+
     // Fills the status strip: submitted today / in progress here / not yet.
     function refreshTodayStatus() {
       var label = selectorActive && currentRig
@@ -4075,11 +4497,8 @@
       }
 
       setStatusStrip('info', prefix + 'checking today\u2019s submissions\u2026');
-      var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
-      var fp = getFormParams();
-      var formID = fp.formID || cachedFormID || null;
-      fetchTodaySubmissions(apiBase, formID, apiKey, function(list) {
-        if (list === null) {
+      getTodaySubmissions(function(list) {
+        if (list === null || list === undefined) {
           setStatusStrip(localText ? 'open' : 'info', prefix + (localText || 'could not reach Jotform to check today\u2019s submissions'));
           return;
         }

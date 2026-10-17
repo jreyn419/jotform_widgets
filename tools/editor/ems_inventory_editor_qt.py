@@ -11,6 +11,7 @@ Requirements: pip3 install PyQt6 PyQt6-WebEngine pdfplumber
 """
 
 import os
+from checklist_index import write_index
 import sys
 import re
 import shutil
@@ -861,7 +862,7 @@ class SplitDialog(QDialog):
         return self._result
 
 
-VERSION = "6.10.0"
+VERSION = "6.11.0"
 # == LEMSA / State EMS directory ===============================================
 
 _LEMSA_DATA_DEFAULT = [
@@ -1028,6 +1029,15 @@ class Area:
         self.child_of = None
         self.categories = []
 
+def refresh_checklist_index(any_checklist_path):
+    """Rebuild data/checklists/index.json (read by the widget's picker)
+    after a checklist file or rig folder changes. Never raises."""
+    try:
+        write_index(os.path.dirname(os.path.dirname(any_checklist_path)))
+    except Exception:
+        pass
+
+
 class InventoryFile:
     def __init__(self, path):
         self.path = path
@@ -1113,6 +1123,7 @@ class InventoryFile:
         with open(self.path, "w", encoding="utf-8") as f:
             json.dump(file_data, f, indent=2, ensure_ascii=False)
             f.write("\n")
+        refresh_checklist_index(self.path)
 
     def all_item_names(self):
         return {item.name for area in self.areas for cat in area.categories for item in cat.items}
@@ -2979,6 +2990,10 @@ class App(QMainWindow):
             self._rig_combo.blockSignals(False)
             return
         rigs = sorted([n for n in os.listdir(d) if os.path.isdir(os.path.join(d, n))], key=str.lower)
+        try:
+            write_index(d)
+        except Exception:
+            pass
         self._rig_combo.addItem("")  # empty placeholder
         self._rig_combo.addItems(rigs)
         self._rig_combo.blockSignals(False)
@@ -3129,6 +3144,7 @@ class App(QMainWindow):
         except Exception as e:
             self._status.showMessage(f"Error: {e}")
             return
+        refresh_checklist_index(inv.path)
         self.rig_files.remove(inv)
         idx = self._file_combo.currentIndex()
         self._file_combo.removeItem(idx)
