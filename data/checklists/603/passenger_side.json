@@ -9,6 +9,14 @@
     "stretcherO2Threshold": 1000,
     "medicalAir": false
   },
+  "questions": [
+    {
+      "label": "Has the waste bin been emptied?",
+      "type": "yesno",
+      "position": "beforeO2",
+      "flagOn": "No"
+    }
+  ],
   "areas": [
     {
       "area": "Top Cabinet",
