@@ -119,6 +119,14 @@
             {
               "name": "Sterile Burn Sheet",
               "qty": 2
+            },
+            {
+              "name": "Heat Pack",
+              "qty": 4
+            },
+            {
+              "name": "Cold Pack",
+              "qty": 4
             }
           ]
         },
@@ -238,18 +246,6 @@
               "qty": 3
             },
             {
-              "name": "NS Bag 1000mL",
-              "qty": 6
-            },
-            {
-              "name": "NS Bag 250mL",
-              "qty": 2
-            },
-            {
-              "name": "NS Bag 100 mL",
-              "qty": 5
-            },
-            {
               "name": "Pressure Infusion Bag",
               "qty": 2
             },
@@ -362,12 +358,16 @@
               "qty": 2
             },
             {
-              "name": "Heat Pack",
-              "qty": 4
+              "name": "NS Bag 1000mL",
+              "qty": 6
             },
             {
-              "name": "Cold Pack",
-              "qty": 4
+              "name": "NS Bag 250mL",
+              "qty": 2
+            },
+            {
+              "name": "NS Bag 100 mL",
+              "qty": 5
             }
           ]
         },
@@ -453,7 +453,17 @@
             {
               "name": "Medslinger Bag",
               "qty": 1
-            },
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Stretcher",
+      "categories": [
+        {
+          "name": "Back of Stretcher",
+          "items": [
             {
               "name": "Zoll Monitor",
               "qty": 1
