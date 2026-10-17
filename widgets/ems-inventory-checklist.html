@@ -1090,6 +1090,57 @@
       margin-bottom: 8px;
     }
 
+    /* Loading state: nothing but a (delayed) spinner until the first real render */
+    .widget-container.loading .restock-footer,
+    .widget-container.loading .focus-dock,
+    .widget-container.loading .status-strip,
+    .widget-container.loading .oos-banner,
+    .widget-container.loading .areas-container {
+      display: none;
+    }
+
+    .loading-overlay {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #888;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .widget-container.loading.show-spinner .loading-overlay {
+      display: flex;
+    }
+
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #dee2e6;
+      border-top-color: #0066cc;
+      border-radius: 50%;
+      animation: ems-spin 0.8s linear infinite;
+    }
+
+    @keyframes ems-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Newly built sections fade in instead of popping */
+    @keyframes ems-fadein {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .areas-container > .area-section,
+    .areas-container > .area-group,
+    .areas-container > .picker,
+    .areas-container > .selector-prompt {
+      animation: ems-fadein 0.15s ease-out;
+    }
+
     /* Today-status strip and rig/checklist selector prompt */
     .status-strip {
       display: none;
@@ -2560,7 +2611,7 @@
 </style>
 </head>
 <body>
-  <div class="widget-container">
+  <div class="widget-container loading" id="widgetContainer">
 
     <div class="widget-header" id="widgetHeader">
       <span class="selection-label" id="selectionLabel"></span>
@@ -2572,6 +2623,10 @@
     <div class="status-strip" id="statusStrip"></div>
 
     <div class="main-content">
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading&hellip;</div>
+      </div>
       <div class="areas-container" id="areasContainer">
         <!-- Areas will be generated here -->
       </div>
@@ -2725,8 +2780,14 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.25.0';
+    var VERSION = '1.26.0';
     var CHANGELOG = [
+      { version: '1.26.0', date: '2026-10-17', changes: [
+        'No more flash on load: the widget starts in a loading state that hides the footer, dock and strip until the first real render, with a spinner only if loading takes longer than 200ms and content fading in',
+        'Switching checklists from the picker uses the same loading state',
+        'The index path that worked is remembered on the device, so later loads skip the 404 probe; the iframe is sized early to avoid the jump',
+        '"Checking" texts in the strip and picker rows only appear if the check takes longer than half a second',
+      ]},
       { version: '1.25.0', date: '2026-10-17', changes: [
         'An O2 cylinder marked below its limit is added to the restock list under Oxygen Supply, with the same Restocked / Out of stock actions, and must be handled before the checklist counts as complete',
         'Focus only moves forward: the next item in view, then the next category in the area, then the next area or group with work left. Next no longer cycles back to items that were skipped',
@@ -4395,6 +4456,7 @@
       }
       updateSummary();
       setStatusStrip('prompt', 'Select a rig and a checklist');
+      setLoading(false);
       resizeWidget();
     }
 
@@ -4428,6 +4490,7 @@
         currentRig = rig; currentChecklist = checklist;
         resetRuntimeState();
         // Jotform's saved value only applies to the first load; a change mid-form starts fresh
+        setLoading(true);
         start(isChange ? { value: '', formID: data && data.formID } : data, selectionPath());
       };
 
@@ -4475,6 +4538,13 @@
       // The default index is searched upward from the widget folder; an explicit
       // setting is used as given.
       var prefixes = indexPath === DEFAULT_RIG_INDEX ? ['', '../', '../../'] : [''];
+      // Try the prefix that worked last time first, so later loads skip the 404 probe
+      var remembered = null;
+      try { remembered = localStorage.getItem('ems_index_prefix'); } catch (e) {}
+      if (remembered !== null && prefixes.indexOf(remembered) > 0) {
+        prefixes.splice(prefixes.indexOf(remembered), 1);
+        prefixes.unshift(remembered);
+      }
       var attempt = 0;
       var tryNext = function() {
         var prefix = prefixes[attempt];
@@ -4482,6 +4552,7 @@
           var parsed = content ? parseJsonLoose(content) : null;
           if (parsed && Array.isArray(parsed.rigs)) {
             defaultPathPrefix = prefix;
+            try { localStorage.setItem('ems_index_prefix', prefix); } catch (e) {}
             onIndexLoaded(parsed);
             return;
           }
@@ -4580,6 +4651,7 @@
         }
         picker.appendChild(grid);
         container.appendChild(picker);
+        setLoading(false);
         resizeWidget();
         return;
       }
@@ -4612,7 +4684,7 @@
         name.textContent = cl.name || cl.id;
         var status = document.createElement('span');
         status.className = 'picker-row-status checking';
-        status.textContent = 'Checking\u2026';
+        status.textContent = '';
         row.appendChild(name);
         row.appendChild(status);
         row.onclick = (function(r, k) { return function() { choosePair(r, k); }; })(rig.id, cl.id);
@@ -4624,10 +4696,15 @@
       note.className = 'picker-note';
       picker.appendChild(note);
       container.appendChild(picker);
+      setLoading(false);
       resizeWidget();
 
       var rigNorm = normalizeSelection(rig.id);
+      var rowsCheckingTimer = setTimeout(function() {
+        for (var ck in statusEls) if (statusEls[ck].classList.contains('checking')) statusEls[ck].textContent = 'Checking\u2026';
+      }, 500);
       var applyStatuses = function(list) {
+        clearTimeout(rowsCheckingTimer);
         for (var k in statusEls) {
           var el = statusEls[k];
           var submittedAt = null, submittedCount = 0;
@@ -4685,6 +4762,7 @@
       // Jotform's saved value only applies to the first load of the form
       var data = pickerLoadedOnce ? { value: '', formID: pickerData && pickerData.formID } : pickerData;
       pickerLoadedOnce = true;
+      setLoading(true);
       pickerStart(data, selectionPath());
     }
 
@@ -4829,8 +4907,12 @@
         return;
       }
 
-      setStatusStrip('info', prefix + 'Checking today\u2019s status\u2026');
+      // Only admit to checking if it takes a while
+      var checkingTimer = setTimeout(function() {
+        setStatusStrip('info', prefix + 'Checking today\u2019s status\u2026');
+      }, 500);
       getTodaySubmissions(function(list) {
+        clearTimeout(checkingTimer);
         if (list === null || list === undefined) {
           setStatusStrip(localText ? 'open' : 'info', prefix + (localText || 'Could not reach Jotform to check today\u2019s status'));
           return;
@@ -8532,6 +8614,24 @@
         JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight });
       }
     }
+
+    // Loading state: the markup starts with it. The spinner only shows if
+    // loading lasts longer than 200ms, so a fast load never flashes one.
+    var spinnerTimer = null;
+    function setLoading(on) {
+      var c = document.getElementById('widgetContainer');
+      if (!c) return;
+      if (spinnerTimer) { clearTimeout(spinnerTimer); spinnerTimer = null; }
+      if (on) {
+        c.classList.add('loading');
+        c.classList.remove('show-spinner');
+        spinnerTimer = setTimeout(function() {
+          if (c.classList.contains('loading')) c.classList.add('show-spinner');
+        }, 200);
+      } else {
+        c.classList.remove('loading', 'show-spinner');
+      }
+    }
     
     // =====================================================
     // INIT
@@ -8574,6 +8674,9 @@
         JFCustomWidget.subscribe('ready', function(data) {
           console.log('[Widget] Ready', data);
           console.log('[Widget] JFCustomWidget methods:', Object.keys(JFCustomWidget));
+          // Give the iframe a usable height now rather than after the first render
+          try { JFCustomWidget.requestFrameResize({ height: Math.max(document.body.scrollHeight, 600) }); } catch (e) {}
+          setLoading(true);
           
           // Cache formID for later use (e.g. reset-to-server)
           var fp = getFormParams();
@@ -8707,6 +8810,7 @@
 
           stateReady = true;
           saveState();
+          setLoading(false);
           resizeWidget();
           refreshTodayStatus();
 
@@ -8850,6 +8954,7 @@
           buildUI();
           stateReady = true;
           saveState();
+          setLoading(false);
         }
 
         if (isExternalFilePath(standaloneText)) {
