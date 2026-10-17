@@ -14,7 +14,8 @@
       "area": "Top Cabinet",
       "categories": [
         {
-          "name": "General"
+          "name": "General",
+          "items": []
         }
       ]
     },
@@ -298,7 +299,8 @@
       "area": "Drawer",
       "categories": [
         {
-          "name": "General"
+          "name": "General",
+          "items": []
         }
       ]
     },
@@ -392,7 +394,8 @@
       "area": "Short Rear Cabinet",
       "categories": [
         {
-          "name": "General"
+          "name": "General",
+          "items": []
         }
       ]
     },
@@ -578,10 +581,6 @@
             },
             {
               "name": "Pen",
-              "qty": 1
-            },
-            {
-              "name": "Temporal Thermometer",
               "qty": 1
             }
           ]

@@ -674,6 +674,42 @@
             {
               "name": "Yankauer Suction Tip + Tubing",
               "qty": 1
+            },
+            {
+              "name": "Spit Hoods",
+              "qty": 3
+            },
+            {
+              "name": "Posey Soft Restraints",
+              "qty": 3
+            },
+            {
+              "name": "Paper Towels, roll (or stack of napkins)",
+              "qty": 1
+            },
+            {
+              "name": "Temporal Thermometer",
+              "qty": 1
+            },
+            {
+              "name": "Gloves - S",
+              "qty": 1,
+              "group": "Gloves"
+            },
+            {
+              "name": "Gloves - M",
+              "qty": 1,
+              "group": "Gloves"
+            },
+            {
+              "name": "Gloves - L",
+              "qty": 1,
+              "group": "Gloves"
+            },
+            {
+              "name": "Gloves - XL",
+              "qty": 1,
+              "group": "Gloves"
             }
           ]
         }
