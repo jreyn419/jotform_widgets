@@ -233,14 +233,6 @@
               "qty": 2
             },
             {
-              "name": "Spit Hoods",
-              "qty": 3
-            },
-            {
-              "name": "Posey Soft Restraints",
-              "qty": 3
-            },
-            {
               "name": "Bedpans",
               "qty": 3
             },
@@ -296,14 +288,6 @@
           "items": [
             {
               "name": "Surgical Masks Box",
-              "qty": 1
-            },
-            {
-              "name": "Hand Sanitizer",
-              "qty": 1
-            },
-            {
-              "name": "Paper Towels, roll (or stack of napkins)",
               "qty": 1
             }
           ]
