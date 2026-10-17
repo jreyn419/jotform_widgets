@@ -673,83 +673,205 @@
       color: #888;
     }
 
+    /* Unfocused rows sit a little tighter so the focused one stands out */
+    .focus-active .checklist-item:not(.focused):not(.gauge-item):not(.check-item) {
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+
+    .focus-active .checklist-item:not(.focused) .item-name {
+      font-size: 13px;
+    }
+
+    .focus-active .checklist-item:not(.focused) .qty-btn {
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+    }
+
+    .focus-active .checklist-item:not(.focused) .qty-value {
+      width: 40px;
+      height: 32px;
+      font-size: 13px;
+    }
+
     .checklist-item.focused,
     .checklist-item.focused.missing,
     .checklist-item.focused.short,
     .checklist-item.focused.checked {
-      flex-wrap: wrap;
-      padding: 14px 15px;
+      padding: 18px 15px;
       background: #eef5ff;
-      border-left: 4px solid #0066cc;
+      border-left: 5px solid #0066cc;
       box-shadow: inset 0 0 0 1px #cfe0f7;
     }
 
     .subcategory-items .checklist-item.focused {
-      padding-left: 26px;
+      padding-left: 25px;
     }
 
     .checklist-item.focused .item-name {
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 20px;
+      font-weight: 700;
       color: #1a1a1a;
       line-height: 1.25;
     }
 
     .checklist-item.focused .item-required {
-      font-size: 15px;
-      padding: 6px 10px;
+      font-size: 16px;
+      padding: 8px 12px;
     }
 
     .checklist-item.focused .item-checkbox {
-      width: 26px;
-      height: 26px;
+      width: 28px;
+      height: 28px;
     }
 
-    .checklist-item.focused .qty-btn {
-      width: 48px;
-      height: 48px;
-      font-size: 24px;
-    }
-
-    .checklist-item.focused .qty-value {
-      width: 56px;
-      height: 48px;
-      font-size: 20px;
-    }
-
-    .focus-extras {
+    /* The dock carries the controls for the focused count item */
+    .checklist-item.focused .qty-stepper {
       display: none;
-      flex-basis: 100%;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
     }
 
-    .checklist-item.focused .focus-extras {
+    .focus-dock {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 15px 12px;
+      background: white;
+      border-top: 3px solid #0066cc;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+      flex-shrink: 0;
+    }
+
+    .focus-dock.show {
       display: flex;
     }
 
-    .all-present-btn {
+    .dock-info {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .dock-name {
       flex: 1;
-      padding: 12px;
+      min-width: 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dock-path {
+      font-size: 11px;
+      color: #777;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 45%;
+    }
+
+    .dock-counter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .dock-btn {
+      width: 60px;
+      height: 56px;
+      border: none;
+      border-radius: 12px;
+      background: #e9ecef;
+      font-size: 30px;
+      font-weight: 700;
+      color: #333;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .dock-btn:active {
+      background: #d0d4d8;
+    }
+
+    .dock-value {
+      width: 84px;
+      height: 56px;
+      border: 2px solid #ced4da;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: #1a1a1a;
+      background: white;
+      -moz-appearance: textfield;
+    }
+
+    .dock-value::-webkit-outer-spin-button,
+    .dock-value::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .dock-of {
+      font-size: 15px;
+      font-weight: 600;
+      color: #555;
+      white-space: nowrap;
+    }
+
+    .dock-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dock-back {
+      flex: 0 0 auto;
+      height: 48px;
+      padding: 0 14px;
+      border: 1px solid #ced4da;
+      border-radius: 10px;
+      background: white;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .dock-all {
+      flex: 1;
+      height: 48px;
       border: none;
       border-radius: 10px;
       background: #28a745;
       color: white;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
     }
 
-    .all-present-btn:active {
+    .dock-all:active {
       background: #1e7e34;
     }
 
-    .item-have {
-      font-size: 13px;
-      font-weight: 600;
-      color: #555;
-      white-space: nowrap;
+    .dock-next {
+      flex: 1;
+      height: 48px;
+      border: none;
+      border-radius: 10px;
+      background: #0066cc;
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .dock-next:active {
+      background: #004c99;
     }
 
     /* In-widget rig / checklist picker */
@@ -2363,6 +2485,25 @@
       
     </div>
     
+    <!-- Focus dock: controls for the item being checked -->
+    <div class="focus-dock" id="focusDock">
+      <div class="dock-info">
+        <div class="dock-name" id="dockName"></div>
+        <div class="dock-path" id="dockPath"></div>
+      </div>
+      <div class="dock-counter">
+        <button type="button" class="dock-btn" id="dockMinus" title="One less">&minus;</button>
+        <input type="number" class="dock-value" id="dockValue" inputmode="numeric" min="0">
+        <span class="dock-of" id="dockOf"></span>
+        <button type="button" class="dock-btn" id="dockPlus" title="One more">+</button>
+      </div>
+      <div class="dock-actions">
+        <button type="button" class="dock-back" id="dockBack">&lsaquo; Back</button>
+        <button type="button" class="dock-all" id="dockAll">All present</button>
+        <button type="button" class="dock-next" id="dockNext">Next &rsaquo;</button>
+      </div>
+    </div>
+
     <!-- Fixed Footer Restock Button -->
     <div class="restock-footer">
       <button class="restock-btn" id="restockBtn" onclick="openRestockModal()">
@@ -2492,8 +2633,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.21.1';
+    var VERSION = '1.22.0';
     var CHANGELOG = [
+      { version: '1.22.0', date: '2026-10-17', changes: [
+        'Focus dock: a fixed bar above the Restock button carries the focused item\u2019s name, a large minus / count / plus, All present, Back and Next, so the controls never move while working down a cabinet',
+        'Next moves on with whatever count is recorded, so a short item no longer traps the focus; Enter in the count box also moves on',
+        'The focused row is larger (20px name) and the other rows a little tighter; the focused row\u2019s own stepper is hidden in favour of the dock',
+      ]},
       { version: '1.21.1', date: '2026-10-17', changes: [
         'Plainer status wording: "Done today at 6:42 AM", "Not done today", "In progress on this device"',
       ]},
@@ -3496,23 +3642,6 @@
         stepperDiv.appendChild(valueInput);
         stepperDiv.appendChild(incBtn);
         itemDiv.appendChild(stepperDiv);
-
-        // Extras shown only while this row is the focus row
-        var extras = document.createElement('div');
-        extras.className = 'focus-extras';
-        var allBtn = document.createElement('button');
-        allBtn.type = 'button';
-        allBtn.className = 'all-present-btn';
-        allBtn.textContent = 'All \u00D7' + item.required + ' present';
-        allBtn.onclick = (function(k, req) {
-          return function(e) { e.stopPropagation(); setItemValue(k, req); };
-        })(key, item.required);
-        var have = document.createElement('span');
-        have.className = 'item-have';
-        have.textContent = 'Have ' + actual + ' of ' + item.required;
-        extras.appendChild(allBtn);
-        extras.appendChild(have);
-        itemDiv.appendChild(extras);
 
         // Apply appropriate class based on state
         if (actual >= item.required) {
@@ -5027,17 +5156,100 @@
       var cur = document.querySelectorAll('.checklist-item.focused');
       for (var i = 0; i < cur.length; i++) cur[i].classList.remove('focused');
       focusedKey = null;
+      updateFocusDock();
     }
 
+    // Keep the dock in step with the focused item's count
     function updateFocusExtras(row, key) {
-      if (!row) return;
-      var have = row.querySelector('.item-have');
-      if (!have) return;
-      var parts = key.split('::');
-      var item = findItem(parts[0], parts[1], parts[2]);
-      if (!item) return;
+      if (key === focusedKey) updateFocusDock();
+    }
+
+    function updateFocusDock() {
+      var dock = document.getElementById('focusDock');
+      if (!dock) return;
+      var key = focusedKey;
+      var item = null;
+      if (key) {
+        var parts = key.split('::');
+        item = findItem(parts[0], parts[1], parts[2]);
+      }
+      // Only count items use the dock; gauges and checks carry their own controls
+      if (!enableFocusRow || !item || item.type === 'gauge' || item.type === 'check') {
+        dock.classList.remove('show');
+        return;
+      }
       var actual = (itemStates[key] || { actual: 0 }).actual;
-      have.textContent = 'Have ' + actual + ' of ' + item.required;
+      var catMeta = categoryMeta[parts[0] + '::' + parts[1]];
+      var catLabel = (catMeta && catMeta.displayName) || parts[1];
+      document.getElementById('dockName').textContent = item.name;
+      document.getElementById('dockPath').textContent = parts[0] + ' \u203A ' + catLabel;
+      var valueEl = document.getElementById('dockValue');
+      if (document.activeElement !== valueEl) valueEl.value = actual;
+      valueEl.max = item.required;
+      document.getElementById('dockOf').textContent = 'of ' + item.required;
+      document.getElementById('dockAll').textContent = 'All \u00D7' + item.required + ' present';
+      dock.classList.add('show');
+    }
+
+    function dockAdjust(delta) {
+      if (!focusedKey) return;
+      adjustItem(focusedKey, delta);
+    }
+
+    function dockSetValue(raw) {
+      if (!focusedKey) return;
+      setItemValue(focusedKey, parseInt(raw, 10) || 0);
+    }
+
+    function dockAllPresent() {
+      if (!focusedKey) return;
+      var parts = focusedKey.split('::');
+      var item = findItem(parts[0], parts[1], parts[2]);
+      if (item) setItemValue(focusedKey, item.required);
+    }
+
+    // Move on with whatever is recorded: the next unfinished visible row,
+    // or clear the focus when nothing is left.
+    function focusNext() {
+      if (!focusedKey) return;
+      var current = focusedKey;
+      advanceFocus(current, true, true);
+      if (focusedKey === current) clearFocusedRow();
+      updateFocusDock();
+    }
+
+    // The previous visible row, finished or not, so a mistake can be fixed
+    function focusPrevious() {
+      var rows = getVisibleItemRows();
+      if (rows.length === 0) return;
+      var idx = -1;
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i].getAttribute('data-key') === focusedKey) { idx = i; break; }
+      }
+      var target = idx > 0 ? rows[idx - 1] : rows[rows.length - 1];
+      setFocusedItem(target.getAttribute('data-key'), true);
+    }
+
+    function initFocusDock() {
+      var minus = document.getElementById('dockMinus');
+      if (!minus) return;
+      minus.onclick = function() { dockAdjust(-1); };
+      document.getElementById('dockPlus').onclick = function() { dockAdjust(1); };
+      document.getElementById('dockAll').onclick = dockAllPresent;
+      document.getElementById('dockNext').onclick = focusNext;
+      document.getElementById('dockBack').onclick = focusPrevious;
+      var valueEl = document.getElementById('dockValue');
+      valueEl.onchange = function() { dockSetValue(this.value); };
+      valueEl.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          var before = focusedKey;
+          dockSetValue(this.value);
+          this.blur();
+          // A count that completes the item already moved the focus on
+          if (focusedKey === before) focusNext();
+        }
+      };
     }
 
     function setFocusedItem(key, scroll) {
@@ -5047,7 +5259,7 @@
       if (!row) return;
       row.classList.add('focused');
       focusedKey = key;
-      updateFocusExtras(row, key);
+      updateFocusDock();
       if (scroll) scrollRowIntoView(row);
     }
 
@@ -5083,7 +5295,8 @@
     // Focus the next unhandled visible row after fromKey (wrapping around),
     // or keep fromKey focused while it still needs work. With no fromKey,
     // the first unhandled visible row is focused.
-    function advanceFocus(fromKey, scroll) {
+    // skipCurrent: leave fromKey even if it still needs work (the dock's Next)
+    function advanceFocus(fromKey, scroll, skipCurrent) {
       if (!enableFocusRow) return;
       var rows = getVisibleItemRows();
       if (rows.length === 0) { clearFocusedRow(); return; }
@@ -5093,7 +5306,7 @@
         for (var i = 0; i < rows.length; i++) {
           if (rows[i].getAttribute('data-key') === fromKey) { startIdx = i; break; }
         }
-        if (startIdx !== -1 && !isItemHandled(fromKey)) {
+        if (startIdx !== -1 && !skipCurrent && !isItemHandled(fromKey)) {
           setFocusedItem(fromKey, false);
           return;
         }
@@ -7950,6 +8163,7 @@
     
     function init() {
       initVersionDisplay();
+      initFocusDock();
 
       // Add input handler for other reason textarea
       document.getElementById('outOfStockReason').addEventListener('input', function() {
@@ -8024,6 +8238,7 @@
             if (focusSetting !== undefined && focusSetting !== null && focusSetting !== '') {
               enableFocusRow = isTruthySetting(focusSetting);
             }
+            document.querySelector('.widget-container').classList.toggle('focus-active', enableFocusRow);
 
             // Derive tagged area support from per-area Sealable: config
             enableTaggedAreas = Object.keys(sealableAreas).length > 0;
@@ -8226,6 +8441,7 @@
           enableTaggedAreas = Object.keys(sealableAreas).length > 0;
           configureOxygenCheck(function(name) { return STANDALONE_O2_SETTINGS[name]; });
           customQuestions = normalizeQuestions(STANDALONE_QUESTIONS.concat(inventoryFileQuestions));
+          document.querySelector('.widget-container').classList.toggle('focus-active', enableFocusRow);
           buildUI();
 
           // Restore from localStorage in standalone mode
