@@ -104,10 +104,15 @@
     },
     {
       "area": "Large Blue Bag: “Responder”",
+      "categories": []
+    },
+    {
+      "area": "Top Zippered Pocket",
       "sealable": true,
+      "childOf": "Large Blue Bag: “Responder”",
       "categories": [
         {
-          "name": "Top Zippered Pocket",
+          "name": "General",
           "items": [
             {
               "name": "Thomas Tube Holder - Adult",
@@ -122,9 +127,16 @@
               "qty": 2
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "area": "Main Compartment",
+      "sealable": true,
+      "childOf": "Large Blue Bag: “Responder”",
+      "categories": [
         {
-          "name": "Main Compartment",
+          "name": "Loose",
           "items": [
             {
               "name": "Adult Bougie-To-Go (left of cells)",
@@ -153,7 +165,7 @@
           ]
         },
         {
-          "name": "Main Compartment, Mesh Pocket; iGels",
+          "name": "Mesh Pocket",
           "items": [
             {
               "name": "90+ kgs ORANGE",
@@ -184,241 +196,13 @@
               "qty": 1
             }
           ]
-        },
-        {
-          "name": "Left-Side Zippered Pocket",
-          "items": [
-            {
-              "name": "DuCanto Suction Tip",
-              "qty": 1
-            },
-            {
-              "name": "60 mL Syringe, Catheter Tip",
-              "qty": 1
-            },
-            {
-              "name": "6 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "8 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "10 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "12 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "14 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "16 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "18 Fr.",
-              "qty": 1,
-              "group": "Suction Catheters"
-            },
-            {
-              "name": "6 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "8 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "10 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "12 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "14 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "16 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            },
-            {
-              "name": "18 Fr.",
-              "qty": 2,
-              "group": "OGTs/NGTs"
-            }
-          ]
-        },
-        {
-          "name": "Right-Side Zippered Pocket",
-          "items": [
-            {
-              "name": "Colorimetric CO2 Detector",
-              "qty": 1
-            },
-            {
-              "name": "Chest Decompression Needle",
-              "qty": 3
-            },
-            {
-              "name": "NC - Adult",
-              "qty": 1
-            },
-            {
-              "name": "EtCO2 NC - Adult",
-              "qty": 1
-            },
-            {
-              "name": "Nebulizer Mask - Adult",
-              "qty": 1
-            },
-            {
-              "name": "NRB - Adult",
-              "qty": 1
-            },
-            {
-              "name": "NC - Pediatric",
-              "qty": 1
-            },
-            {
-              "name": "EtCO2 NC - Pediatric",
-              "qty": 1
-            },
-            {
-              "name": "Nebulizer Mask - Pediatric",
-              "qty": 1
-            },
-            {
-              "name": "NRB – Pediatric",
-              "qty": 1
-            },
-            {
-              "name": "14 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "16 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "18 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "20 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "22 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "24 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "26 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "28 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "30 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "32 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "34 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "36 Fr.",
-              "qty": 1,
-              "group": "NPAs"
-            },
-            {
-              "name": "40mm (Pink)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Light Blue)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Black)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (White)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Green)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Yellow)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Red)",
-              "qty": 1,
-              "group": "OPAs"
-            },
-            {
-              "name": "40mm (Orange)",
-              "qty": 1,
-              "group": "OPAs"
-            }
-          ]
         }
       ]
     },
     {
       "area": "Medicine StatPacks Cell",
       "sealable": true,
-      "childOf": "Large Blue Bag: “Responder”",
+      "childOf": "Main Compartment",
       "categories": [
         {
           "name": "Vial Storage",
@@ -570,7 +354,7 @@
     {
       "area": "Universal StatPacks Cell",
       "sealable": true,
-      "childOf": "Large Blue Bag: “Responder”",
+      "childOf": "Main Compartment",
       "categories": [
         {
           "name": "Loose",
@@ -689,7 +473,7 @@
     {
       "area": "Blue Airway Bag",
       "sealable": true,
-      "childOf": "Large Blue Bag: “Responder”",
+      "childOf": "Main Compartment",
       "categories": [
         {
           "name": "ET Tube Bundle",
@@ -865,7 +649,7 @@
     {
       "area": "Glidescope Bag",
       "sealable": true,
-      "childOf": "Large Blue Bag: “Responder”",
+      "childOf": "Main Compartment",
       "categories": [
         {
           "name": "Transparent Pocket",
@@ -919,6 +703,248 @@
             {
               "name": "Hyperangulated Stylets",
               "qty": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Left Side Zippered Pocket",
+      "sealable": true,
+      "childOf": "Large Blue Bag: “Responder”",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "DuCanto Suction Tip",
+              "qty": 1
+            },
+            {
+              "name": "60 mL Syringe, Catheter Tip",
+              "qty": 1
+            },
+            {
+              "name": "6 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "8 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "10 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "12 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "14 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "16 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "18 Fr.",
+              "qty": 1,
+              "group": "Suction Catheters"
+            },
+            {
+              "name": "6 Fr.",
+              "qty": 1,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "8 Fr.",
+              "qty": 1,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "10 Fr.",
+              "qty": 1,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "12 Fr.",
+              "qty": 1,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "14 Fr.",
+              "qty": 1,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "16 Fr.",
+              "qty": 1,
+              "group": "OGTs/NGTs"
+            },
+            {
+              "name": "18 Fr.",
+              "qty": 1,
+              "group": "OGTs/NGTs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Right Side Zippered Pocket",
+      "sealable": true,
+      "childOf": "Large Blue Bag: “Responder”",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Colorimetric CO2 Detector",
+              "qty": 1
+            },
+            {
+              "name": "Chest Decompression Needle",
+              "qty": 3
+            },
+            {
+              "name": "NC - Adult",
+              "qty": 1
+            },
+            {
+              "name": "EtCO2 NC - Adult",
+              "qty": 1
+            },
+            {
+              "name": "Nebulizer Mask - Adult",
+              "qty": 1
+            },
+            {
+              "name": "NRB - Adult",
+              "qty": 1
+            },
+            {
+              "name": "NC - Pediatric",
+              "qty": 1
+            },
+            {
+              "name": "EtCO2 NC - Pediatric",
+              "qty": 1
+            },
+            {
+              "name": "Nebulizer Mask - Pediatric",
+              "qty": 1
+            },
+            {
+              "name": "NRB – Pediatric",
+              "qty": 1
+            },
+            {
+              "name": "14 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "16 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "18 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "20 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "22 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "24 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "26 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "28 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "30 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "32 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "34 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "36 Fr.",
+              "qty": 1,
+              "group": "NPAs"
+            },
+            {
+              "name": "40mm (Pink)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Light Blue)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Black)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (White)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Green)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Yellow)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Red)",
+              "qty": 1,
+              "group": "OPAs"
+            },
+            {
+              "name": "40mm (Orange)",
+              "qty": 1,
+              "group": "OPAs"
             }
           ]
         }
