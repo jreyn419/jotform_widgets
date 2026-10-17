@@ -2563,8 +2563,10 @@
 
     .area-section.expanded .subcategory-header {
       /* Does not stick (the sticky stack is capped), but stays positioned so
-         its progress strip is drawn under it and not at the bottom of the list */
+         its progress strip is drawn under it and not at the bottom of the list.
+         No offset either: with relative positioning it would push the header down */
       position: relative;
+      top: auto !important;
       z-index: 8;
     }
 
@@ -2895,8 +2897,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.30.1';
+    var VERSION = '1.30.2';
     var CHANGELOG = [
+      { version: '1.30.2', date: '2026-10-17', changes: [
+        'Fixed: a subcategory header inside an open area sat over the first items of its group (a leftover sticky offset after 1.30.0 made those headers positioned)',
+      ]},
       { version: '1.30.1', date: '2026-10-17', changes: [
         'The seal check now runs on every opening after a submission, not once per day: submitting forgets that the seals were seen, so the next opening asks again. A refresh in the middle of a session still does not ask twice',
       ]},
@@ -6604,15 +6609,9 @@
           catH = categoryHeaders[0].getBoundingClientRect().height;
         }
 
-        // Set subcategory header tops
-        if (subcategoryHeaders.length > 0) {
-          var subTop = groupHeaderH + areaH + catH;
-          // For standalone areas (no group), areaH is the only prefix
-          if (!groupDiv) subTop = areaH + catH;
-
-          for (var j = 0; j < subcategoryHeaders.length; j++) {
-            subcategoryHeaders[j].style.top = subTop + 'px';
-          }
+        // Subcategory headers in an area do not stick: no offset
+        for (var j = 0; j < subcategoryHeaders.length; j++) {
+          subcategoryHeaders[j].style.top = '';
         }
       }
 
