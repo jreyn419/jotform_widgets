@@ -368,9 +368,10 @@
       margin-top: 10px;
     }
 
-    /* Parent area group — contains child area-sections */
+    /* Parent area group — contains child area-sections. Same colours as a
+       plain area: the nesting shows in the indent and the size, not a tint. */
     .area-group {
-      background: #dce2e8;
+      background: white;
       border-radius: 8px;
       margin: 0 10px 10px 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.15);
@@ -382,13 +383,12 @@
     }
 
     .area-group > .area-header {
-      background: #dee4ea;
+      background: #f8f9fa;
       font-size: 15px;
-      
     }
 
     .area-group > .area-header:hover {
-      background: #d0d8e0;
+      background: #e9ecef;
     }
 
     .area-group > .area-header.has-issues {
@@ -2903,8 +2903,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.31.0';
+    var VERSION = '1.31.1';
     var CHANGELOG = [
+      { version: '1.31.1', date: '2026-10-17', changes: [
+        'An area that holds other areas now has the same colours as a plain area (white, the usual grey header) instead of a blue-grey tint; the nesting shows in the indent and the larger title',
+      ]},
       { version: '1.31.0', date: '2026-10-17', changes: [
         'An area whose items all sit in one category (the "General" or "Loose" the format needs) no longer shows that category\u2019s header: the items sit right under the area header, which carries the "all" pill. Groups inside it keep their headers, and the restock list and the dock path drop the redundant name too',
       ]},
