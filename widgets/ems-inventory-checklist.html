@@ -2725,8 +2725,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.24.0';
+    var VERSION = '1.25.0';
     var CHANGELOG = [
+      { version: '1.25.0', date: '2026-10-17', changes: [
+        'An O2 cylinder marked below its limit is added to the restock list under Oxygen Supply, with the same Restocked / Out of stock actions, and must be handled before the checklist counts as complete',
+        'Focus only moves forward: the next item in view, then the next category in the area, then the next area or group with work left. Next no longer cycles back to items that were skipped',
+      ]},
       { version: '1.24.0', date: '2026-10-17', changes: [
         'With the focus row on, the Restock button appears only once every item has been marked: counted, skipped with Next, or already handled',
       ]},
@@ -5461,16 +5465,102 @@
         }
       }
 
-      var n = rows.length;
-      for (var step = 1; step <= n; step++) {
-        var r = rows[(startIdx + step + n) % n];
-        var k = r.getAttribute('data-key');
+      // Forward only: never wrap back to items that were skipped
+      for (var fi = startIdx + 1; fi < rows.length; fi++) {
+        var k = rows[fi].getAttribute('data-key');
         if (!isItemHandled(k)) {
           setFocusedItem(k, scroll !== false);
           return;
         }
       }
+      // Nothing ahead in view: open the next category, area or group with work
+      if (fromKey && focusNextContainer(fromKey, scroll !== false)) return;
       clearFocusedRow();
+    }
+
+    function firstUnhandledIn(areaName, catName) {
+      var items = INVENTORY[areaName] && INVENTORY[areaName][catName];
+      if (!items) return null;
+      for (var i = 0; i < items.length; i++) {
+        var key = generateKey(areaName, catName, items[i].name);
+        if (!isItemHandled(key)) return key;
+      }
+      return null;
+    }
+
+    function firstUnhandledInArea(areaName) {
+      for (var catName in INVENTORY[areaName]) {
+        var key = firstUnhandledIn(areaName, catName);
+        if (key) return key;
+      }
+      return null;
+    }
+
+    function areaNameForSection(div) {
+      if (!div) return null;
+      for (var name in INVENTORY) {
+        if (div.id === 'area_' + name.replace(/[^a-zA-Z0-9]/g, '_')) return name;
+      }
+      return null;
+    }
+
+    // Expand a category (and its parent category, for a subcategory)
+    function openCategory(areaName, catName) {
+      var meta = categoryMeta[areaName + '::' + catName];
+      if (meta && meta.level === 1 && meta.parent) openCategory(areaName, meta.parent);
+      var key = areaName + '::' + catName;
+      collapsedCategories[key] = false;
+      var itemsDiv = document.getElementById('cat_items_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (itemsDiv) itemsDiv.style.display = 'block';
+      var icon = document.getElementById('cat_icon_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (icon) icon.style.transform = 'rotate(90deg)';
+    }
+
+    // Move the focus to the next place with unfinished items: a later
+    // category in this area, then the next area or group in display order.
+    // Returns true when the focus moved.
+    function focusNextContainer(fromKey, scroll) {
+      var parts = fromKey.split('::');
+      var areaName = parts[0], catName = parts[1];
+      if (!INVENTORY[areaName]) return false;
+      // A sealable area that is ready to seal keeps the crew here
+      if (sealableAreas[areaName] && !taggedAreas[areaName] && isAreaAllOk(areaName)) return false;
+
+      var cats = Object.keys(INVENTORY[areaName]);
+      var passed = false;
+      for (var ci = 0; ci < cats.length; ci++) {
+        if (cats[ci] === catName) { passed = true; continue; }
+        if (!passed) continue;
+        var target = firstUnhandledIn(areaName, cats[ci]);
+        if (!target) continue;
+        openCategory(areaName, cats[ci]);
+        setFocusedItem(target, scroll);
+        return true;
+      }
+
+      var row = document.getElementById('item_' + fromKey.replace(/[^a-zA-Z0-9]/g, '_'));
+      var section = row ? row.closest('.area-section') : null;
+      var nodes = Array.prototype.slice.call(document.querySelectorAll('.areas-container > .area-section, .areas-container > .area-group, .area-group-content > .area-section'));
+      var idx = section ? nodes.indexOf(section) : -1;
+      for (var ni = idx + 1; ni < nodes.length; ni++) {
+        var node = nodes[ni];
+        if (!node.classList.contains('area-section')) continue; // groups are entered through their children
+        var name = areaNameForSection(node);
+        if (!name || taggedAreas[name]) continue;
+        var next = firstUnhandledInArea(name);
+        if (!next) continue;
+        var groupDiv = node.parentElement && node.parentElement.classList.contains('area-group-content') ? node.closest('.area-group') : null;
+        if (groupDiv && !groupDiv.classList.contains('expanded')) toggleAreaGroup(groupDiv);
+        if (!groupDiv) {
+          var leaving = section ? section.closest('.area-group') : null;
+          if (leaving) { leaving.classList.remove('expanded'); expandedGroup = null; }
+        }
+        if (!node.classList.contains('expanded')) toggleArea(node, !!groupDiv);
+        openCategory(name, next.split('::')[1]);
+        setFocusedItem(next, scroll);
+        return true;
+      }
+      return false;
     }
 
     // =====================================================
@@ -5828,6 +5918,30 @@
       };
     }
 
+    // Restock-list key for one cylinder; such keys never match an inventory item
+    function o2RestockKey(areaId, cylinderIndex) {
+      return 'O2::' + areaId + '::' + cylinderIndex;
+    }
+
+    // Every cylinder currently marked below its limit
+    function collectLowO2Cylinders() {
+      var out = [];
+      for (var i = 0; i < o2Areas.length; i++) {
+        var area = o2Areas[i];
+        var cyl = ensureO2State(area).cylinders;
+        for (var c = 0; c < area.cylinderCount; c++) {
+          if (cyl[c] !== false) continue;
+          out.push({
+            key: o2RestockKey(area.id, c),
+            areaName: area.name,
+            name: (area.cylinderCount > 1 ? 'Cylinder ' + (c + 1) + ' ' : '') + 'below ' + area.threshold + ' ' + area.unit,
+            reportName: area.name + (area.cylinderCount > 1 ? ' cylinder ' + (c + 1) : '') + ' (below ' + area.threshold + ' ' + area.unit + ')'
+          });
+        }
+      }
+      return out;
+    }
+
     function findO2Area(areaId) {
       for (var i = 0; i < o2Areas.length; i++) {
         if (o2Areas[i].id === areaId) return o2Areas[i];
@@ -5993,6 +6107,7 @@
       var area = findO2Area(areaId);
       if (!area) return;
       ensureO2State(area).cylinders[cylinderIndex] = isOk;
+      if (isOk) delete restockStatus[o2RestockKey(areaId, cylinderIndex)];
 
       var section = document.getElementById(o2SectionId(areaId));
       if (section) {
@@ -6005,6 +6120,8 @@
         }
       }
       applyO2Header(areaId);
+      updateAllStatuses();
+      updateSummary();
       if (stateReady) saveState();
 
       // Auto-advance: once this area is fully answered, open the next
@@ -6740,6 +6857,11 @@
 
     function isEverythingComplete() {
       if (enableOxygenCheck && !isOxygenCheckComplete()) return false;
+      var lowCyl = collectLowO2Cylinders();
+      for (var lcI = 0; lcI < lowCyl.length; lcI++) {
+        var lcStatus = restockStatus[lowCyl[lcI].key];
+        if (!(lcStatus && (lcStatus.restocked || lcStatus.outOfStock))) return false;
+      }
       if (!areRequiredQuestionsAnswered()) return false;
       for (var areaName in INVENTORY) {
         if (taggedAreas[areaName]) continue;
@@ -7538,6 +7660,22 @@
         }
       }
       
+      // A cylinder marked below its limit is a restock item too
+      var lowCylinders = collectLowO2Cylinders();
+      for (var lc = 0; lc < lowCylinders.length; lc++) {
+        missingCount++;
+        shortages.push({
+          key: lowCylinders[lc].key,
+          area: 'Oxygen Supply',
+          category: lowCylinders[lc].areaName,
+          name: lowCylinders[lc].name,
+          required: 1,
+          actual: 0,
+          shortage: 1,
+          isPartial: false
+        });
+      }
+
       // Update floating button
       var restockBtn = document.getElementById('restockBtn');
       var restockCount = document.getElementById('restockCount');
@@ -7901,6 +8039,13 @@
     }
     
     function restockAllItems() {
+      var lowAll = collectLowO2Cylinders();
+      for (var la = 0; la < lowAll.length; la++) {
+        var laStatus = restockStatus[lowAll[la].key];
+        if (!(laStatus && (laStatus.restocked || laStatus.outOfStock))) {
+          restockStatus[lowAll[la].key] = { restocked: true, outOfStock: false, reason: '' };
+        }
+      }
       // Get all shortage keys and mark them restocked
       var restockedKeys = [];
       for (var areaName in INVENTORY) {
@@ -7949,6 +8094,20 @@
         var areaName = parts[0];
         var catName = parts[1];
         var itemName = parts[2];
+
+        // Low O2 cylinders live in the restock list under their own keys
+        if (areaName === 'O2') {
+          var lowList = collectLowO2Cylinders();
+          var lowEntry = null;
+          for (var le = 0; le < lowList.length; le++) if (lowList[le].key === key) lowEntry = lowList[le];
+          if (!lowEntry) continue; // no longer low
+          if (status.restocked) {
+            restockedItems.push({ area: 'Oxygen Supply', category: lowEntry.areaName, name: lowEntry.reportName, quantityRestocked: 1 });
+          } else if (status.outOfStock) {
+            unavailableItems.push({ area: 'Oxygen Supply', category: lowEntry.areaName, name: lowEntry.reportName, quantityNeeded: 1, reason: status.reason || 'No reason provided' });
+          }
+          continue;
+        }
 
         // Skip items in tagged areas
         if (taggedAreas[areaName]) continue;
