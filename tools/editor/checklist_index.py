@@ -5,7 +5,8 @@ Every sub-folder of the checklists directory is a rig. Every .json file in a
 rig folder is a checklist, named by its _meta.name (or the file stem). A file
 whose _meta has "hidden": true is left out, which is how reference files
 such as unplaced_reference.json stay off the picker. Checklists are listed
-by _meta.order (lowest first), then by name.
+by _meta.order (lowest first), then by name. A rig folder containing a file
+named ".hidden" is left out entirely.
 
 No Qt dependency so it can run on its own:
 
@@ -22,6 +23,8 @@ def build_index(checklists_dir):
     for rig_name in sorted(os.listdir(checklists_dir), key=str.lower):
         rig_dir = os.path.join(checklists_dir, rig_name)
         if not os.path.isdir(rig_dir):
+            continue
+        if os.path.exists(os.path.join(rig_dir, ".hidden")):
             continue
         checklists = []
         for fn in sorted(os.listdir(rig_dir), key=str.lower):
