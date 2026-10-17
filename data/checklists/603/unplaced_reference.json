@@ -195,6 +195,20 @@
           ]
         }
       ]
+    },
+    {
+      "area": "Was side entryway glove storage (603)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Gloves - Extra Small",
+              "qty": 1
+            }
+          ]
+        }
+      ]
     }
   ]
 }
