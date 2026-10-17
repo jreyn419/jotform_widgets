@@ -6,6 +6,7 @@
   "areas": [
     {
       "area": "Top Rear Cabinet",
+      "sealable": true,
       "categories": [
         {
           "name": "Top Shelf",
@@ -369,6 +370,7 @@
     },
     {
       "area": "Bottom Rear Cabinet",
+      "sealable": true,
       "categories": [
         {
           "name": "Top Shelf",
@@ -424,6 +426,7 @@
     },
     {
       "area": "Middle Cabinet",
+      "sealable": true,
       "categories": [
         {
           "name": "Trauma",
