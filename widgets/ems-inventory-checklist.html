@@ -531,6 +531,11 @@
       border-radius: 0;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+
+    /* A folded header keeps no sticky offset: it would shift the header down over the next one */
+    .area-section:not(.expanded) > .area-header {
+      top: auto !important;
+    }
     
     .collapse-icon {
       width: 20px;
@@ -2861,8 +2866,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.29.0';
+    var VERSION = '1.29.1';
     var CHANGELOG = [
+      { version: '1.29.1', date: '2026-10-17', changes: [
+        'Fixed: folding an area inside a group left its header shifted down over the next area, with a blank strip where it belonged',
+      ]},
       { version: '1.29.0', date: '2026-10-17', changes: [
         'Areas can nest more than one level deep: childOf may point at an area that is itself inside another, so a compartment can hold the cells and bags that sit in it',
         'Sealing follows the nesting: a container can be sealed only once everything sealable inside it is sealed, Seal All works innermost first, breaking an inner seal opens every container around it, and breaking a container offers to open everything inside',
@@ -6518,6 +6526,9 @@
     // Called after any area is expanded so the DOM is ready for measurement.
     function updateStickyOffsets() {
       markOuterGroups();
+      // Clear the offsets of folded headers so nothing lingers from when they were open
+      var folded = document.querySelectorAll('.area-section:not(.expanded) > .area-header');
+      for (var fi = 0; fi < folded.length; fi++) folded[fi].style.top = '';
       // Find all expanded area-sections and set sticky tops
       var expandedSections = document.querySelectorAll('.area-section.expanded');
       for (var i = 0; i < expandedSections.length; i++) {
