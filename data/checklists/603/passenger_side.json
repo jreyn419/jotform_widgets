@@ -460,15 +460,6 @@
       "categories": [
         {
           "name": "General",
-          "items": []
-        }
-      ]
-    },
-    {
-      "area": "Front External Cabinet",
-      "categories": [
-        {
-          "name": "General",
           "items": [
             {
               "name": "Emergency Blanket",
@@ -484,7 +475,7 @@
     },
     {
       "area": "MCI Bag",
-      "childOf": "Front External Cabinet",
+      "childOf": "Short Rear Cabinet",
       "categories": [
         {
           "name": "General",
