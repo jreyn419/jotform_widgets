@@ -2897,8 +2897,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.30.2';
+    var VERSION = '1.30.3';
     var CHANGELOG = [
+      { version: '1.30.3', date: '2026-10-17', changes: [
+        'A count left unfinished on a device now counts as in progress for 4 hours after the last change instead of 8',
+      ]},
       { version: '1.30.2', date: '2026-10-17', changes: [
         'Fixed: a subcategory header inside an open area sat over the first items of its group (a leftover sticky offset after 1.30.0 made those headers positioned)',
       ]},
@@ -3371,7 +3374,7 @@
       syncToJotForm();
     }
 
-    var STATE_EXPIRY_MS = 8 * 60 * 60 * 1000; // 8 hours
+    var STATE_EXPIRY_MS = 4 * 60 * 60 * 1000; // 4 hours
 
     function loadState() {
       try {
