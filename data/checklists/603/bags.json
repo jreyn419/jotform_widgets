@@ -420,6 +420,97 @@
       "childOf": "Large Blue Bag: “Responder”",
       "categories": [
         {
+          "name": "Vial Storage",
+          "items": [
+            {
+              "name": "Norepinephrine Bitartrate 4mg/4mL",
+              "qty": 2
+            },
+            {
+              "name": "Labetalol 100mg/20mL",
+              "qty": 1
+            },
+            {
+              "name": "Ondansetron 4mg/2mL",
+              "qty": 2
+            },
+            {
+              "name": "Amiodarone 150mg/3mL",
+              "qty": 3
+            },
+            {
+              "name": "Magnesium Sulfate 5g/10mL",
+              "qty": 2
+            },
+            {
+              "name": "Adenosine 6mg/2mL",
+              "qty": 3
+            },
+            {
+              "name": "Hydralazine 20mg/1mL",
+              "qty": 2
+            },
+            {
+              "name": "Lidocaine 100mg/5mL",
+              "qty": 1
+            },
+            {
+              "name": "Calcium Gluconate 1g/10mL",
+              "qty": 1
+            },
+            {
+              "name": "Diphenhydramine 50mg/1mL",
+              "qty": 2
+            }
+          ]
+        },
+        {
+          "name": "Mesh Pocket",
+          "items": [
+            {
+              "name": "Epinephrine 1mg/1mL",
+              "qty": 3
+            }
+          ]
+        },
+        {
+          "name": "Main Compartment",
+          "items": [
+            {
+              "name": "Sodium Bicarbonate Preload 50mEq/50mL",
+              "qty": 1
+            },
+            {
+              "name": "D50W Preload",
+              "qty": 1
+            },
+            {
+              "name": "Atropine Sulfate Preload 1mg/10mL",
+              "qty": 1
+            },
+            {
+              "name": "Epinephrine Preload 1mg/10mL",
+              "qty": 1
+            },
+            {
+              "name": "Naloxone Hydrochloride Preload 2mg/2mL",
+              "qty": 1
+            },
+            {
+              "name": "Labetalol 100mg/20mL",
+              "qty": 1
+            },
+            {
+              "name": "NS Bag 100mL",
+              "qty": 1
+            },
+            {
+              "name": "NS Bag 250mL",
+              "qty": 2
+            }
+          ]
+        },
+        {
           "name": "Elastic Pouch",
           "items": [
             {
@@ -432,7 +523,15 @@
           "name": "Syringe Storage",
           "items": [
             {
-              "name": "10mL Syringe, Luer-Lock tip, Without Needle",
+              "name": "3mL Syringe, With Twinpak",
+              "qty": 2
+            },
+            {
+              "name": "Standalone Twinpaks",
+              "qty": 4
+            },
+            {
+              "name": "1mL Syringe, Luer-Lock tip, Without Needle",
               "qty": 2
             },
             {
@@ -440,138 +539,11 @@
               "qty": 2
             },
             {
-              "name": "3mL Syringe, With Twinpak",
-              "qty": 4
-            },
-            {
-              "name": "1mL Syringe, Luer-Lock tip, Without Needle",
-              "qty": 4
-            },
-            {
-              "name": "Standalone Twinpaks",
-              "qty": 6
-            }
-          ]
-        },
-        {
-          "name": "Main Compartment",
-          "items": [
-            {
-              "name": "Atropine Sulfate Preload",
-              "qty": 1
-            },
-            {
-              "name": "Calcium Chloride 10% Preload",
-              "qty": 1
-            },
-            {
-              "name": "D50W Preload",
-              "qty": 1
-            },
-            {
-              "name": "Lidocaine HCl Preload",
-              "qty": 1
-            },
-            {
-              "name": "Naloxone Hydrochloride Preload",
-              "qty": 1
-            },
-            {
-              "name": "Epinephrine Preload",
-              "qty": 1
-            },
-            {
-              "name": "NS Bag 100mL",
-              "qty": 1
-            },
-            {
-              "name": "NS Bag 250mL",
-              "qty": 1
-            },
-            {
-              "name": "Calcium Gluconate 1g/10mL",
-              "qty": 1
-            },
-            {
-              "name": "Labetalol 100mg/20mL",
-              "qty": 1
-            },
-            {
-              "name": "Magnesium Sulfate 5g/10mL",
-              "qty": 1
-            },
-            {
-              "name": "Sodium Bicarbonate Vial 50mEq/50mL",
-              "qty": 1
-            },
-            {
-              "name": "Dopamine Vial 400mg/10mL",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "name": "Small Vials",
-          "items": [
-            {
-              "name": "Epinephrine 1mg/1mL",
-              "qty": 3
-            },
-            {
-              "name": "Norepinephrine Bitartrate 4mg/4mL",
-              "qty": 3
-            },
-            {
-              "name": "Adenosine 6mg/2mL",
-              "qty": 3
-            },
-            {
-              "name": "Amiodarone 150mg/3mL",
-              "qty": 3
-            },
-            {
-              "name": "Atropine Sulfate 1mg/1mL",
+              "name": "10mL Syringe, Luer-Lock tip, Without Needle",
               "qty": 2
             },
             {
-              "name": "Ondansetron 4mg/2mL",
-              "qty": 2
-            },
-            {
-              "name": "Diphenhydramine 50mg/1mL",
-              "qty": 2
-            },
-            {
-              "name": "Hydralazine 20mg/1mL",
-              "qty": 2
-            }
-          ]
-        },
-        {
-          "name": "Misc. Storage, Zippered Pocket",
-          "items": [
-            {
-              "name": "Epinephrine 1mg/1mL",
-              "qty": 2
-            },
-            {
-              "name": "Norepinephrine Bitartrate 4mg/4mL",
-              "qty": 1
-            },
-            {
-              "name": "Ondansetron 4mg/2mL",
-              "qty": 1
-            },
-            {
-              "name": "MADs",
-              "qty": 2
-            },
-            {
-              "name": "Medication Labels",
-              "qty": 6
-            },
-            {
-              "name": "3-Way Stopcocks",
+              "name": "3mL Syringe, With 23G Hypodermic Needle",
               "qty": 2
             }
           ]
