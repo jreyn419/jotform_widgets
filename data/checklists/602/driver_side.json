@@ -442,7 +442,7 @@
             },
             {
               "name": "Oxygen Cylinder, Type D",
-              "qty": 3
+              "qty": 5
             }
           ]
         }
@@ -755,6 +755,14 @@
             {
               "name": "Posey restraints (blue-wrist)",
               "qty": 2
+            },
+            {
+              "name": "Obstetrical Kit",
+              "qty": 2
+            },
+            {
+              "name": "Knit Caps (in the OB kits)",
+              "qty": 2
             }
           ]
         },
@@ -776,14 +784,6 @@
             {
               "name": "Bedpans",
               "qty": 3
-            },
-            {
-              "name": "Obstetrical Kit",
-              "qty": 2
-            },
-            {
-              "name": "Baby Cap (if not included in OB kit)",
-              "qty": 2
             }
           ]
         }
