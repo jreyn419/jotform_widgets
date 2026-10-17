@@ -281,6 +281,31 @@
           ]
         }
       ]
+    },
+    {
+      "area": "Was passenger bench shelf (603)",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "L",
+              "qty": 1,
+              "group": "Soft Collars"
+            },
+            {
+              "name": "M",
+              "qty": 1,
+              "group": "Soft Collars"
+            },
+            {
+              "name": "S",
+              "qty": 1,
+              "group": "Soft Collars"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

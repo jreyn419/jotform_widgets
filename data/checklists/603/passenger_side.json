@@ -162,38 +162,6 @@
           ]
         },
         {
-          "name": "Right: Shelf, Left",
-          "items": [
-            {
-              "name": "Extrication Collars Bag",
-              "qty": 1
-            },
-            {
-              "name": "Pedi-Mate",
-              "qty": 1
-            },
-            {
-              "name": "Pelvic Sling",
-              "qty": 1
-            },
-            {
-              "name": "L",
-              "qty": 1,
-              "group": "Soft Collars"
-            },
-            {
-              "name": "M",
-              "qty": 1,
-              "group": "Soft Collars"
-            },
-            {
-              "name": "S",
-              "qty": 1,
-              "group": "Soft Collars"
-            }
-          ]
-        },
-        {
           "name": "Left",
           "items": [
             {
@@ -218,11 +186,29 @@
               "qty": 3
             }
           ]
+        },
+        {
+          "name": "Under Bench",
+          "items": [
+            {
+              "name": "X Collars",
+              "qty": 4
+            },
+            {
+              "name": "Pelvic Binder",
+              "qty": 1
+            },
+            {
+              "name": "Pedi-Mate",
+              "qty": 1
+            }
+          ]
         }
       ]
     },
     {
-      "area": "Extrication Collars Bag",
+      "area": "Spinal Immobilization Bag",
+      "childOf": "Bench",
       "categories": [
         {
           "name": "General",
@@ -238,10 +224,6 @@
             {
               "name": "Pediatric C-Collar",
               "qty": 3
-            },
-            {
-              "name": "Adult XCollar",
-              "qty": 4
             }
           ]
         }
