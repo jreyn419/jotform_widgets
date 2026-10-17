@@ -790,6 +790,20 @@
       ]
     },
     {
+      "area": "O2 Mounts Behind Airway Seat",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Oxygen Cylinder, Type D",
+              "qty": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
       "area": "External Backboard Cabinet",
       "categories": [
         {
