@@ -551,16 +551,8 @@
           "name": "General",
           "items": [
             {
-              "name": "Blankets",
-              "qty": 6
-            },
-            {
-              "name": "Pillows",
-              "qty": 3
-            },
-            {
-              "name": "Pillowcases (disposable)",
-              "qty": 3
+              "name": "Oxygen Cylinder",
+              "qty": 4
             }
           ]
         }
