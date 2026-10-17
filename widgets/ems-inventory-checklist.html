@@ -368,9 +368,10 @@
       margin-top: 10px;
     }
 
-    /* Parent area group — contains child area-sections */
+    /* Parent area group — contains child area-sections. Same colours as a
+       plain area: the nesting shows in the indent and the size, not a tint. */
     .area-group {
-      background: #dce2e8;
+      background: white;
       border-radius: 8px;
       margin: 0 10px 10px 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.15);
@@ -382,13 +383,12 @@
     }
 
     .area-group > .area-header {
-      background: #dee4ea;
+      background: #f8f9fa;
       font-size: 15px;
-      
     }
 
     .area-group > .area-header:hover {
-      background: #d0d8e0;
+      background: #e9ecef;
     }
 
     .area-group > .area-header.has-issues {
@@ -670,6 +670,12 @@
 
     .category-checkbox:checked::before {
       content: '\2713';
+    }
+
+    /* The lone category's pill on the area header: beside the count, same size as the rest */
+    .area-header > .category-checkbox {
+      order: 0;
+      margin: 0;
     }
     
     .category-status {
@@ -1164,9 +1170,6 @@
     .areas-container > .area-section,
     .areas-container > .area-group,
     .areas-container > .picker,
-    .areas-container > .selector-prompt {
-      animation: ems-fadein 0.15s ease-out;
-    }
 
     /* Arrival cue when the focus lands in a new area */
     @keyframes ems-land {
@@ -1196,17 +1199,6 @@
     .status-strip.info { background: #e9ecef; color: #495057; }
     .status-strip.prompt { background: #fff3cd; color: #856404; }
 
-    .selector-prompt {
-      margin: 30px 20px;
-      padding: 24px;
-      text-align: center;
-      background: white;
-      border-radius: 10px;
-      color: #555;
-      font-size: 15px;
-      line-height: 1.4;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
 
     /* Out-of-service banner (any gauge in the red zone) */
     .oos-banner {
@@ -2886,21 +2878,343 @@
   <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
   <script>
     // =====================================================
-    // INVENTORY DATA - Loaded from widget settings
+    // INVENTORY DATA - the chosen rig's checklist file, loaded by the picker
     // =====================================================
     
     var INVENTORY = {};
     
-    var DEFAULT_INVENTORY = "Area Name: Driver Compartment\nSealable: yes\nSafety Equipment\nFire Extinguisher|1\nReflective Vest|2\nTraffic Cones|3\nNavigation\nGPS Unit|1\nMap Book|1\n\nArea Name: Patient Compartment\nSealable: yes\nMonitoring\n>Cardiac\n>Cardiac Monitor|1\n>12-Lead ECG Cables|1\n>Defib Pads (Adult)|2\n>Respiratory\n>Pulse Oximeter|1\n>Capnography Tubing|2\nAirway Supplies\nBVM (Adult)|1\nBVM (Pediatric)|1\nOPA Set|1\nNPA Set|1\nKing Airway Kit|1\nET Tube Kit|1\nSuction Unit|1\nIV Supplies\nIV Start Kit|4\nNormal Saline 1000ml|2\nLactated Ringers|1\nIV Tubing|4\nMedications\nEpinephrine 1:10000|2\nAtropine|2\nAmiodarone|2\nNarcan|4\n\nArea Name: Upper CCT Cabinet\nSealable: yes\nCritical Care\nVentilator|1\nVent Circuit|2\nInfusion Pump|2\nPump Tubing|4\nPressure Bag|2\n\nArea Name: Bench Storage\n> Area Name: Left Bench\nSealable: yes\nBandaging\nGauze 4x4|20\nKerlix Rolls|6\nACE Wraps|4\nTriangular Bandage|4\nSplinting\nSAM Splint|2\nBoard Splint|2\nTraction Splint|1\n\n> Area Name: Right Bench\nSealable: yes\nCleaning\nHand Sanitizer|2\nDisinfectant Wipes|3\nBiohazard Bags|10\nLinens\nBlankets|4\nSheets|4\nPillowcase|4";
+    // The demo checklist shown outside Jotform (a plain browser), in the same envelope as the rig files.
+    var DEFAULT_INVENTORY = {
+      "_meta": {
+        "name": "Demo Checklist"
+      },
+      "oxygenCheck": {
+        "mainO2Cylinders": 2,
+        "medicalAir": true
+      },
+      "questions": [
+        {
+          "label": "Unit exterior clean?",
+          "type": "yesno",
+          "position": "beforeO2",
+          "flagOn": "No"
+        },
+        {
+          "label": "Fuel level",
+          "type": "choice",
+          "options": [
+            "Full",
+            "3/4",
+            "1/2",
+            "1/4"
+          ],
+          "position": "afterO2"
+        },
+        {
+          "label": "Odometer",
+          "type": "number",
+          "position": "afterInventory"
+        },
+        {
+          "label": "Notes for next crew",
+          "type": "text",
+          "position": "afterInventory",
+          "required": false
+        }
+      ],
+      "areas": [
+        {
+          "area": "Driver Compartment",
+          "sealable": true,
+          "categories": [
+            {
+              "name": "Safety Equipment",
+              "items": [
+                {
+                  "name": "Fire Extinguisher",
+                  "qty": 1
+                },
+                {
+                  "name": "Reflective Vest",
+                  "qty": 2
+                },
+                {
+                  "name": "Traffic Cones",
+                  "qty": 3
+                }
+              ]
+            },
+            {
+              "name": "Navigation",
+              "items": [
+                {
+                  "name": "GPS Unit",
+                  "qty": 1
+                },
+                {
+                  "name": "Map Book",
+                  "qty": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "area": "Patient Compartment",
+          "sealable": true,
+          "categories": [
+            {
+              "name": "Monitoring",
+              "items": [
+                {
+                  "name": "Cardiac Monitor",
+                  "qty": 1,
+                  "group": "Cardiac"
+                },
+                {
+                  "name": "12-Lead ECG Cables",
+                  "qty": 1,
+                  "group": "Cardiac"
+                },
+                {
+                  "name": "Defib Pads (Adult)",
+                  "qty": 2,
+                  "group": "Cardiac"
+                },
+                {
+                  "name": "Pulse Oximeter",
+                  "qty": 1,
+                  "group": "Respiratory"
+                },
+                {
+                  "name": "Capnography Tubing",
+                  "qty": 2,
+                  "group": "Respiratory"
+                }
+              ]
+            },
+            {
+              "name": "Airway Supplies",
+              "items": [
+                {
+                  "name": "BVM (Adult)",
+                  "qty": 1
+                },
+                {
+                  "name": "BVM (Pediatric)",
+                  "qty": 1
+                },
+                {
+                  "name": "OPA Set",
+                  "qty": 1
+                },
+                {
+                  "name": "NPA Set",
+                  "qty": 1
+                },
+                {
+                  "name": "King Airway Kit",
+                  "qty": 1
+                },
+                {
+                  "name": "ET Tube Kit",
+                  "qty": 1
+                },
+                {
+                  "name": "Suction Unit",
+                  "qty": 1
+                }
+              ]
+            },
+            {
+              "name": "IV Supplies",
+              "items": [
+                {
+                  "name": "IV Start Kit",
+                  "qty": 4
+                },
+                {
+                  "name": "Normal Saline 1000ml",
+                  "qty": 2
+                },
+                {
+                  "name": "Lactated Ringers",
+                  "qty": 1
+                },
+                {
+                  "name": "IV Tubing",
+                  "qty": 4
+                }
+              ]
+            },
+            {
+              "name": "Medications",
+              "items": [
+                {
+                  "name": "Epinephrine 1:10000",
+                  "qty": 2
+                },
+                {
+                  "name": "Atropine",
+                  "qty": 2
+                },
+                {
+                  "name": "Amiodarone",
+                  "qty": 2
+                },
+                {
+                  "name": "Narcan",
+                  "qty": 4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "area": "Upper CCT Cabinet",
+          "sealable": true,
+          "categories": [
+            {
+              "name": "Critical Care",
+              "items": [
+                {
+                  "name": "Ventilator",
+                  "qty": 1
+                },
+                {
+                  "name": "Vent Circuit",
+                  "qty": 2
+                },
+                {
+                  "name": "Infusion Pump",
+                  "qty": 2
+                },
+                {
+                  "name": "Pump Tubing",
+                  "qty": 4
+                },
+                {
+                  "name": "Pressure Bag",
+                  "qty": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "area": "Bench Storage",
+          "categories": []
+        },
+        {
+          "area": "Left Bench",
+          "sealable": true,
+          "childOf": "Bench Storage",
+          "categories": [
+            {
+              "name": "Bandaging",
+              "items": [
+                {
+                  "name": "Gauze 4x4",
+                  "qty": 20
+                },
+                {
+                  "name": "Kerlix Rolls",
+                  "qty": 6
+                },
+                {
+                  "name": "ACE Wraps",
+                  "qty": 4
+                },
+                {
+                  "name": "Triangular Bandage",
+                  "qty": 4
+                }
+              ]
+            },
+            {
+              "name": "Splinting",
+              "items": [
+                {
+                  "name": "SAM Splint",
+                  "qty": 2
+                },
+                {
+                  "name": "Board Splint",
+                  "qty": 2
+                },
+                {
+                  "name": "Traction Splint",
+                  "qty": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "area": "Right Bench",
+          "sealable": true,
+          "childOf": "Bench Storage",
+          "categories": [
+            {
+              "name": "Cleaning",
+              "items": [
+                {
+                  "name": "Hand Sanitizer",
+                  "qty": 2
+                },
+                {
+                  "name": "Disinfectant Wipes",
+                  "qty": 3
+                },
+                {
+                  "name": "Biohazard Bags",
+                  "qty": 10
+                }
+              ]
+            },
+            {
+              "name": "Linens",
+              "items": [
+                {
+                  "name": "Blankets",
+                  "qty": 4
+                },
+                {
+                  "name": "Sheets",
+                  "qty": 4
+                },
+                {
+                  "name": "Pillowcase",
+                  "qty": 4
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
     
     // =====================================================
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.30.3';
+    var VERSION = '1.32.1';
     var CHANGELOG = [
-      { version: '1.30.3', date: '2026-10-17', changes: [
+      { version: '1.32.1', date: '2026-10-17', changes: [
         'A count left unfinished on a device now counts as in progress for 4 hours after the last change instead of 8',
+      ]},
+      { version: '1.32.0', date: '2026-10-17', changes: [
+        'Four paths nothing uses any more are gone: the relay widget hand-off (the HTML copy of the report and its localStorage key), the native-dropdown rig and checklist selector (rigFieldId, checklistFieldId), the single-checklist inventoryItems setting with its Markdown format and .md files, and the customQuestions setting. The in-widget picker is the one way a checklist is chosen; questions and the oxygen check come from the checklist file alone',
+        'The oxygen-check widget settings (enableOxygenCheck, mainO2Threshold, mainO2Cylinders, stretcherO2Threshold, enableMedicalAir, medicalAirThreshold) are no longer read; a checklist file\u2019s oxygenCheck block is the only source',
+        'rigIndex still points the picker at another index file, but no longer turns the picker off',
+        'A checklist file that fails to load returns to the picker with a message instead of showing the demo inventory',
+        'The demo inventory the widget shows outside Jotform is now a JSON checklist like the real ones',
+      ]},
+      { version: '1.31.1', date: '2026-10-17', changes: [
+        'An area that holds other areas now has the same colours as a plain area (white, the usual grey header) instead of a blue-grey tint; the nesting shows in the indent and the larger title',
+      ]},
+      { version: '1.31.0', date: '2026-10-17', changes: [
+        'An area whose items all sit in one category (the "General" or "Loose" the format needs) no longer shows that category\u2019s header: the items sit right under the area header, which carries the "all" pill. Groups inside it keep their headers, and the restock list and the dock path drop the redundant name too',
       ]},
       { version: '1.30.2', date: '2026-10-17', changes: [
         'Fixed: a subcategory header inside an open area sat over the first items of its group (a leftover sticky offset after 1.30.0 made those headers positioned)',
@@ -3270,44 +3584,38 @@
     var expandedGroup = null; // currently expanded parent group name
     var cachedFormID = null; // formID from JotForm ready event
 
-    // ---- Oxygen supply check (optional, toggled per form) ----
-    // Widget settings:
-    //   enableOxygenCheck     "true" shows the Oxygen Supply section (default: off)
+    // ---- Oxygen supply check (optional, per checklist file) ----
+    // The file's oxygenCheck block (true, or an object) switches it on:
     //   mainO2Threshold       Minimum PSI for Main O2 (default: 1500)
     //   mainO2Cylinders       Number of Main O2 cylinders, 1 or 2 (default: 1)
     //   stretcherO2Threshold  Minimum PSI for Stretcher O2 (default: 1000)
-    //   enableMedicalAir      "true" adds a Medical Air cylinder (default: off)
+    //   medicalAir            true adds a Medical Air cylinder (default: off)
     //   medicalAirThreshold   Minimum PSI for Medical Air (default: 1500)
     var enableOxygenCheck = false;
     var o2Areas = []; // [{ id, name, icon, threshold, unit, cylinderCount }]
     var o2States = {}; // areaId -> { cylinders: { index: true|false|null } }
 
-    // ---- Custom questions (optional) ----
-    // Setting customQuestions: inline JSON array, or a path to a .json file.
-    // The inventory JSON envelope may also carry a "questions" array.
+    // ---- Questions (optional, per checklist file) ----
+    // The checklist file's "questions" array.
     // Question: { id?, label, type: yesno|choice|number|text,
     //             position: beforeO2|afterO2|afterInventory,
     //             options?: [..] (choice), required?: true, flagOn?: "No", placeholder?: "" }
     var customQuestions = []; // normalized question list, in display order
     var questionAnswers = {}; // questionId -> answer ('yes'|'no'|option|string)
-    var settingQuestionList = []; // raw questions from the customQuestions setting
     var inventoryFileQuestions = []; // raw questions from the inventory JSON envelope
     // Per-checklist oxygen check: { mainO2Threshold, mainO2Cylinders, stretcherO2Threshold, medicalAir, medicalAirThreshold }
     var inventoryFileOxygen = null;
 
-    // ---- Rig / checklist selector ----
-    // Settings: rigFieldId and checklistFieldId are the question IDs of two
-    // native Jotform dropdowns; checklistPathTemplate defaults to
-    // data/checklists/{rig}/{checklist}.json. Dropdown values are normalised
-    // (lower case, spaces to underscores) before being put in the path.
-    var selectorActive = false;
+    // ---- Rig / checklist picker ----
+    // The widget opens on its own picker: rig tiles from the index file, then
+    // that rig's checklists. Setting rigIndex points at another index file;
+    // checklistPathTemplate defaults to data/checklists/{rig}/{checklist}.json.
+    // Ids are normalised (lower case, spaces to underscores) before being put
+    // in the path.
+    var selectorActive = false; // true once a rig and checklist are chosen
     var currentRig = null;
     var currentChecklist = null;
-    var selectorFieldIds = { rig: null, checklist: null };
     var inventoryTitle = ''; // _meta.name of the loaded checklist file
-    // Picker mode is the default. Setting rigIndex overrides the index path;
-    // "none" / "off" / "false" disables the picker; a form with inventoryItems
-    // set is treated as a single checklist and skips the picker too.
     var DEFAULT_RIG_INDEX = 'data/checklists/index.json';
     var DEFAULT_PATH_TEMPLATE = 'data/checklists/{rig}/{checklist}.json';
     // Relative paths resolve against the widget's own folder (widgets/), while
@@ -3436,40 +3744,17 @@
           };
           // Prepend plain-text report so it's visible in JotForm Tables.
           // extractSyncData() parses the delimiter to restore state.
-          var submitReport = generateSubmitValue();
-          var combinedValue = submitReport.report
+          var combinedValue = generateSubmitValue()
             + '\n\n___SYNC_DATA___\n'
             + JSON.stringify(state);
           JFCustomWidget.sendData({ value: combinedValue });
         } catch (e) {}
       }
-      // Push the human-readable report to localStorage for the relay widget
-      pushReportToRelay();
     }
 
     // Push the human-readable report to localStorage so the report-relay
     // widget (same origin, same form) can pick it up and submit it as its
     // own field value.  Key is scoped to formID for uniqueness.
-    function getReportRelayKey() {
-      var fp = getFormParams();
-      var formID = fp.formID || cachedFormID || 'unknown';
-      return 'ems_report_relay_' + formID;
-    }
-
-    function pushReportToRelay() {
-      try {
-        var submitData = generateSubmitValue();
-        var payload = JSON.stringify({
-          report: submitData.report,
-          htmlReport: submitData.htmlReport,
-          timestamp: Date.now()
-        });
-        localStorage.setItem(getReportRelayKey(), payload);
-      } catch (e) {
-        console.error('[Widget] pushReportToRelay error:', e.message);
-      }
-    }
-
 
     //  (a) pure JSON (old format / draft saves via syncToJotForm),
     //  (b) plain-text report with ___SYNC_DATA___ delimiter (current format), or
@@ -3623,119 +3908,6 @@
     // PARSE INVENTORY FROM SETTINGS
     // =====================================================
 
-    function parseInventory(text) {
-      var lines = text.split("\n");
-      var result = {};
-      var currentArea = "Items";
-      var currentCategory = "General";
-      var currentTopCategory = "General";
-      var lastTopLevelArea = null; // Most recent non-nested Area Name
-      categoryMeta = {};
-      sealableAreas = {};
-      areaHierarchy = {};
-      areaParent = {};
-
-      for (var i = 0; i < lines.length; i++) {
-        var line = lines[i].trim();
-        if (!line) continue;
-
-        // Check for nested area: "> Area Name: X" — child of most recent top-level area
-        var nestedAreaMatch = line.match(/^>\s*Area Name:\s*(.+)/i);
-        if (nestedAreaMatch) {
-          currentArea = nestedAreaMatch[1].trim();
-          currentCategory = "General";
-          currentTopCategory = "General";
-          if (!result[currentArea]) {
-            result[currentArea] = {};
-          }
-          // Register as child of most recent top-level area
-          if (lastTopLevelArea) {
-            if (!areaHierarchy[lastTopLevelArea]) {
-              areaHierarchy[lastTopLevelArea] = [];
-            }
-            areaHierarchy[lastTopLevelArea].push(currentArea);
-            areaParent[currentArea] = lastTopLevelArea;
-          }
-          continue;
-        }
-
-        // Check if it's a top-level area (starts with "Area Name:")
-        if (line.toLowerCase().indexOf('area name:') === 0) {
-          currentArea = line.substring(10).trim();
-          currentCategory = "General";
-          currentTopCategory = "General";
-          lastTopLevelArea = currentArea;
-          if (!result[currentArea]) {
-            result[currentArea] = {};
-          }
-          continue;
-        }
-
-        // Check if it marks the current area as sealable
-        if (line.toLowerCase().indexOf('sealable:') === 0) {
-          var val = line.substring(9).trim().toLowerCase();
-          if (val === 'yes' || val === 'true') {
-            sealableAreas[currentArea] = true;
-          }
-          continue;
-        }
-
-        // Check if it's an item (contains |)
-        if (line.indexOf('|') !== -1) {
-          var isSubItem = line.charAt(0) === '>';
-          var itemLine = isSubItem ? line.substring(1).trim() : line;
-          var parts = itemLine.split('|');
-          var itemName = parts[0].trim();
-          var qty = parseInt(parts[1], 10) || 1;
-
-          // If item doesn't have > prefix and we're in a subcategory, revert to parent
-          if (!isSubItem) {
-            var curMeta = categoryMeta[currentArea + '::' + currentCategory];
-            if (curMeta && curMeta.level === 1) {
-              currentCategory = currentTopCategory;
-            }
-          }
-
-          if (!result[currentArea]) {
-            result[currentArea] = {};
-          }
-          if (!result[currentArea][currentCategory]) {
-            result[currentArea][currentCategory] = [];
-          }
-
-          result[currentArea][currentCategory].push({
-            name: itemName,
-            required: qty
-          });
-        } else if (line.charAt(0) === '>') {
-          // Subcategory (line starts with >)
-          var subCatName = line.substring(1).trim();
-          var qualifiedName = currentTopCategory + ' > ' + subCatName;
-          currentCategory = qualifiedName;
-          if (!result[currentArea]) {
-            result[currentArea] = {};
-          }
-          if (!result[currentArea][qualifiedName]) {
-            result[currentArea][qualifiedName] = [];
-          }
-          categoryMeta[currentArea + '::' + qualifiedName] = { level: 1, parent: currentTopCategory, displayName: subCatName };
-        } else {
-          // Top-level category name
-          currentCategory = line;
-          currentTopCategory = line;
-          if (!result[currentArea]) {
-            result[currentArea] = {};
-          }
-          if (!result[currentArea][line]) {
-            result[currentArea][line] = [];
-          }
-          categoryMeta[currentArea + '::' + line] = { level: 0, parent: null };
-        }
-      }
-
-      return result;
-    }
-
     // Parses the JSON inventory format into the same internal structure as
     // parseInventory(). JSON schema:
     // [ { area, sealable?, childOf?, categories: [ { name, items: [{name, qty, group?}] } ] } ]
@@ -3826,62 +3998,49 @@
     }
 
     // Auto-detects format (JSON array vs markdown text) and parses accordingly.
-    function parseInventoryAuto(content) {
-      // Try JSON first: array or { areas: [] } envelope
+    // The checklist envelope: { _meta, oxygenCheck?, questions?, areas } (a bare
+    // areas array is accepted too). Fills the file-level state and returns the
+    // INVENTORY map.
+    function applyInventoryEnvelope(parsed) {
       inventoryFileQuestions = [];
       inventoryFileOxygen = null;
       inventoryTitle = '';
-      var trimmed = content.trim();
-      if (trimmed.charAt(0) === '[' || trimmed.charAt(0) === '{') {
-        try {
-          var parsed = JSON.parse(trimmed);
-          var jsonArray = null;
-          if (Array.isArray(parsed)) {
-            jsonArray = parsed;
-          } else if (parsed && Array.isArray(parsed.areas)) {
-            // Envelope format: { _meta: {...}, areas: [...], questions?: [...] }
-            jsonArray = parsed.areas;
-            if (parsed._meta && parsed._meta.name) inventoryTitle = String(parsed._meta.name);
-            if (Array.isArray(parsed.questions)) inventoryFileQuestions = parsed.questions;
-            if (parsed.oxygenCheck === true) inventoryFileOxygen = {};
-            else if (parsed.oxygenCheck && typeof parsed.oxygenCheck === 'object') inventoryFileOxygen = parsed.oxygenCheck;
-          }
-          if (jsonArray) {
-            console.log('[Widget] Detected JSON inventory format (' + jsonArray.length + ' areas)');
-            return parseInventoryJSON(jsonArray);
-          }
-        } catch (e) {
-          console.warn('[Widget] Content looks like JSON but failed to parse, falling back to markdown:', e.message);
-        }
+      var jsonArray = null;
+      if (Array.isArray(parsed)) {
+        jsonArray = parsed;
+      } else if (parsed && Array.isArray(parsed.areas)) {
+        jsonArray = parsed.areas;
+        if (parsed._meta && parsed._meta.name) inventoryTitle = String(parsed._meta.name);
+        if (Array.isArray(parsed.questions)) inventoryFileQuestions = parsed.questions;
+        if (parsed.oxygenCheck === true) inventoryFileOxygen = {};
+        else if (parsed.oxygenCheck && typeof parsed.oxygenCheck === 'object') inventoryFileOxygen = parsed.oxygenCheck;
       }
-      // Fall back to markdown parser
-      return parseInventory(content);
+      if (!jsonArray) {
+        console.warn('[Widget] checklist is not a JSON envelope or areas array');
+        jsonArray = [];
+      }
+      console.log('[Widget] checklist: ' + jsonArray.length + ' areas');
+      return parseInventoryJSON(jsonArray);
+    }
+
+    // A fetched checklist file's text (Jotform may entity-encode it on the way).
+    function parseInventoryText(content) {
+      return applyInventoryEnvelope(parseJsonLoose(String(content || '').trim()));
     }
 
     // =====================================================
     // EXTERNAL FILE FETCH
     // =====================================================
 
-    // Detects if the inventoryItems setting is a path to an external file
-    // (.md or .json) rather than inline checklist data.
-    function isExternalFilePath(text) {
-      if (!text) return false;
-      var trimmed = text.trim();
-      // Matches a full URL or relative path ending in .md or .json,
-      // but not inline data that happens to contain | (markdown items)
-      return /\.(md|json)$/i.test(trimmed) && trimmed.indexOf('|') === -1;
-    }
-
     // Derives the base URL from the widget's own location so relative paths
-    // like "data/checklists/driver_side.md" resolve correctly on GitHub Pages.
+    // like "data/checklists/602/bags.json" resolve correctly on GitHub Pages.
     function getWidgetBaseUrl() {
       var href = window.location.href.split('?')[0]; // strip query params
       return href.substring(0, href.lastIndexOf('/') + 1);
     }
 
-    // Fetches an external checklist file (.md or .json), then calls back with
-    // the text content. On failure, calls back with null so the caller can
-    // fall back to defaults.
+    // Fetches a checklist (or index) file, then calls back with the text
+    // content; null on failure.
     function fetchInventoryFile(filePath, callback) {
       var trimmed = filePath.trim();
       // If it's already a full URL, use it directly; otherwise resolve relative to widget
@@ -4223,12 +4382,15 @@
             }
           }
 
+          var loneCat = loneCategoryOf(areaName);
           for (var ci = 0; ci < catOrder.length; ci++) {
             var catName = catOrder[ci];
             var catItems = categories[catName] || [];
             var subCats = catChildren[catName] || [];
             var catKey = areaName + '::' + catName;
-            var isCollapsed = collapsedCategories[catKey] || false;
+            // The lone category has no header of its own and never folds: the area does that.
+            var isLone = catName === loneCat;
+            var isCollapsed = !isLone && (collapsedCategories[catKey] || false);
 
             // Category header (collapsible)
             var catHeader = document.createElement('div');
@@ -4300,17 +4462,24 @@
             catStatus.className = 'category-status';
             catStatus.id = 'cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_');
 
-            catHeader.appendChild(collapseIcon);
-            catHeader.appendChild(catCheckbox);
-            catHeader.appendChild(catLabel);
-            catHeader.appendChild(catStatus);
-            catHeader.appendChild(makeProgressStrip());
-            contentDiv.appendChild(catHeader);
+            if (isLone) {
+              // No category row: the "all" pill goes on the area header, before its count.
+              // The area's own status update keeps it in step (see updateAllStatuses).
+              var areaStatusEl = headerDiv.querySelector('.area-status');
+              headerDiv.insertBefore(catCheckbox, areaStatusEl);
+            } else {
+              catHeader.appendChild(collapseIcon);
+              catHeader.appendChild(catCheckbox);
+              catHeader.appendChild(catLabel);
+              catHeader.appendChild(catStatus);
+              catHeader.appendChild(makeProgressStrip());
+              contentDiv.appendChild(catHeader);
+            }
 
-            // Items container (collapsible)
+            // Items container (collapsible; the lone category's has no id, so nothing folds it)
             var itemsContainer = document.createElement('div');
-            itemsContainer.className = 'category-items';
-            itemsContainer.id = 'cat_items_' + catKey.replace(/[^a-zA-Z0-9]/g, '_');
+            itemsContainer.className = 'category-items' + (isLone ? ' lone-category' : '');
+            if (!isLone) itemsContainer.id = 'cat_items_' + catKey.replace(/[^a-zA-Z0-9]/g, '_');
             itemsContainer.style.display = isCollapsed ? 'none' : 'block';
 
             // Direct items for this category
@@ -4604,53 +4773,12 @@
 
     // Check if a parent group is fully complete (all children sealed/ok, parent items ok/sealed)
     // =====================================================
-    // RIG / CHECKLIST SELECTOR AND TODAY STATUS
+    // RIG / CHECKLIST PICKER AND TODAY STATUS
     // =====================================================
 
     function normalizeSelection(v) {
       if (v === undefined || v === null) return '';
       return String(v).trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_\-]/g, '');
-    }
-
-    // Jotform's field-value callbacks are loosely documented; accept the
-    // shapes seen in practice: { id: { value } }, { id: value }, { id: { answer } },
-    // [{ id, value }], { values: {...} }.
-    function fieldValueFrom(raw, id) {
-      if (!raw) return '';
-      var pick = function(v) {
-        if (v === undefined || v === null) return '';
-        if (typeof v === 'string' || typeof v === 'number') return String(v);
-        if (typeof v === 'object') {
-          if (v.value !== undefined) return pick(v.value);
-          if (v.answer !== undefined) return pick(v.answer);
-          if (v.prettyFormat !== undefined) return pick(v.prettyFormat);
-        }
-        return '';
-      };
-      if (Array.isArray(raw)) {
-        for (var i = 0; i < raw.length; i++) {
-          if (raw[i] && String(raw[i].id || raw[i].qid || raw[i].name || '').replace(/^input_/, '') === String(id)) return pick(raw[i]);
-        }
-        return '';
-      }
-      if (raw[id] !== undefined) return pick(raw[id]);
-      if (raw['input_' + id] !== undefined) return pick(raw['input_' + id]);
-      if (raw.values) return fieldValueFrom(raw.values, id);
-      if (raw.data) return fieldValueFrom(raw.data, id);
-      return '';
-    }
-
-    function readSelectorFields(callback) {
-      var ids = [selectorFieldIds.rig, selectorFieldIds.checklist];
-      try {
-        JFCustomWidget.getFieldsValueById(ids, function(res) {
-          console.log('[Widget] selector fields raw:', JSON.stringify(res).substring(0, 300));
-          callback(fieldValueFrom(res, selectorFieldIds.rig), fieldValueFrom(res, selectorFieldIds.checklist));
-        });
-      } catch (e) {
-        console.warn('[Widget] getFieldsValueById failed:', e.message);
-        callback('', '');
-      }
     }
 
     function selectionPath() {
@@ -4675,76 +4803,12 @@
       updateOosBanner();
     }
 
-    function showSelectorPrompt() {
-      resetRuntimeState();
-      var container = document.getElementById('areasContainer');
-      if (container) {
-        container.innerHTML = '<div class="selector-prompt">Select a rig and a checklist above to begin.</div>';
-      }
-      updateSummary();
-      setStatusStrip('prompt', 'Select a rig and a checklist');
-      setLoading(false);
-      resizeWidget();
-    }
-
-    function initSelector(data, start) {
-      var rigId = JFCustomWidget.getWidgetSetting('rigFieldId');
-      var clId = JFCustomWidget.getWidgetSetting('checklistFieldId');
-      var rigIndex = JFCustomWidget.getWidgetSetting('rigIndex');
-      if (!rigId || !clId) {
-        var indexPath = resolveRigIndexSetting(rigIndex, JFCustomWidget.getWidgetSetting('inventoryItems'));
-        if (indexPath) {
-          initPicker(indexPath, data, start);
-          return;
-        }
-        selectorActive = false;
-        start(data, null);
-        return;
-      }
-      selectorActive = true;
-      selectorFieldIds = { rig: String(rigId).replace(/^input_/, ''), checklist: String(clId).replace(/^input_/, '') };
-      console.log('[Widget] selector mode: rig field', selectorFieldIds.rig, 'checklist field', selectorFieldIds.checklist);
-
-      var applySelection = function(rig, checklist, isChange) {
-        rig = normalizeSelection(rig);
-        checklist = normalizeSelection(checklist);
-        if (!rig || !checklist) {
-          currentRig = null; currentChecklist = null;
-          showSelectorPrompt();
-          return;
-        }
-        if (rig === currentRig && checklist === currentChecklist) return;
-        currentRig = rig; currentChecklist = checklist;
-        resetRuntimeState();
-        // Jotform's saved value only applies to the first load; a change mid-form starts fresh
-        setLoading(true);
-        start(isChange ? { value: '', formID: data && data.formID } : data, selectionPath());
-      };
-
-      readSelectorFields(function(rig, checklist) { applySelection(rig, checklist, false); });
-
-      var onFieldChange = function() {
-        readSelectorFields(function(rig, checklist) { applySelection(rig, checklist, true); });
-      };
-      try {
-        JFCustomWidget.listenFromField('input_' + selectorFieldIds.rig, 'change', onFieldChange);
-        JFCustomWidget.listenFromField('input_' + selectorFieldIds.checklist, 'change', onFieldChange);
-      } catch (e) {
-        console.warn('[Widget] listenFromField failed:', e.message);
-      }
-    }
-
     // ---------------- In-widget picker ----------------
 
-    // Which index file to use, or null for no picker
-    function resolveRigIndexSetting(rigIndex, inventorySetting) {
+    // Which index file to use: the rigIndex setting, else the default
+    function resolveRigIndexSetting(rigIndex) {
       var v = (rigIndex === undefined || rigIndex === null) ? '' : String(rigIndex).trim();
-      var off = v.toLowerCase();
-      if (off === 'none' || off === 'off' || off === 'false' || off === '0') return null;
-      if (v) return v;
-      // No explicit index: default to the picker unless the form supplies its own checklist
-      if (inventorySetting !== undefined && inventorySetting !== null && String(inventorySetting).trim() !== '') return null;
-      return DEFAULT_RIG_INDEX;
+      return v || DEFAULT_RIG_INDEX;
     }
 
     function lastRigKey() {
@@ -4755,7 +4819,6 @@
     function initPicker(indexSetting, data, start) {
       pickerActive = true;
       selectorActive = true;
-      selectorFieldIds = { rig: null, checklist: null };
       pickerStart = start;
       pickerData = data;
       var dec = document.createElement('textarea');
@@ -5001,8 +5064,6 @@
       return '';
     }
 
-    // Which rig / checklist a submission was for: native dropdown answers when
-    // configured, otherwise the stamps inside this widget's own answer.
     // The widget's own answer inside a submission, parsed: carries the rig
     // and checklist stamps and the device's submit time (epoch ms).
     function submissionSyncData(sub) {
@@ -5019,14 +5080,10 @@
       return raw ? extractSyncData(raw) : null;
     }
 
+    // Which rig / checklist a submission was for, from the stamps in the widget's answer
     function submissionSelection(sub) {
-      var a = sub.answers || {};
       var parsed = submissionSyncData(sub);
       var ts = parsed && isFinite(parseFloat(parsed.timestamp)) && parseFloat(parsed.timestamp) > 1e12 ? parseFloat(parsed.timestamp) : null;
-      if (selectorFieldIds.rig && selectorFieldIds.checklist && (a[selectorFieldIds.rig] || a[selectorFieldIds.checklist])) {
-        return { rig: normalizeSelection(answerText(a[selectorFieldIds.rig])),
-                 checklist: normalizeSelection(answerText(a[selectorFieldIds.checklist])), timestamp: ts };
-      }
       if (!parsed) return { rig: '', checklist: '', timestamp: null };
       return { rig: normalizeSelection(parsed.rig), checklist: normalizeSelection(parsed.checklist), timestamp: ts };
     }
@@ -5669,7 +5726,8 @@
       var catMeta = categoryMeta[parts[0] + '::' + parts[1]];
       var catLabel = (catMeta && catMeta.displayName) || parts[1];
       document.getElementById('dockName').textContent = item.name;
-      document.getElementById('dockPath').textContent = parts[0] + ' \u203A ' + catLabel;
+      document.getElementById('dockPath').textContent = loneCategoryOf(parts[0]) === parts[1]
+        ? parts[0] : parts[0] + ' \u203A ' + catLabel;
       var valueEl = document.getElementById('dockValue');
       if (document.activeElement !== valueEl) valueEl.value = actual;
       valueEl.max = item.required;
@@ -6061,33 +6119,6 @@
         });
       }
       return out;
-    }
-
-    function parseQuestionsText(text) {
-      try {
-        var parsed = JSON.parse(String(text).trim());
-        if (Array.isArray(parsed)) return parsed;
-        if (parsed && Array.isArray(parsed.questions)) return parsed.questions;
-      } catch (e) {
-        console.warn('[Widget] customQuestions is not valid JSON:', e.message);
-      }
-      return [];
-    }
-
-    // Loads the customQuestions setting: inline JSON, or a .json path fetched
-    // from the same origin as the widget. Always calls back with an array.
-    function loadCustomQuestions(rawSetting, callback) {
-      if (!rawSetting) { callback([]); return; }
-      var dec = document.createElement('textarea');
-      dec.innerHTML = rawSetting;
-      var text = dec.value;
-      if (isExternalFilePath(text)) {
-        fetchInventoryFile(text, function(content) {
-          callback(content ? parseQuestionsText(content) : []);
-        });
-        return;
-      }
-      callback(parseQuestionsText(text));
     }
 
     function findQuestion(id) {
@@ -6842,6 +6873,25 @@
     }
 
     // Check if all items in a category are OK
+    // An area whose items all sit in one top-level category (the data format
+    // needs one; "General" or "Loose" by convention) shows no header for it:
+    // the items sit right under the area header, which carries the "all"
+    // pill. Groups inside the category keep their own headers. A parent area
+    // keeps the header, because its own items render under the group header
+    // and have no area header of their own to carry the pill.
+    function loneCategoryOf(areaName) {
+      var cats = INVENTORY[areaName];
+      if (!cats || areaHierarchy[areaName]) return null;
+      var lone = null;
+      for (var c in cats) {
+        var meta = categoryMeta[areaName + '::' + c] || { level: 0 };
+        if (meta.level !== 0) continue;
+        if (lone !== null) return null;
+        lone = c;
+      }
+      return lone;
+    }
+
     function isCategoryComplete(areaName, catName) {
       var items = INVENTORY[areaName] && INVENTORY[areaName][catName];
       if (!items) return true;
@@ -7937,6 +7987,10 @@
           statusEl.textContent = areaOk + '/' + areaTotal;
           setProgressStrip(header, areaOk, areaTotal);
 
+          // A lone category's "all" pill sits on this header
+          var areaCb = header.querySelector(':scope > .category-checkbox');
+          if (areaCb) areaCb.checked = (areaOk === areaTotal && areaTotal > 0);
+
           if (areaOk === areaTotal) {
             header.classList.add('all-ok');
             statusEl.classList.add('ok');
@@ -8274,8 +8328,9 @@
             // don't stay stuck when scrolling into the next category.
             html += '<div class="shortage-cat-section">';
 
-            // Show category header if there are direct items or subcategories
-            if (hasDirectItems || hasSubCats) {
+            // Show category header if there are direct items or subcategories,
+            // unless it is the area's lone category, which has no header anywhere
+            if ((hasDirectItems || hasSubCats) && loneCategoryOf(area) !== topCat) {
               html += '<div class="shortage-cat-header">' + escapeHtml(topCat) + '</div>';
             }
 
@@ -8847,147 +8902,7 @@
 
       var report = lines.join('\n');
 
-      // HTML version of the report for the relay widget's submission value.
-      // JotForm's "View Submission" renders widget iframes, so the relay
-      // widget can display styled HTML.  This version is for storage/display
-      // in the relay widget's submitted value.
-      var htmlLines = [];
-      htmlLines.push('<div style="font-family:Courier New,monospace;font-size:12px;line-height:1.5;color:#333;">');
-      htmlLines.push('<div style="font-weight:bold;font-size:14px;">' + escapeHtml(reportTitle()) + '</div>');
-      if (selectorActive && currentRig) htmlLines.push('<div style="font-weight:bold;">' + escapeHtml(reportSubtitle()) + '</div>');
-      htmlLines.push('<div style="color:#666;">' + dateHeader + '</div>');
-      htmlLines.push('<hr style="border:none;border-top:2px double #999;margin:8px 0;">');
-
-      if (summaryParts.length > 0) {
-        htmlLines.push('<div style="margin-bottom:8px;"><b>Summary:</b> ' + summaryParts.join(', ') + '</div>');
-      } else {
-        htmlLines.push('<div style="margin-bottom:8px;">All items accounted for. No restock actions needed.</div>');
-      }
-
-      if (gaugeRed.length > 0 || checkOos.length > 0) {
-        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#fff;background:#c00;padding:4px 8px;">\u26D4 OUT OF SERVICE</div>');
-        for (var hgr = 0; hgr < gaugeRed.length; hgr++) {
-          htmlLines.push('<div style="padding-left:12px;color:#c00;font-weight:bold;">&bull; ' + escapeHtml(gaugeRed[hgr].name + ' \u2014 ' + gaugeRed[hgr].reading + ' ' + gaugeRed[hgr].unit) + '</div>');
-        }
-        for (var hco = 0; hco < checkOos.length; hco++) {
-          htmlLines.push('<div style="padding-left:12px;color:#c00;font-weight:bold;">&bull; ' + escapeHtml(checkOos[hco].name + ' \u2014 ' + checkOos[hco].check.failText) + '</div>');
-        }
-      }
-
-      if (checkList.length > 0) {
-        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#555;">\u2699 CHECKS (' + checkList.length + ')</div>');
-        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
-        for (var hcl = 0; hcl < checkList.length; hcl++) {
-          var hcColor = checkList[hcl].result === 'fail' ? '#c00' : (checkList[hcl].result === 'ok' ? '#2a7d2a' : '#555');
-          htmlLines.push('<div style="padding-left:12px;color:' + hcColor + ';">&bull; ' + escapeHtml(checkLineText(checkList[hcl])).replace(' \u2014 ', ' &mdash; ') + '</div>');
-        }
-      }
-
-      if (gaugeList.length > 0) {
-        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#555;">\uD83D\uDCDF READINGS (' + gaugeList.length + ')</div>');
-        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
-        for (var hgl = 0; hgl < gaugeList.length; hgl++) {
-          var hgColor = gaugeList[hgl].zone === 'red' ? '#c00' : (gaugeList[hgl].zone === 'yellow' ? '#856404' : (gaugeList[hgl].zone === 'green' ? '#2a7d2a' : '#555'));
-          htmlLines.push('<div style="padding-left:12px;color:' + hgColor + ';">&bull; ' + escapeHtml(gaugeLineText(gaugeList[hgl])).replace(' \u2014 ', ' &mdash; ') + '</div>');
-        }
-      }
-
-      if (o2.enabled) {
-        var o2Color = !o2.checked ? '#555' : (o2.low.length > 0 ? '#c00' : '#2a7d2a');
-        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:' + o2Color + ';">\uD83E\uDEC1 OXYGEN SUPPLY</div>');
-        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
-        for (var ho = 0; ho < o2.areas.length; ho++) {
-          var hoLine = o2LineText(o2.areas[ho]).replace(' \u2014 ', ' &mdash; ');
-          var hoStyle = o2.areas[ho].status === 'low' ? 'color:#c00;font-weight:bold;' : '';
-          htmlLines.push('<div style="padding-left:12px;' + hoStyle + '">&bull; ' + hoLine + '</div>');
-        }
-      }
-
-      if (customQuestions.length > 0) {
-        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#555;">\uD83D\uDCDD QUESTIONS (' + customQuestions.length + ')</div>');
-        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
-        for (var hq = 0; hq < customQuestions.length; hq++) {
-          var hqq = customQuestions[hq];
-          var hqStyle = (isQuestionFlagged(hqq) || (hqq.required && !isQuestionAnswered(hqq))) ? 'color:#c00;font-weight:bold;' : '';
-          var hqLine = escapeHtml(questionLineText(hqq)).replace(' \u2014 ', ' &mdash; ');
-          htmlLines.push('<div style="padding-left:12px;' + hqStyle + '">&bull; ' + hqLine + '</div>');
-        }
-      }
-
-      if (brokenSeals.length > 0) {
-        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#c00;">⛔ BROKEN SEALS (' + brokenSeals.length + ')</div>');
-        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
-        for (var hb = 0; hb < brokenSeals.length; hb++) {
-          var hbs = brokenSeals[hb];
-          var hReasonLabel = hbs.reason === 'missing' ? 'Seal was missing' : 'Scheduled review';
-          var hbLine = '&bull; ' + hbs.area + ' &mdash; ' + hReasonLabel;
-          if (hbs.taggedDate) hbLine += ' (sealed since ' + formatTagDate(hbs.taggedDate) + ')';
-          htmlLines.push('<div style="padding-left:12px;">' + hbLine + '</div>');
-        }
-      }
-
-      if (taggedList.length > 0) {
-        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#555;">🔒 SEALED / TAGGED AREAS (' + taggedList.length + ')</div>');
-        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
-        for (var ht = 0; ht < taggedList.length; ht++) {
-          var hta = taggedList[ht];
-          var htLine = '&bull; ' + hta.area + ' &mdash; Tagged: ' + formatTagDate(hta.taggedDate) + ' (' + hta.daysSinceTagged + ' days)';
-          if (hta.reviewNeeded) htLine += ' <span style="color:#c00;font-weight:bold;">[REVIEW OVERDUE]</span>';
-          htmlLines.push('<div style="padding-left:12px;">' + htLine + '</div>');
-        }
-      }
-
-      if (restockedItems.length > 0) {
-        var hrGrouped = groupByArea(restockedItems);
-        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#2a7d2a;">✅ RESTOCKED ITEMS (' + restockedItems.length + ')</div>');
-        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
-        for (var hri = 0; hri < hrGrouped.order.length; hri++) {
-          var hrArea = hrGrouped.order[hri];
-          var hrItems = hrGrouped.groups[hrArea];
-          htmlLines.push('<div style="padding-left:12px;font-weight:bold;margin-top:4px;">' + hrArea + ':</div>');
-          for (var hrj = 0; hrj < hrItems.length; hrj++) {
-            htmlLines.push('<div style="padding-left:24px;">&bull; ' + hrItems[hrj].name + ' (x' + hrItems[hrj].quantityRestocked + ')</div>');
-          }
-        }
-      }
-
-      if (unavailableItems.length > 0) {
-        var huGrouped = groupByArea(unavailableItems);
-        htmlLines.push('<div style="margin-top:10px;font-weight:bold;color:#c00;">❌ UNAVAILABLE ITEMS (' + unavailableItems.length + ')</div>');
-        htmlLines.push('<hr style="border:none;border-top:1px solid #ddd;margin:4px 0;">');
-        for (var hui = 0; hui < huGrouped.order.length; hui++) {
-          var huArea = huGrouped.order[hui];
-          var huItems = huGrouped.groups[huArea];
-          htmlLines.push('<div style="padding-left:12px;font-weight:bold;margin-top:4px;">' + huArea + ':</div>');
-          for (var huj = 0; huj < huItems.length; huj++) {
-            htmlLines.push('<div style="padding-left:24px;">&bull; ' + huItems[huj].name + ' (need ' + huItems[huj].quantityNeeded + ')</div>');
-            htmlLines.push('<div style="padding-left:36px;color:#888;font-size:11px;">Reason: ' + huItems[huj].reason + '</div>');
-          }
-        }
-      }
-
-      htmlLines.push('</div>');
-      var htmlReport = htmlLines.join('');
-
-      // Machine-readable sync data (consumed by cross-device seal sync
-      // and form-edit restoration — do not remove)
-      var syncData = {
-        taggedAreas: taggedAreas,
-        brokenSeals: brokenSeals,
-        itemStates: itemStates,
-        restockStatus: restockStatus,
-        o2States: o2States,
-        questionAnswers: questionAnswers,
-        rig: currentRig,
-        checklist: currentChecklist,
-        timestamp: Date.now()
-      };
-
-      return {
-        report: report,
-        htmlReport: htmlReport,
-        syncData: syncData
-      };
+      return report;
     }
     
     function resizeWidget() {
@@ -9063,36 +8978,18 @@
           var fp = getFormParams();
           cachedFormID = fp.formID || (data && data.formID) || null;
 
-          // Everything below runs once per checklist load. In selector mode it
-          // runs again whenever the rig or checklist dropdown changes.
-          function startChecklist(data, inventoryOverride) {
-          // Load inventory from widget settings — supports inline text
-          // or a path to an external .md or .json file on the same GitHub Pages origin.
-          // Decode HTML entities first: JotForm encodes setting values
-          // (e.g. / becomes &#x2F;) which would break path detection.
-          var _rawInventory = inventoryOverride || JFCustomWidget.getWidgetSetting('inventoryItems') || DEFAULT_INVENTORY;
-          var _decodeEl = document.createElement('textarea');
-          _decodeEl.innerHTML = _rawInventory;
-          var inventoryText = _decodeEl.value;
-          console.log('[Widget] inventoryItems raw:', JSON.stringify(_rawInventory).substring(0, 120));
-          console.log('[Widget] inventoryItems decoded:', JSON.stringify(inventoryText).substring(0, 120));
-          console.log('[Widget] isExternalFilePath:', isExternalFilePath(inventoryText));
+          // Everything below runs once per checklist load, and again whenever
+          // another checklist is chosen in the picker.
+          function startChecklist(data, checklistPath) {
 
           function continueAfterInventoryLoad() {
-            // Oxygen supply check: the checklist file's oxygenCheck block wins;
-            // widget settings only apply on a single-checklist form.
-            if (inventoryFileOxygen) {
-              configureOxygenCheck(fileOxygenSettingGetter(inventoryFileOxygen));
-            } else if (!selectorActive) {
-              configureOxygenCheck(function(name) { return JFCustomWidget.getWidgetSetting(name); });
-            } else {
-              configureOxygenCheck(function() { return undefined; });
-            }
+            // Oxygen supply check: the checklist file's oxygenCheck block, or none
+            configureOxygenCheck(inventoryFileOxygen ? fileOxygenSettingGetter(inventoryFileOxygen) : function() { return undefined; });
             console.log('[Widget] oxygen check:', enableOxygenCheck ? o2Areas.length + ' area(s)' : 'disabled');
 
-            // Custom questions: the file's own, plus the widget setting on a single-checklist form
-            customQuestions = normalizeQuestions((selectorActive ? [] : settingQuestionList).concat(inventoryFileQuestions));
-            console.log('[Widget] custom questions:', customQuestions.length);
+            // Questions: the file's own
+            customQuestions = normalizeQuestions(inventoryFileQuestions);
+            console.log('[Widget] questions:', customQuestions.length);
 
             var focusSetting = JFCustomWidget.getWidgetSetting('focusRow');
             if (focusSetting !== undefined && focusSetting !== null && focusSetting !== '') {
@@ -9223,36 +9120,24 @@
           }
           } // end continueAfterInventoryLoad
 
-          // Load optional custom questions (inline JSON or .json path) first,
-          // then the inventory. Both may involve a same-origin fetch.
-          loadCustomQuestions(JFCustomWidget.getWidgetSetting('customQuestions'), function(settingQuestions) {
-            settingQuestionList = settingQuestions || [];
-
-            // Branch: if the setting is an external file path (.md or .json),
-            // fetch it async; otherwise parse inline text synchronously.
-            if (isExternalFilePath(inventoryText)) {
-              fetchInventoryFile(inventoryText, function(fileContent) {
-                if (fileContent) {
-                  INVENTORY = parseInventoryAuto(fileContent);
-                } else {
-                  console.warn('[Widget] File fetch failed, falling back to DEFAULT_INVENTORY');
-                  INVENTORY = parseInventoryAuto(DEFAULT_INVENTORY);
-                }
-                continueAfterInventoryLoad();
-              });
-            } else {
-              INVENTORY = parseInventoryAuto(inventoryText);
-              continueAfterInventoryLoad();
+          // The chosen checklist file; a file that cannot be read sends the user back to the picker
+          fetchInventoryFile(checklistPath, function(fileContent) {
+            if (!fileContent) {
+              console.warn('[Widget] checklist could not be loaded from', checklistPath);
+              resetRuntimeState();
+              renderPicker(currentRig);
+              setStatusStrip('prompt', 'That checklist could not be loaded. Choose again.');
+              return;
             }
+            INVENTORY = parseInventoryText(fileContent);
+            continueAfterInventoryLoad();
           });
           } // end startChecklist
 
-          initSelector(data, startChecklist);
+          initPicker(resolveRigIndexSetting(JFCustomWidget.getWidgetSetting('rigIndex')), data, startChecklist);
         });
 
         JFCustomWidget.subscribe('submit', function() {
-          // Push final report to localStorage for the relay widget
-          pushReportToRelay();
           // Build combined value: plain-text report (visible in Tables)
           // followed by sync JSON (for state restoration).
           // extractSyncData() already parses this delimiter format.
@@ -9272,7 +9157,7 @@
             checklist: currentChecklist,
             timestamp: Date.now()
           };
-          var combinedValue = submitReport.report
+          var combinedValue = submitReport
             + '\n\n___SYNC_DATA___\n'
             + JSON.stringify(syncData);
           JFCustomWidget.sendSubmit({
@@ -9286,72 +9171,46 @@
           try { localStorage.removeItem(getStorageKey()); } catch (e) {}
         });
       } else {
-        // Standalone mode - use default inventory
-        // (DEFAULT_INVENTORY could also be overridden to a .md/.json path for testing)
-        var standaloneText = DEFAULT_INVENTORY;
+        // Standalone mode (no Jotform host, a plain browser): the demo checklist
+        INVENTORY = applyInventoryEnvelope(DEFAULT_INVENTORY);
+        enableTaggedAreas = Object.keys(sealableAreas).length > 0;
+        configureOxygenCheck(inventoryFileOxygen ? fileOxygenSettingGetter(inventoryFileOxygen) : function() { return undefined; });
+        customQuestions = normalizeQuestions(inventoryFileQuestions);
+        document.querySelector('.widget-container').classList.toggle('focus-active', enableFocusRow);
+        buildUI();
 
-        // Standalone O2 defaults so the section can be exercised outside Jotform
-        var STANDALONE_O2_SETTINGS = {
-          enableOxygenCheck: 'true',
-          mainO2Cylinders: '2',
-          enableMedicalAir: 'true'
-        };
-        var STANDALONE_QUESTIONS = [
-          { label: 'Unit exterior clean?', type: 'yesno', position: 'beforeO2', flagOn: 'No' },
-          { label: 'Fuel level', type: 'choice', options: ['Full', '3/4', '1/2', '1/4'], position: 'afterO2' },
-          { label: 'Odometer', type: 'number', position: 'afterInventory' },
-          { label: 'Notes for next crew', type: 'text', position: 'afterInventory', required: false }
-        ];
-
-        function continueStandalone(inventoryContent) {
-          INVENTORY = parseInventoryAuto(inventoryContent);
-          enableTaggedAreas = Object.keys(sealableAreas).length > 0;
-          configureOxygenCheck(function(name) { return STANDALONE_O2_SETTINGS[name]; });
-          customQuestions = normalizeQuestions(STANDALONE_QUESTIONS.concat(inventoryFileQuestions));
-          document.querySelector('.widget-container').classList.toggle('focus-active', enableFocusRow);
-          buildUI();
-
-          // Restore from localStorage in standalone mode
-          var saved = loadState();
-          if (saved) {
-            if (saved.itemStates) itemStates = saved.itemStates;
-            if (saved.taggedAreas) taggedAreas = saved.taggedAreas;
-            if (saved.restockStatus) restockStatus = saved.restockStatus;
-            if (saved.brokenSeals) brokenSeals = saved.brokenSeals;
-            if (saved.o2States && typeof saved.o2States === 'object') o2States = saved.o2States;
-            if (saved.questionAnswers && typeof saved.questionAnswers === 'object') questionAnswers = saved.questionAnswers;
-          }
-
-          // Layer in dedicated sealed-state store
-          var sealData = loadSealState();
-          if (sealData && sealData.taggedAreas) {
-            var savedSealTs = (saved && saved.timestamp) || 0;
-            var dedicatedSealTs = sealData.timestamp || 0;
-            if (dedicatedSealTs >= savedSealTs) {
-              taggedAreas = sealData.taggedAreas;
-              if (sealData.brokenSeals) {
-                brokenSeals = sealData.brokenSeals;
-              }
-            }
-          }
-
-          autoBreakOverdueSeals();
-          clearUnsealedItemStates();
-
-          buildUI();
-          stateReady = true;
-          saveState();
-          setLoading(false);
-          maybeStartSealCheck();
+        // Restore from localStorage in standalone mode
+        var saved = loadState();
+        if (saved) {
+          if (saved.itemStates) itemStates = saved.itemStates;
+          if (saved.taggedAreas) taggedAreas = saved.taggedAreas;
+          if (saved.restockStatus) restockStatus = saved.restockStatus;
+          if (saved.brokenSeals) brokenSeals = saved.brokenSeals;
+          if (saved.o2States && typeof saved.o2States === 'object') o2States = saved.o2States;
+          if (saved.questionAnswers && typeof saved.questionAnswers === 'object') questionAnswers = saved.questionAnswers;
         }
 
-        if (isExternalFilePath(standaloneText)) {
-          fetchInventoryFile(standaloneText, function(fileContent) {
-            continueStandalone(fileContent || DEFAULT_INVENTORY);
-          });
-        } else {
-          continueStandalone(standaloneText);
+        // Layer in dedicated sealed-state store
+        var sealData = loadSealState();
+        if (sealData && sealData.taggedAreas) {
+          var savedSealTs = (saved && saved.timestamp) || 0;
+          var dedicatedSealTs = sealData.timestamp || 0;
+          if (dedicatedSealTs >= savedSealTs) {
+          taggedAreas = sealData.taggedAreas;
+          if (sealData.brokenSeals) {
+            brokenSeals = sealData.brokenSeals;
+          }
+          }
         }
+
+        autoBreakOverdueSeals();
+        clearUnsealedItemStates();
+
+        buildUI();
+        stateReady = true;
+        saveState();
+        setLoading(false);
+        maybeStartSealCheck();
       }
     }
     

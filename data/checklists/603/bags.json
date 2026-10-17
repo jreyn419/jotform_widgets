@@ -50,6 +50,10 @@
             {
               "name": "Invasive Monitoring Cable - Square Port",
               "qty": 1
+            },
+            {
+              "name": "Invasive Monitoring Clamp",
+              "qty": 1
             }
           ]
         },
@@ -952,9 +956,14 @@
     },
     {
       "area": "Zoll Monitor",
+      "categories": []
+    },
+    {
+      "area": "Left Bag: Left Zippered Pocket",
+      "childOf": "Zoll Monitor",
       "categories": [
         {
-          "name": "Left Bag: Left Zippered Pocket",
+          "name": "General",
           "items": [
             {
               "name": "Cuff cable",
@@ -989,12 +998,7 @@
               "name": "12",
               "qty": 1,
               "group": "BP Cuffs"
-            }
-          ]
-        },
-        {
-          "name": "Left Bag: Right Zippered Pocket",
-          "items": [
+            },
             {
               "name": "pinna clip pulse ox",
               "qty": 1
@@ -1016,21 +1020,92 @@
               "qty": 1
             },
             {
+              "name": "SpO2 Monitoring Cable",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Left Bag: Right Zippered Pocket",
+      "childOf": "Zoll Monitor",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
               "name": "12-lead cables",
               "qty": 1
             },
             {
               "name": "4-lead cables",
               "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Right Bag: Left Zippered Pocket",
+      "childOf": "Zoll Monitor",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "NS flushes",
+              "qty": 5
             },
             {
-              "name": "SpO2 Monitoring Cable",
+              "name": "Electrode Bag (At least half full)",
               "qty": 1
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "area": "Glucometer Kit",
+      "childOf": "Right Bag: Left Zippered Pocket",
+      "categories": [
         {
-          "name": "Right Bag: Left Zippered Pocket",
+          "name": "General",
+          "items": [
+            {
+              "name": "Lancets",
+              "qty": 6
+            },
+            {
+              "name": "Sterile 2x2",
+              "qty": 6
+            },
+            {
+              "name": "Adhesive Bandages",
+              "qty": 6
+            },
+            {
+              "name": "Alcohol Prep Pads",
+              "qty": 6
+            },
+            {
+              "name": "Glucometer Test Strip",
+              "qty": 1
+            },
+            {
+              "name": "Glucometer",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Right Bag: Right Zippered Pocket",
+      "childOf": "Zoll Monitor",
+      "categories": [
+        {
+          "name": "General",
           "items": [
             {
               "name": "EKG razors",
@@ -1047,19 +1122,6 @@
             {
               "name": "Pediatric Defibrillation Pad",
               "qty": 2
-            }
-          ]
-        },
-        {
-          "name": "Right Bag: Right Zippered Pocket",
-          "items": [
-            {
-              "name": "NS flushes",
-              "qty": 5
-            },
-            {
-              "name": "Electrode Bag (At least half full)",
-              "qty": 1
             },
             {
               "name": "PO aspirin",
@@ -1068,36 +1130,6 @@
             {
               "name": "SL nitroglycerin",
               "qty": 1
-            },
-            {
-              "name": "Lancets",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Sterile 2x2",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Adhesive Bandages",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Alcohol Prep Pads",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Glucometer Test Strip",
-              "qty": 1,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Glucometer",
-              "qty": 1,
-              "group": "Glucometer kit"
             }
           ]
         }

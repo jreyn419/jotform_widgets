@@ -9,6 +9,14 @@
     "stretcherO2Threshold": 1000,
     "medicalAir": false
   },
+  "questions": [
+    {
+      "label": "Are the Getac, Getac charger and the rig phone present in the rig or with the nurse?",
+      "type": "yesno",
+      "position": "beforeO2",
+      "flagOn": "No"
+    }
+  ],
   "areas": [
     {
       "area": "G (Top Cabinet Towards Back Door)",
@@ -466,6 +474,10 @@
           "items": [
             {
               "name": "Zoll Monitor",
+              "qty": 1
+            },
+            {
+              "name": "Zoll charger",
               "qty": 1
             }
           ]

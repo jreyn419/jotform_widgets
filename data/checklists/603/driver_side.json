@@ -3,6 +3,14 @@
     "name": "Driver Side",
     "order": 1
   },
+  "questions": [
+    {
+      "label": "Are the Getac, Getac charger and the rig phone present in the rig or with the nurse?",
+      "type": "yesno",
+      "position": "beforeO2",
+      "flagOn": "No"
+    }
+  ],
   "areas": [
     {
       "area": "Top Rear Cabinet",
@@ -533,6 +541,20 @@
             {
               "name": "Pillowcases (disposable)",
               "qty": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "Stretcher",
+      "categories": [
+        {
+          "name": "Back of Stretcher",
+          "items": [
+            {
+              "name": "Zoll charger",
+              "qty": 1
             }
           ]
         }

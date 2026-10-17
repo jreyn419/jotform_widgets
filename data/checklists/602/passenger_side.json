@@ -3,6 +3,14 @@
     "name": "Passenger Side",
     "order": 2
   },
+  "questions": [
+    {
+      "label": "Has the waste bin been emptied?",
+      "type": "yesno",
+      "position": "beforeO2",
+      "flagOn": "No"
+    }
+  ],
   "areas": [
     {
       "area": "A (Upper CCT Cabinet)",
