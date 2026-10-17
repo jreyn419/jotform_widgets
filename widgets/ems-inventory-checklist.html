@@ -2517,8 +2517,9 @@
 
     /* Seal check on opening: are the seals from last time still there? */
     .modal-overlay.seal-check { z-index: 250; }
-    .seal-check-row { flex-wrap: wrap; }
-    .seal-check-btns { display: flex; gap: 8px; flex-shrink: 0; }
+    .seal-check-row { flex-direction: column; align-items: stretch; gap: 10px; }
+    .seal-check-btns { display: flex; gap: 10px; }
+    .seal-check-btns .seal-row-btn { flex: 1; padding: 12px 10px; }
     .seal-row-btn.no {
       background: white;
       color: #c82333;
