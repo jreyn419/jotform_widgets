@@ -671,6 +671,12 @@
     .category-checkbox:checked::before {
       content: '\2713';
     }
+
+    /* The lone category's pill on the area header: beside the count, same size as the rest */
+    .area-header > .category-checkbox {
+      order: 0;
+      margin: 0;
+    }
     
     .category-status {
       order: 3;
@@ -2897,8 +2903,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.30.2';
+    var VERSION = '1.31.0';
     var CHANGELOG = [
+      { version: '1.31.0', date: '2026-10-17', changes: [
+        'An area whose items all sit in one category (the "General" or "Loose" the format needs) no longer shows that category\u2019s header: the items sit right under the area header, which carries the "all" pill. Groups inside it keep their headers, and the restock list and the dock path drop the redundant name too',
+      ]},
       { version: '1.30.2', date: '2026-10-17', changes: [
         'Fixed: a subcategory header inside an open area sat over the first items of its group (a leftover sticky offset after 1.30.0 made those headers positioned)',
       ]},
@@ -4220,12 +4229,15 @@
             }
           }
 
+          var loneCat = loneCategoryOf(areaName);
           for (var ci = 0; ci < catOrder.length; ci++) {
             var catName = catOrder[ci];
             var catItems = categories[catName] || [];
             var subCats = catChildren[catName] || [];
             var catKey = areaName + '::' + catName;
-            var isCollapsed = collapsedCategories[catKey] || false;
+            // The lone category has no header of its own and never folds: the area does that.
+            var isLone = catName === loneCat;
+            var isCollapsed = !isLone && (collapsedCategories[catKey] || false);
 
             // Category header (collapsible)
             var catHeader = document.createElement('div');
@@ -4297,17 +4309,24 @@
             catStatus.className = 'category-status';
             catStatus.id = 'cat_status_' + generateKey(areaName, catName, '').replace(/[^a-zA-Z0-9]/g, '_');
 
-            catHeader.appendChild(collapseIcon);
-            catHeader.appendChild(catCheckbox);
-            catHeader.appendChild(catLabel);
-            catHeader.appendChild(catStatus);
-            catHeader.appendChild(makeProgressStrip());
-            contentDiv.appendChild(catHeader);
+            if (isLone) {
+              // No category row: the "all" pill goes on the area header, before its count.
+              // The area's own status update keeps it in step (see updateAllStatuses).
+              var areaStatusEl = headerDiv.querySelector('.area-status');
+              headerDiv.insertBefore(catCheckbox, areaStatusEl);
+            } else {
+              catHeader.appendChild(collapseIcon);
+              catHeader.appendChild(catCheckbox);
+              catHeader.appendChild(catLabel);
+              catHeader.appendChild(catStatus);
+              catHeader.appendChild(makeProgressStrip());
+              contentDiv.appendChild(catHeader);
+            }
 
-            // Items container (collapsible)
+            // Items container (collapsible; the lone category's has no id, so nothing folds it)
             var itemsContainer = document.createElement('div');
-            itemsContainer.className = 'category-items';
-            itemsContainer.id = 'cat_items_' + catKey.replace(/[^a-zA-Z0-9]/g, '_');
+            itemsContainer.className = 'category-items' + (isLone ? ' lone-category' : '');
+            if (!isLone) itemsContainer.id = 'cat_items_' + catKey.replace(/[^a-zA-Z0-9]/g, '_');
             itemsContainer.style.display = isCollapsed ? 'none' : 'block';
 
             // Direct items for this category
@@ -5666,7 +5685,8 @@
       var catMeta = categoryMeta[parts[0] + '::' + parts[1]];
       var catLabel = (catMeta && catMeta.displayName) || parts[1];
       document.getElementById('dockName').textContent = item.name;
-      document.getElementById('dockPath').textContent = parts[0] + ' \u203A ' + catLabel;
+      document.getElementById('dockPath').textContent = loneCategoryOf(parts[0]) === parts[1]
+        ? parts[0] : parts[0] + ' \u203A ' + catLabel;
       var valueEl = document.getElementById('dockValue');
       if (document.activeElement !== valueEl) valueEl.value = actual;
       valueEl.max = item.required;
@@ -6839,6 +6859,25 @@
     }
 
     // Check if all items in a category are OK
+    // An area whose items all sit in one top-level category (the data format
+    // needs one; "General" or "Loose" by convention) shows no header for it:
+    // the items sit right under the area header, which carries the "all"
+    // pill. Groups inside the category keep their own headers. A parent area
+    // keeps the header, because its own items render under the group header
+    // and have no area header of their own to carry the pill.
+    function loneCategoryOf(areaName) {
+      var cats = INVENTORY[areaName];
+      if (!cats || areaHierarchy[areaName]) return null;
+      var lone = null;
+      for (var c in cats) {
+        var meta = categoryMeta[areaName + '::' + c] || { level: 0 };
+        if (meta.level !== 0) continue;
+        if (lone !== null) return null;
+        lone = c;
+      }
+      return lone;
+    }
+
     function isCategoryComplete(areaName, catName) {
       var items = INVENTORY[areaName] && INVENTORY[areaName][catName];
       if (!items) return true;
@@ -7934,6 +7973,10 @@
           statusEl.textContent = areaOk + '/' + areaTotal;
           setProgressStrip(header, areaOk, areaTotal);
 
+          // A lone category's "all" pill sits on this header
+          var areaCb = header.querySelector(':scope > .category-checkbox');
+          if (areaCb) areaCb.checked = (areaOk === areaTotal && areaTotal > 0);
+
           if (areaOk === areaTotal) {
             header.classList.add('all-ok');
             statusEl.classList.add('ok');
@@ -8271,8 +8314,9 @@
             // don't stay stuck when scrolling into the next category.
             html += '<div class="shortage-cat-section">';
 
-            // Show category header if there are direct items or subcategories
-            if (hasDirectItems || hasSubCats) {
+            // Show category header if there are direct items or subcategories,
+            // unless it is the area's lone category, which has no header anywhere
+            if ((hasDirectItems || hasSubCats) && loneCategoryOf(area) !== topCat) {
               html += '<div class="shortage-cat-header">' + escapeHtml(topCat) + '</div>';
             }
 
