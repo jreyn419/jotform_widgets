@@ -195,10 +195,6 @@
           "name": "General",
           "items": [
             {
-              "name": "Emergency Blanket",
-              "qty": 2
-            },
-            {
               "name": "Oxygen Cylinder, Type D",
               "qty": 3
             },

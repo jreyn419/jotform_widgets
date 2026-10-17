@@ -199,10 +199,23 @@
             {
               "name": "Responder Bag",
               "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Linens",
+          "items": [
+            {
+              "name": "Blankets",
+              "qty": 6
             },
             {
-              "name": "IV Fluid Warmer",
-              "qty": 1
+              "name": "Pillows",
+              "qty": 3
+            },
+            {
+              "name": "Pillowcases (disposable)",
+              "qty": 3
             }
           ]
         }
@@ -408,8 +421,26 @@
       ]
     },
     {
+      "area": "Front External Cabinet",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Emergency Blanket",
+              "qty": 2
+            },
+            {
+              "name": "IV Fluid Warmer",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "area": "MCI Bag",
-      "childOf": "Short Rear Cabinet",
+      "childOf": "Front External Cabinet",
       "categories": [
         {
           "name": "General",
