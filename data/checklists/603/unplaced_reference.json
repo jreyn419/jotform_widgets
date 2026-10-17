@@ -286,20 +286,6 @@
           ]
         }
       ]
-    },
-    {
-      "area": "Was Medicine StatPacks Cell (602)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Lidocaine HCl Preload",
-              "qty": 1
-            }
-          ]
-        }
-      ]
     }
   ]
 }
