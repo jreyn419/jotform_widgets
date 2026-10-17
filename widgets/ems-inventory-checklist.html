@@ -2515,6 +2515,18 @@
     .seal-row.sealed .seal-row-name { color: #28a745; }
     #sealSheetFooter .seal-all-btn { margin-top: 0; }
 
+    /* Seal check on opening: are the seals from last time still there? */
+    .modal-overlay.seal-check { z-index: 250; }
+    .seal-check-row { flex-wrap: wrap; }
+    .seal-check-btns { display: flex; gap: 8px; flex-shrink: 0; }
+    .seal-row-btn.no {
+      background: white;
+      color: #c82333;
+      border: 1.5px solid #c82333;
+    }
+    .seal-row-btn.no:active { background: #fbe9eb; }
+    .seal-row.answered .seal-check-btns { display: none; }
+
     /* Collapsible Categories */
     .category-header {
       cursor: pointer;
@@ -2549,8 +2561,9 @@
     }
 
     .area-section.expanded .subcategory-header {
-      position: static;
-      /* top value set dynamically by updateStickyOffsets() */
+      /* Does not stick (the sticky stack is capped), but stays positioned so
+         its progress strip is drawn under it and not at the bottom of the list */
+      position: relative;
       z-index: 8;
     }
 
@@ -2754,6 +2767,21 @@
       </div>
     </div>
 
+    <!-- Seal check: on opening, confirm the seals from last time are still there -->
+    <div class="modal-overlay seal-check" id="sealCheckOverlay">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Check the Seals</h2>
+        </div>
+        <div class="modal-body" id="sealCheckContent"></div>
+        <div class="modal-footer" id="sealCheckFooter">
+          <button class="seal-all-btn" onclick="confirmAllSealsPresent()">
+            <span>&#x1F512;</span> All Still Sealed
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Seal Sheet: the last step, after counting and restocking -->
     <div class="modal-overlay" id="sealOverlay" onclick="closeSealSheet()">
       <div class="modal-content" onclick="event.stopPropagation()">
@@ -2866,8 +2894,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.29.1';
+    var VERSION = '1.30.0';
     var CHANGELOG = [
+      { version: '1.30.0', date: '2026-10-17', changes: [
+        'Opening a checklist that carries seals from an earlier day asks, area by area, whether each visible seal is still in place. "Not sealed" opens the area for a recount, and any seals that were inside it are asked about next; "Still sealed" is remembered for the day',
+        'Seals record the day they were last seen, so the question is asked once per day',
+        'Fixed: in an open area, each subcategory header\u2019s progress strip was drawn as a full-width line at the bottom of the list instead of under its header',
+      ]},
       { version: '1.29.1', date: '2026-10-17', changes: [
         'Fixed: folding an area inside a group left its header shifted down over the next area, with a blank strip where it belonged',
       ]},
@@ -4626,6 +4659,7 @@
       inventoryFileQuestions = []; previousReadings = null; restoredLocalTs = null;
       expandedArea = null; expandedGroup = null; focusedKey = null;
       closeRestockModal();
+      closeSealCheck();
       updateOosBanner();
     }
 
@@ -7053,7 +7087,8 @@
           var now = new Date();
           taggedAreas[areaName] = {
             taggedDate: now.toISOString().split('T')[0],
-            taggedTimestamp: now.getTime()
+            taggedTimestamp: now.getTime(),
+            checkedOn: localDateString(now)
           };
           sealed++;
         }
@@ -7386,6 +7421,7 @@
             saveSealState();
           }
           resizeWidget();
+          maybeStartSealCheck();
         });
         return;
       }
@@ -7454,7 +7490,8 @@
       var now = new Date();
       taggedAreas[areaName] = {
         taggedDate: now.toISOString().split('T')[0],
-        taggedTimestamp: now.getTime()
+        taggedTimestamp: now.getTime(),
+        checkedOn: localDateString(now)
       };
 
       // Sealing happens after the count, so collapse the sealed area and stay put
@@ -7522,6 +7559,52 @@
       }
     }
 
+    // Reset an area's own items for a recount
+    function resetAreaItems(areaName) {
+      if (!INVENTORY[areaName]) return;
+      for (var catName in INVENTORY[areaName]) {
+        var items = INVENTORY[areaName][catName];
+        for (var i = 0; i < items.length; i++) {
+          var key = generateKey(areaName, catName, items[i].name);
+          itemStates[key] = { actual: 0 };
+          delete restockStatus[key];
+        }
+      }
+    }
+
+    // Break a seal: log it, reset the area for a recount, open everything
+    // sealed around it, and with breakInside also everything sealed within it
+    function applySealBreak(areaName, reason, breakInside) {
+      var tagInfo = taggedAreas[areaName];
+      brokenSeals.push({
+        area: areaName,
+        reason: reason || 'review',
+        taggedDate: tagInfo ? tagInfo.taggedDate : null,
+        brokenTimestamp: Date.now()
+      });
+      delete taggedAreas[areaName];
+      resetAreaItems(areaName);
+      breakAncestorSeals(areaName);
+
+      if (breakInside) {
+        var inside = descendantAreas(areaName);
+        for (var c = 0; c < inside.length; c++) {
+          var childName = inside[c];
+          if (taggedAreas[childName]) {
+            brokenSeals.push({
+              area: childName,
+              reason: 'parent_broken',
+              taggedDate: taggedAreas[childName].taggedDate,
+              brokenTimestamp: Date.now()
+            });
+            delete taggedAreas[childName];
+          }
+          // Reset what is inside regardless: it is part of the same unit
+          resetAreaItems(childName);
+        }
+      }
+    }
+
     function breakSeal(areaName, reason) {
       // For containers, offer to also break the seals inside
       if (areaHierarchy[areaName]) {
@@ -7542,56 +7625,7 @@
             : 'Breaking the seal will reset items. You will need to re-verify. Continue?';
           if (!confirm(proceedMsg)) return;
 
-          // Break parent
-          var tagInfo = taggedAreas[areaName];
-          brokenSeals.push({
-            area: areaName,
-            reason: reason || 'review',
-            taggedDate: tagInfo ? tagInfo.taggedDate : null,
-            brokenTimestamp: Date.now()
-          });
-          delete taggedAreas[areaName];
-
-          if (INVENTORY[areaName]) {
-            for (var catName in INVENTORY[areaName]) {
-              var items = INVENTORY[areaName][catName];
-              for (var i = 0; i < items.length; i++) {
-                var key = generateKey(areaName, catName, items[i].name);
-                itemStates[key] = { actual: 0 };
-                delete restockStatus[key];
-              }
-            }
-          }
-
-          breakAncestorSeals(areaName);
-
-          // If user chose to break everything inside too
-          if (choice) {
-            for (var c = 0; c < children.length; c++) {
-              var childName = children[c];
-              if (taggedAreas[childName]) {
-                brokenSeals.push({
-                  area: childName,
-                  reason: 'parent_broken',
-                  taggedDate: taggedAreas[childName].taggedDate,
-                  brokenTimestamp: Date.now()
-                });
-                delete taggedAreas[childName];
-              }
-              // Reset child items regardless (they're part of the parent unit)
-              if (INVENTORY[childName]) {
-                for (var catName in INVENTORY[childName]) {
-                  var items = INVENTORY[childName][catName];
-                  for (var i = 0; i < items.length; i++) {
-                    var key = generateKey(childName, catName, items[i].name);
-                    itemStates[key] = { actual: 0 };
-                    delete restockStatus[key];
-                  }
-                }
-              }
-            }
-          }
-
+          applySealBreak(areaName, reason, choice);
           buildUI();
           return;
         }
@@ -7604,32 +7638,126 @@
       if (!confirm(message)) {
         return;
       }
-      // Log the seal break
-      var tagInfo = taggedAreas[areaName];
-      brokenSeals.push({
-        area: areaName,
-        reason: reason || 'review',
-        taggedDate: tagInfo ? tagInfo.taggedDate : null,
-        brokenTimestamp: Date.now()
-      });
-      delete taggedAreas[areaName];
-
-      // Reset all items in this area to 0
-      if (INVENTORY[areaName]) {
-        for (var catName in INVENTORY[areaName]) {
-          var items = INVENTORY[areaName][catName];
-          for (var i = 0; i < items.length; i++) {
-            var key = generateKey(areaName, catName, items[i].name);
-            itemStates[key] = { actual: 0 };
-            delete restockStatus[key];
-          }
-        }
-      }
-
-      // Anything sealed around this area is open now too
-      breakAncestorSeals(areaName);
-
+      applySealBreak(areaName, reason, false);
       buildUI();
+    }
+
+    // =====================================================
+    // SEAL CHECK ON OPENING
+    // =====================================================
+
+    // Areas in display order: parents before what is inside them
+    function areasInDisplayOrder() {
+      var out = [];
+      function visit(name) {
+        out.push(name);
+        var kids = areaHierarchy[name] || [];
+        for (var i = 0; i < kids.length; i++) visit(kids[i]);
+      }
+      for (var areaName in INVENTORY) {
+        if (!areaParent[areaName]) visit(areaName);
+      }
+      return out;
+    }
+
+    // Sealed areas the crew can see: nothing sealed around them
+    function visibleSealedAreas() {
+      var out = [];
+      var all = areasInDisplayOrder();
+      for (var i = 0; i < all.length; i++) {
+        var name = all[i];
+        if (!taggedAreas[name]) continue;
+        var anc = areaAncestors(name);
+        var hidden = false;
+        for (var a = 0; a < anc.length; a++) {
+          if (taggedAreas[anc[a]]) { hidden = true; break; }
+        }
+        if (!hidden) out.push(name);
+      }
+      return out;
+    }
+
+    // Visible seals not yet confirmed today
+    function sealCheckPending() {
+      var today = localDateString(new Date());
+      var vis = visibleSealedAreas();
+      var out = [];
+      for (var i = 0; i < vis.length; i++) {
+        if (taggedAreas[vis[i]].checkedOn !== today) out.push(vis[i]);
+      }
+      return out;
+    }
+
+    function sealCheckOpen() {
+      return document.getElementById('sealCheckOverlay').classList.contains('open');
+    }
+
+    // Called once the restored state is in place: ask about seals from an
+    // earlier day before the count starts
+    function maybeStartSealCheck() {
+      if (!stateReady) return;
+      if (sealCheckPending().length === 0) {
+        if (sealCheckOpen()) closeSealCheck();
+        return;
+      }
+      renderSealCheck();
+      document.getElementById('sealCheckOverlay').classList.add('open');
+    }
+
+    function closeSealCheck() {
+      document.getElementById('sealCheckOverlay').classList.remove('open');
+    }
+
+    function renderSealCheck() {
+      var body = document.getElementById('sealCheckContent');
+      var footer = document.getElementById('sealCheckFooter');
+      var pending = sealCheckPending();
+      var html = '<div class="seal-intro">These areas were sealed last time. Is each seal still in place?</div>';
+      for (var i = 0; i < pending.length; i++) {
+        var name = pending[i];
+        var ancestors = areaAncestors(name);
+        var arg = JSON.stringify(name).replace(/"/g, '&quot;');
+        html += '<div class="seal-row seal-check-row" style="padding-left:' + (20 + ancestors.length * 14) + 'px">' +
+          '<div class="seal-row-info">' +
+            '<div class="seal-row-name">' + escapeHtml(name) + '</div>' +
+            (ancestors.length ? '<div class="seal-row-path">' + escapeHtml(ancestors.join(' \u203A ')) + '</div>' : '') +
+            '<div class="seal-row-status">Sealed ' + escapeHtml(formatTagDate(taggedAreas[name].taggedDate)) + '</div>' +
+          '</div>' +
+          '<div class="seal-check-btns">' +
+            '<button class="seal-row-btn no" onclick="answerSealCheck(' + arg + ', false)">Not sealed</button>' +
+            '<button class="seal-row-btn" onclick="answerSealCheck(' + arg + ', true)">Still sealed</button>' +
+          '</div>' +
+        '</div>';
+      }
+      body.innerHTML = html;
+      footer.style.display = pending.length > 1 ? 'block' : 'none';
+    }
+
+    // Still sealed: noted for today. Not sealed: the area opens for a recount,
+    // and any seals that were inside it are asked about next.
+    function answerSealCheck(areaName, stillSealed) {
+      if (!taggedAreas[areaName]) return;
+      if (stillSealed) {
+        taggedAreas[areaName].checkedOn = localDateString(new Date());
+      } else {
+        applySealBreak(areaName, 'missing', false);
+      }
+      buildUI();
+      saveState();
+      if (sealCheckPending().length === 0) {
+        closeSealCheck();
+      } else {
+        renderSealCheck();
+      }
+    }
+
+    function confirmAllSealsPresent() {
+      var pending = sealCheckPending();
+      var today = localDateString(new Date());
+      for (var i = 0; i < pending.length; i++) taggedAreas[pending[i]].checkedOn = today;
+      buildUI();
+      saveState();
+      closeSealCheck();
     }
 
     function formatTagDate(dateStr) {
@@ -9060,6 +9188,7 @@
           setLoading(false);
           resizeWidget();
           refreshTodayStatus();
+          maybeStartSealCheck();
 
           // ---- Cross-device: fetch sealed state from most recent submission ----
           // Requires the form admin to set a "jotformApiKey" widget setting
@@ -9082,6 +9211,7 @@
                 buildUI();
                 saveSealState();
                 resizeWidget();
+                maybeStartSealCheck();
               }
             });
           }
@@ -9202,6 +9332,7 @@
           stateReady = true;
           saveState();
           setLoading(false);
+          maybeStartSealCheck();
         }
 
         if (isExternalFilePath(standaloneText)) {
