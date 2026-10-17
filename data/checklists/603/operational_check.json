@@ -1,6 +1,7 @@
 {
   "_meta": {
-    "name": "Operational Check"
+    "name": "Operational Check",
+    "order": 4
   },
   "areas": [
     {

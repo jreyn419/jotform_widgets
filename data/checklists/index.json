@@ -6,16 +6,16 @@
       "name": "601",
       "checklists": [
         {
+          "id": "driver_side",
+          "name": "Driver Side"
+        },
+        {
           "id": "26375eda9bf0",
           "name": "Passenger Side"
         },
         {
           "id": "bags",
           "name": "Bags"
-        },
-        {
-          "id": "driver_side",
-          "name": "Driver Side"
         }
       ]
     },
@@ -24,16 +24,16 @@
       "name": "602",
       "checklists": [
         {
-          "id": "bags",
-          "name": "Bags"
-        },
-        {
           "id": "driver_side",
           "name": "Driver Side"
         },
         {
           "id": "passenger_side",
           "name": "Passenger Side"
+        },
+        {
+          "id": "bags",
+          "name": "Bags"
         }
       ]
     },
@@ -42,20 +42,20 @@
       "name": "603",
       "checklists": [
         {
-          "id": "bags",
-          "name": "Bags"
-        },
-        {
           "id": "driver_side",
           "name": "Driver Side"
         },
         {
-          "id": "operational_check",
-          "name": "Operational Check"
-        },
-        {
           "id": "passenger_side",
           "name": "Passenger Side"
+        },
+        {
+          "id": "bags",
+          "name": "Bags"
+        },
+        {
+          "id": "operational_check",
+          "name": "Operational Check"
         }
       ]
     }
