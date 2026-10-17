@@ -665,7 +665,7 @@
       "area": "Action Area (below front cabinet)",
       "categories": [
         {
-          "name": "General",
+          "name": "Suction",
           "items": [
             {
               "name": "Unused Suction Canister Tub + Lid",
@@ -674,7 +674,12 @@
             {
               "name": "Yankauer Suction Tip + Tubing",
               "qty": 1
-            },
+            }
+          ]
+        },
+        {
+          "name": "Right Side Shelving",
+          "items": [
             {
               "name": "Spit Hoods",
               "qty": 3
@@ -710,6 +715,14 @@
               "name": "Gloves - XL",
               "qty": 1,
               "group": "Gloves"
+            },
+            {
+              "name": "Posey restraints (red-ankle)",
+              "qty": 2
+            },
+            {
+              "name": "Posey restraints (blue-wrist)",
+              "qty": 2
             }
           ]
         }
