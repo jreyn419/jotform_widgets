@@ -2608,6 +2608,22 @@
       max-width: 340px;
     }
 
+    .completion-btn {
+      display: none;
+      margin-top: 24px;
+      padding: 14px 28px;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .completion-overlay.sending .completion-title { color: #555; }
+    .completion-overlay.queued .completion-title { color: #b8860b; }
+
     /* Seal All Button */
     .seal-all-btn {
       width: 100%;
@@ -2985,8 +3001,9 @@
     <div class="completion-overlay" id="completionOverlay">
       <button class="completion-close" onclick="closeCompletionPopup()">&times;</button>
       <div class="completion-icon">&#10003;</div>
-      <div class="completion-title">Done!</div>
+      <div class="completion-title" id="completionTitle">Done!</div>
       <div class="completion-message" id="completionMessage"></div>
+      <button type="button" class="completion-btn" id="completionBtn" onclick="completionDone()">Back to the rig list</button>
     </div>
 
     <!-- Reset Dialog -->
@@ -3361,8 +3378,16 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.37.0';
+    var VERSION = '1.38.0';
     var CHANGELOG = [
+      { version: '1.38.0', date: '2026-10-18', changes: [
+        'A finished checklist submits itself through the API (jotformApiKey) the moment the last seal is done: the screen reads "Submitting…", then "Done!" with a Back to the rig list button. The form’s own Submit button is no longer needed and can be hidden',
+        'If Jotform cannot be reached, the checklist is kept on the tablet and sent the next time the widget opens; until then the rig list shows it as "Done today · waiting to send"',
+        'The rig list and the supplies-used gating also count checklists sent from this tablet today, so a just-finished checklist shows as done even before Jotform lists it',
+        'Without an API key nothing changes: the form’s Submit button still submits the checklist',
+        'No doubles: a checklist posts once per visit, and the outbox checks Jotform’s list before resending anything a lost reply left behind',
+        'The crew screen is titled "Crew member" and worded like the rest of the form',
+      ]},
       { version: '1.37.0', date: '2026-10-18', changes: [
         'Enter in the crew search or the supplies-used search picks the top suggestion',
       ]},
@@ -3871,6 +3896,28 @@
     }
 
     var STATE_EXPIRY_MS = 4 * 60 * 60 * 1000; // 4 hours
+
+    // The checklist's submission: the readable report, then the sync block.
+    // Also forgets that each seal was seen today, so the next opening, here
+    // or on another device, asks again whether it is still in place.
+    function buildChecklistSubmission() {
+      var submitReport = generateSubmitValue();
+      for (var sealName in taggedAreas) delete taggedAreas[sealName].checkedOn;
+      saveSealState();
+      var syncData = {
+        taggedAreas: taggedAreas,
+        brokenSeals: brokenSeals,
+        itemStates: itemStates,
+        restockStatus: restockStatus,
+        o2States: o2States,
+        questionAnswers: questionAnswers,
+        rig: currentRig,
+        checklist: currentChecklist,
+        crew: currentCrew,
+        timestamp: Date.now()
+      };
+      return { value: submitReport + '\n\n___SYNC_DATA___\n' + JSON.stringify(syncData), sync: syncData };
+    }
 
     function loadState() {
       try {
@@ -5012,6 +5059,7 @@
       categoryMeta = {}; sealableAreas = {}; areaHierarchy = {}; areaParent = {};
       inventoryFileQuestions = []; previousReadings = null; restoredLocalTs = null;
       expandedArea = null; expandedGroup = null; focusedKey = null;
+      apiSubmitDone = false;
       closeRestockModal();
       closeSealCheck();
       updateOosBanner();
@@ -5170,7 +5218,7 @@
       var chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'crew-chip';
-      chip.textContent = currentCrew ? crewShort(currentCrew.name) : 'Who\u2019s checking?';
+      chip.textContent = currentCrew ? crewShort(currentCrew.name) : 'Crew member';
       chip.onclick = function() { renderCrewScreen(back); };
       return chip;
     }
@@ -5180,13 +5228,13 @@
       if (!container) { next(); return; }
       var widget = document.querySelector('.widget-container');
       if (widget) widget.classList.add('picker-open');
-      setStatusStrip('prompt', 'Who\u2019s checking?');
+      setStatusStrip('prompt', 'Crew member');
       container.innerHTML = '';
       var screen = document.createElement('div');
       screen.className = 'picker crew-screen';
       var title = document.createElement('div');
       title.className = 'picker-title';
-      title.textContent = 'Who\u2019s checking?';
+      title.textContent = 'Crew member';
       screen.appendChild(title);
 
       var finish = function(member) {
@@ -5217,7 +5265,7 @@
         cont.type = 'button';
         cont.className = 'crew-continue';
         cont.id = 'crewContinue';
-        cont.innerHTML = 'Continue as ' + escapeHtml(last.name) + '<small>Someone else? Type a name below.</small>';
+        cont.innerHTML = 'Continue as ' + escapeHtml(last.name) + '<small>Or enter a different name below.</small>';
         cont.onclick = function() { finish(last); };
         screen.appendChild(cont);
       }
@@ -5226,7 +5274,7 @@
       search.type = 'search';
       search.className = 'usage-search';
       search.id = 'crewSearch';
-      search.placeholder = 'Type your name\u2026';
+      search.placeholder = 'Enter crew member name';
       search.setAttribute('autocomplete', 'off');
       screen.appendChild(search);
       var suggest = document.createElement('div');
@@ -5236,7 +5284,7 @@
       var msg = document.createElement('div');
       msg.className = 'usage-msg';
       msg.id = 'crewMsg';
-      msg.textContent = 'Not on the list? Ask a supervisor to add you to the crew roster.';
+      msg.textContent = 'Only names on the crew roster are accepted. Contact a supervisor to be added.';
       screen.appendChild(msg);
       container.appendChild(screen);
       setLoading(false);
@@ -5451,6 +5499,7 @@
             var when = submissionClock(submittedAt);
             var who = submissionCrew(submittedAt);
             el.textContent = 'Done today' + (when ? ' at ' + when : '') + (who ? ' by ' + crewShort(who) : '') + (submittedCount > 1 ? ' (' + submittedCount + ' submissions)' : '')
+              + (submittedAt._local === 'waiting' ? ' \u00B7 waiting to send' : '')
               + (localTs ? ' \u00B7 reopened on this device' : '');
           } else if (localTs) {
             el.classList.add('open');
@@ -5465,7 +5514,7 @@
           }
         }
         note.textContent = list === undefined ? 'Add a Jotform API key to show which checklists are done today.'
-                         : (list === null ? 'Could not reach Jotform to check which checklists are done today.' : '');
+                         : (list === null || list.partial ? 'Could not reach Jotform to check which checklists are done today.' : '');
       };
       getTodaySubmissions(applyStatuses);
     }
@@ -5627,13 +5676,13 @@
     function getTodaySubmissions(callback) {
       var apiKey = typeof JFCustomWidget !== 'undefined' && JFCustomWidget.getWidgetSetting ? JFCustomWidget.getWidgetSetting('jotformApiKey') : null;
       if (!apiKey) { callback(undefined); return; } // undefined = no API configured
-      if (todaySubsCache && (Date.now() - todaySubsCache.ts) < 60000) { callback(todaySubsCache.list); return; }
+      if (todaySubsCache && (Date.now() - todaySubsCache.ts) < 60000) { callback(mergeLocalSubmissions(todaySubsCache.list)); return; }
       var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
       var fp = getFormParams();
       var formID = fp.formID || cachedFormID || null;
       fetchTodaySubmissions(apiBase, formID, apiKey, function(list) {
         if (list !== null) todaySubsCache = { ts: Date.now(), list: list };
-        callback(list);
+        callback(mergeLocalSubmissions(list));
       });
     }
 
@@ -5701,7 +5750,8 @@
     // short, marked "N used on a call", and sits on the restock list.
     // Submitting the checklist spends the entries.
 
-    var USAGE_OUTBOX_KEY = 'ems_usage_outbox';   // entries not yet sent
+    var USAGE_OUTBOX_KEY = 'ems_usage_outbox';   // submissions (usage or checklist) not yet sent
+    var SENT_LOCAL_KEY = 'ems_sent_local';       // submissions this tablet sent today, in case Jotform lists them late
     var USAGE_LOCAL_KEY = 'ems_usage_local';     // entries made on this tablet (14 days)
     var USAGE_WINDOW_MS = 14 * 24 * 3600 * 1000;
     var recentSubsCache = null;                  // { ts, list }
@@ -6026,6 +6076,64 @@
       } catch (e) { callback(false); }
     }
 
+    function queueSubmission(value, timestamp) {
+      var outbox = readJsonStore(USAGE_OUTBOX_KEY, []);
+      outbox.push({ value: value, timestamp: timestamp });
+      writeJsonStore(USAGE_OUTBOX_KEY, outbox);
+    }
+
+    function rememberSentSubmission(value, timestamp) {
+      var today = localDateString(new Date());
+      var sent = readJsonStore(SENT_LOCAL_KEY, []).filter(function(e) {
+        return e && e.timestamp && localDateString(new Date(e.timestamp)) === today;
+      });
+      sent.push({ value: value, timestamp: timestamp });
+      writeJsonStore(SENT_LOCAL_KEY, sent);
+    }
+
+    // What this tablet submitted or still has to send, shaped like Jotform's
+    // own submission records so every status check reads them the same way
+    function localSubmissions() {
+      var fp = getFormParams();
+      var qid = fp.qid || '0';
+      var today = localDateString(new Date());
+      var out = [];
+      var add = function(e, local) {
+        if (!e || !e.value || !e.timestamp) return;
+        var d = new Date(e.timestamp);
+        if (localDateString(d) !== today) return;
+        var sub = { id: 'local-' + e.timestamp, created_at: today + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':00', answers: {}, _local: local };
+        sub.answers[qid] = { answer: e.value };
+        out.push(sub);
+      };
+      var outbox = readJsonStore(USAGE_OUTBOX_KEY, []);
+      for (var i = 0; i < outbox.length; i++) add(outbox[i], 'waiting');
+      var sent = readJsonStore(SENT_LOCAL_KEY, []);
+      for (var k = 0; k < sent.length; k++) add(sent[k], 'sent');
+      return out;
+    }
+
+    // Jotform's list plus this tablet's own, without doubles (same device stamp).
+    // When Jotform could not be reached, the tablet's own still count.
+    function mergeLocalSubmissions(list) {
+      var local = localSubmissions();
+      if (!local.length) return list;
+      var seen = {};
+      var merged = [];
+      for (var i = 0; i < (list || []).length; i++) {
+        var ts = submissionSelection(list[i]).timestamp;
+        if (ts) seen[ts] = true;
+        merged.push(list[i]);
+      }
+      for (var l = 0; l < local.length; l++) {
+        var lts = submissionSelection(local[l]).timestamp;
+        if (lts && seen[lts]) continue;
+        merged.push(local[l]);
+      }
+      if (list === null) merged.partial = true;
+      return merged;
+    }
+
     function rememberUsageLocally(sync) {
       var local = readJsonStore(USAGE_LOCAL_KEY, []);
       var cutoff = Date.now() - USAGE_WINDOW_MS;
@@ -6063,23 +6171,44 @@
     var outboxBusy = false;
     function flushUsageOutbox() {
       if (outboxBusy || !usageAvailable()) return;
-      var outbox = readJsonStore(USAGE_OUTBOX_KEY, []);
-      if (!outbox.length) return;
+      if (!readJsonStore(USAGE_OUTBOX_KEY, []).length) return;
       outboxBusy = true;
-      var next = function() {
-        if (!outbox.length) { outboxBusy = false; writeJsonStore(USAGE_OUTBOX_KEY, []); recentSubsCache = null; return; }
-        var first = outbox[0];
-        postSubmission(first.value, function(ok) {
-          if (!ok) { outboxBusy = false; writeJsonStore(USAGE_OUTBOX_KEY, outbox); return; }
-          outbox.shift();
-          next();
+      recentSubsCache = null;
+      fetchRecentRaw(function(list) {
+        if (!list) { outboxBusy = false; return; }   // Jotform unreachable: try again next time
+        var have = {};
+        for (var i = 0; i < list.length; i++) {
+          var ts = submissionSelection(list[i]).timestamp;
+          if (ts) have[ts] = true;
+        }
+        var outbox = readJsonStore(USAGE_OUTBOX_KEY, []).filter(function(e) {
+          if (!(e && e.timestamp && have[e.timestamp])) return true;
+          rememberSentSubmission(e.value, e.timestamp);   // it got there; only the reply was lost
+          return false;
         });
-      };
-      next();
+        writeJsonStore(USAGE_OUTBOX_KEY, outbox);
+        var next = function() {
+          if (!outbox.length) { outboxBusy = false; writeJsonStore(USAGE_OUTBOX_KEY, []); recentSubsCache = null; todaySubsCache = null; return; }
+          var first = outbox[0];
+          postSubmission(first.value, function(ok) {
+            if (!ok) { outboxBusy = false; writeJsonStore(USAGE_OUTBOX_KEY, outbox); return; }
+            outbox.shift();
+            writeJsonStore(USAGE_OUTBOX_KEY, outbox);
+            rememberSentSubmission(first.value, first.timestamp);
+            next();
+          });
+        };
+        next();
+      });
     }
 
     // Submissions of the last two weeks, cached a minute
     function fetchRecentSubmissions(callback) {
+      fetchRecentRaw(function(list) { callback(list === undefined ? undefined : mergeLocalSubmissions(list)); });
+    }
+
+    // Jotform's own list only: undefined without a key, null when unreachable
+    function fetchRecentRaw(callback) {
       var apiKey = usageAvailable() ? JFCustomWidget.getWidgetSetting('jotformApiKey') : null;
       if (!apiKey) { callback(undefined); return; }
       if (recentSubsCache && (Date.now() - recentSubsCache.ts) < 60000) { callback(recentSubsCache.list); return; }
@@ -8283,17 +8412,69 @@
     }
 
     function showCompletionPopup() {
-      var msgEl = document.getElementById('completionMessage');
-      if (enableTaggedAreas) {
-        msgEl.textContent = 'Please make sure all areas marked as sealed have been tied off before continuing.';
-      } else {
-        msgEl.textContent = 'Please press Next.';
-      }
+      if (apiSubmitDone) return;   // the result screen is already up
+      if (canSubmitViaApi()) { submitChecklistViaApi(); return; }
+      setCompletion('', 'Done!', enableTaggedAreas
+        ? 'Please make sure all areas marked as sealed have been tied off before continuing.'
+        : 'Please press Next.', true, false);
       document.getElementById('completionOverlay').classList.add('open');
+    }
+
+    function setCompletion(mode, title, message, closable, button) {
+      var overlay = document.getElementById('completionOverlay');
+      overlay.classList.remove('sending', 'queued');
+      if (mode) overlay.classList.add(mode);
+      document.getElementById('completionTitle').textContent = title;
+      document.getElementById('completionMessage').textContent = message;
+      overlay.querySelector('.completion-icon').textContent = mode === 'sending' ? '\u2026' : (mode === 'queued' ? '\u23F3' : '\u2713');
+      overlay.querySelector('.completion-close').style.display = closable ? '' : 'none';
+      document.getElementById('completionBtn').style.display = button ? 'inline-block' : 'none';
     }
 
     function closeCompletionPopup() {
       document.getElementById('completionOverlay').classList.remove('open');
+    }
+
+    // The widget submits the finished checklist itself when it has an API
+    // key and knows the form and question, so the form's Submit button is
+    // not needed. Without those, the old "press Next" message stays.
+    function canSubmitViaApi() {
+      if (apiSubmitDone || !pickerActive || !stateReady || !currentRig || !currentChecklist || !usageAvailable()) return false;
+      var fp = getFormParams();
+      return !!((fp.formID || cachedFormID) && fp.qid);
+    }
+
+    var apiSubmitBusy = false;
+    var apiSubmitDone = false;   // this checklist visit has posted (or queued) its submission
+    function submitChecklistViaApi() {
+      if (apiSubmitBusy || apiSubmitDone) return;
+      apiSubmitBusy = true;
+      apiSubmitDone = true;
+      var built = buildChecklistSubmission();
+      setCompletion('sending', 'Submitting\u2026', 'Sending the checklist to Jotform.', false, false);
+      document.getElementById('completionOverlay').classList.add('open');
+      postSubmission(built.value, function(ok) {
+        apiSubmitBusy = false;
+        if (ok) rememberSentSubmission(built.value, built.sync.timestamp);
+        else queueSubmission(built.value, built.sync.timestamp);
+        todaySubsCache = null; recentSubsCache = null;
+        // The next session starts fresh for item counts; seals carry over in their own key
+        try { localStorage.removeItem(getStorageKey()); } catch (e) {}
+        var d = new Date(built.sync.timestamp);
+        setCompletion(ok ? '' : 'queued', ok ? 'Done!' : 'Saved on this tablet',
+          ok ? 'Submitted at ' + clockText(d.getHours(), d.getMinutes()) + '.'
+             : 'Jotform could not be reached. The checklist will be sent the next time the widget opens.',
+          false, true);
+      });
+    }
+
+    // Leave the finished checklist without saving its state again
+    function completionDone() {
+      closeCompletionPopup();
+      var rig = currentRig;
+      resetRuntimeState();
+      setSelectionLabel('');
+      renderPicker(rig);
     }
 
     // =====================================================
@@ -10104,32 +10285,15 @@
         });
 
         JFCustomWidget.subscribe('submit', function() {
-          // Build combined value: plain-text report (visible in Tables)
-          // followed by sync JSON (for state restoration).
-          // extractSyncData() already parses this delimiter format.
-          var submitReport = generateSubmitValue();
-          // The next opening, here or on another device, asks again whether
-          // each seal is still in place: forget that they were seen today
-          for (var sealName in taggedAreas) delete taggedAreas[sealName].checkedOn;
-          saveSealState();
-          var syncData = {
-            taggedAreas: taggedAreas,
-            brokenSeals: brokenSeals,
-            itemStates: itemStates,
-            restockStatus: restockStatus,
-            o2States: o2States,
-            questionAnswers: questionAnswers,
-            rig: currentRig,
-            checklist: currentChecklist,
-            crew: currentCrew,
-            timestamp: Date.now()
-          };
-          var combinedValue = submitReport
-            + '\n\n___SYNC_DATA___\n'
-            + JSON.stringify(syncData);
+          // The form's own Submit button: the fallback when the widget has
+          // no API key. With no checklist open there is nothing to submit.
+          if (pickerActive && !(stateReady && currentChecklist)) {
+            JFCustomWidget.sendSubmit({ valid: false, value: '' });
+            return;
+          }
           JFCustomWidget.sendSubmit({
             valid: true,
-            value: combinedValue
+            value: buildChecklistSubmission().value
           });
 
           // Clear per-submission state so the next session starts fresh for
