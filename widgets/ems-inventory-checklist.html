@@ -1112,6 +1112,129 @@
       text-align: center;
     }
 
+    /* Supplies used: a button on the rig's list, then a search screen */
+    .picker-row.usage-btn {
+      margin-top: 16px;
+      border-style: dashed;
+      background: #fbfcfd;
+    }
+
+    .picker-row.usage-btn .picker-row-name { color: #0b3d91; }
+
+    .usage-search {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px 16px;
+      border: 2px solid #ced4da;
+      border-radius: 12px;
+      font-size: 17px;
+      background: white;
+      margin-bottom: 8px;
+    }
+
+    .usage-search:focus { outline: none; border-color: #0066cc; }
+
+    .usage-suggest {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .usage-suggest-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      background: white;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .usage-suggest-row:active { background: #eef5ff; }
+    .usage-suggest-row.blocked { opacity: 0.55; cursor: default; }
+    .usage-suggest-name { flex: 1; font-size: 15px; font-weight: 600; color: #222; }
+    .usage-suggest-where { font-size: 12px; color: #777; margin-top: 2px; font-weight: 400; }
+    .usage-suggest-why { font-size: 12px; color: #b45309; margin-top: 2px; font-weight: 600; }
+
+    .usage-chosen-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #666;
+      margin: 6px 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .usage-chosen-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 2px solid #dee2e6;
+      border-radius: 12px;
+      background: white;
+      margin-bottom: 8px;
+    }
+
+    .usage-chosen-info { flex: 1; min-width: 0; }
+    .usage-chosen-name { font-size: 15px; font-weight: 700; color: #222; }
+    .usage-chosen-where { font-size: 12px; color: #777; margin-top: 2px; }
+
+    .usage-step {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 10px;
+      background: #e9ecef;
+      font-size: 22px;
+      font-weight: 700;
+      color: #333;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .usage-step:active { background: #d8dde2; }
+    .usage-qty { width: 32px; text-align: center; font-size: 20px; font-weight: 700; flex-shrink: 0; }
+
+    .usage-save {
+      width: 100%;
+      padding: 16px 20px;
+      margin-top: 10px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .usage-save:disabled { background: #adb5bd; cursor: default; }
+    .usage-save:active:not(:disabled) { background: #0052a3; }
+
+    .usage-msg {
+      margin: 10px 4px 0;
+      font-size: 13px;
+      color: #666;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .usage-msg.ok { color: #155724; font-weight: 600; }
+    .usage-msg.warn { color: #b45309; font-weight: 600; }
+
+    /* A row touched by a call: what was used, under the name */
+    .item-note {
+      font-size: 12px;
+      color: #b45309;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
     /* "Before you start": questions and the O2 check in one collapsible block */
     .pre-group {
       background: #e8edf3;
@@ -3204,8 +3327,14 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.34.0';
+    var VERSION = '1.35.0';
     var CHANGELOG = [
+      { version: '1.35.0', date: '2026-10-18', changes: [
+        'Supplies used on a call: a button on the rig\u2019s list opens a search screen; pick the items, set how many were used, Save. The entry is written to the form through the API (jotformApiKey must be a full-access key) and shows in Tables as a readable line',
+        'An item can only be logged once its checklist has been submitted today; the screen says which checklists are not done yet',
+        'The next time that checklist opens, what the call took is subtracted: the row opens short, reads "N used on a call", and is on the restock list already. A used item inside a sealed area opens that seal for a recount',
+        'If Jotform cannot be reached, the entry waits on the tablet and is sent the next time the widget opens',
+      ]},
       { version: '1.34.0', date: '2026-10-18', changes: [
         'Rows that have not been counted yet show the full amount they should have, in grey, instead of "0 of N". The count turns green on Confirm; a lower amount set with the dock shows in amber, and an item skipped with Next shows what it has',
       ]},
@@ -3839,7 +3968,9 @@
 
     // Fetch the sealed state from the most recent JotForm submission so that
     // seals persist across devices and browsers.  Requires the form admin to
-    // add a "jotformApiKey" widget setting (read-only API key is sufficient).
+    // add a "jotformApiKey" widget setting. Reading needs a read-only key;
+    // logging supplies used on a call writes a submission, so a full-access
+    // key is needed for that.
     function fetchLatestSealState(apiBase, formID, apiKey, qid, callback) {
       if (!formID || !apiKey) { callback(null); return; }
       var url = apiBase + '/form/' + encodeURIComponent(formID)
@@ -4121,6 +4252,10 @@
       var infoDiv = document.createElement('div');
       infoDiv.className = 'item-info';
       infoDiv.innerHTML = '<div class="item-name">' + escapeHtml(item.name) + '</div>';
+      var usedOnCall = itemStates[key] && itemStates[key].usedOnCall;
+      if (usedOnCall) {
+        infoDiv.innerHTML += '<div class="item-note">' + usedOnCall + ' used on a call</div>';
+      }
 
       // Tapping anywhere on the row (not a control) moves the focus here
       itemDiv.onclick = (function(k) {
@@ -5014,12 +5149,21 @@
         statusEls[normalizeSelection(cl.id)] = status;
       }
       picker.appendChild(list);
+      if (usageAvailable()) {
+        var usageBtn = document.createElement('button');
+        usageBtn.type = 'button';
+        usageBtn.className = 'picker-row usage-btn';
+        usageBtn.innerHTML = '<span class="picker-row-name">Supplies used on a call</span><span class="picker-row-status">Log</span>';
+        usageBtn.onclick = (function(r) { return function() { renderUsageScreen(r); }; })(rig.id);
+        picker.appendChild(usageBtn);
+      }
       var note = document.createElement('div');
       note.className = 'picker-note';
       picker.appendChild(note);
       container.appendChild(picker);
       setLoading(false);
       resizeWidget();
+      flushUsageOutbox();
 
       var rigNorm = normalizeSelection(rig.id);
       var rowsCheckingTimer = setTimeout(function() {
@@ -5117,6 +5261,8 @@
       var parsed = submissionSyncData(sub);
       var ts = parsed && isFinite(parseFloat(parsed.timestamp)) && parseFloat(parsed.timestamp) > 1e12 ? parseFloat(parsed.timestamp) : null;
       if (!parsed) return { rig: '', checklist: '', timestamp: null };
+      // A supplies-used entry is not a checklist: it never counts as done
+      if (parsed.type === 'usage') return { rig: '', checklist: '', timestamp: ts, usage: true };
       return { rig: normalizeSelection(parsed.rig), checklist: normalizeSelection(parsed.checklist), timestamp: ts };
     }
 
@@ -5275,6 +5421,477 @@
         } else {
           setStatusStrip('pending', prefix + 'Not done today');
         }
+      });
+    }
+
+    // =====================================================
+    // SUPPLIES USED ON A CALL
+    // =====================================================
+    // From the rig's list, "Supplies used on a call" opens a search screen.
+    // The crew picks items from the rig's checklists, sets how many were
+    // used, and Save writes a submission straight to this form through the
+    // API (the jotformApiKey needs full access for that). The submission
+    // carries a sync block of type "usage" and is never counted as a
+    // checklist. An item can only be logged once the checklist it belongs
+    // to has been submitted today. The next time that checklist opens, the
+    // entries newer than its last submission are subtracted: the row opens
+    // short, marked "N used on a call", and sits on the restock list.
+    // Submitting the checklist spends the entries.
+
+    var USAGE_OUTBOX_KEY = 'ems_usage_outbox';   // entries not yet sent
+    var USAGE_LOCAL_KEY = 'ems_usage_local';     // entries made on this tablet (14 days)
+    var USAGE_WINDOW_MS = 14 * 24 * 3600 * 1000;
+    var recentSubsCache = null;                  // { ts, list }
+    var usageIndexCache = {};                    // rigNorm -> [entry]
+    var usageChosen = [];                        // [{ key, checklist, checklistName, name, where, qty }]
+    var usageDoneToday = null;                   // { checklistNorm: true } or null when unknown
+    var usageAppliedFor = null;                  // rig|checklist the current load already handled
+
+    function usageAvailable() {
+      try {
+        return !!(typeof JFCustomWidget !== 'undefined' && JFCustomWidget.getWidgetSetting('jotformApiKey'));
+      } catch (e) { return false; }
+    }
+
+    function readJsonStore(key, fallback) {
+      try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+    }
+
+    function writeJsonStore(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+    }
+
+    function pathForPair(rigId, checklistId) {
+      var setting = JFCustomWidget.getWidgetSetting('checklistPathTemplate');
+      var template = setting ? setting : defaultPathPrefix + DEFAULT_PATH_TEMPLATE;
+      var dec = document.createElement('textarea');
+      dec.innerHTML = template;
+      return dec.value.replace('{rig}', normalizeSelection(rigId)).replace('{checklist}', normalizeSelection(checklistId));
+    }
+
+    // Every count item on the rig's checklists, with the key its row uses
+    function loadUsageIndex(rig, callback) {
+      var rigNorm = normalizeSelection(rig.id);
+      if (usageIndexCache[rigNorm]) { callback(usageIndexCache[rigNorm]); return; }
+      var lists = rig.checklists || [];
+      var entries = [];
+      var pending = lists.length;
+      if (!pending) { callback(entries); return; }
+      lists.forEach(function(cl) {
+        fetchInventoryFile(pathForPair(rig.id, cl.id), function(content) {
+          var parsed = content ? parseJsonLoose(String(content).trim()) : null;
+          var areas = parsed && Array.isArray(parsed.areas) ? parsed.areas : (Array.isArray(parsed) ? parsed : []);
+          for (var a = 0; a < areas.length; a++) {
+            var area = areas[a];
+            var cats = area.categories || [];
+            for (var c = 0; c < cats.length; c++) {
+              var catName = cats[c].name || 'General';
+              var items = cats[c].items || [];
+              for (var i = 0; i < items.length; i++) {
+                var it = items[i];
+                if (!it || !it.name || it.type === 'gauge' || it.type === 'check') continue;
+                var catKey = it.group ? catName + ' > ' + it.group : catName;
+                entries.push({
+                  checklist: normalizeSelection(cl.id),
+                  checklistName: cl.name || cl.id,
+                  name: it.name,
+                  where: area.area + (it.group ? ' \u203A ' + it.group : ''),
+                  key: generateKey(area.area, catKey, it.name),
+                  qty: parseInt(it.qty, 10) || 1
+                });
+              }
+            }
+          }
+          if (--pending === 0) {
+            usageIndexCache[rigNorm] = entries;
+            callback(entries);
+          }
+        });
+      });
+    }
+
+    // Which of the rig's checklists have a submission today
+    function loadUsageDoneToday(rig, callback) {
+      var rigNorm = normalizeSelection(rig.id);
+      getTodaySubmissions(function(list) {
+        if (!list) { callback(null); return; }
+        var done = {};
+        for (var i = 0; i < list.length; i++) {
+          var sel = submissionSelection(list[i]);
+          if (sel.rig === rigNorm && sel.checklist) done[sel.checklist] = true;
+        }
+        callback(done);
+      });
+    }
+
+    function renderUsageScreen(rigId) {
+      var rig = findRig(rigId);
+      var container = document.getElementById('areasContainer');
+      if (!rig || !container) return;
+      var widget = document.querySelector('.widget-container');
+      if (widget) widget.classList.add('picker-open');
+      setStatusStrip('prompt', 'Rig ' + (rig.name || rig.id) + ': supplies used on a call');
+      container.innerHTML = '';
+      usageChosen = [];
+      usageDoneToday = null;
+
+      var screen = document.createElement('div');
+      screen.className = 'picker usage-screen';
+      var head = document.createElement('div');
+      head.className = 'picker-title';
+      var back = document.createElement('button');
+      back.type = 'button';
+      back.className = 'picker-back';
+      back.textContent = '\u2039 Rig ' + (rig.name || rig.id);
+      back.onclick = function() { renderPicker(rig.id); };
+      head.appendChild(back);
+      var headText = document.createElement('span');
+      headText.textContent = 'Supplies used';
+      head.appendChild(headText);
+      screen.appendChild(head);
+
+      var search = document.createElement('input');
+      search.type = 'search';
+      search.className = 'usage-search';
+      search.id = 'usageSearch';
+      search.placeholder = 'Search an item\u2026';
+      search.setAttribute('autocomplete', 'off');
+      screen.appendChild(search);
+
+      var suggest = document.createElement('div');
+      suggest.className = 'usage-suggest';
+      suggest.id = 'usageSuggest';
+      screen.appendChild(suggest);
+
+      var chosenTitle = document.createElement('div');
+      chosenTitle.className = 'usage-chosen-title';
+      chosenTitle.id = 'usageChosenTitle';
+      chosenTitle.textContent = 'Used on this call';
+      chosenTitle.style.display = 'none';
+      screen.appendChild(chosenTitle);
+      var chosen = document.createElement('div');
+      chosen.id = 'usageChosen';
+      screen.appendChild(chosen);
+
+      var save = document.createElement('button');
+      save.type = 'button';
+      save.className = 'usage-save';
+      save.id = 'usageSave';
+      save.textContent = 'Save';
+      save.disabled = true;
+      save.onclick = function() { saveUsage(rig); };
+      screen.appendChild(save);
+
+      var msg = document.createElement('div');
+      msg.className = 'usage-msg';
+      msg.id = 'usageMsg';
+      msg.textContent = 'Loading the rig\u2019s checklists\u2026';
+      screen.appendChild(msg);
+      container.appendChild(screen);
+      setLoading(false);
+      resizeWidget();
+
+      var index = null;
+      var ready = function() {
+        if (!index || usageDoneToday === undefined) return;
+        var m = document.getElementById('usageMsg');
+        if (!m) return;
+        if (usageDoneToday === null) {
+          m.className = 'usage-msg warn';
+          m.textContent = 'Could not check which checklists are done today, so nothing can be logged right now.';
+        } else {
+          var notDone = [];
+          for (var i = 0; i < (rig.checklists || []).length; i++) {
+            if (!usageDoneToday[normalizeSelection(rig.checklists[i].id)]) notDone.push(rig.checklists[i].name || rig.checklists[i].id);
+          }
+          m.className = 'usage-msg';
+          m.textContent = notDone.length
+            ? 'Items from ' + notDone.join(', ') + ' cannot be logged until that checklist is done today.'
+            : 'Type a few letters, tap the item, set how many were used.';
+        }
+        renderUsageSuggestions(index, search.value);
+      };
+      usageDoneToday = undefined;
+      loadUsageIndex(rig, function(entries) { index = entries; ready(); });
+      loadUsageDoneToday(rig, function(done) { usageDoneToday = done; ready(); });
+      search.oninput = function() { if (index) renderUsageSuggestions(index, search.value); };
+    }
+
+    function usageItemBlocked(entry) {
+      return !usageDoneToday || !usageDoneToday[entry.checklist];
+    }
+
+    function renderUsageSuggestions(index, query) {
+      var box = document.getElementById('usageSuggest');
+      if (!box) return;
+      box.innerHTML = '';
+      var q = String(query || '').trim().toLowerCase();
+      if (q.length < 2) return;
+      var words = q.split(/\s+/);
+      var hits = [];
+      for (var i = 0; i < index.length && hits.length < 12; i++) {
+        var e = index[i];
+        var hay = (e.name + ' ' + e.where + ' ' + e.checklistName).toLowerCase();
+        var ok = true;
+        for (var w = 0; w < words.length; w++) if (hay.indexOf(words[w]) === -1) { ok = false; break; }
+        if (!ok) continue;
+        var already = false;
+        for (var c = 0; c < usageChosen.length; c++) if (usageChosen[c].key === e.key && usageChosen[c].checklist === e.checklist) already = true;
+        if (!already) hits.push(e);
+      }
+      for (var h = 0; h < hits.length; h++) {
+        var entry = hits[h];
+        var blocked = usageItemBlocked(entry);
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'usage-suggest-row' + (blocked ? ' blocked' : '');
+        row.innerHTML = '<span class="usage-suggest-name">' + escapeHtml(entry.name) +
+          '<div class="usage-suggest-where">' + escapeHtml(entry.checklistName + ' \u203A ' + entry.where) + '</div>' +
+          (blocked ? '<div class="usage-suggest-why">' + escapeHtml(entry.checklistName) + ' not done today</div>' : '') +
+          '</span>';
+        if (!blocked) {
+          row.onclick = (function(en) { return function() { addUsageItem(en); }; })(entry);
+        }
+        box.appendChild(row);
+      }
+    }
+
+    function addUsageItem(entry) {
+      usageChosen.push({ key: entry.key, checklist: entry.checklist, checklistName: entry.checklistName, name: entry.name, where: entry.where, qty: 1, max: entry.qty });
+      var search = document.getElementById('usageSearch');
+      if (search) { search.value = ''; search.focus(); }
+      var box = document.getElementById('usageSuggest');
+      if (box) box.innerHTML = '';
+      renderUsageChosen();
+    }
+
+    function renderUsageChosen() {
+      var box = document.getElementById('usageChosen');
+      var title = document.getElementById('usageChosenTitle');
+      var save = document.getElementById('usageSave');
+      if (!box) return;
+      box.innerHTML = '';
+      if (title) title.style.display = usageChosen.length ? 'block' : 'none';
+      if (save) save.disabled = usageChosen.length === 0;
+      for (var i = 0; i < usageChosen.length; i++) {
+        var c = usageChosen[i];
+        var row = document.createElement('div');
+        row.className = 'usage-chosen-row';
+        row.innerHTML = '<div class="usage-chosen-info"><div class="usage-chosen-name">' + escapeHtml(c.name) + '</div>' +
+          '<div class="usage-chosen-where">' + escapeHtml(c.checklistName + ' \u203A ' + c.where) + '</div></div>' +
+          '<button type="button" class="usage-step" data-i="' + i + '" data-d="-1">\u2212</button>' +
+          '<span class="usage-qty">' + c.qty + '</span>' +
+          '<button type="button" class="usage-step" data-i="' + i + '" data-d="1">+</button>';
+        box.appendChild(row);
+      }
+      var steps = box.querySelectorAll('.usage-step');
+      for (var s = 0; s < steps.length; s++) {
+        steps[s].onclick = function() {
+          var idx = parseInt(this.getAttribute('data-i'), 10);
+          var d = parseInt(this.getAttribute('data-d'), 10);
+          var item = usageChosen[idx];
+          if (!item) return;
+          item.qty += d;
+          if (item.qty <= 0) usageChosen.splice(idx, 1);
+          renderUsageChosen();
+        };
+      }
+      resizeWidget();
+    }
+
+    // The entry: a readable report for Jotform Tables plus the sync block
+    function buildUsageEntry(rig) {
+      var now = Date.now();
+      var used = {};
+      var lines = [];
+      for (var i = 0; i < usageChosen.length; i++) {
+        var c = usageChosen[i];
+        if (!used[c.checklist]) used[c.checklist] = {};
+        used[c.checklist][c.key] = (used[c.checklist][c.key] || 0) + c.qty;
+        lines.push('  \u2022 ' + c.qty + ' \u00D7 ' + c.name + ' (' + c.checklistName + ' \u203A ' + c.where + ')');
+      }
+      var d = new Date(now);
+      var report = 'SUPPLIES USED ON A CALL\nRig ' + normalizeSelection(rig.id) + ' \u00B7 ' + formatTagDate(localDateString(d)) + ' ' + clockText(d.getHours(), d.getMinutes()) +
+        '\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n' + lines.join('\n');
+      var sync = { type: 'usage', rig: normalizeSelection(rig.id), used: used, timestamp: now };
+      return { value: report + '\n\n___SYNC_DATA___\n' + JSON.stringify(sync), sync: sync };
+    }
+
+    function postSubmission(value, callback) {
+      var apiKey = JFCustomWidget.getWidgetSetting('jotformApiKey');
+      var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
+      var fp = getFormParams();
+      var formID = fp.formID || cachedFormID || null;
+      var qid = fp.qid || null;
+      if (!apiKey || !formID || !qid) { callback(false); return; }
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', apiBase + '/form/' + encodeURIComponent(formID) + '/submissions?apiKey=' + encodeURIComponent(apiKey), true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.timeout = 10000;
+        xhr.onload = function() {
+          var ok = xhr.status >= 200 && xhr.status < 300;
+          if (ok) {
+            try { var r = JSON.parse(xhr.responseText); ok = !r.responseCode || r.responseCode < 300; } catch (e) {}
+          }
+          callback(ok);
+        };
+        xhr.onerror = function() { callback(false); };
+        xhr.ontimeout = function() { callback(false); };
+        xhr.send('submission[' + encodeURIComponent(qid) + ']=' + encodeURIComponent(value));
+      } catch (e) { callback(false); }
+    }
+
+    function rememberUsageLocally(sync) {
+      var local = readJsonStore(USAGE_LOCAL_KEY, []);
+      var cutoff = Date.now() - USAGE_WINDOW_MS;
+      local = local.filter(function(e) { return e && e.timestamp > cutoff; });
+      local.push(sync);
+      writeJsonStore(USAGE_LOCAL_KEY, local);
+    }
+
+    function saveUsage(rig) {
+      if (!usageChosen.length) return;
+      var entry = buildUsageEntry(rig);
+      var save = document.getElementById('usageSave');
+      var msg = document.getElementById('usageMsg');
+      if (save) save.disabled = true;
+      if (msg) { msg.className = 'usage-msg'; msg.textContent = 'Saving\u2026'; }
+      rememberUsageLocally(entry.sync);
+      postSubmission(entry.value, function(ok) {
+        if (!ok) {
+          var outbox = readJsonStore(USAGE_OUTBOX_KEY, []);
+          outbox.push({ value: entry.value, timestamp: entry.sync.timestamp });
+          writeJsonStore(USAGE_OUTBOX_KEY, outbox);
+        }
+        recentSubsCache = null;
+        usageChosen = [];
+        renderPicker(rig.id);
+        var note = document.querySelector('.picker-note');
+        if (note) {
+          note.className = 'picker-note ' + (ok ? 'usage-msg ok' : 'usage-msg warn');
+          note.textContent = ok ? 'Supplies used saved.' : 'Saved on this tablet. It will be sent when Jotform can be reached.';
+        }
+      });
+    }
+
+    // Entries that could not be sent are retried whenever the picker shows
+    var outboxBusy = false;
+    function flushUsageOutbox() {
+      if (outboxBusy || !usageAvailable()) return;
+      var outbox = readJsonStore(USAGE_OUTBOX_KEY, []);
+      if (!outbox.length) return;
+      outboxBusy = true;
+      var next = function() {
+        if (!outbox.length) { outboxBusy = false; writeJsonStore(USAGE_OUTBOX_KEY, []); recentSubsCache = null; return; }
+        var first = outbox[0];
+        postSubmission(first.value, function(ok) {
+          if (!ok) { outboxBusy = false; writeJsonStore(USAGE_OUTBOX_KEY, outbox); return; }
+          outbox.shift();
+          next();
+        });
+      };
+      next();
+    }
+
+    // Submissions of the last two weeks, cached a minute
+    function fetchRecentSubmissions(callback) {
+      var apiKey = usageAvailable() ? JFCustomWidget.getWidgetSetting('jotformApiKey') : null;
+      if (!apiKey) { callback(undefined); return; }
+      if (recentSubsCache && (Date.now() - recentSubsCache.ts) < 60000) { callback(recentSubsCache.list); return; }
+      var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
+      var fp = getFormParams();
+      var formID = fp.formID || cachedFormID || null;
+      if (!formID) { callback(null); return; }
+      var since = localDateString(new Date(Date.now() - USAGE_WINDOW_MS));
+      var filter = encodeURIComponent(JSON.stringify({ 'created_at:gt': since + ' 00:00:00' }));
+      var url = apiBase + '/form/' + encodeURIComponent(formID) + '/submissions?apiKey=' + encodeURIComponent(apiKey)
+              + '&limit=100&orderby=id&direction=desc&filter=' + filter;
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.timeout = 5000;
+        xhr.onload = function() {
+          if (xhr.status !== 200) { callback(null); return; }
+          try {
+            var resp = JSON.parse(xhr.responseText);
+            var list = resp.content || [];
+            recentSubsCache = { ts: Date.now(), list: list };
+            callback(list);
+          } catch (e) { callback(null); }
+        };
+        xhr.onerror = function() { callback(null); };
+        xhr.ontimeout = function() { callback(null); };
+        xhr.send();
+      } catch (e) { callback(null); }
+    }
+
+    // Usage entries for a rig, from Jotform and from this tablet, newest first
+    function usageEntriesFor(list, rigNorm) {
+      var byTs = {};
+      var add = function(sync) {
+        if (!sync || sync.type !== 'usage' || normalizeSelection(sync.rig) !== rigNorm) return;
+        var ts = parseFloat(sync.timestamp);
+        if (!isFinite(ts)) return;
+        byTs[ts] = sync;
+      };
+      for (var i = 0; i < (list || []).length; i++) add(submissionSyncData(list[i]));
+      var local = readJsonStore(USAGE_LOCAL_KEY, []);
+      for (var l = 0; l < local.length; l++) add(local[l]);
+      var out = [];
+      for (var k in byTs) out.push(byTs[k]);
+      out.sort(function(a, b) { return b.timestamp - a.timestamp; });
+      return out;
+    }
+
+    // The newest real submission of the open checklist, by the device stamp
+    function lastSubmissionTs(list) {
+      var best = 0;
+      for (var i = 0; i < (list || []).length; i++) {
+        var sel = submissionSelection(list[i]);
+        if (sel.rig === currentRig && sel.checklist === currentChecklist && sel.timestamp && sel.timestamp > best) best = sel.timestamp;
+      }
+      return best;
+    }
+
+    // Subtract what calls took since this checklist was last submitted
+    function applyUsageOnOpen() {
+      if (!selectorActive || !currentRig || !currentChecklist || !usageAvailable()) return;
+      var tag = currentRig + '|' + currentChecklist;
+      fetchRecentSubmissions(function(list) {
+        if (!list || tag !== currentRig + '|' + currentChecklist || !stateReady) return;
+        var since = lastSubmissionTs(list);
+        var entries = usageEntriesFor(list, currentRig);
+        var used = {};
+        for (var e = 0; e < entries.length; e++) {
+          var en = entries[e];
+          if (en.timestamp <= since) continue;
+          var mine = en.used && en.used[currentChecklist];
+          for (var key in (mine || {})) used[key] = (used[key] || 0) + (parseInt(mine[key], 10) || 0);
+        }
+        var changed = false;
+        for (var k in used) {
+          var parts = k.split('::');
+          var item = findItem(parts[0], parts[1], parts[2]);
+          if (!item || !used[k]) continue;
+          var st = itemStates[k];
+          if (st && st.touched) continue; // counted already this session
+          // A used item inside a sealed area: that seal was opened on the call
+          var chain = areaAncestors(parts[0]).concat([parts[0]]);
+          for (var a = 0; a < chain.length; a++) {
+            if (taggedAreas[chain[a]]) applySealBreak(chain[a], 'used_on_call', false);
+          }
+          itemStates[k] = { actual: Math.max(0, item.required - used[k]), touched: true, usedOnCall: used[k] };
+          changed = true;
+        }
+        if (!changed) return;
+        expandedArea = null;
+        expandedGroup = null;
+        buildUI();
+        saveState();
+        saveSealState();
+        resizeWidget();
+        maybeStartSealCheck();
       });
     }
 
@@ -9153,6 +9770,7 @@
           resizeWidget();
           refreshTodayStatus();
           maybeStartSealCheck();
+          applyUsageOnOpen();
 
           // ---- Cross-device: fetch sealed state from most recent submission ----
           // Requires the form admin to set a "jotformApiKey" widget setting
