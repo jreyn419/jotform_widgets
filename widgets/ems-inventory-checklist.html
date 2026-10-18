@@ -23,6 +23,7 @@
       height: 100vh;
       max-height: 100vh;
       background: #f5f5f5;
+      overflow-x: hidden;
     }
 
     .widget-header {
@@ -984,6 +985,11 @@
       font-weight: 700;
       color: #333;
       padding-left: 5px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .change-btn {
@@ -1085,6 +1091,8 @@
 
     .picker-row-name {
       flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
       font-size: 16px;
       font-weight: 700;
       color: #333;
@@ -1098,7 +1106,31 @@
       background: #e9ecef;
       color: #495057;
       white-space: nowrap;
+      max-width: 55%;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+
+    /* More behind the pill: a round (i) that opens the details */
+    .picker-row-more {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid #b7cff5;
+      background: #eef5ff;
+      color: #0b3d91;
+      font-size: 13px;
+      font-weight: 700;
+      font-style: italic;
+      font-family: Georgia, serif;
+      line-height: 24px;
+      text-align: center;
+    }
+
+    .picker-detail-row { padding: 12px 0; border-bottom: 1px solid #eee; font-size: 15px; color: #333; }
+    .picker-detail-row small { display: block; color: #777; font-size: 13px; margin-top: 2px; }
+    .picker-detail-title { font-size: 13px; font-weight: 700; color: #777; text-transform: uppercase; margin: 16px 0 4px; }
 
     .picker-row-status.submitted { background: #d4edda; color: #155724; }
     .picker-row-status.open { background: #dbe9ff; color: #0b3d91; }
@@ -2959,6 +2991,16 @@
     </div>
 
     <!-- Seal Sheet: the last step, after counting and restocking -->
+    <div class="modal-overlay" id="pickerDetailOverlay" onclick="closePickerDetail()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2 id="pickerDetailTitle">Details</h2>
+          <button class="modal-close" onclick="closePickerDetail()">×</button>
+        </div>
+        <div class="modal-body" id="pickerDetailBody"></div>
+      </div>
+    </div>
+
     <div class="modal-overlay" id="sealOverlay" onclick="closeSealSheet()">
       <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -3380,8 +3422,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.39.0';
+    var VERSION = '1.39.1';
     var CHANGELOG = [
+      { version: '1.39.1', date: '2026-10-18', changes: [
+        'Checklist status pills hold one line: when it was done and by whom ("Done 6:42 AM · M. Garcia"). Anything more (several submissions, waiting to send, reopened on this device) is behind an (i) button on the row that opens the details',
+        'Nothing in the widget can cause side scrolling any more: long names and labels are cut with an ellipsis instead',
+      ]},
       { version: '1.39.0', date: '2026-10-18', changes: [
         'The rig is remembered for 24 hours like the crew member and shown as a chip next to the name. The widget opens straight on that rig’s checklists, so Supplies used is one press closer and the rig cannot be switched by accident: changing it means tapping the chip',
         'The yellow banner is gone from the crew, rig, checklist and supplies-used screens, where it only repeated the title. On an open checklist the status line no longer repeats the rig and checklist shown in the header',
@@ -5384,6 +5430,33 @@
       return true;
     }
 
+    // The details behind a row's (i): every submission today, and this device's progress
+    function openPickerDetail(name, subs, localTs) {
+      var body = document.getElementById('pickerDetailBody');
+      var title = document.getElementById('pickerDetailTitle');
+      if (!body || !title) return;
+      title.textContent = name;
+      var html = '<div class="picker-detail-title">Submitted today (' + subs.length + ')</div>';
+      for (var i = 0; i < subs.length; i++) {
+        var when = submissionClock(subs[i]);
+        var who = submissionCrew(subs[i]);
+        html += '<div class="picker-detail-row">' + escapeHtml(when || 'Time unknown') + (who ? ' \u00B7 ' + escapeHtml(who) : '') +
+          (subs[i]._local === 'waiting' ? '<small>Waiting to send: Jotform could not be reached. It goes out the next time the widget opens.</small>' : '') + '</div>';
+      }
+      if (localTs) {
+        var ld = new Date(localTs);
+        html += '<div class="picker-detail-title">This device</div>' +
+          '<div class="picker-detail-row">Reopened after the submission<small>Last change ' + clockText(ld.getHours(), ld.getMinutes()) + '. Opening the checklist continues from there.</small></div>';
+      }
+      body.innerHTML = html;
+      document.getElementById('pickerDetailOverlay').classList.add('open');
+    }
+
+    function closePickerDetail() {
+      var o = document.getElementById('pickerDetailOverlay');
+      if (o) o.classList.remove('open');
+    }
+
     function findRig(rigId) {
       if (!rigIndexData) return null;
       for (var i = 0; i < rigIndexData.rigs.length; i++) {
@@ -5501,6 +5574,8 @@
         row.onclick = (function(r, k) { return function() { choosePair(r, k); }; })(rig.id, cl.id);
         list.appendChild(row);
         statusEls[normalizeSelection(cl.id)] = status;
+        status._row = row;
+        status._name = cl.name || cl.id;
       }
       picker.appendChild(list);
       if (usageAvailable()) {
@@ -5527,29 +5602,40 @@
         clearTimeout(rowsCheckingTimer);
         for (var k in statusEls) {
           var el = statusEls[k];
-          var submittedAt = null, submittedCount = 0;
+          var subs = [];
           if (list) {
             for (var s = 0; s < list.length; s++) {
               var sel = submissionSelection(list[s]);
-              if (sel.rig === rigNorm && sel.checklist === k) {
-                submittedCount++;
-                if (!submittedAt) submittedAt = list[s];
-              }
+              if (sel.rig === rigNorm && sel.checklist === k) subs.push(list[s]);
             }
           }
+          subs.sort(function(a, b) { return (submissionSelection(b).timestamp || 0) - (submissionSelection(a).timestamp || 0); });
+          var submittedAt = subs.length ? subs[0] : null;
           var localTs = localProgressFor(rig.id, k);
+          var oldMore = el._row && el._row.querySelector('.picker-row-more');
+          if (oldMore) oldMore.parentNode.removeChild(oldMore);
           el.classList.remove('checking', 'submitted', 'open', 'pending');
           if (submittedAt) {
+            // The pill: when and who. Anything more is behind the (i)
             el.classList.add('submitted');
             var when = submissionClock(submittedAt);
             var who = submissionCrew(submittedAt);
-            el.textContent = 'Done today' + (when ? ' at ' + when : '') + (who ? ' by ' + crewShort(who) : '') + (submittedCount > 1 ? ' (' + submittedCount + ' submissions)' : '')
-              + (submittedAt._local === 'waiting' ? ' \u00B7 waiting to send' : '')
-              + (localTs ? ' \u00B7 reopened on this device' : '');
+            el.textContent = (submittedAt._local === 'waiting' ? '\u23F3 ' : '') + 'Done' + (when ? ' ' + when : '') + (who ? ' \u00B7 ' + crewShort(who) : '');
+            var waiting = false;
+            for (var w = 0; w < subs.length; w++) if (subs[w]._local === 'waiting') waiting = true;
+            if (subs.length > 1 || waiting || localTs) {
+              var more = document.createElement('span');
+              more.className = 'picker-row-more';
+              more.setAttribute('role', 'button');
+              more.title = 'Details';
+              more.textContent = 'i';
+              more.onclick = (function(nm, list2, lts) { return function(e) { e.stopPropagation(); openPickerDetail(nm, list2, lts); }; })(el._name, subs, localTs);
+              el._row.appendChild(more);
+            }
           } else if (localTs) {
             el.classList.add('open');
             var ld = new Date(localTs);
-            el.textContent = 'In progress on this device, ' + clockText(ld.getHours(), ld.getMinutes());
+            el.textContent = 'In progress ' + clockText(ld.getHours(), ld.getMinutes());
           } else if (list === undefined) {
             el.textContent = '';
             el.style.display = 'none';
