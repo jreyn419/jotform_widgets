@@ -782,6 +782,12 @@
       color: #28a745;
     }
 
+    /* Not counted yet: the expected amount, quietly */
+    .focus-active .checklist-item.pending .item-count {
+      color: #aaa;
+      font-weight: 500;
+    }
+
     .focus-active .checklist-item.checked:not(.focused) .item-name {
       color: #999;
     }
@@ -3198,8 +3204,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.33.0';
+    var VERSION = '1.34.0';
     var CHANGELOG = [
+      { version: '1.34.0', date: '2026-10-18', changes: [
+        'Rows that have not been counted yet show the full amount they should have, in grey, instead of "0 of N". The count turns green on Confirm; a lower amount set with the dock shows in amber, and an item skipped with Next shows what it has',
+      ]},
       { version: '1.33.0', date: '2026-10-18', changes: [
         'The dock offers the full amount for an item not yet counted, so the usual case is one tap: the "All" button is now "Confirm", which records the amount shown and moves on',
         'Plus, minus and typing change the amount on offer without recording it; Confirm or Enter records it, Next moves on without recording',
@@ -4123,7 +4132,8 @@
 
       var countEl = document.createElement('span');
       countEl.className = 'item-count';
-      countEl.textContent = countText(actual, item.required);
+      countEl.textContent = countText(actual, item.required, itemPending(key));
+      if (itemPending(key)) itemDiv.classList.add('pending');
 
       var reqLabel = document.createElement('span');
       reqLabel.className = 'item-required';
@@ -4225,8 +4235,26 @@
       return itemDiv;
     }
 
-    function countText(actual, required) {
+    // An item not yet counted shows the full amount it should have; the
+    // count is only marked once the crew confirms or adjusts it
+    function countText(actual, required, pending) {
+      if (pending) return required + ' of ' + required;
       return (actual >= required ? '\u2713 ' : '') + actual + ' of ' + required;
+    }
+
+    function itemPending(key) {
+      var st = itemStates[key];
+      return !(st && st.touched) && !(st && st.actual);
+    }
+
+    function refreshRowCount(key) {
+      var parts = key.split('::');
+      var item = findItem(parts[0], parts[1], parts[2]);
+      var itemDiv = document.getElementById('item_' + key.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (!item || !itemDiv) return;
+      var countEl = itemDiv.querySelector('.item-count');
+      if (countEl) countEl.textContent = countText((itemStates[key] || { actual: 0 }).actual, item.required, itemPending(key));
+      itemDiv.classList.toggle('pending', itemPending(key));
     }
 
     // Remove restocked designation from checklist
@@ -5792,6 +5820,7 @@
       var current = focusedKey;
       if (itemStates[current] && !itemStates[current].touched) {
         itemStates[current].touched = true;
+        refreshRowCount(current);
         if (stateReady) saveState();
         updateSummary();
       }
@@ -6875,7 +6904,8 @@
           else if (value > 0) itemDiv.classList.add('short');
           else itemDiv.classList.add('missing');
           var countEl = itemDiv.querySelector('.item-count');
-          if (countEl) countEl.textContent = countText(value, item.required);
+          if (countEl) countEl.textContent = countText(value, item.required, false);
+          itemDiv.classList.remove('pending');
           updateFocusExtras(itemDiv, key);
         }
       }
