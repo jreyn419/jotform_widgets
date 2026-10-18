@@ -3422,8 +3422,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.39.1';
+    var VERSION = '1.39.2';
     var CHANGELOG = [
+      { version: '1.39.2', date: '2026-10-18', changes: [
+        'Fix: confirming the last item of an area dropped the focus instead of moving on. The last category folded, nothing was left in view, and the widget gave up before looking at the next area or group. It now moves on to the next place with work; verified across every 602 and 603 checklist end to end',
+      ]},
       { version: '1.39.1', date: '2026-10-18', changes: [
         'Checklist status pills hold one line: when it was done and by whom ("Done 6:42 AM · M. Garcia"). Anything more (several submissions, waiting to send, reopened on this device) is behind an (i) button on the row that opens the details',
         'Nothing in the widget can cause side scrolling any more: long names and labels are cut with an ellipsis instead',
@@ -7101,7 +7104,13 @@
     function advanceFocus(fromKey, scroll, skipCurrent) {
       if (!enableFocusRow) return;
       var rows = getVisibleItemRows();
-      if (rows.length === 0) { clearFocusedRow(); return; }
+      if (rows.length === 0) {
+        // The last category just folded, so nothing is in view: move on to
+        // the next category, area or group with work instead of giving up
+        if (fromKey && focusNextContainer(fromKey, scroll !== false)) return;
+        clearFocusedRow();
+        return;
+      }
 
       var startIdx = -1;
       if (fromKey) {
