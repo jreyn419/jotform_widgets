@@ -70,44 +70,7 @@
           "name": "Right: Large Box",
           "items": [
             {
-              "name": "Monitor Battery (charged)",
-              "qty": 2
-            },
-            {
               "name": "Electrode Bag",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "name": "Right: Small Box",
-          "items": [
-            {
-              "name": "Adult/Neonatal Adhesive SpO2 Sensor",
-              "qty": 3
-            },
-            {
-              "name": "Infant Adhesive SpO2 Sensor",
-              "qty": 3
-            },
-            {
-              "name": "Monitor Printer Paper Rolls",
-              "qty": 2
-            },
-            {
-              "name": "W/A Temp Probe Sheaths",
-              "qty": 2
-            },
-            {
-              "name": "Razors (For EKG Prep)",
-              "qty": 2
-            },
-            {
-              "name": "Adult/Child Defib Pads",
-              "qty": 1
-            },
-            {
-              "name": "Infant/Pediatric Defib Pads",
               "qty": 1
             }
           ]
@@ -198,48 +161,39 @@
           "name": "Top Shelf",
           "items": [
             {
-              "name": "Inline Nebulizer",
-              "qty": 3
-            },
-            {
-              "name": "Ventilator filters",
-              "qty": 3
-            },
-            {
-              "name": "Omniflex",
-              "qty": 3
-            },
-            {
-              "name": "Inline ETCO2",
-              "qty": 3
-            },
-            {
               "name": "Full Sets",
-              "qty": 10
+              "qty": 10,
+              "group": "Full Sets"
             },
             {
               "name": "Half Sets",
-              "qty": 10
+              "qty": 10,
+              "group": "Half Sets"
             },
             {
               "name": "SpO2 Sensor, Clip",
-              "qty": 1
+              "qty": 1,
+              "group": "Monitor Cables"
             },
             {
               "name": "Monitor-to-SpO2 Cable",
-              "qty": 1
+              "qty": 1,
+              "group": "Monitor Cables"
             },
             {
-              "name": "Montor-to-BP-cuff connector",
-              "qty": 1
+              "name": "Monitor-to-BP-cuff connector",
+              "qty": 1,
+              "group": "Monitor Cables"
             },
             {
               "name": "4-lead cord",
-              "qty": 1
+              "qty": 1,
+              "group": "Monitor Cables"
             },
             {
               "name": "BP cuff connector tubing (short, bifurcated tubing)",
-              "qty": 1
+              "qty": 1,
+              "group": "Monitor Cables"
             },
             {
               "name": "Lancets",
@@ -274,37 +228,101 @@
             {
               "name": "7",
               "qty": 1,
-              "group": "BP Cuffs"
+              "group": "Monitor BP Cuffs"
             },
             {
               "name": "8",
               "qty": 1,
-              "group": "BP Cuffs"
+              "group": "Monitor BP Cuffs"
             },
             {
               "name": "9",
               "qty": 1,
-              "group": "BP Cuffs"
+              "group": "Monitor BP Cuffs"
             },
             {
               "name": "10",
               "qty": 1,
-              "group": "BP Cuffs"
+              "group": "Monitor BP Cuffs"
             },
             {
               "name": "11",
               "qty": 1,
-              "group": "BP Cuffs"
+              "group": "Monitor BP Cuffs"
             },
             {
               "name": "11L",
               "qty": 1,
-              "group": "BP Cuffs"
+              "group": "Monitor BP Cuffs"
             },
             {
               "name": "12",
               "qty": 1,
-              "group": "BP Cuffs"
+              "group": "Monitor BP Cuffs"
+            }
+          ]
+        },
+        {
+          "name": "Bottom Shelf",
+          "items": [
+            {
+              "name": "Inline Nebulizer",
+              "qty": 3,
+              "group": "Vent Circ Attachments"
+            },
+            {
+              "name": "Ventilator filters",
+              "qty": 3,
+              "group": "Vent Circ Attachments"
+            },
+            {
+              "name": "Omniflex",
+              "qty": 3,
+              "group": "Vent Circ Attachments"
+            },
+            {
+              "name": "Inline ETCO2",
+              "qty": 3,
+              "group": "Vent Circ Attachments"
+            },
+            {
+              "name": "Adult/Neonatal Adhesive SpO2 Sensor",
+              "qty": 3,
+              "group": "Monitor Disposables, Temp Probes"
+            },
+            {
+              "name": "Infant Adhesive SpO2 Sensor",
+              "qty": 3,
+              "group": "Monitor Disposables, Temp Probes"
+            },
+            {
+              "name": "Monitor Printer Paper Rolls",
+              "qty": 2,
+              "group": "Monitor Disposables, Temp Probes"
+            },
+            {
+              "name": "W/A Temp Probe Sheaths",
+              "qty": 2,
+              "group": "Monitor Disposables, Temp Probes"
+            },
+            {
+              "name": "Razors (For EKG Prep)",
+              "qty": 2,
+              "group": "Monitor Disposables, Temp Probes"
+            },
+            {
+              "name": "Adult/Child Defib Pads",
+              "qty": 1,
+              "group": "Monitor Disposables, Temp Probes"
+            },
+            {
+              "name": "Infant/Pediatric Defib Pads",
+              "qty": 1,
+              "group": "Monitor Disposables, Temp Probes"
+            },
+            {
+              "name": "Monitor Battery (charged)",
+              "qty": 2
             }
           ]
         }

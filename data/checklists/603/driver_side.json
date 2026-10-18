@@ -627,35 +627,43 @@
           "items": [
             {
               "name": "Adult NRB",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric NRB",
-              "qty": 3
+              "qty": 3,
+              "group": "Adult Cannulas, Masks"
             },
             {
               "name": "Adult Nasal Cannula",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric Nasal Cannula",
-              "qty": 3
+              "qty": 3,
+              "group": "Adult Cannulas, Masks"
             },
             {
               "name": "Adult Nebulizer Mask",
-              "qty": 3
-            },
-            {
-              "name": "Pediatric Nebulizer Mask",
-              "qty": 3
+              "qty": 3,
+              "group": "Adult Cannulas, Masks"
             },
             {
               "name": "Adult EtCO2 Nasal Cannula",
-              "qty": 3
+              "qty": 3,
+              "group": "Adult Cannulas, Masks"
+            },
+            {
+              "name": "Pediatric NRB",
+              "qty": 3,
+              "group": "Pediatric Cannulas, Masks"
+            },
+            {
+              "name": "Pediatric Nasal Cannula",
+              "qty": 3,
+              "group": "Pediatric Cannulas, Masks"
+            },
+            {
+              "name": "Pediatric Nebulizer Mask",
+              "qty": 3,
+              "group": "Pediatric Cannulas, Masks"
             },
             {
               "name": "Pediatric EtCO2 Nasal Cannula",
-              "qty": 3
+              "qty": 3,
+              "group": "Pediatric Cannulas, Masks"
             },
             {
               "name": "Handheld Nebulizer Kit",
@@ -680,6 +688,126 @@
             {
               "name": "PEEP Valve",
               "qty": 3
+            },
+            {
+              "name": "20 Fr. NPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "22 Fr. NPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "24 Fr. NPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "26 Fr. NPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "28 Fr. NPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "30 Fr. NPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "32 Fr. NPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "34 Fr. NPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "36 Fr. NPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "40mm PINK OPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "50mm BLUE OPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "60mm GRAY OPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "70mm WHITE OPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "80mm GREEN OPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "90mm YELLOW OPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "100mm PINK OPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "110mm ORANGE OPA",
+              "qty": 1,
+              "group": "OPAs/NPAs"
+            },
+            {
+              "name": "90kg ORANGE",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "50-90kg GREEN",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "30-60kg YELLOW",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "25-35kg WHITE",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "10-25kg GRAY",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "5-12kg BLUE",
+              "qty": 1,
+              "group": "iGels"
+            },
+            {
+              "name": "2-5kg PINK",
+              "qty": 1,
+              "group": "iGels"
             }
           ]
         },
