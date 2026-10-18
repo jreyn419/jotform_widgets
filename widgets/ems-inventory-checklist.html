@@ -3422,8 +3422,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.39.2';
+    var VERSION = '1.39.3';
     var CHANGELOG = [
+      { version: '1.39.3', date: '2026-10-18', changes: [
+        'When the widget moves on to the next area or group, or one is tapped open, it lands with that area\u2019s header at the top of the screen (just under the header of the group it sits in). Before, it lined up the first item instead and often left the header halfway down',
+        'Areas near the end of the list reach the top too: room is added below the last area when needed',
+      ]},
       { version: '1.39.2', date: '2026-10-18', changes: [
         'Fix: confirming the last item of an area dropped the focus instead of moving on. The last category folded, nothing was left in view, and the widget gave up before looking at the next area or group. It now moves on to the next place with work; verified across every 602 and 603 checklist end to end',
       ]},
@@ -7089,6 +7093,72 @@
       });
     }
 
+    // Land a newly opened area or group with its header at the top, just
+    // under the sticky headers of the groups around it. Near the end of the
+    // list a spacer adds the room needed to get there. When the row to work
+    // on would then sit below the screen, the row wins instead. A second look
+    // once things settle covers the dock or footer resizing right after the
+    // landing, which changes how far the list can scroll.
+    function nodeLandingTarget(container, node) {
+      var stack = 0;
+      var g = enclosingGroupDiv(node);
+      while (g) {
+        var gh = g.querySelector(':scope > .area-header');
+        if (gh && getComputedStyle(gh).position === 'sticky') stack += gh.getBoundingClientRect().height;
+        g = enclosingGroupDiv(g);
+      }
+      var cRect = container.getBoundingClientRect();
+      return Math.max(0, container.scrollTop + node.getBoundingClientRect().top - cRect.top - stack);
+    }
+
+    // Make sure the list can scroll to target, with a margin to spare
+    function ensureScrollRoom(container, target) {
+      var spacer = document.getElementById('scrollSpacer');
+      if (!spacer || spacer.parentNode !== container || spacer.nextSibling) {
+        if (spacer && spacer.parentNode) spacer.parentNode.removeChild(spacer);
+        spacer = document.createElement('div');
+        spacer.id = 'scrollSpacer';
+        spacer.setAttribute('aria-hidden', 'true');
+        container.appendChild(spacer);
+      }
+      var MARGIN = 200;
+      var maxWithout = container.scrollHeight - spacer.offsetHeight - container.clientHeight;
+      spacer.style.height = (target > maxWithout - MARGIN ? Math.ceil(target - maxWithout + MARGIN) : 0) + 'px';
+    }
+
+    function glideTo(container, target) {
+      var distance = Math.abs(target - container.scrollTop);
+      if (distance < 1) return;
+      if (distance > container.clientHeight) container.scrollTop = target;
+      else container.scrollTo({ top: target, behavior: 'smooth' });
+    }
+
+    var landingToken = 0;
+    function scrollNodeToTop(node, row) {
+      var container = document.getElementById('areasContainer');
+      if (!container || !node) return;
+      var token = ++landingToken;
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          if (token !== landingToken) return;
+          var target = nodeLandingTarget(container, node);
+          if (row) {
+            var cRect = container.getBoundingClientRect();
+            var rowBottom = container.scrollTop + row.getBoundingClientRect().bottom - cRect.top;
+            if (rowBottom > target + cRect.height - 12) { scrollRowIntoView(row, true); return; }
+          }
+          ensureScrollRoom(container, target);
+          glideTo(container, target);
+          setTimeout(function() {
+            if (token !== landingToken || !node.isConnected) return;
+            var settled = nodeLandingTarget(container, node);
+            ensureScrollRoom(container, settled);
+            if (Math.abs(container.scrollTop - settled) > 2) glideTo(container, settled);
+          }, 450);
+        });
+      });
+    }
+
     function flashHeader(header) {
       if (!header) return;
       header.classList.remove('landed');
@@ -7230,7 +7300,10 @@
         } finally {
           suppressToggleScroll = false;
         }
-        setFocusedItem(next, scroll, true);
+        setFocusedItem(next, false);
+        // A new area or group always lands at the top. (The caller's scroll
+        // flag is about category changes inside an area, which scroll themselves.)
+        scrollNodeToTop(node, document.getElementById('item_' + next.replace(/[^a-zA-Z0-9]/g, '_')));
         flashHeader(node.querySelector(':scope > .area-header'));
         return true;
       }
@@ -7294,11 +7367,10 @@
           } finally {
             suppressToggleScroll = false;
           }
-          if (focusedKey) {
-            var landedRow = document.getElementById('item_' + focusedKey.replace(/[^a-zA-Z0-9]/g, '_'));
-            if (landedRow) scrollRowIntoView(landedRow, true);
+          if (next) {
+            scrollNodeToTop(next, focusedKey ? document.getElementById('item_' + focusedKey.replace(/[^a-zA-Z0-9]/g, '_')) : null);
+            flashHeader(next.querySelector(':scope > .area-header'));
           }
-          if (next) flashHeader(next.querySelector(':scope > .area-header'));
         }, 350);
       }
     }
@@ -7941,25 +8013,7 @@
         expandedArea = areaName;
         updateStickyOffsets();
         advanceFocus(null, false);
-        if (!suppressToggleScroll) setTimeout(function() {
-          if (isChild) {
-            // For child areas inside a group, we need to scroll so the child
-            // area header appears just below the parent group's sticky header.
-            // scrollIntoView would put it at top:0, hidden behind the group header.
-            var scrollParent = document.getElementById('areasContainer');
-            if (scrollParent) {
-              var areaRect = areaDiv.getBoundingClientRect();
-              var scrollRect = scrollParent.getBoundingClientRect();
-              // Group header sticks at top:0 with height ~45px
-              var groupHeaderHeight = 45;
-              var areaTopInView = areaRect.top - scrollRect.top;
-              var targetScroll = scrollParent.scrollTop + areaTopInView - groupHeaderHeight;
-              scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
-            }
-          } else {
-            areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 50);
+        if (!suppressToggleScroll) scrollNodeToTop(areaDiv);
       } else {
         expandedArea = null;
         clearFocusedRow();
@@ -8003,6 +8057,7 @@
         expandedGroup = groupName;
         updateStickyOffsets();
         advanceFocus(null, false);
+        if (!suppressToggleScroll) scrollNodeToTop(groupDiv);
       } else {
         var open = groupDiv.querySelectorAll('.expanded');
         for (var oi = 0; oi < open.length; oi++) open[oi].classList.remove('expanded');
@@ -8851,27 +8906,8 @@
       } else if (expandedArea) {
         // buildUI's own auto-advance opened the next area; scroll it into view
         // accounting for any sticky group header above it.
-        setTimeout(function() {
-          var areaDiv = document.getElementById('area_' + expandedArea.replace(/[^a-zA-Z0-9]/g, '_'));
-          if (areaDiv) {
-            var scrollParent = document.getElementById('areasContainer');
-            if (scrollParent) {
-              var areaRect = areaDiv.getBoundingClientRect();
-              var scrollRect = scrollParent.getBoundingClientRect();
-              // Measure the sticky group header height if this area is inside a group
-              var groupHeaderHeight = 0;
-              var parentGroup = areaDiv.closest('.area-group');
-              if (parentGroup) {
-                var groupHeader = parentGroup.querySelector('.area-header');
-                if (groupHeader) groupHeaderHeight = groupHeader.getBoundingClientRect().height;
-              }
-              var targetScroll = scrollParent.scrollTop + (areaRect.top - scrollRect.top) - groupHeaderHeight;
-              scrollParent.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
-            } else {
-              areaDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          }
-        }, 150);
+        var areaDiv = document.getElementById('area_' + expandedArea.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (areaDiv) scrollNodeToTop(areaDiv);
       }
     }
 
