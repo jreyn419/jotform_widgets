@@ -602,6 +602,19 @@
               "qty": 4
             }
           ]
+        },
+        {
+          "name": "Top of Bench",
+          "items": [
+            {
+              "name": "Yellow Table",
+              "qty": 1
+            },
+            {
+              "name": "Medslinger Bag",
+              "qty": 1
+            }
+          ]
         }
       ]
     },
@@ -612,11 +625,11 @@
           "name": "Back of Stretcher",
           "items": [
             {
-              "name": "Zoll charger",
+              "name": "Zoll Monitor",
               "qty": 1
             },
             {
-              "name": "Monitor Charger",
+              "name": "Zoll charger",
               "qty": 1
             }
           ]
@@ -920,6 +933,11 @@
             {
               "name": "Temporal Thermometer",
               "qty": 1
+            },
+            {
+              "name": "Gloves - XS",
+              "qty": 1,
+              "group": "Gloves"
             },
             {
               "name": "Gloves - S",
