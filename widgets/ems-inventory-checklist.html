@@ -3378,8 +3378,14 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.38.1';
+    var VERSION = '1.38.2';
     var CHANGELOG = [
+      { version: '1.38.2', date: '2026-10-18', changes: [
+        'Report fix: broken seals were never cleared after a submission and came back with the last submission on every opening, so the summary counted every seal ever broken. Each break is now reported once, in the next submission',
+        'Report fix: items restocked inside an area that was then sealed were left out of the report, because sealing happens after restocking now. They are reported; an item still unavailable inside a sealed area stays in the report until that area is recounted',
+        'Report fix: every broken seal that was not "missing" was labelled "Scheduled review". The line now says why (opened for a recount, opened on a call, opened with its container, seal was missing, reset) and by whom',
+        'Sealed areas in the report say who sealed them',
+      ]},
       { version: '1.38.1', date: '2026-10-18', changes: [
         'The crew screen names who to contact to be added to the roster, from the crewContact widget setting (for example "Jack Reynolds (707) 494-8288"), so the contact stays inside Jotform like the roster',
       ]},
@@ -3906,10 +3912,23 @@
     function buildChecklistSubmission() {
       var submitReport = generateSubmitValue();
       for (var sealName in taggedAreas) delete taggedAreas[sealName].checkedOn;
+      // The breaks go out with this submission and are not reported again
+      var reportedBreaks = brokenSeals;
+      brokenSeals = [];
+      // A restock is done once reported: the item is full now. An item left
+      // unavailable keeps its status so it is reported until it is recounted
+      for (var rk in restockStatus) {
+        var rs = restockStatus[rk];
+        if (!(rs && rs.restocked)) continue;
+        var rp = rk.split('::');
+        var rItem = findItem(rp[0], rp[1], rp[2]);
+        if (rItem) itemStates[rk] = { actual: rItem.required, touched: true };
+        delete restockStatus[rk];
+      }
       saveSealState();
       var syncData = {
         taggedAreas: taggedAreas,
-        brokenSeals: brokenSeals,
+        brokenSeals: reportedBreaks,
         itemStates: itemStates,
         restockStatus: restockStatus,
         o2States: o2States,
@@ -8615,7 +8634,7 @@
         fetchLatestSealState(apiBase, formID, apiKey, qid, function(remote) {
           if (remote && remote.taggedAreas) {
             taggedAreas = remote.taggedAreas;
-            if (remote.brokenSeals) brokenSeals = remote.brokenSeals;
+            // Its broken seals were reported in that submission: not again
           }
           // Rebuild regardless — either with restored seals or with a clean slate
           autoBreakOverdueSeals();
@@ -9777,9 +9796,6 @@
           continue;
         }
 
-        // Skip items in tagged areas
-        if (taggedAreas[areaName]) continue;
-
         // Find the item details
         var item = findItem(areaName, catName, itemName);
         if (!item) continue;
@@ -9815,7 +9831,8 @@
           area: taggedArea,
           taggedDate: info.taggedDate,
           daysSinceTagged: days,
-          reviewNeeded: needsReview
+          reviewNeeded: needsReview,
+          by: info.by || ''
         });
       }
 
@@ -9993,8 +10010,16 @@
         lines.push('────────────────────────────────────────');
         for (var b = 0; b < brokenSeals.length; b++) {
           var bs = brokenSeals[b];
-          var reasonLabel = bs.reason === 'missing' ? 'Seal was missing' : 'Scheduled review';
+          var reasonLabel = ({
+            missing: 'Seal was missing',
+            review: 'Opened for a recount',
+            used_on_call: 'Opened on a call',
+            child_broken: 'Opened: something inside was opened',
+            parent_broken: 'Opened with its container',
+            manual_reset: 'Reset'
+          })[bs.reason] || 'Opened';
           var bLine = '  • ' + bs.area + ' — ' + reasonLabel;
+          if (bs.by) bLine += ' by ' + bs.by;
           if (bs.taggedDate) {
             bLine += ' (sealed since ' + formatTagDate(bs.taggedDate) + ')';
           }
@@ -10009,7 +10034,7 @@
         lines.push('────────────────────────────────────────');
         for (var t = 0; t < taggedList.length; t++) {
           var ta = taggedList[t];
-          var tLine = '  • ' + ta.area + ' — Tagged: ' + formatTagDate(ta.taggedDate) + ' (' + ta.daysSinceTagged + ' days)';
+          var tLine = '  • ' + ta.area + ' — Sealed ' + formatTagDate(ta.taggedDate) + (ta.by ? ' by ' + ta.by : '') + ' (' + ta.daysSinceTagged + ' days)';
           if (ta.reviewNeeded) {
             tLine += ' [REVIEW OVERDUE]';
           }
@@ -10028,7 +10053,7 @@
           var rItems = rGrouped.groups[rArea];
           lines.push('  ' + rArea + ':');
           for (var rj = 0; rj < rItems.length; rj++) {
-            lines.push('    • ' + rItems[rj].name + ' (x' + rItems[rj].quantityRestocked + ')');
+            lines.push('    • ' + rItems[rj].name + (rItems[rj].quantityRestocked > 0 ? ' (x' + rItems[rj].quantityRestocked + ')' : ''));
           }
         }
         lines.push('');
@@ -10260,7 +10285,7 @@
             fetchLatestSealState(apiBase, formID, apiKey, qid, function(remote) {
               if (remote && remote.taggedAreas && remote.timestamp > localTs) {
                 taggedAreas = remote.taggedAreas;
-                if (remote.brokenSeals) brokenSeals = remote.brokenSeals;
+                // Its broken seals were reported in that submission: not again
                 autoBreakOverdueSeals();
                 clearUnsealedItemStates();
                 buildUI();
