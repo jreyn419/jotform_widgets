@@ -1143,6 +1143,8 @@
     }
 
     .crew-chip:active { background: #eef5ff; }
+    .picker-title .crew-chip + .crew-chip { margin-left: 0; }
+    .rig-chip { background: #eef5ff; border-color: #b7cff5; color: #0b3d91; }
 
     .selection-crew { color: #666; font-weight: 500; }
 
@@ -3378,8 +3380,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.38.2';
+    var VERSION = '1.39.0';
     var CHANGELOG = [
+      { version: '1.39.0', date: '2026-10-18', changes: [
+        'The rig is remembered for 24 hours like the crew member and shown as a chip next to the name. The widget opens straight on that rig’s checklists, so Supplies used is one press closer and the rig cannot be switched by accident: changing it means tapping the chip',
+        'The yellow banner is gone from the crew, rig, checklist and supplies-used screens, where it only repeated the title. On an open checklist the status line no longer repeats the rig and checklist shown in the header',
+      ]},
       { version: '1.38.2', date: '2026-10-18', changes: [
         'Report fix: broken seals were never cleared after a submission and came back with the last submission on every opening, so the summary counted every seal ever broken. Each break is now reported once, in the next submission',
         'Report fix: items restocked inside an area that was then sealed were left out of the report, because sealing happens after restocking now. They are reported; an item still unavailable inside a sealed area stays in the report until that area is recounted',
@@ -5100,6 +5106,18 @@
       return 'ems_last_rig_' + (fp.formID || cachedFormID || 'form');
     }
 
+    // The rig is a shift-long choice: remembered 24 hours, like the crew member
+    var RIG_REMEMBER_MS = 24 * 60 * 60 * 1000;
+    function rememberRig(rigId) {
+      writeJsonStore(lastRigKey(), { rig: normalizeSelection(rigId), ts: Date.now() });
+    }
+
+    function rememberedRig() {
+      var last = readJsonStore(lastRigKey(), null);
+      if (!last || typeof last !== 'object' || !last.rig || !last.ts || (Date.now() - last.ts) > RIG_REMEMBER_MS) return null;
+      return findRig(last.rig) ? last.rig : null;
+    }
+
     function initPicker(indexSetting, data, start) {
       pickerActive = true;
       selectorActive = true;
@@ -5108,7 +5126,7 @@
       var dec = document.createElement('textarea');
       dec.innerHTML = indexSetting;
       var indexPath = dec.value;
-      setStatusStrip('prompt', 'Loading rigs\u2026');
+      setStatusStrip('info', '');
       // The default index is searched upward from the widget folder; an explicit
       // setting is used as given.
       var prefixes = indexPath === DEFAULT_RIG_INDEX ? ['', '../', '../../'] : [''];
@@ -5143,11 +5161,8 @@
         } else {
           rigIndexData = parsed;
         }
-        var lastRig = null;
-        try { lastRig = localStorage.getItem(lastRigKey()); } catch (e) {}
-        var known = lastRig && findRig(lastRig);
         loadCrewRoster(function() {
-          renderCrewScreen(function() { renderPicker(known ? lastRig : null); });
+          renderCrewScreen(function() { renderPicker(rememberedRig()); });
         });
       };
       tryNext();
@@ -5236,6 +5251,17 @@
     }
 
     // A small "J. Reynolds" button on the picker titles; tapping it changes the crew
+    // The rig for the shift; tapping it is the only way to change rigs
+    function rigChip(rig) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'crew-chip rig-chip';
+      chip.textContent = 'Rig ' + (rig.name || rig.id);
+      chip.title = 'Change rig';
+      chip.onclick = function() { renderPicker(null); };
+      return chip;
+    }
+
     function crewChip(back) {
       var chip = document.createElement('button');
       chip.type = 'button';
@@ -5250,7 +5276,7 @@
       if (!container) { next(); return; }
       var widget = document.querySelector('.widget-container');
       if (widget) widget.classList.add('picker-open');
-      setStatusStrip('prompt', 'Crew member');
+      setStatusStrip('info', '');
       container.innerHTML = '';
       var screen = document.createElement('div');
       screen.className = 'picker crew-screen';
@@ -5416,7 +5442,7 @@
       var rig = rigId ? findRig(rigId) : null;
 
       if (!rig) {
-        setStatusStrip('prompt', 'Choose a rig');
+        setStatusStrip('info', '');
         var title = document.createElement('div');
         title.className = 'picker-title';
         title.textContent = 'Which rig?';
@@ -5429,7 +5455,7 @@
           tile.type = 'button';
           tile.className = 'picker-tile';
           tile.textContent = rigs[i].name || rigs[i].id;
-          tile.onclick = (function(id) { return function() { renderPicker(id); }; })(rigs[i].id);
+          tile.onclick = (function(id) { return function() { rememberRig(id); renderPicker(id); }; })(rigs[i].id);
           grid.appendChild(tile);
         }
         if (rigs.length === 0) {
@@ -5445,18 +5471,13 @@
         return;
       }
 
-      setStatusStrip('prompt', 'Rig ' + (rig.name || rig.id) + ': choose a checklist');
+      setStatusStrip('info', '');
       var head = document.createElement('div');
       head.className = 'picker-title';
-      var back = document.createElement('button');
-      back.type = 'button';
-      back.className = 'picker-back';
-      back.textContent = '\u2039 Rigs';
-      back.onclick = function() { renderPicker(null); };
-      head.appendChild(back);
       var headText = document.createElement('span');
-      headText.textContent = 'Rig ' + (rig.name || rig.id);
+      headText.textContent = 'Checklists';
       head.appendChild(headText);
+      head.appendChild(rigChip(rig));
       head.appendChild(crewChip(function() { renderPicker(rig.id); }));
       picker.appendChild(head);
 
@@ -5547,7 +5568,7 @@
       var rig = findRig(rigId);
       var rigNorm = normalizeSelection(rigId), clNorm = normalizeSelection(checklistId);
       if (!rigNorm || !clNorm) return;
-      try { localStorage.setItem(lastRigKey(), rigNorm); } catch (e) {}
+      rememberRig(rigNorm);
       var widget = document.querySelector('.widget-container');
       if (widget) widget.classList.remove('picker-open');
       currentRig = rigNorm;
@@ -5715,7 +5736,8 @@
       var label = selectorActive && currentRig
         ? 'Rig ' + currentRig + ' \u00B7 ' + (inventoryTitle || currentChecklist)
         : (inventoryTitle || '');
-      var prefix = label ? label + ': ' : '';
+      // The header already names the rig and checklist when the picker is in use
+      var prefix = (!selectorActive && label) ? label + ': ' : '';
       var localText = null;
       if (restoredLocalTs) {
         var d = new Date(restoredLocalTs);
@@ -5727,7 +5749,6 @@
       var apiKey = typeof JFCustomWidget !== 'undefined' && JFCustomWidget.getWidgetSetting ? JFCustomWidget.getWidgetSetting('jotformApiKey') : null;
       if (!apiKey) {
         if (localText) setStatusStrip('open', prefix + localText);
-        else if (selectorActive && label) setStatusStrip('info', label);
         else setStatusStrip('info', '');
         return;
       }
@@ -5867,7 +5888,7 @@
       if (!rig || !container) return;
       var widget = document.querySelector('.widget-container');
       if (widget) widget.classList.add('picker-open');
-      setStatusStrip('prompt', 'Rig ' + (rig.name || rig.id) + ': supplies used on a call');
+      setStatusStrip('info', '');
       container.innerHTML = '';
       usageChosen = [];
       usageDoneToday = null;
@@ -5879,12 +5900,14 @@
       var back = document.createElement('button');
       back.type = 'button';
       back.className = 'picker-back';
-      back.textContent = '\u2039 Rig ' + (rig.name || rig.id);
+      back.textContent = '\u2039 Checklists';
       back.onclick = function() { renderPicker(rig.id); };
       head.appendChild(back);
       var headText = document.createElement('span');
       headText.textContent = 'Supplies used';
       head.appendChild(headText);
+      head.appendChild(rigChip(rig));
+      head.appendChild(crewChip(function() { renderUsageScreen(rig.id); }));
       screen.appendChild(head);
 
       var search = document.createElement('input');
