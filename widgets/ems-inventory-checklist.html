@@ -2727,7 +2727,7 @@
           <span class="dock-of" id="dockOf"></span>
         </div>
         <button type="button" class="dock-btn" id="dockPlus" title="One more">+</button>
-        <button type="button" class="dock-all" id="dockAll" title="All present">All &#10003;</button>
+        <button type="button" class="dock-all" id="dockConfirm" title="Confirm amount">Confirm</button>
         <button type="button" class="dock-next" id="dockNext">Next &rsaquo;</button>
       </div>
     </div>
@@ -3198,8 +3198,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.32.1';
+    var VERSION = '1.33.0';
     var CHANGELOG = [
+      { version: '1.33.0', date: '2026-10-18', changes: [
+        'The dock offers the full amount for an item not yet counted, so the usual case is one tap: the "All" button is now "Confirm", which records the amount shown and moves on',
+        'Plus, minus and typing change the amount on offer without recording it; Confirm or Enter records it, Next moves on without recording',
+      ]},
       { version: '1.32.1', date: '2026-10-17', changes: [
         'A count left unfinished on a device now counts as in progress for 4 hours after the last change instead of 8',
       ]},
@@ -5708,6 +5712,11 @@
       if (key === focusedKey) updateFocusDock();
     }
 
+    // The amount shown in the dock for the focused item. It starts at the
+    // full amount for an item not yet counted and is only recorded on Confirm.
+    var dockPending = 0;
+    var dockPendingKey = null;
+
     function updateFocusDock() {
       var dock = document.getElementById('focusDock');
       if (!dock) return;
@@ -5720,36 +5729,60 @@
       // Only count items use the dock; gauges and checks carry their own controls
       if (!enableFocusRow || !item || item.type === 'gauge' || item.type === 'check') {
         dock.classList.remove('show');
+        dockPendingKey = null;
         return;
       }
-      var actual = (itemStates[key] || { actual: 0 }).actual;
+      var st = itemStates[key] || { actual: 0 };
+      if (key !== dockPendingKey) {
+        // A fresh item: offer the full amount; otherwise show what was recorded
+        dockPending = (!st.touched && !st.actual) ? item.required : st.actual;
+        dockPendingKey = key;
+      }
       var catMeta = categoryMeta[parts[0] + '::' + parts[1]];
       var catLabel = (catMeta && catMeta.displayName) || parts[1];
       document.getElementById('dockName').textContent = item.name;
       document.getElementById('dockPath').textContent = loneCategoryOf(parts[0]) === parts[1]
         ? parts[0] : parts[0] + ' \u203A ' + catLabel;
       var valueEl = document.getElementById('dockValue');
-      if (document.activeElement !== valueEl) valueEl.value = actual;
+      if (document.activeElement !== valueEl) valueEl.value = dockPending;
       valueEl.max = item.required;
       document.getElementById('dockOf').textContent = 'of ' + item.required;
       dock.classList.add('show');
     }
 
+    function dockItem() {
+      if (!focusedKey) return null;
+      var parts = focusedKey.split('::');
+      return findItem(parts[0], parts[1], parts[2]);
+    }
+
+    function dockShowPending() {
+      var valueEl = document.getElementById('dockValue');
+      if (valueEl) valueEl.value = dockPending;
+    }
+
+    // Plus and minus change the amount on offer; nothing is recorded yet
     function dockAdjust(delta) {
-      if (!focusedKey) return;
-      adjustItem(focusedKey, delta);
+      var item = dockItem();
+      if (!item) return;
+      dockPending = Math.max(0, Math.min(item.required, dockPending + delta));
+      dockShowPending();
     }
 
     function dockSetValue(raw) {
-      if (!focusedKey) return;
-      setItemValue(focusedKey, parseInt(raw, 10) || 0);
+      var item = dockItem();
+      if (!item) return;
+      dockPending = Math.max(0, Math.min(item.required, parseInt(raw, 10) || 0));
+      dockShowPending();
     }
 
-    function dockAllPresent() {
+    // Record the amount on offer and move on, short or not
+    function dockConfirm() {
       if (!focusedKey) return;
-      var parts = focusedKey.split('::');
-      var item = findItem(parts[0], parts[1], parts[2]);
-      if (item) setItemValue(focusedKey, item.required);
+      var before = focusedKey;
+      setItemValue(focusedKey, dockPending);
+      // A full count already moved the focus on; a short one stays, so move on now
+      if (focusedKey === before) focusNext();
     }
 
     // Move on with whatever is recorded: the next unfinished visible row,
@@ -5784,18 +5817,16 @@
       if (!minus) return;
       minus.onclick = function() { dockAdjust(-1); };
       document.getElementById('dockPlus').onclick = function() { dockAdjust(1); };
-      document.getElementById('dockAll').onclick = dockAllPresent;
+      document.getElementById('dockConfirm').onclick = dockConfirm;
       document.getElementById('dockNext').onclick = focusNext;
       var valueEl = document.getElementById('dockValue');
       valueEl.onchange = function() { dockSetValue(this.value); };
       valueEl.onkeydown = function(e) {
         if (e.key === 'Enter') {
           e.preventDefault();
-          var before = focusedKey;
           dockSetValue(this.value);
           this.blur();
-          // A count that completes the item already moved the focus on
-          if (focusedKey === before) focusNext();
+          dockConfirm();
         }
       };
     }
