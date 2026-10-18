@@ -739,6 +739,11 @@
               "group": "OPAs/NPAs"
             },
             {
+              "name": "Lubricant Packets",
+              "qty": 6,
+              "group": "OPAs/NPAs"
+            },
+            {
               "name": "40mm PINK OPA",
               "qty": 1,
               "group": "OPAs/NPAs"
