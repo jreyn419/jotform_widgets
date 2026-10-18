@@ -736,6 +736,14 @@
             {
               "name": "Emesis Bags",
               "qty": 1
+            },
+            {
+              "name": "Manual Suction Device",
+              "qty": 1
+            },
+            {
+              "name": "DuCanto Suction Tip",
+              "qty": 1
             }
           ]
         }
@@ -870,6 +878,10 @@
             {
               "name": "Stretcher Sheets (pack)",
               "qty": 2
+            },
+            {
+              "name": "Evacuaide",
+              "qty": 1
             }
           ]
         },
