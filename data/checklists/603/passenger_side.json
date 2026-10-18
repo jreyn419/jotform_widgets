@@ -15,6 +15,12 @@
       "type": "yesno",
       "position": "beforeO2",
       "flagOn": "No"
+    },
+    {
+      "label": "Does the sharps container need to be replaced?",
+      "type": "yesno",
+      "position": "beforeO2",
+      "flagOn": "Yes"
     }
   ],
   "areas": [
@@ -558,14 +564,6 @@
         {
           "name": "Benchside",
           "items": [
-            {
-              "name": "Large Sharps Container",
-              "qty": 1
-            },
-            {
-              "name": "Empty Trash Can",
-              "qty": 1
-            },
             {
               "name": "Fire Extinguisher",
               "qty": 1
