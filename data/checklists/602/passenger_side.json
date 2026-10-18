@@ -692,14 +692,6 @@
           "name": "Benchside",
           "items": [
             {
-              "name": "Large Sharps Container",
-              "qty": 1
-            },
-            {
-              "name": "Empty Trash Can",
-              "qty": 1
-            },
-            {
               "name": "Fire Extinguisher",
               "qty": 1
             }
