@@ -383,6 +383,18 @@
             {
               "name": "Doppler",
               "qty": 1
+            },
+            {
+              "name": "Power Strip",
+              "qty": 1
+            },
+            {
+              "name": "IV Pump Chargers",
+              "qty": 3
+            },
+            {
+              "name": "Stretcher Charger",
+              "qty": 1
             }
           ]
         },
@@ -421,6 +433,10 @@
             {
               "name": "Infant/Pediatric High-Flow Circuit",
               "qty": 3
+            },
+            {
+              "name": "Bubbler",
+              "qty": 2
             }
           ]
         }
