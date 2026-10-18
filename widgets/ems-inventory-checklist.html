@@ -1112,6 +1112,40 @@
       text-align: center;
     }
 
+    /* Crew: who is checking, picked from the roster at the start of a session */
+    .crew-continue {
+      width: 100%;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+      border: 2px solid #0066cc;
+      border-radius: 12px;
+      background: #eef5ff;
+      color: #0b3d91;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .crew-continue small { display: block; font-size: 12px; font-weight: 500; color: #4a6a99; margin-top: 2px; }
+
+    .crew-chip {
+      margin-left: auto;
+      padding: 5px 10px;
+      border: 1px solid #ced4da;
+      border-radius: 14px;
+      background: white;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .crew-chip:active { background: #eef5ff; }
+
+    .selection-crew { color: #666; font-weight: 500; }
+
     /* Supplies used: a button on the rig's list, then a search screen */
     .picker-row.usage-btn {
       margin-top: 16px;
@@ -3327,8 +3361,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.35.1';
+    var VERSION = '1.36.0';
     var CHANGELOG = [
+      { version: '1.36.0', date: '2026-10-18', changes: [
+        'Every session starts with "Who\u2019s checking?": type a few letters and pick a name from the roster in the crewRoster widget setting (one name per line, kept inside Jotform). The last pick is offered first for 24 hours; names not on the roster cannot be used',
+        'The name goes into every submission and report ("Checked by", "Logged by"), onto each seal ("Sealed Oct 17 by J. Reynolds"), and into the status lines ("Done today at 6:42 AM by J. Reynolds")',
+        'A chip on the picker shows who is checking; tapping it changes the name',
+      ]},
       { version: '1.35.1', date: '2026-10-18', changes: [
         'Supplies used: suggestions are ranked by how well the name matches (exact, starts with, contains, then matches on the area or checklist), shorter names first, instead of file order',
       ]},
@@ -3817,6 +3856,7 @@
           questionAnswers: questionAnswers,
           rig: currentRig,
           checklist: currentChecklist,
+          crew: currentCrew,
           timestamp: Date.now()
         };
         localStorage.setItem(getStorageKey(), JSON.stringify(state));
@@ -3885,6 +3925,7 @@
             questionAnswers: questionAnswers,
             rig: currentRig,
             checklist: currentChecklist,
+            crew: currentCrew,
             timestamp: Date.now()
           };
           // Prepend plain-text report so it's visible in JotForm Tables.
@@ -5012,6 +5053,7 @@
           var parsed = content ? parseJsonLoose(content) : null;
           if (parsed && Array.isArray(parsed.rigs)) {
             defaultPathPrefix = prefix;
+            crewRosterPath = (prefix + indexPath).replace(/[^\/]*$/, 'crew.json');
             try { localStorage.setItem('ems_index_prefix', prefix); } catch (e) {}
             onIndexLoaded(parsed);
             return;
@@ -5031,9 +5073,201 @@
         var lastRig = null;
         try { lastRig = localStorage.getItem(lastRigKey()); } catch (e) {}
         var known = lastRig && findRig(lastRig);
-        renderPicker(known ? lastRig : null);
+        loadCrewRoster(function() {
+          renderCrewScreen(function() { renderPicker(known ? lastRig : null); });
+        });
       };
       tryNext();
+    }
+
+    // =====================================================
+    // CREW: who is checking
+    // =====================================================
+    // The roster lives in the crewRoster widget setting, one name per line
+    // (commas work too), so it stays inside Jotform and never reaches the
+    // public repo. A crew.json next to the rig index is read only when the
+    // setting is empty. Every session starts by picking a name; the last
+    // pick is offered first for 24 hours. Names not on the roster cannot be
+    // used. The name goes into every submission, report, seal and status line.
+
+    var CREW_REMEMBER_MS = 24 * 3600 * 1000;
+    var CREW_KEY = 'ems_crew_last';
+    var crewRoster = null;     // [{ id, name }] or null when the file could not be read
+    var crewRosterPath = null; // set once the rig index path is known
+    var currentCrew = null;    // { id, name } for this session
+
+    function crewName() { return currentCrew ? currentCrew.name : ''; }
+
+    // "Jack Reynolds" -> "J. Reynolds"
+    function crewShort(name) {
+      var parts = String(name || '').trim().split(/\s+/);
+      if (parts.length < 2) return parts[0] || '';
+      return parts[0].charAt(0).toUpperCase() + '. ' + parts[parts.length - 1];
+    }
+
+    function submissionCrew(sub) {
+      var parsed = submissionSyncData(sub);
+      return parsed && parsed.crew && parsed.crew.name ? parsed.crew.name : '';
+    }
+
+    function rosterFromSetting() {
+      var raw = null;
+      try { raw = JFCustomWidget.getWidgetSetting('crewRoster'); } catch (e) {}
+      if (!raw || !String(raw).trim()) return null;
+      var dec = document.createElement('textarea');
+      dec.innerHTML = String(raw);
+      var parts = dec.value.split(/[\n,;]+/);
+      var out = [];
+      for (var i = 0; i < parts.length; i++) {
+        var name = parts[i].trim();
+        if (name) out.push({ id: normalizeSelection(name), name: name });
+      }
+      return out;
+    }
+
+    function loadCrewRoster(callback) {
+      var fromSetting = rosterFromSetting();
+      if (fromSetting) { crewRoster = fromSetting; callback(); return; }
+      if (!crewRosterPath) { crewRoster = null; callback(); return; }
+      fetchInventoryFile(crewRosterPath, function(content) {
+        var parsed = content ? parseJsonLoose(content) : null;
+        var list = parsed && Array.isArray(parsed.crew) ? parsed.crew : (Array.isArray(parsed) ? parsed : null);
+        crewRoster = null;
+        if (list) {
+          crewRoster = [];
+          for (var i = 0; i < list.length; i++) {
+            var e = list[i];
+            var name = typeof e === 'string' ? e : (e && e.name);
+            if (!name) continue;
+            crewRoster.push({ id: (e && e.id) || normalizeSelection(name), name: String(name).trim() });
+          }
+        }
+        callback();
+      });
+    }
+
+    function rememberedCrew() {
+      var last = readJsonStore(CREW_KEY, null);
+      if (!last || !last.name || !last.ts || (Date.now() - last.ts) > CREW_REMEMBER_MS) return null;
+      // Still on the roster?
+      if (crewRoster) {
+        for (var i = 0; i < crewRoster.length; i++) if (crewRoster[i].id === last.id) return crewRoster[i];
+        return null;
+      }
+      return { id: last.id, name: last.name };
+    }
+
+    function setCurrentCrew(member) {
+      currentCrew = member ? { id: member.id, name: member.name } : null;
+      if (member) writeJsonStore(CREW_KEY, { id: member.id, name: member.name, ts: Date.now() });
+    }
+
+    // A small "J. Reynolds" button on the picker titles; tapping it changes the crew
+    function crewChip(back) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'crew-chip';
+      chip.textContent = currentCrew ? crewShort(currentCrew.name) : 'Who\u2019s checking?';
+      chip.onclick = function() { renderCrewScreen(back); };
+      return chip;
+    }
+
+    function renderCrewScreen(next) {
+      var container = document.getElementById('areasContainer');
+      if (!container) { next(); return; }
+      var widget = document.querySelector('.widget-container');
+      if (widget) widget.classList.add('picker-open');
+      setStatusStrip('prompt', 'Who\u2019s checking?');
+      container.innerHTML = '';
+      var screen = document.createElement('div');
+      screen.className = 'picker crew-screen';
+      var title = document.createElement('div');
+      title.className = 'picker-title';
+      title.textContent = 'Who\u2019s checking?';
+      screen.appendChild(title);
+
+      var finish = function(member) {
+        setCurrentCrew(member);
+        next();
+      };
+
+      if (!crewRoster || crewRoster.length === 0) {
+        var note = document.createElement('div');
+        note.className = 'usage-msg warn';
+        note.textContent = 'No crew roster. Add names to the crewRoster widget setting, one per line.';
+        screen.appendChild(note);
+        var skip = document.createElement('button');
+        skip.type = 'button';
+        skip.className = 'usage-save';
+        skip.textContent = 'Continue without a name';
+        skip.onclick = function() { finish(null); };
+        screen.appendChild(skip);
+        container.appendChild(screen);
+        setLoading(false);
+        resizeWidget();
+        return;
+      }
+
+      var last = rememberedCrew();
+      if (last) {
+        var cont = document.createElement('button');
+        cont.type = 'button';
+        cont.className = 'crew-continue';
+        cont.id = 'crewContinue';
+        cont.innerHTML = 'Continue as ' + escapeHtml(last.name) + '<small>Someone else? Type a name below.</small>';
+        cont.onclick = function() { finish(last); };
+        screen.appendChild(cont);
+      }
+
+      var search = document.createElement('input');
+      search.type = 'search';
+      search.className = 'usage-search';
+      search.id = 'crewSearch';
+      search.placeholder = 'Type your name\u2026';
+      search.setAttribute('autocomplete', 'off');
+      screen.appendChild(search);
+      var suggest = document.createElement('div');
+      suggest.className = 'usage-suggest';
+      suggest.id = 'crewSuggest';
+      screen.appendChild(suggest);
+      var msg = document.createElement('div');
+      msg.className = 'usage-msg';
+      msg.id = 'crewMsg';
+      msg.textContent = 'Not on the list? Ask a supervisor to add you to the crew roster.';
+      screen.appendChild(msg);
+      container.appendChild(screen);
+      setLoading(false);
+      resizeWidget();
+
+      search.oninput = function() {
+        var q = search.value.trim().toLowerCase();
+        suggest.innerHTML = '';
+        if (q.length < 1) return;
+        var scored = [];
+        for (var i = 0; i < crewRoster.length; i++) {
+          var name = crewRoster[i].name.toLowerCase();
+          var rank = name.indexOf(q) === 0 ? 0 : (name.indexOf(' ' + q) !== -1 ? 1 : (name.indexOf(q) !== -1 ? 2 : -1));
+          if (rank >= 0) scored.push({ m: crewRoster[i], rank: rank });
+        }
+        scored.sort(function(a, b) { return a.rank - b.rank || a.m.name.localeCompare(b.m.name); });
+        for (var k = 0; k < scored.length && k < 8; k++) {
+          var row = document.createElement('button');
+          row.type = 'button';
+          row.className = 'usage-suggest-row';
+          row.innerHTML = '<span class="usage-suggest-name">' + escapeHtml(scored[k].m.name) + '</span>';
+          row.onclick = (function(m) { return function() { finish(m); }; })(scored[k].m);
+          suggest.appendChild(row);
+        }
+        if (!scored.length) {
+          var none = document.createElement('div');
+          none.className = 'usage-suggest-why';
+          none.style.padding = '6px 4px';
+          none.textContent = 'No one on the roster matches.';
+          suggest.appendChild(none);
+        }
+        resizeWidget();
+      };
+      if (!last) search.focus();
     }
 
     function findRig(rigId) {
@@ -5057,6 +5291,12 @@
       var label = document.getElementById('selectionLabel');
       if (!header || !label) return;
       label.textContent = text || '';
+      if (text && currentCrew) {
+        var who = document.createElement('span');
+        who.className = 'selection-crew';
+        who.textContent = ' \u00B7 ' + crewShort(currentCrew.name);
+        label.appendChild(who);
+      }
       header.classList.toggle('has-selection', !!text);
     }
 
@@ -5092,6 +5332,7 @@
         var title = document.createElement('div');
         title.className = 'picker-title';
         title.textContent = 'Which rig?';
+        title.appendChild(crewChip(function() { renderPicker(null); }));
         picker.appendChild(title);
         var grid = document.createElement('div');
         grid.className = 'picker-grid';
@@ -5128,6 +5369,7 @@
       var headText = document.createElement('span');
       headText.textContent = 'Rig ' + (rig.name || rig.id);
       head.appendChild(headText);
+      head.appendChild(crewChip(function() { renderPicker(rig.id); }));
       picker.appendChild(head);
 
       var list = document.createElement('div');
@@ -5191,7 +5433,8 @@
           if (submittedAt) {
             el.classList.add('submitted');
             var when = submissionClock(submittedAt);
-            el.textContent = 'Done today' + (when ? ' at ' + when : '') + (submittedCount > 1 ? ' (' + submittedCount + ' submissions)' : '')
+            var who = submissionCrew(submittedAt);
+            el.textContent = 'Done today' + (when ? ' at ' + when : '') + (who ? ' by ' + crewShort(who) : '') + (submittedCount > 1 ? ' (' + submittedCount + ' submissions)' : '')
               + (localTs ? ' \u00B7 reopened on this device' : '');
           } else if (localTs) {
             el.classList.add('open');
@@ -5416,7 +5659,8 @@
         }
         if (matches.length > 0) {
           var when = submissionClock(matches[0]);
-          var text = 'Done today' + (when ? ' at ' + when : '') + (matches.length > 1 ? ' (' + matches.length + ' submissions)' : '');
+          var who = submissionCrew(matches[0]);
+          var text = 'Done today' + (when ? ' at ' + when : '') + (who ? ' by ' + crewShort(who) : '') + (matches.length > 1 ? ' (' + matches.length + ' submissions)' : '');
           if (localText) text += '. Reopened on this device, last change ' + clockText(new Date(restoredLocalTs).getHours(), new Date(restoredLocalTs).getMinutes());
           setStatusStrip('submitted', prefix + text);
         } else if (localText) {
@@ -5732,8 +5976,9 @@
       }
       var d = new Date(now);
       var report = 'SUPPLIES USED ON A CALL\nRig ' + normalizeSelection(rig.id) + ' \u00B7 ' + formatTagDate(localDateString(d)) + ' ' + clockText(d.getHours(), d.getMinutes()) +
+        (currentCrew ? '\nLogged by ' + currentCrew.name : '') +
         '\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n' + lines.join('\n');
-      var sync = { type: 'usage', rig: normalizeSelection(rig.id), used: used, timestamp: now };
+      var sync = { type: 'usage', rig: normalizeSelection(rig.id), used: used, crew: currentCrew, timestamp: now };
       return { value: report + '\n\n___SYNC_DATA___\n' + JSON.stringify(sync), sync: sync };
     }
 
@@ -7842,7 +8087,8 @@
           taggedAreas[areaName] = {
             taggedDate: now.toISOString().split('T')[0],
             taggedTimestamp: now.getTime(),
-            checkedOn: localDateString(now)
+            checkedOn: localDateString(now),
+            by: crewName()
           };
           sealed++;
         }
@@ -8188,7 +8434,7 @@
             area: areaName,
             reason: 'manual_reset',
             taggedDate: taggedAreas[areaName].taggedDate,
-            brokenTimestamp: Date.now()
+            brokenTimestamp: Date.now(), by: crewName()
           });
         }
         taggedAreas = {};
@@ -8245,7 +8491,8 @@
       taggedAreas[areaName] = {
         taggedDate: now.toISOString().split('T')[0],
         taggedTimestamp: now.getTime(),
-        checkedOn: localDateString(now)
+        checkedOn: localDateString(now),
+        by: crewName()
       };
 
       // Sealing happens after the count, so collapse the sealed area and stay put
@@ -8295,7 +8542,7 @@
             area: up,
             reason: 'child_broken',
             taggedDate: taggedAreas[up].taggedDate,
-            brokenTimestamp: Date.now()
+            brokenTimestamp: Date.now(), by: crewName()
           });
           delete taggedAreas[up];
           if (INVENTORY[up]) {
@@ -8334,7 +8581,7 @@
         area: areaName,
         reason: reason || 'review',
         taggedDate: tagInfo ? tagInfo.taggedDate : null,
-        brokenTimestamp: Date.now()
+        brokenTimestamp: Date.now(), by: crewName()
       });
       delete taggedAreas[areaName];
       resetAreaItems(areaName);
@@ -8349,7 +8596,7 @@
               area: childName,
               reason: 'parent_broken',
               taggedDate: taggedAreas[childName].taggedDate,
-              brokenTimestamp: Date.now()
+              brokenTimestamp: Date.now(), by: crewName()
             });
             delete taggedAreas[childName];
           }
@@ -8475,7 +8722,7 @@
           '<div class="seal-row-info">' +
             '<div class="seal-row-name">' + escapeHtml(name) + '</div>' +
             (ancestors.length ? '<div class="seal-row-path">' + escapeHtml(ancestors.join(' \u203A ')) + '</div>' : '') +
-            '<div class="seal-row-status">Sealed ' + escapeHtml(formatTagDate(taggedAreas[name].taggedDate)) + '</div>' +
+            '<div class="seal-row-status">Sealed ' + escapeHtml(formatTagDate(taggedAreas[name].taggedDate)) + (taggedAreas[name].by ? ' by ' + escapeHtml(crewShort(taggedAreas[name].by)) : '') + '</div>' +
           '</div>' +
           '<div class="seal-check-btns">' +
             '<button class="seal-row-btn no" onclick="answerSealCheck(' + arg + ', false)">Not sealed</button>' +
@@ -9471,6 +9718,7 @@
       var lines = [];
       lines.push(reportTitle());
       if (selectorActive && currentRig) lines.push(reportSubtitle());
+      if (currentCrew) lines.push('Checked by ' + currentCrew.name);
       lines.push(dateHeader);
       lines.push('════════════════════════════════════════');
 
@@ -9854,6 +10102,7 @@
             questionAnswers: questionAnswers,
             rig: currentRig,
             checklist: currentChecklist,
+            crew: currentCrew,
             timestamp: Date.now()
           };
           var combinedValue = submitReport
