@@ -9,6 +9,12 @@
       "type": "yesno",
       "position": "beforeO2",
       "flagOn": "No"
+    },
+    {
+      "label": "Does the sharps container need to be replaced?",
+      "type": "yesno",
+      "position": "beforeO2",
+      "flagOn": "Yes"
     }
   ],
   "areas": [
