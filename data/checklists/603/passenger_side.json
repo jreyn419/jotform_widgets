@@ -557,20 +557,6 @@
           ]
         }
       ]
-    },
-    {
-      "area": "Side Entryway",
-      "categories": [
-        {
-          "name": "Benchside",
-          "items": [
-            {
-              "name": "Fire Extinguisher",
-              "qty": 1
-            }
-          ]
-        }
-      ]
     }
   ]
 }
