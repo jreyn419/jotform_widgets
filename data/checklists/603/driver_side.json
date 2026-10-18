@@ -453,10 +453,6 @@
             {
               "name": "Surgical Mask",
               "qty": 10
-            },
-            {
-              "name": "Surgical Masks Box",
-              "qty": 1
             }
           ]
         },
@@ -464,12 +460,8 @@
           "name": "Bottom Shelf",
           "items": [
             {
-              "name": "Biohazard Bags",
+              "name": "Biohazard Bag",
               "qty": 2
-            },
-            {
-              "name": "Commode",
-              "qty": 1
             },
             {
               "name": "Male Urinal",
@@ -480,15 +472,15 @@
               "qty": 1
             },
             {
-              "name": "Obstetrical Kit",
+              "name": "Obstetrical Kit w/ Baby Cap",
               "qty": 2
             },
             {
-              "name": "Bedpans",
+              "name": "Bedpan",
               "qty": 3
             },
             {
-              "name": "Emesis Basins",
+              "name": "Emesis Basin",
               "qty": 1
             },
             {
@@ -691,22 +683,6 @@
               "qty": 1
             },
             {
-              "name": "Adult BVM",
-              "qty": 2
-            },
-            {
-              "name": "Pediatric BVM",
-              "qty": 2
-            },
-            {
-              "name": "Infant BVM",
-              "qty": 2
-            },
-            {
-              "name": "PEEP Valve",
-              "qty": 3
-            },
-            {
               "name": "20 Fr. NPA",
               "qty": 1,
               "group": "OPAs/NPAs"
@@ -894,6 +870,22 @@
             {
               "name": "DuCanto Suction Tip",
               "qty": 1
+            },
+            {
+              "name": "Adult BVM",
+              "qty": 2
+            },
+            {
+              "name": "Pediatric BVM",
+              "qty": 2
+            },
+            {
+              "name": "Infant BVM",
+              "qty": 2
+            },
+            {
+              "name": "PEEP Valve",
+              "qty": 3
             }
           ]
         }
@@ -966,12 +958,7 @@
             {
               "name": "Posey restraints (blue-wrist)",
               "qty": 2
-            }
-          ]
-        },
-        {
-          "name": "Rear Area",
-          "items": [
+            },
             {
               "name": "Yellow Triage Tags",
               "qty": 20
