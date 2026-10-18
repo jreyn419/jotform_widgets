@@ -3378,8 +3378,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.38.0';
+    var VERSION = '1.38.1';
     var CHANGELOG = [
+      { version: '1.38.1', date: '2026-10-18', changes: [
+        'The crew screen names who to contact to be added to the roster, from the crewContact widget setting (for example "Jack Reynolds (707) 494-8288"), so the contact stays inside Jotform like the roster',
+      ]},
       { version: '1.38.0', date: '2026-10-18', changes: [
         'A finished checklist submits itself through the API (jotformApiKey) the moment the last seal is done: the screen reads "Submitting…", then "Done!" with a Back to the rig list button. The form’s own Submit button is no longer needed and can be hidden',
         'If Jotform cannot be reached, the checklist is kept on the tablet and sent the next time the widget opens; until then the rig list shows it as "Done today · waiting to send"',
@@ -5284,7 +5287,9 @@
       var msg = document.createElement('div');
       msg.className = 'usage-msg';
       msg.id = 'crewMsg';
-      msg.textContent = 'Only names on the crew roster are accepted. Contact a supervisor to be added.';
+      var contact = '';
+      try { contact = String(JFCustomWidget.getWidgetSetting('crewContact') || '').trim(); } catch (e) {}
+      msg.textContent = 'Only names on the crew roster are accepted. Contact ' + (contact || 'a supervisor') + ' to be added.';
       screen.appendChild(msg);
       container.appendChild(screen);
       setLoading(false);
