@@ -63,20 +63,6 @@
       ]
     },
     {
-      "area": "Electronics (was action area)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Monitor Charger",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
       "area": "Was side entryway glove storage (603)",
       "categories": [
         {
@@ -85,32 +71,6 @@
             {
               "name": "Gloves - Extra Small",
               "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "Was the bottom equipment cabinet (603 passenger side)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Power Strip",
-              "qty": 1
-            },
-            {
-              "name": "IV Pump Chargers",
-              "qty": 3
-            },
-            {
-              "name": "Stretcher Charger",
-              "qty": 1
-            },
-            {
-              "name": "Bubbler",
-              "qty": 2
             }
           ]
         }
