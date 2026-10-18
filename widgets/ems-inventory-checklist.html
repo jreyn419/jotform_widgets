@@ -3327,8 +3327,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.35.0';
+    var VERSION = '1.35.1';
     var CHANGELOG = [
+      { version: '1.35.1', date: '2026-10-18', changes: [
+        'Supplies used: suggestions are ranked by how well the name matches (exact, starts with, contains, then matches on the area or checklist), shorter names first, instead of file order',
+      ]},
       { version: '1.35.0', date: '2026-10-18', changes: [
         'Supplies used on a call: a button on the rig\u2019s list opens a search screen; pick the items, set how many were used, Save. The entry is written to the form through the API (jotformApiKey must be a full-access key) and shows in Tables as a readable line',
         'An item can only be logged once its checklist has been submitted today; the screen says which checklists are not done yet',
@@ -5628,17 +5631,34 @@
       var q = String(query || '').trim().toLowerCase();
       if (q.length < 2) return;
       var words = q.split(/\s+/);
-      var hits = [];
-      for (var i = 0; i < index.length && hits.length < 12; i++) {
+      // Rank: the name itself first (exact, then starts with, then contains),
+      // then matches that lean on the area or checklist; shorter names win ties
+      var scored = [];
+      for (var i = 0; i < index.length; i++) {
         var e = index[i];
-        var hay = (e.name + ' ' + e.where + ' ' + e.checklistName).toLowerCase();
+        var name = e.name.toLowerCase();
+        var hay = (name + ' ' + e.where + ' ' + e.checklistName).toLowerCase();
         var ok = true;
         for (var w = 0; w < words.length; w++) if (hay.indexOf(words[w]) === -1) { ok = false; break; }
         if (!ok) continue;
         var already = false;
         for (var c = 0; c < usageChosen.length; c++) if (usageChosen[c].key === e.key && usageChosen[c].checklist === e.checklist) already = true;
-        if (!already) hits.push(e);
+        if (already) continue;
+        var rank;
+        if (name === q) rank = 0;
+        else if (name.indexOf(q) === 0) rank = 1;
+        else if (name.indexOf(q) !== -1) rank = 2;
+        else {
+          rank = 3;
+          for (var w2 = 0; w2 < words.length; w2++) if (name.indexOf(words[w2]) === -1) rank = 4;
+        }
+        scored.push({ e: e, rank: rank, pos: i });
       }
+      scored.sort(function(a, b) {
+        return a.rank - b.rank || a.e.name.length - b.e.name.length || a.pos - b.pos;
+      });
+      var hits = [];
+      for (var h0 = 0; h0 < scored.length && hits.length < 12; h0++) hits.push(scored[h0].e);
       for (var h = 0; h < hits.length; h++) {
         var entry = hits[h];
         var blocked = usageItemBlocked(entry);
