@@ -70,97 +70,12 @@
           "name": "Right: Large Box",
           "items": [
             {
-              "name": "SpO2 Sensor, Clip",
-              "qty": 1
-            },
-            {
-              "name": "Monitor-to-SpO2 Cable",
-              "qty": 1
-            },
-            {
-              "name": "Montor-to-BP-cuff connector",
-              "qty": 1
-            },
-            {
-              "name": "4-lead cord",
-              "qty": 1
-            },
-            {
-              "name": "BP cuff connector tubing (short, bifurcated tubing)",
-              "qty": 1
-            },
-            {
               "name": "Monitor Battery (charged)",
               "qty": 2
             },
             {
               "name": "Electrode Bag",
               "qty": 1
-            },
-            {
-              "name": "Lancets",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Sterile 2x2",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Adhesive Bandages",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Alcohol Prep Pads",
-              "qty": 6,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Glucometer Test Strip",
-              "qty": 1,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "Glucometer",
-              "qty": 1,
-              "group": "Glucometer kit"
-            },
-            {
-              "name": "7",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "8",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "9",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "10",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "11",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "11L",
-              "qty": 1,
-              "group": "BP Cuffs"
-            },
-            {
-              "name": "12",
-              "qty": 1,
-              "group": "BP Cuffs"
             }
           ]
         },
@@ -277,69 +192,119 @@
       ]
     },
     {
-      "area": "Top Equipment Cabinet",
+      "area": "Top Front Cabinet",
       "categories": [
         {
-          "name": "General",
+          "name": "Top Shelf",
           "items": [
             {
-              "name": "Hamilton Humidifier",
+              "name": "Inline Nebulizer",
+              "qty": 3
+            },
+            {
+              "name": "Ventilator filters",
+              "qty": 3
+            },
+            {
+              "name": "Omniflex",
+              "qty": 3
+            },
+            {
+              "name": "Inline ETCO2",
+              "qty": 3
+            },
+            {
+              "name": "Full Sets",
+              "qty": 10
+            },
+            {
+              "name": "Half Sets",
+              "qty": 10
+            },
+            {
+              "name": "SpO2 Sensor, Clip",
               "qty": 1
             },
             {
-              "name": "Jackery + charger",
+              "name": "Monitor-to-SpO2 Cable",
               "qty": 1
             },
             {
-              "name": "HFNC Cell",
+              "name": "Montor-to-BP-cuff connector",
               "qty": 1
             },
             {
-              "name": "Portable Suction + charger",
+              "name": "4-lead cord",
               "qty": 1
             },
             {
-              "name": "Doppler",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "HFNC Cell,  “Universal”",
-      "categories": [
-        {
-          "name": "Loose",
-          "items": [
-            {
-              "name": "Equipment Mount – Aluminum",
+              "name": "BP cuff connector tubing (short, bifurcated tubing)",
               "qty": 1
             },
             {
-              "name": "L",
-              "qty": 2,
-              "group": "Adult HFNCs"
+              "name": "Lancets",
+              "qty": 6,
+              "group": "Glucometer kit"
             },
             {
-              "name": "M Adult High-Flow Nasal Cannula",
-              "qty": 2,
-              "group": "Adult HFNCs"
+              "name": "Sterile 2x2",
+              "qty": 6,
+              "group": "Glucometer kit"
             },
             {
-              "name": "S Adult High-Flow Nasal Cannula",
-              "qty": 2,
-              "group": "Adult HFNCs"
+              "name": "Adhesive Bandages",
+              "qty": 6,
+              "group": "Glucometer kit"
             },
             {
-              "name": "XL",
+              "name": "Alcohol Prep Pads",
+              "qty": 6,
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "Glucometer Test Strip",
               "qty": 1,
-              "group": "Pediatric HFNCs"
+              "group": "Glucometer kit"
             },
             {
-              "name": "L",
+              "name": "Glucometer",
               "qty": 1,
-              "group": "Pediatric HFNCs"
+              "group": "Glucometer kit"
+            },
+            {
+              "name": "7",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "8",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "9",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "10",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "11",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "11L",
+              "qty": 1,
+              "group": "BP Cuffs"
+            },
+            {
+              "name": "12",
+              "qty": 1,
+              "group": "BP Cuffs"
             }
           ]
         }
@@ -376,21 +341,17 @@
       ]
     },
     {
-      "area": "Bottom Equipment Cabinet",
+      "area": "Bottom Front Cabinet",
       "categories": [
         {
-          "name": "Upper Shelf",
+          "name": "Top Shelf",
           "items": [
             {
-              "name": "Power Strip",
+              "name": "Jackery + charger",
               "qty": 1
             },
             {
-              "name": "IV Pump Chargers",
-              "qty": 3
-            },
-            {
-              "name": "Stretcher Charger",
+              "name": "Hamilton Humidifier",
               "qty": 1
             },
             {
@@ -398,7 +359,11 @@
               "qty": 1
             },
             {
-              "name": "Ventilator",
+              "name": "Portable Suction + charger",
+              "qty": 1
+            },
+            {
+              "name": "Doppler",
               "qty": 1
             }
           ]
@@ -407,7 +372,11 @@
           "name": "Middle Shelf",
           "items": [
             {
-              "name": "IV Pumps",
+              "name": "Hamilton T1 Ventilator",
+              "qty": 1
+            },
+            {
+              "name": "Sapphire Infusion Pumps",
               "qty": 5
             },
             {
@@ -421,7 +390,7 @@
           ]
         },
         {
-          "name": "Lower Shelf",
+          "name": "Bottom Shelf",
           "items": [
             {
               "name": "Ventilator Circuit",
@@ -434,10 +403,46 @@
             {
               "name": "Infant/Pediatric High-Flow Circuit",
               "qty": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "HFNC Cell,  “Universal”",
+      "childOf": "Bottom Front Cabinet",
+      "categories": [
+        {
+          "name": "Loose",
+          "items": [
+            {
+              "name": "Equipment Mount – Aluminum",
+              "qty": 1
             },
             {
-              "name": "Bubbler",
-              "qty": 2
+              "name": "L",
+              "qty": 2,
+              "group": "Adult HFNCs"
+            },
+            {
+              "name": "M Adult High-Flow Nasal Cannula",
+              "qty": 2,
+              "group": "Adult HFNCs"
+            },
+            {
+              "name": "S Adult High-Flow Nasal Cannula",
+              "qty": 2,
+              "group": "Adult HFNCs"
+            },
+            {
+              "name": "XL",
+              "qty": 1,
+              "group": "Pediatric HFNCs"
+            },
+            {
+              "name": "L",
+              "qty": 1,
+              "group": "Pediatric HFNCs"
             }
           ]
         }
@@ -500,58 +505,6 @@
             },
             {
               "name": "Triage Unit Leader Vest",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "C (Clear Cabinet, Right)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Ventilator filters",
-              "qty": 3
-            },
-            {
-              "name": "Omniflex",
-              "qty": 3
-            },
-            {
-              "name": "Inline ETCO2",
-              "qty": 3
-            },
-            {
-              "name": "Nebulizer (inline)",
-              "qty": 3
-            },
-            {
-              "name": "Full Sets",
-              "qty": 10
-            },
-            {
-              "name": "Half Sets",
-              "qty": 10
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "area": "D (Clear Cabinet, Left)",
-      "categories": [
-        {
-          "name": "General",
-          "items": [
-            {
-              "name": "Manual Suction Device",
-              "qty": 1
-            },
-            {
-              "name": "DuCanto Suction Tip",
               "qty": 1
             }
           ]
