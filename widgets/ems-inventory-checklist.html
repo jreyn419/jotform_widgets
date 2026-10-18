@@ -3361,8 +3361,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.36.0';
+    var VERSION = '1.37.0';
     var CHANGELOG = [
+      { version: '1.37.0', date: '2026-10-18', changes: [
+        'Enter in the crew search or the supplies-used search picks the top suggestion',
+      ]},
       { version: '1.36.0', date: '2026-10-18', changes: [
         'Every session starts with "Who\u2019s checking?": type a few letters and pick a name from the roster in the crewRoster widget setting (one name per line, kept inside Jotform). The last pick is offered first for 24 hours; names not on the roster cannot be used',
         'The name goes into every submission and report ("Checked by", "Logged by"), onto each seal ("Sealed Oct 17 by J. Reynolds"), and into the status lines ("Done today at 6:42 AM by J. Reynolds")',
@@ -5267,7 +5270,20 @@
         }
         resizeWidget();
       };
+      search.onkeydown = function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); pickTopSuggestion('crewSuggest'); }
+      };
       if (!last) search.focus();
+    }
+
+    // Enter in a search box acts on the top suggestion (if it can be chosen)
+    function pickTopSuggestion(boxId) {
+      var box = document.getElementById(boxId);
+      if (!box) return false;
+      var top = box.querySelector('.usage-suggest-row');
+      if (!top || top.classList.contains('blocked')) return false;
+      top.click();
+      return true;
     }
 
     function findRig(rigId) {
@@ -5862,6 +5878,9 @@
       loadUsageIndex(rig, function(entries) { index = entries; ready(); });
       loadUsageDoneToday(rig, function(done) { usageDoneToday = done; ready(); });
       search.oninput = function() { if (index) renderUsageSuggestions(index, search.value); };
+      search.onkeydown = function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); pickTopSuggestion('usageSuggest'); }
+      };
     }
 
     function usageItemBlocked(entry) {
