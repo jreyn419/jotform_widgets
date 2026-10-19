@@ -3489,8 +3489,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.42.2';
+    var VERSION = '1.42.3';
     var CHANGELOG = [
+      { version: '1.42.3', date: '2026-10-19', changes: [
+        'Supplies used: an item cannot be logged beyond what the rig carries. Other crew members\u2019 lists that no checklist has counted yet count against it too. At the limit, + is greyed out and the search says every one on the rig is already logged',
+      ]},
       { version: '1.42.2', date: '2026-10-19', changes: [
         'Supplies used on another tablet: opening the list now shows the latest version saved anywhere. An item removed or changed on one tablet is removed or changed on the other, and a list emptied on one is empty on the other',
         'Progress kept on the tablet from before a checklist\u2019s last submission is discarded when the rig list or the checklist opens, so a submitted checklist always reopens fresh. Progress made after reopening a submitted checklist is kept as before',
@@ -6049,6 +6052,8 @@
     var usageSession = null;                     // the session the screen edits, null before its first save
     var usageLastCheck = null;                   // checklistNorm -> time of its last submission, once known
     var usageScreenToken = 0;
+    var usageRigQty = {};                        // checklist|key -> how many the rig carries
+    var usageOthers = {};                        // checklist|key -> logged on other lists, not yet counted
     var usageDoneToday = null;                   // { checklistNorm: true } or null when unknown
     var usageAppliedFor = null;                  // rig|checklist the current load already handled
 
@@ -6141,6 +6146,8 @@
       var rigNorm = normalizeSelection(rig.id);
       var token = ++usageScreenToken;
       recentSubsCache = null;
+      usageRigQty = {};
+      usageOthers = {};
       usageSession = currentUsageSession(rigNorm);
       usageChosen = usageSession ? JSON.parse(JSON.stringify(usageSession.items || [])) : [];
       usageLastCheck = null;
@@ -6231,6 +6238,19 @@
           }
         }
         usageLastCheck = list ? lastChecksFor(list, rigNorm) : {};
+        // What other lists have logged that no checklist has counted yet
+        usageOthers = {};
+        if (list) {
+          var allLines = usageEntriesFor(list, rigNorm);
+          for (var ol = 0; ol < allLines.length; ol++) {
+            var line = allLines[ol];
+            if (usageSession && line.session === usageSession.id) continue;
+            var lastCk = usageLastCheck[line.checklist];
+            if (lastCk && line.ts <= lastCk) continue;
+            var lk = line.checklist + '|' + line.key;
+            usageOthers[lk] = (usageOthers[lk] || 0) + line.qty;
+          }
+        }
         renderUsageChosen();
       });
 
@@ -6255,7 +6275,12 @@
         renderUsageSuggestions(index, search.value);
       };
       usageDoneToday = undefined;
-      loadUsageIndex(rig, function(entries) { index = entries; ready(); });
+      loadUsageIndex(rig, function(entries) {
+        index = entries;
+        for (var q = 0; q < entries.length; q++) usageRigQty[entries[q].checklist + '|' + entries[q].key] = entries[q].qty;
+        ready();
+        renderUsageChosen();
+      });
       loadUsageDoneToday(rig, function(done) { usageDoneToday = done; ready(); });
       search.oninput = function() { if (index) renderUsageSuggestions(index, search.value); };
       search.onkeydown = function(e) {
@@ -6301,20 +6326,45 @@
       for (var h0 = 0; h0 < scored.length && hits.length < 12; h0++) hits.push(scored[h0].e);
       for (var h = 0; h < hits.length; h++) {
         var entry = hits[h];
-        var blocked = usageItemBlocked(entry);
+        var notDone = usageItemBlocked(entry);
+        var room = usageRoomFor(entry.checklist, entry.key);
+        var full = !notDone && room.left <= 0;
+        var blocked = notDone || full;
         var row = document.createElement('button');
         row.type = 'button';
         row.className = 'usage-suggest-row' + (blocked ? ' blocked' : '');
         row.innerHTML = '<span class="usage-suggest-name">' + escapeHtml(entry.name) +
           '<div class="usage-suggest-where">' + escapeHtml(entry.checklistName + ' \u203A ' + entry.where) + '</div>' +
-          (blocked ? '<div class="usage-suggest-why">' + escapeHtml(entry.checklistName) + ' not done today</div>' : '') +
-          (usageQtyInList(entry) ? '<div class="usage-suggest-have">' + usageQtyInList(entry) + ' in the list \u00B7 tap to add one</div>' : '') +
+          (notDone ? '<div class="usage-suggest-why">' + escapeHtml(entry.checklistName) + ' not done today</div>' : '') +
+          (full ? '<div class="usage-suggest-why">' + escapeHtml(usageFullText(room)) + '</div>' : '') +
+          (usageQtyInList(entry) && !full ? '<div class="usage-suggest-have">' + usageQtyInList(entry) + ' in the list \u00B7 tap to add one</div>' : '') +
           '</span>';
         if (!blocked) {
           row.onclick = (function(en) { return function() { addUsageItem(en); }; })(entry);
         }
         box.appendChild(row);
       }
+    }
+
+    // How many more of an item this list may log: what the rig carries, less
+    // what other lists logged since its checklist was last counted, less what
+    // this list already has open
+    function usageRoomFor(checklist, key) {
+      var ck = checklist + '|' + key;
+      var rigQty = usageRigQty[ck];
+      if (!rigQty) return { left: Infinity, rigQty: 0, others: 0 };
+      var mine = 0;
+      for (var i = 0; i < usageChosen.length; i++) {
+        var c = usageChosen[i];
+        if (c.checklist === checklist && c.key === key && !usageItemCounted(c)) mine += c.qty;
+      }
+      var others = usageOthers[ck] || 0;
+      return { left: rigQty - others - mine, rigQty: rigQty, others: others };
+    }
+
+    function usageFullText(room) {
+      var base = room.rigQty === 1 ? 'The rig carries 1 and it is logged' : 'All ' + room.rigQty + ' on the rig are logged';
+      return room.others ? base + ' (' + room.others + ' on other lists)' : base;
     }
 
     function usageQtyInList(entry) {
@@ -6328,6 +6378,12 @@
     // Picking an item adds one: to its open line, or as a new line when
     // the line there is already counted
     function addUsageItem(entry) {
+      var room = usageRoomFor(entry.checklist, entry.key);
+      if (room.left <= 0) {
+        var m = document.getElementById('usageMsg');
+        if (m) { m.className = 'usage-msg warn'; m.textContent = entry.name + ' \u2014 ' + usageFullText(room) + '.'; }
+        return;
+      }
       var line = null;
       for (var i = 0; i < usageChosen.length; i++) {
         var c = usageChosen[i];
@@ -6397,11 +6453,12 @@
           info += '<div class="usage-chosen-note">Counted in the ' + clockText(lt.getHours(), lt.getMinutes()) + ' ' + escapeHtml(c.checklistName) + ' check</div>';
         }
         info += '</div>';
+        var atLimit = !counted && usageRoomFor(c.checklist, c.key).left <= 0;
         row.innerHTML = info + (counted
           ? '<span class="usage-qty">' + c.qty + '</span>'
           : '<button type="button" class="usage-step" data-i="' + i + '" data-d="-1"' + (known ? '' : ' disabled') + '>−</button>' +
             '<span class="usage-qty">' + c.qty + '</span>' +
-            '<button type="button" class="usage-step" data-i="' + i + '" data-d="1"' + (known ? '' : ' disabled') + '>+</button>');
+            '<button type="button" class="usage-step" data-i="' + i + '" data-d="1"' + (known && !atLimit ? '' : ' disabled') + ' title="' + (atLimit ? escapeHtml(usageFullText(usageRoomFor(c.checklist, c.key))) : '') + '">+</button>');
         box.appendChild(row);
       }
       var steps = box.querySelectorAll('.usage-step');
@@ -6411,6 +6468,7 @@
           var d = parseInt(this.getAttribute('data-d'), 10);
           var item = usageChosen[idx];
           if (!item || usageItemCounted(item)) return;
+          if (d > 0 && usageRoomFor(item.checklist, item.key).left <= 0) return;
           item.qty += d;
           if (item.qty <= 0) usageChosen.splice(idx, 1);
           renderUsageChosen();
@@ -6865,13 +6923,13 @@
       var out = [];
       for (var lt in legacy) {
         var used = legacy[lt].used || {};
-        for (var cl in used) for (var key in used[cl]) out.push({ checklist: normalizeSelection(cl), key: key, qty: parseInt(used[cl][key], 10) || 0, ts: parseFloat(lt) });
+        for (var cl in used) for (var key in used[cl]) out.push({ checklist: normalizeSelection(cl), key: key, qty: parseInt(used[cl][key], 10) || 0, ts: parseFloat(lt), session: null });
       }
       for (var sid in sessions) {
         if (gone[sid]) continue;
         var its = sessions[sid].items || [];
         for (var j = 0; j < its.length; j++) {
-          out.push({ checklist: normalizeSelection(its[j].checklist), key: its[j].key, qty: parseInt(its[j].qty, 10) || 0, ts: parseFloat(its[j].ts) || sessions[sid].updated });
+          out.push({ checklist: normalizeSelection(its[j].checklist), key: its[j].key, qty: parseInt(its[j].qty, 10) || 0, ts: parseFloat(its[j].ts) || sessions[sid].updated, session: sid });
         }
       }
       return out;
