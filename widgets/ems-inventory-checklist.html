@@ -1268,6 +1268,23 @@
     .usage-chosen-row.counted .usage-chosen-name { color: #6c757d; }
     .usage-chosen-note { font-size: 12px; color: #2e7d32; margin-top: 2px; }
     .usage-step:disabled { opacity: 0.35; cursor: default; }
+    .usage-all-btn { display: block; width: 100%; margin-top: 12px; padding: 12px; border: 2px solid #b7cff5; border-radius: 10px; background: #eef5ff; color: #0b3d91; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .usage-all-btn:disabled { opacity: 0.5; cursor: default; }
+    .usage-all-tabs { display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid #eee; background: white; flex-shrink: 0; }
+    .usage-all-tab { flex: 1; padding: 9px 6px; border: 1px solid #ced4da; border-radius: 8px; background: white; font-size: 13px; font-weight: 700; color: #555; cursor: pointer; }
+    .usage-all-tab.active { background: #0b3d91; border-color: #0b3d91; color: white; }
+    #usageAllBody { padding: 0 14px 20px; }
+    .usage-all-group { font-size: 12px; font-weight: 700; color: #777; text-transform: uppercase; letter-spacing: 0.03em; margin: 16px 2px 6px; }
+    .usage-all-row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid #e3e3e3; border-radius: 10px; margin-bottom: 8px; background: white; }
+    .usage-all-info { flex: 1; min-width: 0; }
+    .usage-all-name { font-size: 15px; font-weight: 700; color: #222; }
+    .usage-all-where { font-size: 12px; color: #777; margin-top: 2px; }
+    .usage-all-note { font-size: 12px; color: #555; margin-top: 4px; }
+    .usage-chip { flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 10px; white-space: nowrap; }
+    .usage-chip.to-restock { background: #fff3cd; color: #856404; }
+    .usage-chip.short { background: #f8d7da; color: #842029; }
+    .usage-chip.restocked { background: #d4edda; color: #155724; }
+    .usage-all-empty { padding: 30px 10px; text-align: center; color: #888; font-size: 14px; }
     .usage-resolved-note { font-size: 12px; color: #2e7d32; margin: 2px 4px 10px; }
     .usage-session-since { font-weight: 500; color: #999; text-transform: none; letter-spacing: 0; margin-left: 6px; }
     .usage-suggest-have { font-size: 12px; color: #0b3d91; font-weight: 600; }
@@ -3046,6 +3063,17 @@
     </div>
 
     <!-- Seal Sheet: the last step, after counting and restocking -->
+    <div class="modal-overlay" id="usageAllOverlay" onclick="closeUsageAll()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2 id="usageAllTitle">All supplies used</h2>
+          <button class="modal-close" onclick="closeUsageAll()">×</button>
+        </div>
+        <div class="usage-all-tabs" id="usageAllTabs"></div>
+        <div class="modal-body" id="usageAllBody"></div>
+      </div>
+    </div>
+
     <div class="modal-overlay" id="pickerDetailOverlay" onclick="closePickerDetail()">
       <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -3490,8 +3518,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.43.0';
+    var VERSION = '1.44.0';
     var CHANGELOG = [
+      { version: '1.44.0', date: '2026-10-19', changes: [
+        'Supplies used: a See all items button opens every crew member\u2019s logged items for the rig, today (from 8 AM) plus anything older still to restock, with tabs for All, To restock and Restocked. Each row says who logged it and when, and either when it will be taken off, that the last check counted it short, or which check restocked it and who did it. Read-only: each crew member still changes their own list',
+      ]},
       { version: '1.43.0', date: '2026-10-19', changes: [
         'The day starts at 8 AM, the shift change, instead of midnight: "Done today", "In progress", logging supplies (which needs the checklist done today) and the seal check (asked once per day) all follow it. A checklist done at 8:05 AM counts as done until 8 AM the next morning. The hour can be changed with the dayStartHour widget setting',
       ]},
@@ -6083,6 +6114,9 @@
     var usageSession = null;                     // the session the screen edits, null before its first save
     var usageLastCheck = null;                   // checklistNorm -> time of its last submission, once known
     var usageLastSync = {};                      // checklistNorm -> that submission's sync block
+    var usageAllData = null;                     // { list, rig } for See all items
+    var usageIndexMap = {};                      // checklist|key -> index entry (name, where)
+    var usageAllTab = 'all';
     var usageScreenToken = 0;
     var usageRigQty = {};                        // checklist|key -> how many the rig carries
     var usageOthers = {};                        // checklist|key -> logged on other lists, not yet counted
@@ -6181,6 +6215,7 @@
       usageRigQty = {};
       usageOthers = {};
       usageLastSync = {};
+      usageAllData = null;
       usageSession = currentUsageSession(rigNorm);
       usageChosen = usageSession ? JSON.parse(JSON.stringify(usageSession.items || [])) : [];
       usageLastCheck = null;
@@ -6198,6 +6233,7 @@
       back.setAttribute('aria-label', 'Back to the checklists');
       back.onclick = function() {
         if (usageListChanged() && !confirm('Leave without saving the changes to this session\u2019s list?')) return;
+        closeUsageAll();
         renderPicker(rig.id);
       };
       head.appendChild(back);
@@ -6245,6 +6281,15 @@
       msg.id = 'usageMsg';
       msg.textContent = 'Loading the rig\u2019s checklists\u2026';
       screen.appendChild(msg);
+
+      var allBtn = document.createElement('button');
+      allBtn.type = 'button';
+      allBtn.className = 'usage-all-btn';
+      allBtn.id = 'usageAllBtn';
+      allBtn.textContent = 'See all items';
+      allBtn.disabled = true;
+      allBtn.onclick = function() { openUsageAll('all'); };
+      screen.appendChild(allBtn);
       container.appendChild(screen);
       setLoading(false);
       renderUsageChosen();
@@ -6272,6 +6317,9 @@
         }
         usageLastCheck = list ? lastChecksFor(list, rigNorm) : {};
         usageLastSync = list ? lastCheckSyncsFor(list, rigNorm) : {};
+        usageAllData = list ? { list: list, rig: rig } : null;
+        var allBtn = document.getElementById('usageAllBtn');
+        if (allBtn) allBtn.disabled = !usageAllData;
         // What other lists have logged that no checklist has counted yet
         usageOthers = {};
         if (list) {
@@ -6311,7 +6359,10 @@
       usageDoneToday = undefined;
       loadUsageIndex(rig, function(entries) {
         index = entries;
-        for (var q = 0; q < entries.length; q++) usageRigQty[entries[q].checklist + '|' + entries[q].key] = entries[q].qty;
+        for (var q = 0; q < entries.length; q++) {
+          usageRigQty[entries[q].checklist + '|' + entries[q].key] = entries[q].qty;
+          usageIndexMap[entries[q].checklist + '|' + entries[q].key] = entries[q];
+        }
         ready();
         renderUsageChosen();
       });
@@ -6378,6 +6429,130 @@
         }
         box.appendChild(row);
       }
+    }
+
+    // ---- See all items: every crew member's logged items for the rig
+    function usageWhenText(ts) {
+      var d = new Date(ts);
+      var clock = clockText(d.getHours(), d.getMinutes());
+      if (shiftDay(d) === shiftDay(new Date())) return clock;
+      var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return months[d.getMonth()] + ' ' + d.getDate() + ', ' + clock;
+    }
+
+    // Did a checklist submission have the item at full quantity?
+    function syncHasItemFull(sync, checklist, key) {
+      if (!sync) return false;
+      var dec = function(t) { var x = document.createElement('textarea'); x.innerHTML = t; return x.value; };
+      var area = key.split('::')[0];
+      var chain = [area].concat(areaAncestors(area));
+      var tagged = sync.taggedAreas || {};
+      for (var tk in tagged) if (chain.indexOf(dec(tk)) !== -1) return true;
+      var states = sync.itemStates || {};
+      var st = states[key];
+      if (!st) for (var sk in states) if (dec(sk) === key) { st = states[sk]; break; }
+      var rigQty = usageRigQty[checklist + '|' + key];
+      return !!(st && rigQty && st.actual >= rigQty);
+    }
+
+    // Each logged line with its status: pending (taken off at the next
+    // opening), short (counted short since), or restocked (a later check had
+    // it full)
+    function usageAllLines() {
+      if (!usageAllData) return [];
+      var list = usageAllData.list, rig = usageAllData.rig, rigNorm = normalizeSelection(rig.id);
+      var checks = {};
+      for (var i = 0; i < list.length; i++) {
+        var sel = submissionSelection(list[i]);
+        if (sel.rig !== rigNorm || !sel.checklist || !sel.timestamp) continue;
+        var sync = submissionSyncData(list[i]) || {};
+        (checks[sel.checklist] = checks[sel.checklist] || []).push({ ts: sel.timestamp, sync: sync, crew: sync.crew && sync.crew.name });
+      }
+      for (var ck in checks) checks[ck].sort(function(a, b) { return a.ts - b.ts; });
+      var names = {};
+      for (var r = 0; r < (rig.checklists || []).length; r++) names[normalizeSelection(rig.checklists[r].id)] = rig.checklists[r].name || rig.checklists[r].id;
+      var today = shiftDay(new Date());
+      var lines = usageEntriesFor(list, rigNorm);
+      var out = [];
+      for (var l = 0; l < lines.length; l++) {
+        var ln = lines[l];
+        if (!ln.qty) continue;
+        var idx = usageIndexMap[ln.checklist + '|' + ln.key] || {};
+        var after = (checks[ln.checklist] || []).filter(function(c) { return c.ts >= ln.ts; });
+        var status = 'pending', check = null;
+        for (var a = 0; a < after.length; a++) {
+          if (syncHasItemFull(after[a].sync, ln.checklist, ln.key)) { status = 'restocked'; check = after[a]; break; }
+        }
+        if (status !== 'restocked' && after.length) { status = 'short'; check = after[after.length - 1]; }
+        // Today's lines, plus anything older still to restock
+        if (shiftDay(new Date(ln.ts)) !== today && status === 'restocked') continue;
+        out.push({ name: ln.name || idx.name || ln.key.split('::').pop(), where: ln.where || idx.where || ln.key.split('::')[0],
+                   checklist: ln.checklist, checklistName: names[ln.checklist] || ln.checklistName || ln.checklist,
+                   qty: ln.qty, ts: ln.ts, crew: ln.crew && ln.crew.name, status: status, check: check });
+      }
+      return out;
+    }
+
+    function openUsageAll(tab) {
+      if (!usageAllData) return;
+      usageAllTab = tab || 'all';
+      document.getElementById('usageAllTitle').textContent = 'Supplies used · Rig ' + (usageAllData.rig.name || usageAllData.rig.id);
+      renderUsageAll();
+      document.getElementById('usageAllOverlay').classList.add('open');
+    }
+
+    function closeUsageAll() {
+      var o = document.getElementById('usageAllOverlay');
+      if (o) o.classList.remove('open');
+    }
+
+    function renderUsageAll() {
+      var lines = usageAllLines();
+      var counts = { all: lines.length, restock: 0, restocked: 0 };
+      for (var i = 0; i < lines.length; i++) { if (lines[i].status === 'restocked') counts.restocked++; else counts.restock++; }
+      var tabs = [['all', 'All'], ['restock', 'To restock'], ['restocked', 'Restocked']];
+      var tabsEl = document.getElementById('usageAllTabs');
+      tabsEl.innerHTML = '';
+      tabs.forEach(function(t) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'usage-all-tab' + (usageAllTab === t[0] ? ' active' : '');
+        b.textContent = t[1] + ' (' + counts[t[0]] + ')';
+        b.onclick = function() { usageAllTab = t[0]; renderUsageAll(); };
+        tabsEl.appendChild(b);
+      });
+      var shown = lines.filter(function(x) {
+        return usageAllTab === 'all' || (usageAllTab === 'restocked' ? x.status === 'restocked' : x.status !== 'restocked');
+      });
+      // Grouped by checklist in the rig's order, newest first within each
+      var order = (usageAllData.rig.checklists || []).map(function(c) { return normalizeSelection(c.id); });
+      shown.sort(function(a, b) { return (order.indexOf(a.checklist) - order.indexOf(b.checklist)) || (b.ts - a.ts); });
+      var body = document.getElementById('usageAllBody');
+      if (!shown.length) {
+        body.innerHTML = '<div class="usage-all-empty">' + (usageAllTab === 'restocked' ? 'Nothing restocked yet today.' : (usageAllTab === 'restock' ? 'Nothing waiting to be restocked.' : 'Nothing logged today.')) + '</div>';
+        return;
+      }
+      var html = '', group = null;
+      for (var s = 0; s < shown.length; s++) {
+        var x = shown[s];
+        if (x.checklist !== group) { group = x.checklist; html += '<div class="usage-all-group">' + escapeHtml(x.checklistName) + '</div>'; }
+        var chip, note;
+        if (x.status === 'restocked') {
+          chip = '<span class="usage-chip restocked">Restocked</span>';
+          note = 'Restocked in the ' + usageWhenText(x.check.ts) + ' ' + escapeHtml(x.checklistName) + ' check' + (x.check.crew ? ' by ' + escapeHtml(crewShort(x.check.crew)) : '');
+        } else if (x.status === 'short') {
+          chip = '<span class="usage-chip short">To restock</span>';
+          note = 'Counted short in the ' + usageWhenText(x.check.ts) + ' ' + escapeHtml(x.checklistName) + ' check';
+        } else {
+          chip = '<span class="usage-chip to-restock">To restock</span>';
+          note = 'Taken off when ' + escapeHtml(x.checklistName) + ' is next opened';
+        }
+        html += '<div class="usage-all-row"><div class="usage-all-info">' +
+          '<div class="usage-all-name">' + escapeHtml(x.name) + ' ×' + x.qty + '</div>' +
+          '<div class="usage-all-where">' + escapeHtml(x.where) + ' · logged ' + usageWhenText(x.ts) + (x.crew ? ' by ' + escapeHtml(crewShort(x.crew)) : '') + '</div>' +
+          '<div class="usage-all-note">' + note + '</div></div>' + chip + '</div>';
+      }
+      body.innerHTML = html;
     }
 
     // How many more of an item this list may log: what the rig carries, less
@@ -6960,7 +7135,7 @@
         if (!sync || sync.type !== 'usage' || normalizeSelection(sync.rig) !== rigNorm) return;
         var ts = parseFloat(sync.timestamp);
         if (sync.session && Array.isArray(sync.items)) {
-          if (!sessions[sync.session] || ts >= sessions[sync.session].updated) sessions[sync.session] = { updated: ts || 0, items: sync.items };
+          if (!sessions[sync.session] || ts >= sessions[sync.session].updated) sessions[sync.session] = { updated: ts || 0, items: sync.items, crew: sync.crew || null };
           return;
         }
         if (isFinite(ts)) legacy[ts] = sync;
@@ -6982,18 +7157,19 @@
         if (normalizeSelection(sess.rig) !== rigNorm) continue;
         if (sess.deleted) { gone[sess.id] = true; continue; }
         if (listComplete && !sess.dirty && sess.submissionId && !remoteSeen[sess.id] && (Date.now() - (sess.updated || 0)) > 120000) { gone[sess.id] = true; continue; }
-        if (!sessions[sess.id] || (sess.updated || 0) >= sessions[sess.id].updated) sessions[sess.id] = { updated: sess.updated || 0, items: sess.items || [] };
+        if (!sessions[sess.id] || (sess.updated || 0) >= sessions[sess.id].updated) sessions[sess.id] = { updated: sess.updated || 0, items: sess.items || [], crew: sess.crew || null };
       }
       var out = [];
       for (var lt in legacy) {
         var used = legacy[lt].used || {};
-        for (var cl in used) for (var key in used[cl]) out.push({ checklist: normalizeSelection(cl), key: key, qty: parseInt(used[cl][key], 10) || 0, ts: parseFloat(lt), session: null });
+        for (var cl in used) for (var key in used[cl]) out.push({ checklist: normalizeSelection(cl), key: key, qty: parseInt(used[cl][key], 10) || 0, ts: parseFloat(lt), session: null, crew: legacy[lt].crew || null });
       }
       for (var sid in sessions) {
         if (gone[sid]) continue;
         var its = sessions[sid].items || [];
         for (var j = 0; j < its.length; j++) {
-          out.push({ checklist: normalizeSelection(its[j].checklist), key: its[j].key, qty: parseInt(its[j].qty, 10) || 0, ts: parseFloat(its[j].ts) || sessions[sid].updated, session: sid });
+          out.push({ checklist: normalizeSelection(its[j].checklist), key: its[j].key, qty: parseInt(its[j].qty, 10) || 0, ts: parseFloat(its[j].ts) || sessions[sid].updated, session: sid,
+                     crew: sessions[sid].crew || null, name: its[j].name, where: its[j].where, checklistName: its[j].checklistName });
         }
       }
       return out;
