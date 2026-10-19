@@ -3489,8 +3489,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.42.0';
+    var VERSION = '1.42.1';
     var CHANGELOG = [
+      { version: '1.42.1', date: '2026-10-19', changes: [
+        'Removing or changing a supply now corrects its checklist however the checklist\u2019s progress was kept: each item taken off remembers how it was before, and each seal opened for it remembers the seal. It works for items taken off by an earlier version, after the 4-hour progress window, and after the seals are refreshed from Jotform',
+        'A list emptied on another tablet no longer counts on this one; saving a list whose submission was removed elsewhere creates it again',
+      ]},
       { version: '1.42.0', date: '2026-10-19', changes: [
         'Changing or removing a supply in the session\u2019s list now changes its checklist too: the next time the checklist opens, a removed item goes back to how it was before the call was logged, a changed amount is taken off again, and a seal opened only for a removed item is put back (the seal check then asks about it). Anything counted by hand since is kept',
         'Backing out of a checklist hides the item dock at the bottom; it stayed on the checklist list when an item had been selected',
@@ -4044,7 +4048,6 @@
           rig: currentRig,
           checklist: currentChecklist,
           crew: currentCrew,
-          usageRecord: usageRecord,
           timestamp: Date.now()
         };
         localStorage.setItem(getStorageKey(), JSON.stringify(state));
@@ -5236,7 +5239,6 @@
       apiSubmitDone = false;
       sealPromptDeclined = {};
       closeSealPrompt();
-      usageRecord = null;
       clearFocusedRow();
       closeRestockModal();
       closeSealCheck();
@@ -5776,6 +5778,7 @@
       var rigNorm = normalizeSelection(rigId), clNorm = normalizeSelection(checklistId);
       if (!rigNorm || !clNorm) return;
       rememberRig(rigNorm);
+      recentSubsCache = null;   // what the session lists say now, not a minute ago
       var widget = document.querySelector('.widget-container');
       if (widget) widget.classList.remove('picker-open');
       currentRig = rigNorm;
@@ -6018,10 +6021,7 @@
     var usageScreenToken = 0;
     var usageDoneToday = null;                   // { checklistNorm: true } or null when unknown
     var usageAppliedFor = null;                  // rig|checklist the current load already handled
-    // What supplies-used did to the open checklist, so a later change to
-    // the list can be applied again: { applied: {key: qty}, base: state
-    // before any of it, result: state right after it }
-    var usageRecord = null;
+
 
     function usageAvailable() {
       try {
@@ -6437,8 +6437,8 @@
     }
 
     function editSubmission(id, value, callback) {
-      if (!getFormParams().qid) { callback(false); return; }
-      apiRequest('POST', '/submission/' + encodeURIComponent(id), answerBody(value), function(ok) { callback(ok); });
+      if (!getFormParams().qid) { callback(false, 0); return; }
+      apiRequest('POST', '/submission/' + encodeURIComponent(id), answerBody(value), function(ok, r, status) { callback(ok, status); });
     }
 
     function deleteSubmission(id, callback) {
@@ -6524,11 +6524,20 @@
         return;
       }
       var value = buildUsageSessionValue(sess);
-      if (sess.submissionId) { editSubmission(sess.submissionId, value, done); return; }
-      postSubmission(value, function(ok, id) {
-        if (ok && id) sess.submissionId = id;
-        done(ok && !!id);
-      });
+      var create = function() {
+        postSubmission(value, function(ok, id) {
+          if (ok && id) sess.submissionId = id;
+          done(ok && !!id);
+        });
+      };
+      if (sess.submissionId) {
+        editSubmission(sess.submissionId, value, function(ok, status) {
+          if (!ok && status === 404) { sess.submissionId = null; create(); return; }   // removed elsewhere
+          done(ok);
+        });
+        return;
+      }
+      create();
     }
 
     // Lists that could not be sent go out whenever the picker shows. A list
@@ -6756,7 +6765,15 @@
         }
         if (isFinite(ts)) legacy[ts] = sync;
       };
-      for (var i = 0; i < (list || []).length; i++) addSync(submissionSyncData(list[i]));
+      var remoteSeen = {}, remoteCount = 0;
+      for (var i = 0; i < (list || []).length; i++) {
+        var sy0 = submissionSyncData(list[i]);
+        addSync(sy0);
+        if (!list[i]._local) { remoteCount++; if (sy0 && sy0.session) remoteSeen[sy0.session] = true; }
+      }
+      // A list removed on another tablet: Jotform's list is complete and no
+      // longer has it, and this tablet's copy is sent and not brand new
+      var listComplete = list && !list.partial && remoteCount < 100;
       var oldLocal = readJsonStore(USAGE_LOCAL_KEY, []);
       for (var l = 0; l < oldLocal.length; l++) addSync(oldLocal[l]);
       var mine = readUsageSessions();
@@ -6764,6 +6781,7 @@
         var sess = mine[m];
         if (normalizeSelection(sess.rig) !== rigNorm) continue;
         if (sess.deleted) { gone[sess.id] = true; continue; }
+        if (listComplete && !sess.dirty && sess.submissionId && !remoteSeen[sess.id] && (Date.now() - (sess.updated || 0)) > 120000) { gone[sess.id] = true; continue; }
         if (!sessions[sess.id] || (sess.updated || 0) >= sessions[sess.id].updated) sessions[sess.id] = { updated: sess.updated || 0, items: sess.items || [] };
       }
       var out = [];
@@ -6801,73 +6819,94 @@
       return best;
     }
 
-    function usageSnapshot() {
-      return JSON.parse(JSON.stringify({ itemStates: itemStates, restockStatus: restockStatus, taggedAreas: taggedAreas, brokenSeals: brokenSeals }));
+    // Is an item key inside an area (in it, or in an area within it)?
+    function keyInsideArea(key, area) {
+      var a = key.split('::')[0];
+      return a === area || areaAncestors(a).indexOf(area) !== -1;
     }
 
-    // The checklist state that comes from applying `used` ({key: qty}) to
-    // `base`: each used item opens short, marked "N used on a call", and a
-    // seal around it is opened. Works on copies; the live state is untouched.
-    function computeUsageState(base, used) {
-      var live = { itemStates: itemStates, restockStatus: restockStatus, taggedAreas: taggedAreas, brokenSeals: brokenSeals };
-      var copy = JSON.parse(JSON.stringify(base));
-      itemStates = copy.itemStates || {}; restockStatus = copy.restockStatus || {};
-      taggedAreas = copy.taggedAreas || {}; brokenSeals = copy.brokenSeals || [];
-      try {
-        for (var k in used) {
-          var parts = k.split('::');
-          var item = findItem(parts[0], parts[1], parts[2]);
-          if (!item || !used[k]) continue;
+    // Has anyone counted or restocked in an area since its seal was opened?
+    function areaWorkedSince(area) {
+      for (var cat in (INVENTORY[area] || {})) {
+        var items = INVENTORY[area][cat];
+        for (var i = 0; i < items.length; i++) {
+          var k = generateKey(area, cat, items[i].name);
           var st = itemStates[k];
-          if (st && st.touched) continue; // counted already before the call was logged
-          var chain = areaAncestors(parts[0]).concat([parts[0]]);
-          for (var a = 0; a < chain.length; a++) {
-            if (taggedAreas[chain[a]]) applySealBreak(chain[a], 'used_on_call', false);
+          if (restockStatus[k]) return true;
+          if (st && (st.touched || st.actual > 0)) return true;
+        }
+      }
+      return false;
+    }
+
+    // Make the checklist match what the session lists say was used since its
+    // last submission. Each item taken off carries usedOnCall and how it was
+    // before (prev); each seal opened for it carries the seal (tag). That
+    // travels with the checklist's state however it was kept, so a removed
+    // or changed supply can always be put right. Hand counts are kept.
+    function reconcileUsage(used) {
+      var changed = false;
+      // 1. Items already taken off follow the list
+      for (var k in itemStates) {
+        var st = itemStates[k];
+        if (!st || !st.usedOnCall) continue;
+        var parts = k.split('::');
+        var item = findItem(parts[0], parts[1], parts[2]);
+        if (!item) continue;
+        var want = used[k] || 0;
+        if (st.usedOnCall === want) continue;
+        if (st.actual !== Math.max(0, item.required - st.usedOnCall)) continue;   // counted by hand since: keep it
+        if (want > 0) {
+          st.actual = Math.max(0, item.required - want);
+          st.usedOnCall = want;
+        } else {
+          if (st.prev) itemStates[k] = st.prev; else delete itemStates[k];
+          delete restockStatus[k];
+        }
+        changed = true;
+      }
+      // 2. Newly logged items are taken off; a seal around one is opened
+      for (var k2 in used) {
+        var parts2 = k2.split('::');
+        var item2 = findItem(parts2[0], parts2[1], parts2[2]);
+        if (!item2 || !used[k2]) continue;
+        var st2 = itemStates[k2];
+        if (st2 && (st2.usedOnCall || st2.touched)) continue;   // taken off already, or counted this visit
+        var chain = areaAncestors(parts2[0]).concat([parts2[0]]);
+        for (var c = 0; c < chain.length; c++) {
+          if (!taggedAreas[chain[c]]) continue;
+          var tag = JSON.parse(JSON.stringify(taggedAreas[chain[c]]));
+          applySealBreak(chain[c], 'used_on_call', false);
+          for (var bi = brokenSeals.length - 1; bi >= 0; bi--) {
+            if (brokenSeals[bi].area === chain[c] && brokenSeals[bi].reason === 'used_on_call') { brokenSeals[bi].tag = tag; break; }
           }
-          itemStates[k] = { actual: Math.max(0, item.required - used[k]), touched: true, usedOnCall: used[k] };
         }
-        return { itemStates: itemStates, restockStatus: restockStatus, taggedAreas: taggedAreas, brokenSeals: brokenSeals };
-      } finally {
-        itemStates = live.itemStates; restockStatus = live.restockStatus;
-        taggedAreas = live.taggedAreas; brokenSeals = live.brokenSeals;
+        var before = itemStates[k2] ? JSON.parse(JSON.stringify(itemStates[k2])) : null;
+        itemStates[k2] = { actual: Math.max(0, item2.required - used[k2]), touched: true, usedOnCall: used[k2], prev: before };
+        changed = true;
       }
+      // 3. Seals opened only for items no longer on the list come back, unless
+      //    someone has worked in the area since. The seal check asks about them.
+      for (var i = brokenSeals.length - 1; i >= 0; i--) {
+        var br = brokenSeals[i];
+        if (br.reason !== 'used_on_call' || taggedAreas[br.area] || !sealableAreas[br.area]) continue;
+        var stillUsed = false;
+        for (var k3 in used) if (used[k3] && keyInsideArea(k3, br.area)) { stillUsed = true; break; }
+        if (stillUsed || areaWorkedSince(br.area)) continue;
+        var restored = br.tag ? br.tag : {
+          taggedDate: br.taggedDate || localDateString(new Date()),
+          taggedTimestamp: br.taggedDate ? new Date(br.taggedDate + 'T12:00:00').getTime() : Date.now()
+        };
+        delete restored.checkedOn;
+        taggedAreas[br.area] = restored;
+        brokenSeals.splice(i, 1);
+        changed = true;
+      }
+      return changed;
     }
 
-    // Bring the live state from what usage made it (result) to what it
-    // should be now (next), keeping anything changed by hand since
-    function mergeUsageState(result, next) {
-      var same = function(x, y) { return JSON.stringify(x === undefined ? null : x) === JSON.stringify(y === undefined ? null : y); };
-      var fields = ['itemStates', 'restockStatus', 'taggedAreas'];
-      var live = { itemStates: itemStates, restockStatus: restockStatus, taggedAreas: taggedAreas };
-      for (var f = 0; f < fields.length; f++) {
-        var name = fields[f], cur = live[name], was = result[name] || {}, now = next[name] || {};
-        var keys = {};
-        for (var k1 in cur) keys[k1] = true;
-        for (var k2 in was) keys[k2] = true;
-        for (var k3 in now) keys[k3] = true;
-        for (var key in keys) {
-          if (!same(cur[key], was[key])) continue;          // changed by hand since: keep it
-          if (now[key] === undefined) delete cur[key];
-          else cur[key] = JSON.parse(JSON.stringify(now[key]));
-        }
-      }
-      // Broken seals: drop the ones the old result added, add the new ones
-      var inList = function(list, e) { for (var i = 0; i < list.length; i++) if (same(list[i], e)) return true; return false; };
-      var oldAdded = (result.brokenSeals || []).filter(function(e) { return !inList(usageRecord.base.brokenSeals || [], e); });
-      var newAdded = (next.brokenSeals || []).filter(function(e) { return !inList(usageRecord.base.brokenSeals || [], e); });
-      brokenSeals = brokenSeals.filter(function(e) { return !inList(oldAdded, e); }).concat(newAdded);
-      // A count put back to full needs no restock entry
-      for (var rk in restockStatus) {
-        var p = rk.split('::');
-        var it = findItem(p[0], p[1], p[2]);
-        var st = itemStates[rk];
-        if (it && st && st.actual >= it.required) delete restockStatus[rk];
-      }
-    }
-
-    // Subtract what calls took since this checklist was last submitted. When
-    // the session's list has changed since it was applied here, apply it
-    // again from the state before it, keeping anything counted by hand.
+    // Subtract what calls took since this checklist was last submitted, and
+    // put back what the session lists no longer say was used
     function applyUsageOnOpen() {
       if (!selectorActive || !currentRig || !currentChecklist || !usageAvailable()) return;
       var tag = currentRig + '|' + currentChecklist;
@@ -6881,20 +6920,7 @@
           if (ln.checklist !== currentChecklist || !(ln.ts > since) || !ln.qty) continue;
           used[ln.key] = (used[ln.key] || 0) + ln.qty;
         }
-        var usedSig = JSON.stringify(used, Object.keys(used).sort());
-        if (usageRecord) {
-          if (JSON.stringify(usageRecord.applied, Object.keys(usageRecord.applied || {}).sort()) === usedSig) return;
-          var next = computeUsageState(usageRecord.base, used);
-          mergeUsageState(usageRecord.result, next);
-          usageRecord = Object.keys(used).length ? { applied: used, base: usageRecord.base, result: JSON.parse(JSON.stringify(next)) } : null;
-        } else {
-          if (!Object.keys(used).length) return;
-          var base = usageSnapshot();
-          var first = computeUsageState(base, used);
-          itemStates = first.itemStates; restockStatus = first.restockStatus;
-          taggedAreas = first.taggedAreas; brokenSeals = first.brokenSeals;
-          usageRecord = { applied: used, base: base, result: JSON.parse(JSON.stringify(first)) };
-        }
+        if (!reconcileUsage(used)) return;
         expandedArea = null;
         expandedGroup = null;
         buildUI();
@@ -10893,7 +10919,6 @@
             if (saved.brokenSeals) {
               brokenSeals = saved.brokenSeals;
             }
-            usageRecord = (isLocalRestore && saved.usageRecord && typeof saved.usageRecord === 'object') ? saved.usageRecord : null;
             if (saved.o2States && typeof saved.o2States === 'object') {
               o2States = saved.o2States;
             }
@@ -10971,6 +10996,7 @@
                 saveSealState();
                 resizeWidget();
                 maybeStartSealCheck();
+                applyUsageOnOpen();
               }
             });
           }
