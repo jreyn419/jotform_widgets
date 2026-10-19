@@ -1264,6 +1264,19 @@
     }
 
     .usage-chosen-info { flex: 1; min-width: 0; }
+    .usage-chosen-row.has-lots { flex-wrap: wrap; }
+    .usage-chosen-row.needs-lot { border-color: #f5c06b; }
+    .usage-lots { flex-basis: 100%; border-top: 1px solid #eee; padding-top: 8px; }
+    .usage-lots-title { font-size: 12px; font-weight: 700; color: #0b3d91; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; }
+    .usage-lot { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+    .usage-lot-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: #333; overflow-wrap: anywhere; }
+    .usage-lot-name small { font-weight: 500; color: #777; }
+    .usage-lot-name small.due { color: #b45309; font-weight: 700; }
+    .usage-lot.picked .usage-lot-name { color: #0b3d91; }
+    .usage-lot-step { width: 34px; height: 34px; border: none; border-radius: 8px; background: #e9ecef; font-size: 20px; font-weight: 700; color: #333; cursor: pointer; flex-shrink: 0; }
+    .usage-lot-step:disabled { opacity: 0.35; cursor: default; }
+    .usage-lot-qty { width: 24px; text-align: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+    .usage-lots-need { font-size: 13px; font-weight: 700; color: #b45309; margin-top: 4px; }
     .usage-chosen-row.counted { background: #f8f9fa; border-style: dashed; }
     .usage-chosen-row.counted .usage-chosen-name { color: #6c757d; }
     .usage-chosen-note { font-size: 12px; color: #2e7d32; margin-top: 2px; }
@@ -1272,7 +1285,8 @@
     .lot-chip.ok { border-color: #b7cff5; background: #eef5ff; color: #0b3d91; }
     .lot-chip.due { border-color: #f5c06b; background: #fff3cd; color: #856404; }
     .lot-chip.expired { border-color: #f1aeb5; background: #f8d7da; color: #842029; }
-    #lotsBody, #expiryBody { padding: 0 18px 90px; }
+    #lotsBody, #expiryBody, #restockLotsBody, #lotCheckBody { padding: 0 18px 90px; }
+    #restockLotsBody .lots-where { margin-top: 12px; }
     .lots-where { font-size: 13px; color: #777; margin: 12px 0 8px; }
     .lot-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #e3e3e3; border-radius: 10px; margin-bottom: 8px; }
     .lot-row.due { border-color: #f5c06b; background: #fffaf0; }
@@ -1290,6 +1304,20 @@
     .lot-form-msg:empty { display: none; }
     .lots-empty { font-size: 14px; color: #888; padding: 6px 2px; }
     .modal-overlay.expiry-notice { z-index: 245; }
+    .modal-overlay.lot-check { z-index: 244; }
+    .modal-overlay.lot-sheet { z-index: 246; }
+    .modal-overlay.lot-sheet.lots-top { z-index: 247; }
+    .lots-total { font-size: 13px; font-weight: 700; color: #155724; margin: 0 0 10px; }
+    .lots-total.off { color: #b45309; }
+    .lot-row-qty { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .lot-step { width: 34px; height: 34px; border: none; border-radius: 8px; background: #e9ecef; font-size: 20px; font-weight: 700; color: #333; cursor: pointer; }
+    .lot-step:disabled { opacity: 0.35; cursor: default; }
+    .lot-qty { min-width: 24px; text-align: center; font-size: 17px; font-weight: 700; }
+    .lot-qty.unknown { color: #b45309; }
+    .lot-row.new { border-style: dashed; border-color: #b7cff5; }
+    .lot-row-lot small { font-size: 11px; color: #0b3d91; font-weight: 700; text-transform: uppercase; }
+    .lot-form input.lot-qty-input { flex: 0 0 76px; }
+    #restockLotsConfirm:disabled { opacity: 0.45; cursor: default; }
     .expiry-intro { font-size: 14px; color: #555; margin: 12px 0; }
     .expiry-row { padding: 12px; border: 1px solid #e3e3e3; border-radius: 10px; margin-bottom: 10px; }
     .expiry-row.expired { border-color: #f1aeb5; background: #fff5f6; }
@@ -3100,13 +3128,36 @@
     </div>
 
     <!-- Seal Sheet: the last step, after counting and restocking -->
-    <div class="modal-overlay" id="lotsOverlay" onclick="closeLotsSheet()">
+    <div class="modal-overlay lot-sheet lots-top" id="lotsOverlay" onclick="closeLotsSheet()">
       <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
           <h2 id="lotsTitle">Lots</h2>
           <button class="modal-close" onclick="closeLotsSheet()">×</button>
         </div>
         <div class="modal-body" id="lotsBody"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay lot-sheet" id="restockLotsOverlay">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2 id="restockLotsTitle">Restocked</h2>
+          <button class="modal-close" onclick="closeRestockLots()">×</button>
+        </div>
+        <div class="modal-body" id="restockLotsBody"></div>
+        <div class="modal-footer">
+          <button class="seal-all-btn" id="restockLotsConfirm" onclick="confirmRestockLots()" disabled>✓ Restocked</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay lot-check" id="lotCheckOverlay">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Lots Don’t Match</h2>
+          <button class="modal-close" onclick="closeLotCheck()">×</button>
+        </div>
+        <div class="modal-body" id="lotCheckBody"></div>
       </div>
     </div>
 
@@ -3578,8 +3629,15 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.45.0';
+    var VERSION = '1.46.0';
     var CHANGELOG = [
+      { version: '1.46.0', date: '2026-10-19', changes: [
+        'Lot quantities: each lot says how many of it are on the rig. The lots sheet adds a lot with its quantity, steps a lot up or down, and shows the lots\u2019 total against what the rig carries and what was counted',
+        'Supplies used: an item that keeps lots asks which lot each one used came from, picked by the crew every time (nothing is chosen for them), with Lot not listed for one that is not on file. The list cannot be saved until every one used has a lot. The next time the checklist opens, the lots are taken down by what was picked, and put back if a line is changed or removed',
+        'Restocking an item that keeps lots asks which lot went in: more of a lot already on file, or a new lot with its expiration and quantity, adding up to the number put in. Mark All Restocked leaves those items for one at a time. Undo takes the lots back',
+        'Before submitting, every counted item\u2019s lots must add up to its count; when they do not, a sheet lists the items to correct',
+        'Replacing an expiring lot and adding a lot from the notice ask for the quantity; the notice and the report show how many of each lot',
+      ]},
       { version: '1.45.0', date: '2026-10-19', changes: [
         'Expiration tracking: medications and expirable equipment (marked "expires" in the checklist files) show their soonest expiration on the row. Tapping it lists the item\u2019s lot numbers with month and year; lots can be added or removed, several per item',
         'From the monthly med check day (the 15th; medCheckDay widget setting) any lot expiring that month, or already expired, is listed when the checklist opens: the item, its lot and expiration, and where it is. Replaced asks for the new lot; Later keeps it on the list for the next opening',
@@ -4197,6 +4255,12 @@
         var rItem = findItem(rp[0], rp[1], rp[2]);
         if (rItem) itemStates[rk] = { actual: rItem.required, touched: true };
         delete restockStatus[rk];
+      }
+      // What calls took off the lots is counted now; a lot used up is gone
+      for (var lk in lots) {
+        lots[lk] = (lots[lk] || []).filter(function(l) { return !lotQtyKnown(l) || l.qty > 0; });
+        for (var li = 0; li < lots[lk].length; li++) delete lots[lk][li].usedOnCall;
+        if (!lots[lk].length) delete lots[lk];
       }
       saveSealState();
       var reportedReplacements = lotReplacements;
@@ -6207,6 +6271,9 @@
     var usageOthers = {};                        // checklist|key -> logged on other lists, not yet counted
     var usageDoneToday = null;                   // { checklistNorm: true } or null when unknown
     var usageAppliedFor = null;                  // rig|checklist the current load already handled
+    var usageOthersLots = {};                    // checklist|key|lotId -> taken from that lot on other lists, not yet counted
+    var usageLotsCache = {};                     // checklistNorm -> that checklist's lots
+    var usageRigNorm = null;
 
 
     function usageAvailable() {
@@ -6259,7 +6326,8 @@
                   name: it.name,
                   where: area.area + (it.group ? ' \u203A ' + it.group : ''),
                   key: generateKey(area.area, catKey, it.name),
-                  qty: parseInt(it.qty, 10) || 1
+                  qty: parseInt(it.qty, 10) || 1,
+                  expires: !!it.expires
                 });
               }
             }
@@ -6299,6 +6367,9 @@
       recentSubsCache = null;
       usageRigQty = {};
       usageOthers = {};
+      usageOthersLots = {};
+      usageLotsCache = {};
+      usageRigNorm = normalizeSelection(rig.id);
       usageLastSync = {};
       usageAllData = null;
       usageSession = currentUsageSession(rigNorm);
@@ -6403,10 +6474,12 @@
         usageLastCheck = list ? lastChecksFor(list, rigNorm) : {};
         usageLastSync = list ? lastCheckSyncsFor(list, rigNorm) : {};
         usageAllData = list ? { list: list, rig: rig } : null;
+        usageLotsCache = {};
         var allBtn = document.getElementById('usageAllBtn');
         if (allBtn) allBtn.disabled = !usageAllData;
         // What other lists have logged that no checklist has counted yet
         usageOthers = {};
+        usageOthersLots = {};
         if (list) {
           var allLines = usageEntriesFor(list, rigNorm);
           for (var ol = 0; ol < allLines.length; ol++) {
@@ -6416,6 +6489,12 @@
             if (lastCk && line.ts <= lastCk) continue;
             var lk = line.checklist + '|' + line.key;
             usageOthers[lk] = (usageOthers[lk] || 0) + line.qty;
+            var olots = line.lots || [];
+            for (var oi = 0; oi < olots.length; oi++) {
+              if (!olots[oi] || !olots[oi].id) continue;
+              var olk = lk + '|' + olots[oi].id;
+              usageOthersLots[olk] = (usageOthersLots[olk] || 0) + (parseInt(olots[oi].qty, 10) || 0);
+            }
           }
         }
         renderUsageChosen();
@@ -6692,6 +6771,128 @@
       renderUsageChosen();
     }
 
+    // ---- Which lot each one used came from
+    // A checklist's lots as last kept: this tablet's seal store or its last
+    // submission, whichever is newer. A lot's count at that time is its qty
+    // plus what calls had already taken off it.
+    function usageLotsFor(checklist) {
+      if (usageLotsCache[checklist]) return usageLotsCache[checklist];
+      var best = {}, bestTs = -1;
+      var dec = function(t) { var x = document.createElement('textarea'); x.innerHTML = t; return x.value; };
+      var last = usageLastSync[checklist];
+      if (last && last.sync && last.sync.lots && typeof last.sync.lots === 'object') {
+        best = {};
+        for (var k in last.sync.lots) {
+          best[dec(k)] = (last.sync.lots[k] || []).map(function(l) { var c = JSON.parse(JSON.stringify(l)); c.lot = dec(String(c.lot)); return c; });
+        }
+        bestTs = parseFloat(last.sync.timestamp) || last.ts || 0;
+      }
+      var local = usageRigNorm ? readJsonStore(getStorageKey(usageRigNorm, checklist) + '_seals', null) : null;
+      if (local && local.lots && typeof local.lots === 'object' && (local.timestamp || 0) > bestTs) best = local.lots;
+      usageLotsCache[checklist] = best;
+      return best;
+    }
+
+    function lotAtCount(l) {
+      return lotQtyKnown(l) ? l.qty + (l.usedOnCall || 0) : null;
+    }
+
+    // The lots to pick from for a line, or null when the item keeps no lots
+    function usageLineLots(c) {
+      var entry = usageIndexMap[c.checklist + '|' + c.key];
+      if (!entry || !entry.expires || usageLastCheck === null) return null;
+      var list = usageLotsFor(c.checklist)[c.key];
+      if (!list || !list.length) return null;
+      return list.filter(function(l) { var n = lotAtCount(l); return n === null || n > 0; })
+                 .sort(function(a, b) { return String(a.exp).localeCompare(String(b.exp)); });
+    }
+
+    function usageLinePicked(c) {
+      var n = 0;
+      for (var i = 0; i < (c.lots || []).length; i++) n += c.lots[i].qty || 0;
+      return n;
+    }
+
+    // How many more may be taken from a lot: its count, less what other
+    // lists and this one took from it since the checklist was counted
+    function usageLotRoom(c, l) {
+      var at = lotAtCount(l);
+      if (at === null) return Infinity;
+      var id = lotId(l);
+      var mine = 0;
+      for (var i = 0; i < usageChosen.length; i++) {
+        var o = usageChosen[i];
+        if (o.checklist !== c.checklist || o.key !== c.key || usageItemCounted(o)) continue;
+        for (var j = 0; j < (o.lots || []).length; j++) if (o.lots[j].id === id) mine += o.lots[j].qty || 0;
+      }
+      return at - (usageOthersLots[c.checklist + '|' + c.key + '|' + id] || 0) - mine;
+    }
+
+    // A line of an item that keeps lots needs a lot for each one used
+    function usageLotsIncomplete() {
+      for (var i = 0; i < usageChosen.length; i++) {
+        var c = usageChosen[i];
+        if (!c.qty || usageItemCounted(c) || usageLineLots(c) === null) continue;
+        if (usageLinePicked(c) !== c.qty) return true;
+      }
+      return false;
+    }
+
+    function usageLotsText(c) {
+      return (c.lots || []).filter(function(x) { return x.qty > 0; }).map(function(x) {
+        return (x.id === 'unlisted' ? 'lot not listed' : 'lot ' + x.lot) + ' \u00d7' + x.qty;
+      }).join(', ');
+    }
+
+    function buildUsageLotsBlock(c, idx, lotList) {
+      var picked = usageLinePicked(c);
+      var left = c.qty - picked;
+      var wrap = document.createElement('div');
+      wrap.className = 'usage-lots';
+      var html = '<div class="usage-lots-title">Which lot? Pick one for each used</div>';
+      var opts = lotList.map(function(l) { return { id: lotId(l), lot: l.lot, exp: l.exp, room: usageLotRoom(c, l) }; });
+      opts.push({ id: 'unlisted', lot: null, exp: null, room: Infinity });
+      for (var o = 0; o < opts.length; o++) {
+        var op = opts[o];
+        var mineHere = 0;
+        for (var j = 0; j < (c.lots || []).length; j++) if (c.lots[j].id === op.id) mineHere = c.lots[j].qty || 0;
+        var st = op.exp ? lotStatus(op.exp) : null;
+        html += '<div class="usage-lot' + (mineHere ? ' picked' : '') + '"><div class="usage-lot-name">' +
+          (op.id === 'unlisted' ? 'Lot not listed' : 'Lot ' + escapeHtml(op.lot) + ' <small' + (st === 'expired' || st === 'due' ? ' class="due"' : '') + '>exp ' + expText(op.exp) +
+            (op.room !== Infinity ? ' \u00b7 ' + Math.max(0, op.room) + ' left' : '') + '</small>') + '</div>' +
+          '<button type="button" class="usage-lot-step" data-i="' + idx + '" data-id="' + escapeHtml(op.id) + '" data-d="-1"' + (mineHere > 0 ? '' : ' disabled') + '>\u2212</button>' +
+          '<span class="usage-lot-qty">' + mineHere + '</span>' +
+          '<button type="button" class="usage-lot-step" data-i="' + idx + '" data-id="' + escapeHtml(op.id) + '" data-d="1"' + (left > 0 && op.room > 0 ? '' : ' disabled') + '>+</button></div>';
+      }
+      if (left !== 0) html += '<div class="usage-lots-need">' + (left > 0 ? 'Pick the lot for ' + left + ' more' : (-left) + ' more picked than used: take ' + (-left === 1 ? 'one' : 'them') + ' off a lot') + '</div>';
+      wrap.innerHTML = html;
+      return wrap;
+    }
+
+    function stepUsageLot(idx, id, d) {
+      var c = usageChosen[idx];
+      if (!c || usageItemCounted(c)) return;
+      var lotList = usageLineLots(c) || [];
+      var src = null;
+      for (var i = 0; i < lotList.length; i++) if (lotId(lotList[i]) === id) src = lotList[i];
+      if (d > 0) {
+        if (usageLinePicked(c) >= c.qty) return;
+        if (src && usageLotRoom(c, src) <= 0) return;
+        if (!src && id !== 'unlisted') return;
+      }
+      c.lots = c.lots || [];
+      var pick = null;
+      for (var j = 0; j < c.lots.length; j++) if (c.lots[j].id === id) pick = c.lots[j];
+      if (!pick) {
+        if (d < 0) return;
+        pick = id === 'unlisted' ? { id: 'unlisted', lot: null, exp: null, qty: 0 } : { id: id, lot: src.lot, exp: src.exp, qty: 0 };
+        c.lots.push(pick);
+      }
+      pick.qty = Math.max(0, pick.qty + d);
+      c.lots = c.lots.filter(function(x) { return x.qty > 0; });
+      renderUsageChosen();
+    }
+
     // Logged before its checklist's last submission: already taken off and counted
     function usageItemCounted(c) {
       var last = usageLastCheck && usageLastCheck[c.checklist];
@@ -6723,7 +6924,7 @@
       var out = [];
       for (var i = 0; i < (items || []).length; i++) {
         var c = items[i];
-        if (c.qty > 0) out.push([c.checklist, c.key, c.qty, c.ts]);
+        if (c.qty > 0) out.push([c.checklist, c.key, c.qty, c.ts, (c.lots || []).filter(function(x) { return x.qty > 0; }).map(function(x) { return x.id + ':' + x.qty; }).join(',')]);
       }
       return JSON.stringify(out);
     }
@@ -6751,7 +6952,7 @@
       }
       var changed = usageListChanged();
       if (save) {
-        save.disabled = !changed;
+        save.disabled = !changed || usageLotsIncomplete();
         save.textContent = usageSession ? 'Save changes' : 'Save';
       }
       var known = usageLastCheck !== null;
@@ -6769,6 +6970,7 @@
           var lt = new Date(usageLastCheck[c.checklist]);
           info += '<div class="usage-chosen-note">Counted in the ' + clockText(lt.getHours(), lt.getMinutes()) + ' ' + escapeHtml(c.checklistName) + ' check</div>';
         }
+        if (counted && c.lots && c.lots.length) info += '<div class="usage-chosen-where">' + escapeHtml(usageLotsText(c)) + '</div>';
         info += '</div>';
         var atLimit = !counted && usageRoomFor(c.checklist, c.key).left <= 0;
         row.innerHTML = info + (counted
@@ -6776,6 +6978,12 @@
           : '<button type="button" class="usage-step" data-i="' + i + '" data-d="-1"' + (known ? '' : ' disabled') + '>−</button>' +
             '<span class="usage-qty">' + c.qty + '</span>' +
             '<button type="button" class="usage-step" data-i="' + i + '" data-d="1"' + (known && !atLimit ? '' : ' disabled') + ' title="' + (atLimit ? escapeHtml(usageFullText(usageRoomFor(c.checklist, c.key))) : '') + '">+</button>');
+        var lineLots = counted ? null : usageLineLots(c);
+        if (lineLots !== null) {
+          row.classList.add('has-lots');
+          if (usageLinePicked(c) !== c.qty) row.classList.add('needs-lot');
+          row.appendChild(buildUsageLotsBlock(c, i, lineLots));
+        }
         box.appendChild(row);
       }
       if (resolved) {
@@ -6785,6 +6993,12 @@
         box.appendChild(note);
       }
       if (title && !box.children.length) title.style.display = 'none';
+      var lotSteps = box.querySelectorAll('.usage-lot-step');
+      for (var ls = 0; ls < lotSteps.length; ls++) {
+        lotSteps[ls].onclick = function() {
+          stepUsageLot(parseInt(this.getAttribute('data-i'), 10), this.getAttribute('data-id'), parseInt(this.getAttribute('data-d'), 10));
+        };
+      }
       var steps = box.querySelectorAll('.usage-step');
       for (var s = 0; s < steps.length; s++) {
         steps[s].onclick = function() {
@@ -6810,7 +7024,8 @@
       for (var i = 0; i < items.length; i++) {
         var c = items[i];
         var t = new Date(c.ts || sess.updated);
-        lines.push('  • ' + c.qty + ' × ' + c.name + ' (' + c.checklistName + ' › ' + c.where + ') — ' + clockText(t.getHours(), t.getMinutes()));
+        var lt = usageLotsText(c);
+        lines.push('  • ' + c.qty + ' × ' + c.name + ' (' + c.checklistName + ' › ' + c.where + ')' + (lt ? ' [' + lt + ']' : '') + ' — ' + clockText(t.getHours(), t.getMinutes()));
       }
       var rule = '════════════════════════════════════════';
       var report = 'SUPPLIES USED ON CALLS\nRig ' + normalizeSelection(sess.rig) + ' · ' + formatTagDate(localDateString(start)) +
@@ -7096,12 +7311,17 @@
     }
 
     function saveUsage(rig) {
-      if (!usageListChanged()) return;
+      if (!usageListChanged() || usageLotsIncomplete()) return;
       var rigNorm = normalizeSelection(rig.id);
       var items = [];
       for (var i = 0; i < usageChosen.length; i++) {
         var c = usageChosen[i];
-        if (c.qty > 0) items.push({ key: c.key, checklist: c.checklist, checklistName: c.checklistName, name: c.name, where: c.where, qty: c.qty, ts: c.ts || Date.now() });
+        if (c.qty > 0) {
+          var line = { key: c.key, checklist: c.checklist, checklistName: c.checklistName, name: c.name, where: c.where, qty: c.qty, ts: c.ts || Date.now() };
+          var picks = (c.lots || []).filter(function(x) { return x.qty > 0; });
+          if (picks.length) line.lots = picks;
+          items.push(line);
+        }
       }
       var now = Date.now();
       // Start from the stored copy: a send in the meantime may have given it its submission id
@@ -7254,7 +7474,7 @@
         var its = sessions[sid].items || [];
         for (var j = 0; j < its.length; j++) {
           out.push({ checklist: normalizeSelection(its[j].checklist), key: its[j].key, qty: parseInt(its[j].qty, 10) || 0, ts: parseFloat(its[j].ts) || sessions[sid].updated, session: sid,
-                     crew: sessions[sid].crew || null, name: its[j].name, where: its[j].where, checklistName: its[j].checklistName });
+                     crew: sessions[sid].crew || null, name: its[j].name, where: its[j].where, checklistName: its[j].checklistName, lots: Array.isArray(its[j].lots) ? its[j].lots : null });
         }
       }
       return out;
@@ -7378,6 +7598,25 @@
       return changed;
     }
 
+    // The lots follow the session lists the same way: each lot carries what
+    // was taken off it (usedOnCall), so a changed or removed line is put back
+    function reconcileLots(usedLots) {
+      var changed = false;
+      for (var key in lots) {
+        var list = lots[key] || [];
+        for (var i = 0; i < list.length; i++) {
+          var l = list[i];
+          var want = (usedLots[key] && usedLots[key][lotId(l)]) || 0;
+          var have = l.usedOnCall || 0;
+          if (want === have) continue;
+          if (lotQtyKnown(l)) l.qty = Math.max(0, l.qty + have - want);
+          if (want) l.usedOnCall = want; else delete l.usedOnCall;
+          changed = true;
+        }
+      }
+      return changed;
+    }
+
     // Subtract what calls took since this checklist was last submitted, and
     // put back what the session lists no longer say was used
     function applyUsageOnOpen() {
@@ -7388,12 +7627,20 @@
         var since = lastSubmissionTs(list);
         var lines = usageEntriesFor(list, currentRig);
         var used = {};
+        var usedLots = {};
         for (var e = 0; e < lines.length; e++) {
           var ln = lines[e];
           if (ln.checklist !== currentChecklist || !(ln.ts > since) || !ln.qty) continue;
           used[ln.key] = (used[ln.key] || 0) + ln.qty;
+          var picks = ln.lots || [];
+          for (var pk = 0; pk < picks.length; pk++) {
+            if (!picks[pk] || !picks[pk].id || picks[pk].id === 'unlisted') continue;
+            usedLots[ln.key] = usedLots[ln.key] || {};
+            usedLots[ln.key][picks[pk].id] = (usedLots[ln.key][picks[pk].id] || 0) + (parseInt(picks[pk].qty, 10) || 0);
+          }
         }
-        if (!reconcileUsage(used)) return;
+        var lotsMoved = reconcileLots(usedLots);
+        if (!reconcileUsage(used) && !lotsMoved) return;
         expandedArea = null;
         expandedGroup = null;
         buildUI();
@@ -9568,6 +9815,7 @@
 
     function showCompletionPopup() {
       if (apiSubmitDone) return;   // the result screen is already up
+      if (lotMismatches().length) { openLotCheck(); return; }
       if (canSubmitViaApi()) { submitChecklistViaApi(); return; }
       setCompletion('', 'Done!', enableTaggedAreas
         ? 'Please make sure all areas marked as sealed have been tied off before continuing.'
@@ -9894,6 +10142,73 @@
       return (lots[key] || []).slice().sort(function(a, b) { return String(a.exp).localeCompare(String(b.exp)); });
     }
 
+    // ---- How many of each lot are on the rig
+    // A lot's qty is how many are on the rig now; usedOnCall is what the
+    // supplies-used lists took off it since the checklist was last
+    // submitted (put back if a line is changed or removed). A lot entered
+    // before quantities were kept has no qty until someone sets it.
+    function lotId(l) { return l.ts + '|' + l.lot; }
+    function lotQtyKnown(l) { return typeof l.qty === 'number' && isFinite(l.qty); }
+    function lotFind(key, id) {
+      var list = lots[key] || [];
+      for (var i = 0; i < list.length; i++) if (lotId(list[i]) === id) return list[i];
+      return null;
+    }
+    // The lots still on the rig (a lot used up stays on file until the next submission)
+    function liveLots(key) {
+      return sortedLots(key).filter(function(l) { return !lotQtyKnown(l) || l.qty > 0; });
+    }
+    // Sum of the lots, or null while a lot has no quantity
+    function lotTotal(key) {
+      var list = lots[key] || [];
+      var t = 0;
+      for (var i = 0; i < list.length; i++) {
+        if (!lotQtyKnown(list[i])) return null;
+        t += list[i].qty;
+      }
+      return t;
+    }
+    // Lots are kept for this item: an expirable item with lots on file, or any once entry is required
+    function lotTracked(key, item) {
+      if (!item) { var p = key.split('::'); item = findItem(p[0], p[1], p[2]); }
+      return !!(item && item.expires && ((lots[key] && lots[key].length) || lotEntryRequired()));
+    }
+    // The count this visit gives the item, or null when it was not counted
+    function lotCountNow(key, item) {
+      var rs = restockStatus[key];
+      if (rs && rs.restocked) return item.required;
+      var st = itemStates[key];
+      if (!st || !st.touched) return null;
+      return st.actual;
+    }
+    // Counted items whose lots do not add up to the count
+    function lotMismatches() {
+      var out = [];
+      for (var area in INVENTORY) {
+        for (var cat in INVENTORY[area]) {
+          var items = INVENTORY[area][cat];
+          for (var i = 0; i < items.length; i++) {
+            var it = items[i];
+            if (!it.expires) continue;
+            var key = generateKey(area, cat, it.name);
+            if (!(lots[key] && lots[key].length)) continue;
+            var count = lotCountNow(key, it);
+            if (count === null) continue;
+            var total = lotTotal(key);
+            if (total !== count) out.push({ key: key, name: it.name, where: itemLocation(key), count: count, total: total });
+          }
+        }
+      }
+      return out;
+    }
+    function qtyInputHtml(id) {
+      return '<input type="number" class="lot-qty-input" id="' + id + '" min="1" step="1" inputmode="numeric" placeholder="Qty" aria-label="Quantity">';
+    }
+    function readQty(el) {
+      var n = parseInt(el && el.value, 10);
+      return isFinite(n) && n > 0 ? n : 0;
+    }
+
     // Every lot to act on now, and with lot entry required, items with none
     function expiryEntries() {
       var out = [];
@@ -9904,11 +10219,11 @@
           for (var i = 0; i < items.length; i++) {
             if (!items[i].expires) continue;
             var key = generateKey(area, cat, items[i].name);
-            var list = sortedLots(key);
-            if (!list.length) {
+            if (!(lots[key] && lots[key].length)) {
               if (required) out.push({ key: key, name: items[i].name, where: itemLocation(key), missing: true });
               continue;
             }
+            var list = liveLots(key);
             for (var l = 0; l < list.length; l++) {
               var st = lotStatus(list[l].exp);
               if (st === 'expired' || st === 'due') out.push({ key: key, name: items[i].name, where: itemLocation(key), lot: list[l], status: st });
@@ -9922,10 +10237,13 @@
     function lotChip(key) {
       var b = document.createElement('button');
       b.type = 'button';
-      var list = sortedLots(key);
-      if (!list.length) {
+      var list = liveLots(key);
+      if (!(lots[key] && lots[key].length)) {
         b.className = 'lot-chip';
         b.textContent = '+ Lot';
+      } else if (!list.length) {
+        b.className = 'lot-chip';
+        b.textContent = 'No lots left';
       } else {
         var st = lotStatus(list[0].exp);
         b.className = 'lot-chip ' + (st === 'expired' ? 'expired' : (st === 'due' ? 'due' : 'ok'));
@@ -9968,7 +10286,17 @@
       var body = document.getElementById('lotsBody');
       if (!key || !body) return;
       var list = sortedLots(key);
+      var p = key.split('::');
+      var item = findItem(p[0], p[1], p[2]);
       var html = '<div class="lots-where">' + escapeHtml(itemLocation(key)) + '</div>';
+      if (list.length && item) {
+        var total = lotTotal(key);
+        var count = lotCountNow(key, item);
+        var off = total === null || (count !== null && total !== count);
+        html += '<div class="lots-total' + (off ? ' off' : '') + '">' +
+          (total === null ? 'Enter how many of each lot' : 'Lots on file: ' + total) +
+          ' \u00b7 rig carries ' + item.required + (count !== null ? ' \u00b7 counted ' + count : '') + '</div>';
+      }
       if (!list.length) html += '<div class="lots-empty">No lot numbers entered yet.</div>';
       for (var i = 0; i < list.length; i++) {
         var st = lotStatus(list[i].exp);
@@ -9976,11 +10304,14 @@
         html += '<div class="lot-row ' + (st === 'expired' ? 'expired' : (st === 'due' ? 'due' : '')) + '"><div class="lot-row-info">' +
           '<div class="lot-row-lot">Lot ' + escapeHtml(list[i].lot) + '</div>' +
           '<div class="lot-row-exp">' + label + ' ' + expText(list[i].exp) + (list[i].by ? ' · entered by ' + escapeHtml(crewShort(list[i].by)) : '') + '</div></div>' +
+          '<div class="lot-row-qty"><button type="button" class="lot-step" data-ts="' + list[i].ts + '" data-d="-1" aria-label="One fewer"' + (lotQtyKnown(list[i]) && list[i].qty > 0 ? '' : ' disabled') + '>\u2212</button>' +
+          '<span class="lot-qty' + (lotQtyKnown(list[i]) ? '' : ' unknown') + '">' + (lotQtyKnown(list[i]) ? list[i].qty : '?') + '</span>' +
+          '<button type="button" class="lot-step" data-ts="' + list[i].ts + '" data-d="1" aria-label="One more">+</button></div>' +
           '<button type="button" class="lot-remove" data-ts="' + list[i].ts + '">Remove</button></div>';
       }
       html += '<div class="lot-form"><div class="lot-form-title">Add a lot</div>' +
         '<input type="text" id="lotNewNumber" placeholder="Lot number" autocomplete="off" autocapitalize="characters">' +
-        monthYearSelects('lotNew', null) + '<button type="button" id="lotAddBtn">Add</button><div class="lot-form-msg" id="lotFormMsg"></div></div>';
+        qtyInputHtml('lotNewQty') + monthYearSelects('lotNew', null) + '<button type="button" id="lotAddBtn">Add</button><div class="lot-form-msg" id="lotFormMsg"></div></div>';
       body.innerHTML = html;
       var removes = body.querySelectorAll('.lot-remove');
       for (var r = 0; r < removes.length; r++) {
@@ -9993,13 +10324,28 @@
           renderLotsSheet();
         };
       }
+      var steps = body.querySelectorAll('.lot-step');
+      for (var sp = 0; sp < steps.length; sp++) {
+        steps[sp].onclick = function() {
+          var ts = +this.getAttribute('data-ts');
+          var d = +this.getAttribute('data-d');
+          var l = (lots[key] || []).filter(function(x) { return x.ts === ts; })[0];
+          if (!l) return;
+          l.qty = lotQtyKnown(l) ? Math.max(0, l.qty + d) : (d > 0 ? 1 : 0);
+          lotsChanged = true;
+          saveLots();
+          renderLotsSheet();
+        };
+      }
       var input = document.getElementById('lotNewNumber');
       var add = function() {
         var lot = input.value.trim();
         var msg = document.getElementById('lotFormMsg');
         if (!lot) { msg.textContent = 'Enter the lot number.'; input.focus(); return; }
+        var qty = readQty(document.getElementById('lotNewQty'));
+        if (!qty) { msg.textContent = 'Enter how many of this lot are on the rig.'; document.getElementById('lotNewQty').focus(); return; }
         var exp = readMonthYear('lotNew');
-        (lots[key] = lots[key] || []).push({ lot: lot, exp: exp, ts: Date.now(), by: crewName() });
+        (lots[key] = lots[key] || []).push({ lot: lot, exp: exp, ts: Date.now(), by: crewName(), qty: qty });
         lotsChanged = true;
         saveLots();
         renderLotsSheet();
@@ -10021,6 +10367,45 @@
       o.classList.remove('open');
       if (wasOpen && lotsChanged) { lotsChanged = false; buildUI(); }
       lotsSheetKey = null;
+      if (wasOpen && lotCheckOpen()) renderLotCheck();
+    }
+
+    // ---- Before submitting: every counted item's lots must add up to its count
+    function lotCheckOpen() {
+      var o = document.getElementById('lotCheckOverlay');
+      return !!(o && o.classList.contains('open'));
+    }
+
+    function openLotCheck() {
+      renderLotCheck();
+      document.getElementById('lotCheckOverlay').classList.add('open');
+    }
+
+    function closeLotCheck() {
+      var o = document.getElementById('lotCheckOverlay');
+      if (o) o.classList.remove('open');
+    }
+
+    function renderLotCheck() {
+      var body = document.getElementById('lotCheckBody');
+      if (!body) return;
+      var list = lotMismatches();
+      if (!list.length) {
+        closeLotCheck();
+        setTimeout(showCompletionPopup, 150);
+        return;
+      }
+      var html = '<div class="expiry-intro">The lot quantities for these items do not match the count. Correct the lots (or the count) before submitting:</div>';
+      for (var i = 0; i < list.length; i++) {
+        var m = list[i];
+        html += '<div class="expiry-row due"><div class="expiry-name">' + escapeHtml(m.name) + '</div>' +
+          '<div class="expiry-lot">Counted ' + m.count + ' \u00b7 ' + (m.total === null ? 'a lot has no quantity' : 'lots on file ' + m.total) + '</div>' +
+          '<div class="expiry-where">' + escapeHtml(m.where) + '</div>' +
+          '<div class="expiry-btns"><button type="button" class="expiry-replace" data-key="' + escapeHtml(m.key) + '">Fix lots</button></div></div>';
+      }
+      body.innerHTML = html;
+      var btns = body.querySelectorAll('.expiry-replace');
+      for (var b = 0; b < btns.length; b++) btns[b].onclick = function() { openLotsSheet(this.getAttribute('data-key')); };
     }
 
     // ---- The notice when the checklist opens
@@ -10053,7 +10438,7 @@
         html += '<div class="expiry-row ' + (e.missing ? 'missing' : e.status) + '" data-i="' + i + '">' +
           '<div class="expiry-name">' + escapeHtml(e.name) + '</div>' +
           (e.missing ? '<div class="expiry-lot">No lot on file</div>'
-                     : '<div class="expiry-lot">Lot ' + escapeHtml(e.lot.lot) + ' · ' + (e.status === 'expired' ? 'expired ' : 'expires ') + expText(e.lot.exp) + '</div>') +
+                     : '<div class="expiry-lot">Lot ' + escapeHtml(e.lot.lot) + (lotQtyKnown(e.lot) ? ' \u00d7' + e.lot.qty : '') + ' · ' + (e.status === 'expired' ? 'expired ' : 'expires ') + expText(e.lot.exp) + '</div>') +
           '<div class="expiry-where">' + escapeHtml(e.where) + '</div>' +
           (sealed.length ? '<div class="expiry-sealed">🔒 In a sealed area: no recount needed, but reseal it after ' + (e.missing ? 'reading the lot' : 'the swap') + '</div>' : '') +
           '<div class="expiry-btns"><button type="button" class="expiry-replace">' + (e.missing ? 'Add lot' : 'Replaced') + '</button>' +
@@ -10071,20 +10456,22 @@
             var form = document.createElement('div');
             form.className = 'lot-form';
             form.innerHTML = '<div class="lot-form-title">New lot</div><input type="text" id="' + prefix + 'Lot" placeholder="Lot number" autocomplete="off" autocapitalize="characters">' +
-              monthYearSelects(prefix, null) + '<button type="button">Save</button><div class="lot-form-msg"></div>';
+              qtyInputHtml(prefix + 'Qty') + monthYearSelects(prefix, null) + '<button type="button">Save</button><div class="lot-form-msg"></div>';
             row.appendChild(form);
             var input = form.querySelector('input');
             input.focus();
             var save = function() {
               var lot = input.value.trim();
               if (!lot) { form.querySelector('.lot-form-msg').textContent = 'Enter the new lot number.'; input.focus(); return; }
+              var qty = readQty(document.getElementById(prefix + 'Qty'));
+              if (!qty) { form.querySelector('.lot-form-msg').textContent = 'Enter how many of the new lot went in.'; document.getElementById(prefix + 'Qty').focus(); return; }
               var exp = readMonthYear(prefix);
-              var opened = replaceLot(e, lot, exp);
+              var opened = replaceLot(e, lot, exp, qty);
               form.remove();
               row.classList.add('done');
               var res = document.createElement('div');
               res.className = 'expiry-result';
-              res.textContent = (e.missing ? 'Lot ' : 'Replaced with lot ') + lot + ' (' + expText(exp) + ')' + (opened.length ? '. Reseal ' + opened[opened.length - 1] + ' when it is back in place.' : '.');
+              res.textContent = (e.missing ? 'Lot ' : 'Replaced with lot ') + lot + ' \u00d7' + qty + ' (' + expText(exp) + ')' + (opened.length ? '. Reseal ' + opened[opened.length - 1] + ' when it is back in place.' : '.');
               row.appendChild(res);
             };
             form.querySelector('button').onclick = save;
@@ -10097,15 +10484,15 @@
     // Swap a lot. A sealed area around the item is opened for the swap
     // without a recount (its contents are as they were sealed) and must be
     // sealed again; the widget asks to reseal it right away.
-    function replaceLot(entry, newLot, newExp) {
+    function replaceLot(entry, newLot, newExp, newQty) {
       var key = entry.key;
       var now = Date.now();
       var list = lots[key] || [];
       if (!entry.missing) {
         list = list.filter(function(x) { return !(x.ts === entry.lot.ts && x.lot === entry.lot.lot); });
-        lotReplacements.push({ key: key, name: entry.name, oldLot: entry.lot.lot, oldExp: entry.lot.exp, lot: newLot, exp: newExp, by: crewName(), ts: now });
+        lotReplacements.push({ key: key, name: entry.name, oldLot: entry.lot.lot, oldExp: entry.lot.exp, oldQty: lotQtyKnown(entry.lot) ? entry.lot.qty : null, lot: newLot, exp: newExp, qty: newQty, by: crewName(), ts: now });
       }
-      list.push({ lot: newLot, exp: newExp, ts: now, by: crewName() });
+      list.push({ lot: newLot, exp: newExp, ts: now, by: crewName(), qty: newQty });
       lots[key] = list;
       // Reading the lot off the package opens a sealed area just the same
       var opened = [];
@@ -10789,7 +11176,7 @@
           h += '<button class="action-btn undo" onclick="undoRestock(\'' + escapeHtml(item.key) + '\')">Undo</button>';
         } else {
           h += '<div class="shortage-item-actions">';
-          h += '<button class="action-btn restock" onclick="markRestocked(\'' + escapeHtml(item.key) + '\')">✓ Restocked</button>';
+          h += '<button class="action-btn restock" onclick="markRestocked(\'' + escapeHtml(item.key) + '\')">✓ Restocked' + (lotTracked(item.key) ? '\u2026' : '') + '</button>';
           h += '<button class="action-btn out-of-stock" onclick="openOutOfStockDialog(\'' + escapeHtml(item.key) + '\', \'' + escapeHtml(item.name) + '\')">Out of Stock</button>';
           h += '</div>';
         }
@@ -11109,7 +11496,18 @@
     }
     
     function markRestocked(key) {
+      var p = key.split('::');
+      var item = findItem(p[0], p[1], p[2]);
+      if (item && lotTracked(key, item)) {
+        var need = item.required - ((itemStates[key] || { actual: 0 }).actual || 0);
+        if (need > 0) { openRestockLots(key, item, need); return; }
+      }
+      finishRestock(key, null);
+    }
+
+    function finishRestock(key, lotAdds) {
       restockStatus[key] = { restocked: true, outOfStock: false, reason: '' };
+      if (lotAdds) restockStatus[key].lotAdds = lotAdds;
       updateChecklistItem(key);
       updateAllStatuses();
       updateSummary();
@@ -11117,6 +11515,105 @@
       handleRestockComplete();
     }
     
+    // The restock of an item that keeps lots says which lot each one added is
+    var restockLotsDraft = null;
+    function openRestockLots(key, item, need) {
+      restockLotsDraft = { key: key, need: need, adds: {}, created: [] };
+      document.getElementById('restockLotsTitle').textContent = item.name;
+      renderRestockLots();
+      document.getElementById('restockLotsOverlay').classList.add('open');
+    }
+
+    function closeRestockLots() {
+      document.getElementById('restockLotsOverlay').classList.remove('open');
+      restockLotsDraft = null;
+    }
+
+    function restockLotsAssigned() {
+      var d = restockLotsDraft, n = 0;
+      for (var id in d.adds) n += d.adds[id];
+      for (var c = 0; c < d.created.length; c++) n += d.created[c].qty;
+      return n;
+    }
+
+    function renderRestockLots() {
+      var d = restockLotsDraft;
+      var body = document.getElementById('restockLotsBody');
+      if (!d || !body) return;
+      var assigned = restockLotsAssigned();
+      var left = d.need - assigned;
+      var html = '<div class="lots-where">' + escapeHtml(itemLocation(d.key)) + '</div>' +
+        '<div class="lots-total' + (left ? ' off' : '') + '">' + d.need + ' put in \u00b7 ' + (left > 0 ? left + ' still to assign to a lot' : (left < 0 ? (-left) + ' too many assigned' : 'all assigned')) + '</div>';
+      var list = sortedLots(d.key);
+      for (var i = 0; i < list.length; i++) {
+        var id = lotId(list[i]);
+        var n = d.adds[id] || 0;
+        html += '<div class="lot-row"><div class="lot-row-info"><div class="lot-row-lot">Lot ' + escapeHtml(list[i].lot) + '</div>' +
+          '<div class="lot-row-exp">Expires ' + expText(list[i].exp) + (lotQtyKnown(list[i]) ? ' \u00b7 ' + list[i].qty + ' on file' : '') + '</div></div>' +
+          '<div class="lot-row-qty"><button type="button" class="lot-step" data-id="' + escapeHtml(id) + '" data-d="-1"' + (n > 0 ? '' : ' disabled') + '>\u2212</button>' +
+          '<span class="lot-qty">' + n + '</span>' +
+          '<button type="button" class="lot-step" data-id="' + escapeHtml(id) + '" data-d="1"' + (left > 0 ? '' : ' disabled') + '>+</button></div></div>';
+      }
+      for (var c = 0; c < d.created.length; c++) {
+        html += '<div class="lot-row new"><div class="lot-row-info"><div class="lot-row-lot">Lot ' + escapeHtml(d.created[c].lot) + ' <small>new</small></div>' +
+          '<div class="lot-row-exp">Expires ' + expText(d.created[c].exp) + ' \u00b7 ' + d.created[c].qty + ' put in</div></div>' +
+          '<button type="button" class="lot-remove" data-c="' + c + '">Remove</button></div>';
+      }
+      html += '<div class="lot-form"><div class="lot-form-title">A new lot</div>' +
+        '<input type="text" id="restockLotNumber" placeholder="Lot number" autocomplete="off" autocapitalize="characters">' +
+        qtyInputHtml('restockLotQty') + monthYearSelects('restockLot', null) + '<button type="button" id="restockLotAdd">Add</button><div class="lot-form-msg" id="restockLotMsg"></div></div>';
+      body.innerHTML = html;
+      document.getElementById('restockLotsConfirm').disabled = left !== 0;
+      var steps = body.querySelectorAll('.lot-step');
+      for (var s2 = 0; s2 < steps.length; s2++) {
+        steps[s2].onclick = function() {
+          var lid = this.getAttribute('data-id');
+          var dd = +this.getAttribute('data-d');
+          d.adds[lid] = Math.max(0, (d.adds[lid] || 0) + dd);
+          if (!d.adds[lid]) delete d.adds[lid];
+          renderRestockLots();
+        };
+      }
+      var removes = body.querySelectorAll('.lot-remove');
+      for (var r = 0; r < removes.length; r++) {
+        removes[r].onclick = function() { d.created.splice(+this.getAttribute('data-c'), 1); renderRestockLots(); };
+      }
+      var input = document.getElementById('restockLotNumber');
+      var add = function() {
+        var lot = input.value.trim();
+        var msg = document.getElementById('restockLotMsg');
+        if (!lot) { msg.textContent = 'Enter the lot number.'; input.focus(); return; }
+        var qty = readQty(document.getElementById('restockLotQty'));
+        if (!qty) { msg.textContent = 'Enter how many of this lot went in.'; document.getElementById('restockLotQty').focus(); return; }
+        d.created.push({ lot: lot, exp: readMonthYear('restockLot'), qty: qty });
+        renderRestockLots();
+      };
+      document.getElementById('restockLotAdd').onclick = add;
+      input.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); add(); } };
+    }
+
+    function confirmRestockLots() {
+      var d = restockLotsDraft;
+      if (!d || restockLotsAssigned() !== d.need) return;
+      var adds = [];
+      for (var id in d.adds) {
+        var l = lotFind(d.key, id);
+        if (!l) continue;
+        if (lotQtyKnown(l)) l.qty += d.adds[id];
+        adds.push({ id: id, qty: d.adds[id] });
+      }
+      var now = Date.now();
+      for (var c = 0; c < d.created.length; c++) {
+        var nl = { lot: d.created[c].lot, exp: d.created[c].exp, ts: now + c, by: crewName(), qty: d.created[c].qty };
+        (lots[d.key] = lots[d.key] || []).push(nl);
+        adds.push({ id: lotId(nl), qty: nl.qty, created: true });
+      }
+      var key = d.key;
+      closeRestockLots();
+      saveSealState();
+      finishRestock(key, adds);
+    }
+
     // Update a single checklist item in the main view
     function updateChecklistItem(key) {
       var parts = key.split('::');
@@ -11200,6 +11697,19 @@
     }
     
     function undoRestock(key) {
+      // Take back what the restock added to the lots
+      var adds = (restockStatus[key] && restockStatus[key].lotAdds) || [];
+      for (var a = 0; a < adds.length; a++) {
+        var l = lotFind(key, adds[a].id);
+        if (!l) continue;
+        if (adds[a].created) {
+          lots[key] = lots[key].filter(function(x) { return x !== l; });
+          if (!lots[key].length) delete lots[key];
+        } else if (lotQtyKnown(l)) {
+          l.qty = Math.max(0, l.qty - adds[a].qty);
+        }
+      }
+      if (adds.length) saveSealState();
       delete restockStatus[key];
       updateChecklistItem(key);
       updateAllStatuses();
@@ -11227,6 +11737,8 @@
             
             if (actual < required) {
               var status = restockStatus[key];
+              // Each item that keeps lots is restocked on its own: its lot is asked for
+              if (lotTracked(key, items[i])) continue;
               // Only mark as restocked if not already marked as out of stock
               if (!status || !status.outOfStock) {
                 restockStatus[key] = { restocked: true, outOfStock: false, reason: '' };
@@ -11495,11 +12007,11 @@
         lines.push('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500');
         for (var lr = 0; lr < lotReplacements.length; lr++) {
           var rpl = lotReplacements[lr];
-          lines.push('  \u2022 Replaced: ' + rpl.name + ' \u2014 lot ' + rpl.oldLot + ' (' + expText(rpl.oldExp) + ') with lot ' + rpl.lot + ' (' + expText(rpl.exp) + ')' + (rpl.by ? ' by ' + rpl.by : ''));
+          lines.push('  \u2022 Replaced: ' + rpl.name + ' \u2014 lot ' + rpl.oldLot + (rpl.oldQty ? ' \u00d7' + rpl.oldQty : '') + ' (' + expText(rpl.oldExp) + ') with lot ' + rpl.lot + (rpl.qty ? ' \u00d7' + rpl.qty : '') + ' (' + expText(rpl.exp) + ')' + (rpl.by ? ' by ' + rpl.by : ''));
         }
         for (var ld = 0; ld < lotsDue.length; ld++) {
           var dueE = lotsDue[ld];
-          lines.push('  \u2022 ' + (dueE.status === 'expired' ? 'EXPIRED' : 'Expires this month') + ': ' + dueE.name + ' \u2014 lot ' + dueE.lot.lot + ' (' + expText(dueE.lot.exp) + '), ' + dueE.where);
+          lines.push('  \u2022 ' + (dueE.status === 'expired' ? 'EXPIRED' : 'Expires this month') + ': ' + dueE.name + ' \u2014 lot ' + dueE.lot.lot + (lotQtyKnown(dueE.lot) ? ' \u00d7' + dueE.lot.qty : '') + ' (' + expText(dueE.lot.exp) + '), ' + dueE.where);
         }
         lines.push('');
       }
