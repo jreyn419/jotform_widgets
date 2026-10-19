@@ -3629,8 +3629,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.46.0';
+    var VERSION = '1.46.1';
     var CHANGELOG = [
+      { version: '1.46.1', date: '2026-10-19', changes: [
+        'Supplies used: Enter picks the first match that can be logged, skipping one from a checklist not done today, instead of doing nothing',
+      ]},
       { version: '1.46.0', date: '2026-10-19', changes: [
         'Lot quantities: each lot says how many of it are on the rig. The lots sheet adds a lot with its quantity, steps a lot up or down, and shows the lots\u2019 total against what the rig carries and what was counted',
         'Supplies used: an item that keeps lots asks which lot each one used came from, picked by the crew every time (nothing is chosen for them), with Lot not listed for one that is not on file. The list cannot be saved until every one used has a lot. The next time the checklist opens, the lots are taken down by what was picked, and put back if a line is changed or removed',
@@ -5727,8 +5730,9 @@
     function pickTopSuggestion(boxId) {
       var box = document.getElementById(boxId);
       if (!box) return false;
-      var top = box.querySelector('.usage-suggest-row');
-      if (!top || top.classList.contains('blocked')) return false;
+      // The first match that can be picked: one from a checklist not done today is skipped
+      var top = box.querySelector('.usage-suggest-row:not(.blocked)');
+      if (!top) return false;
       top.click();
       return true;
     }
