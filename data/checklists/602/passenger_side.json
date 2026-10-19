@@ -304,12 +304,14 @@
             },
             {
               "name": "Electrode Bag",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Lancets",
               "qty": 6,
-              "group": "Glucometer kit"
+              "group": "Glucometer kit",
+              "expires": true
             },
             {
               "name": "Sterile 2x2",
@@ -324,12 +326,14 @@
             {
               "name": "Alcohol Prep Pads",
               "qty": 6,
-              "group": "Glucometer kit"
+              "group": "Glucometer kit",
+              "expires": true
             },
             {
               "name": "Glucometer Test Strip",
               "qty": 1,
-              "group": "Glucometer kit"
+              "group": "Glucometer kit",
+              "expires": true
             },
             {
               "name": "Glucometer",
@@ -398,11 +402,13 @@
             },
             {
               "name": "Adult/Child Defib Pads",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Infant/Pediatric Defib Pads",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             }
           ]
         },
@@ -500,7 +506,8 @@
             },
             {
               "name": "IV start kits",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Stethoscope",
@@ -516,11 +523,13 @@
             },
             {
               "name": "NS Flush",
-              "qty": 10
+              "qty": 10,
+              "expires": true
             },
             {
               "name": "IV Extension Set",
-              "qty": 6
+              "qty": 6,
+              "expires": true
             },
             {
               "name": "Coban",
@@ -558,11 +567,13 @@
           "items": [
             {
               "name": "Alcohol Prep Pads",
-              "qty": 20
+              "qty": 20,
+              "expires": true
             },
             {
               "name": "Betadine Pads",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Nail Polish Remover",
@@ -620,32 +631,38 @@
             {
               "name": "24G YELLOW",
               "qty": 4,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "22G BLUE",
               "qty": 4,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "20G PINK",
               "qty": 6,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "18G GREEN",
               "qty": 6,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "16G GRAY",
               "qty": 6,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "14G ORANGE",
               "qty": 6,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             }
           ]
         },

@@ -21,15 +21,18 @@
           "items": [
             {
               "name": "Sterile Distilled Water for Irrigation Box 500mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Sterile NS Water for Irrigation Box 500mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Sterile Water Humidifier Bottle (prefilled, screws onto O2 tree)",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Potable Water",
@@ -48,17 +51,20 @@
             {
               "name": "15mm I/O needle",
               "qty": 1,
-              "group": "IO Drill Kit"
+              "group": "IO Drill Kit",
+              "expires": true
             },
             {
               "name": "45mm I/O needle",
               "qty": 1,
-              "group": "IO Drill Kit"
+              "group": "IO Drill Kit",
+              "expires": true
             },
             {
               "name": "25mm I/O needle",
               "qty": 1,
-              "group": "IO Drill Kit"
+              "group": "IO Drill Kit",
+              "expires": true
             },
             {
               "name": "I/O drill",
@@ -67,11 +73,13 @@
             },
             {
               "name": "10-Drop Set",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "60-Drop Set",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Pressure Infusion Bag",
@@ -79,19 +87,23 @@
             },
             {
               "name": "Activated Charcoal 25g/120mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Ibuprofen Oral Suspension",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Epinephrine auto-injector (adult) 0.3mg",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Epinephrine auto-injector (pediatric) 0.15mg",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Arm Board (Short)",
@@ -113,55 +125,68 @@
           "items": [
             {
               "name": "Acetaminophen Bag 1000mg/100mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
-              "qty": 6
+              "qty": 6,
+              "expires": true
             },
             {
               "name": "Ipratropium Bromide Inhalation Solution 0.5mg/2.5mL",
-              "qty": 6
+              "qty": 6,
+              "expires": true
             },
             {
               "name": "Aspirin Bottle 81 mg/tablet",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Diphenhydramine PO 25mg/10mL",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Diphenhydramine 50mg/mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Labetalol 100mg/20mL",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Magnesium Sulfate 5g/10mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Epinephrine 1mg/1mL",
-              "qty": 5
+              "qty": 5,
+              "expires": true
             },
             {
               "name": "Norepinephrine 4mg/4mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Adenosine 6mg/2mL",
-              "qty": 3
+              "qty": 3,
+              "expires": true
             },
             {
               "name": "Amiodarone 150mg/3mL",
-              "qty": 6
+              "qty": 6,
+              "expires": true
             },
             {
               "name": "Atropine Sulfate 1mg/1mL",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Nitroglycerin Ointment Paper",
@@ -169,39 +194,48 @@
             },
             {
               "name": "Nitroglycerin Ointment 1g/in.",
-              "qty": 5
+              "qty": 5,
+              "expires": true
             },
             {
               "name": "Nitroglycerin Vial 0.4mg/tablet",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Tranexamic Acid 1000mg/10mL",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Lidocaine 100mg/5mL",
-              "qty": 5
+              "qty": 5,
+              "expires": true
             },
             {
               "name": "Ketorolac 30mg/mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Ondansetron 4mg/2mL",
-              "qty": 3
+              "qty": 3,
+              "expires": true
             },
             {
               "name": "Ondansetron Orally Disintegrating Tablets 4mg",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Glucose Oral Gel 15 mg",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Glucagon Injection Kits 1mg/1mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             }
           ]
         },
@@ -210,31 +244,38 @@
           "items": [
             {
               "name": "Sodium Bicarbonate Preload 50mEq/50mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Epinephrine Preload 1mg/10mL",
-              "qty": 8
+              "qty": 8,
+              "expires": true
             },
             {
               "name": "Atropine Sulfate Preload 1mg/10mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Lidocaine HCl Preload 100mg/5mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Calcium Chloride Preload 1g/10mL",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Naloxone Hydrochloride Preload 2mg/2mL",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Dextrose Preload 25g/50mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "MADs",
@@ -252,11 +293,13 @@
           "items": [
             {
               "name": "Heat Pack",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Cold Pack",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "Nail Polish Remover Box",
@@ -264,49 +307,59 @@
             },
             {
               "name": "Chlorhexidine Swabs Box",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Alcohol Prep Pads Box",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Iodine (Betadine) Prep Pads",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "IV start kits",
-              "qty": 4
+              "qty": 4,
+              "expires": true
             },
             {
               "name": "14G ORANGE",
               "qty": 6,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "16G GRAY",
               "qty": 6,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "18G GREEN",
               "qty": 6,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "20G PINK",
               "qty": 6,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "22G BLUE",
               "qty": 4,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "24G YELLOW",
               "qty": 4,
-              "group": "IV Catheter"
+              "group": "IV Catheter",
+              "expires": true
             },
             {
               "name": "Rubber (Elastic) Tourniquet",
@@ -318,11 +371,13 @@
             },
             {
               "name": "NS Flush",
-              "qty": 10
+              "qty": 10,
+              "expires": true
             },
             {
               "name": "IV Extension Set",
-              "qty": 6
+              "qty": 6,
+              "expires": true
             },
             {
               "name": "1\" Tape (Cloth/Synthetic)",
@@ -473,7 +528,8 @@
             },
             {
               "name": "Obstetrical Kit w/ Baby Cap",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Bedpan",
@@ -516,15 +572,18 @@
             },
             {
               "name": "Chest Seal",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Petrolatum Dressing",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "4\"x4\" Quickclot Dressing",
-              "qty": 3
+              "qty": 3,
+              "expires": true
             },
             {
               "name": "Trauma Tourniquet",
@@ -536,7 +595,8 @@
             },
             {
               "name": "Chest Decompression Needle",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Center Punch Tool",
@@ -548,7 +608,8 @@
             },
             {
               "name": "Sterile Burn Sheet",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             }
           ]
         },
@@ -569,11 +630,13 @@
             },
             {
               "name": "Cricothyrotomy Kit",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Colorimetric CO2 Detector",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             }
           ]
         }
@@ -726,7 +789,8 @@
             {
               "name": "Lubricant Packets",
               "qty": 6,
-              "group": "OPAs/NPAs"
+              "group": "OPAs/NPAs",
+              "expires": true
             },
             {
               "name": "40mm PINK OPA",
@@ -771,37 +835,44 @@
             {
               "name": "90kg ORANGE",
               "qty": 1,
-              "group": "iGels"
+              "group": "iGels",
+              "expires": true
             },
             {
               "name": "50-90kg GREEN",
               "qty": 1,
-              "group": "iGels"
+              "group": "iGels",
+              "expires": true
             },
             {
               "name": "30-60kg YELLOW",
               "qty": 1,
-              "group": "iGels"
+              "group": "iGels",
+              "expires": true
             },
             {
               "name": "25-35kg WHITE",
               "qty": 1,
-              "group": "iGels"
+              "group": "iGels",
+              "expires": true
             },
             {
               "name": "10-25kg GRAY",
               "qty": 1,
-              "group": "iGels"
+              "group": "iGels",
+              "expires": true
             },
             {
               "name": "5-12kg BLUE",
               "qty": 1,
-              "group": "iGels"
+              "group": "iGels",
+              "expires": true
             },
             {
               "name": "2-5kg PINK",
               "qty": 1,
-              "group": "iGels"
+              "group": "iGels",
+              "expires": true
             }
           ]
         },
