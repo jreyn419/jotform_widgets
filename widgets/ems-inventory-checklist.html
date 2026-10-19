@@ -1264,6 +1264,28 @@
     }
 
     .usage-chosen-info { flex: 1; min-width: 0; }
+    .picker-title.usage-head { gap: 6px; }
+    @media (max-width: 379px) { .usage-head-title { display: none; } }
+    .usage-cart-btn { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px 5px 12px; border: 2px solid #0066cc; border-radius: 14px; background: white; color: #0066cc; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .usage-cart-btn.active { background: #0066cc; color: white; }
+    .usage-cart-count { min-width: 20px; padding: 1px 6px; border-radius: 10px; background: #0066cc; color: white; font-size: 12px; text-align: center; box-sizing: border-box; }
+    .usage-cart-btn.active .usage-cart-count { background: white; color: #0066cc; }
+    .usage-cart-btn.unsaved { border-color: #d97706; }
+    .usage-cart-btn.unsaved .usage-cart-count { background: #d97706; color: white; }
+    .usage-cart-btn.bump { animation: usageBump 0.35s ease-out; }
+    @keyframes usageBump { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: scale(1); } }
+    .usage-added { font-size: 13px; font-weight: 600; color: #155724; margin: 0 4px 10px; }
+    .usage-added:empty { display: none; }
+    .usage-freq-title { font-size: 13px; font-weight: 700; color: #666; margin: 6px 4px 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+    .usage-freq { display: flex; flex-direction: column; gap: 6px; }
+    .usage-freq-note { font-size: 13px; color: #888; margin: 0 4px 8px; }
+    .usage-freq-qty { flex-shrink: 0; text-align: right; font-size: 17px; font-weight: 700; color: #0b3d91; line-height: 1.1; }
+    .usage-freq-qty small { display: block; font-size: 11px; font-weight: 600; color: #777; }
+    .usage-suggest-hint { font-size: 13px; color: #888; margin: 0 4px; }
+    .usage-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 6px; }
+    .usage-list-head .usage-chosen-title { margin: 6px 4px; }
+    .usage-more-btn { flex-shrink: 0; padding: 6px 12px; border: 1px solid #b7cff5; border-radius: 8px; background: #eef5ff; color: #0b3d91; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .usage-list-empty { font-size: 14px; color: #888; padding: 18px 8px; text-align: center; }
     .usage-chosen-row.has-lots { flex-wrap: wrap; }
     .usage-chosen-row.needs-lot { border-color: #f5c06b; }
     .usage-lots { flex-basis: 100%; border-top: 1px solid #eee; padding-top: 8px; }
@@ -3629,8 +3651,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.46.1';
+    var VERSION = '1.47.0';
     var CHANGELOG = [
+      { version: '1.47.0', date: '2026-10-19', changes: [
+        'Supplies used: the session\u2019s list is its own view, opened with the List button at the top right, which shows how many are in it and turns orange while it is not saved. Tapping an item adds it to the list and stays on the search',
+        'Under the search: the rig\u2019s 10 items used most this month (since the 1st), by total quantity, from every crew member\u2019s lists. Only items that have been used show. As soon as anything is typed, the search covers the rig\u2019s whole inventory, sorted as before',
+      ]},
       { version: '1.46.1', date: '2026-10-19', changes: [
         'Supplies used: Enter picks the first match that can be logged, skipping one from a checklist not done today, instead of doing nothing',
       ]},
@@ -6278,6 +6304,10 @@
     var usageOthersLots = {};                    // checklist|key|lotId -> taken from that lot on other lists, not yet counted
     var usageLotsCache = {};                     // checklistNorm -> that checklist's lots
     var usageRigNorm = null;
+    var usageView = 'search';                    // 'search' (search and items used most) or 'list' (the session's list)
+    var usageMonthCounts = undefined;            // checklist|key -> quantity logged this month; null when unknown
+    var usageIndexList = null;
+    var USAGE_MONTH_KEY = 'ems_usage_month';     // this month's counts up to two days ago, per rig, refreshed each day
 
 
     function usageAvailable() {
@@ -6374,6 +6404,8 @@
       usageOthersLots = {};
       usageLotsCache = {};
       usageRigNorm = normalizeSelection(rig.id);
+      usageMonthCounts = undefined;
+      usageIndexList = null;
       usageLastSync = {};
       usageAllData = null;
       usageSession = currentUsageSession(rigNorm);
@@ -6397,50 +6429,58 @@
         renderPicker(rig.id);
       };
       head.appendChild(back);
+      head.classList.add('usage-head');
       var headText = document.createElement('span');
-      headText.textContent = 'Supplies used';
+      headText.className = 'usage-head-title';
+      headText.textContent = 'Supplies';
       head.appendChild(headText);
       head.appendChild(rigChip(rig));
       head.appendChild(crewChip(function() { renderUsageScreen(rig.id); }));
+      // The session's list is its own view, opened from here like a cart
+      var cart = document.createElement('button');
+      cart.type = 'button';
+      cart.className = 'usage-cart-btn';
+      cart.id = 'usageCartBtn';
+      cart.setAttribute('aria-label', 'This session\u2019s list');
+      cart.innerHTML = 'List <span class="usage-cart-count" id="usageCartCount">0</span>';
+      cart.onclick = function() { showUsageView(usageView === 'list' ? 'search' : 'list'); };
+      head.appendChild(cart);
       screen.appendChild(head);
+
+      var searchView = document.createElement('div');
+      searchView.id = 'usageSearchView';
+      var listView = document.createElement('div');
+      listView.id = 'usageListView';
+      listView.style.display = 'none';
 
       var search = document.createElement('input');
       search.type = 'search';
       search.className = 'usage-search';
       search.id = 'usageSearch';
-      search.placeholder = 'Search an item\u2026';
+      search.placeholder = 'Search supplies used\u2026';
       search.setAttribute('autocomplete', 'off');
-      screen.appendChild(search);
+      searchView.appendChild(search);
 
       var suggest = document.createElement('div');
       suggest.className = 'usage-suggest';
       suggest.id = 'usageSuggest';
-      screen.appendChild(suggest);
+      searchView.appendChild(suggest);
 
-      var chosenTitle = document.createElement('div');
-      chosenTitle.className = 'usage-chosen-title';
-      chosenTitle.id = 'usageChosenTitle';
-      chosenTitle.textContent = 'Logged this session';
-      chosenTitle.style.display = 'none';
-      screen.appendChild(chosenTitle);
-      var chosen = document.createElement('div');
-      chosen.id = 'usageChosen';
-      screen.appendChild(chosen);
+      var added = document.createElement('div');
+      added.className = 'usage-added';
+      added.id = 'usageAdded';
+      searchView.appendChild(added);
 
-      var save = document.createElement('button');
-      save.type = 'button';
-      save.className = 'usage-save';
-      save.id = 'usageSave';
-      save.textContent = 'Save';
-      save.disabled = true;
-      save.onclick = function() { saveUsage(rig); };
-      screen.appendChild(save);
+      var freq = document.createElement('div');
+      freq.className = 'usage-freq';
+      freq.id = 'usageFreq';
+      searchView.appendChild(freq);
 
       var msg = document.createElement('div');
       msg.className = 'usage-msg';
       msg.id = 'usageMsg';
       msg.textContent = 'Loading the rig\u2019s checklists\u2026';
-      screen.appendChild(msg);
+      searchView.appendChild(msg);
 
       var allBtn = document.createElement('button');
       allBtn.type = 'button';
@@ -6449,8 +6489,44 @@
       allBtn.textContent = 'See all items';
       allBtn.disabled = true;
       allBtn.onclick = function() { openUsageAll('all'); };
-      screen.appendChild(allBtn);
+      searchView.appendChild(allBtn);
+
+      var listHead = document.createElement('div');
+      listHead.className = 'usage-list-head';
+      var chosenTitle = document.createElement('div');
+      chosenTitle.className = 'usage-chosen-title';
+      chosenTitle.id = 'usageChosenTitle';
+      chosenTitle.textContent = 'Logged this session';
+      listHead.appendChild(chosenTitle);
+      var more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'usage-more-btn';
+      more.textContent = '+ Add items';
+      more.onclick = function() { showUsageView('search'); };
+      listHead.appendChild(more);
+      listView.appendChild(listHead);
+      var empty = document.createElement('div');
+      empty.className = 'usage-list-empty';
+      empty.id = 'usageListEmpty';
+      empty.textContent = 'Nothing logged yet. Search for an item or tap one used often to add it.';
+      listView.appendChild(empty);
+      var chosen = document.createElement('div');
+      chosen.id = 'usageChosen';
+      listView.appendChild(chosen);
+
+      var save = document.createElement('button');
+      save.type = 'button';
+      save.className = 'usage-save';
+      save.id = 'usageSave';
+      save.textContent = 'Save';
+      save.disabled = true;
+      save.onclick = function() { saveUsage(rig); };
+      listView.appendChild(save);
+
+      screen.appendChild(searchView);
+      screen.appendChild(listView);
       container.appendChild(screen);
+      usageView = 'search';
       setLoading(false);
       renderUsageChosen();
       resizeWidget();
@@ -6501,6 +6577,12 @@
             }
           }
         }
+        // Used most this month, once what other lists hold is known (for the greyed rows)
+        loadUsageMonth(rigNorm, list, function(counts) {
+          if (token !== usageScreenToken) return;
+          usageMonthCounts = counts;
+          renderUsageFreq();
+        });
         renderUsageChosen();
       });
 
@@ -6523,10 +6605,12 @@
             : 'Type a few letters and tap the item to add it. Change the amounts below, then Save.';
         }
         renderUsageSuggestions(index, search.value);
+        renderUsageFreq();
       };
       usageDoneToday = undefined;
       loadUsageIndex(rig, function(entries) {
         index = entries;
+        usageIndexList = entries;
         for (var q = 0; q < entries.length; q++) {
           usageRigQty[entries[q].checklist + '|' + entries[q].key] = entries[q].qty;
           usageIndexMap[entries[q].checklist + '|' + entries[q].key] = entries[q];
@@ -6535,7 +6619,12 @@
         renderUsageChosen();
       });
       loadUsageDoneToday(rig, function(done) { usageDoneToday = done; ready(); });
-      search.oninput = function() { if (index) renderUsageSuggestions(index, search.value); };
+      search.oninput = function() {
+        var a = document.getElementById('usageAdded');
+        if (a) a.textContent = '';
+        if (index) renderUsageSuggestions(index, search.value);
+        renderUsageFreq();
+      };
       search.onkeydown = function(e) {
         if (e.key === 'Enter') { e.preventDefault(); pickTopSuggestion('usageSuggest'); }
       };
@@ -6550,6 +6639,7 @@
       if (!box) return;
       box.innerHTML = '';
       var q = String(query || '').trim().toLowerCase();
+      if (q.length === 1) { box.innerHTML = '<div class="usage-suggest-hint">Keep typing to search the rig\u2019s items</div>'; return; }
       if (q.length < 2) return;
       var words = q.split(/\s+/);
       // Rank: the name itself first (exact, then starts with, then contains),
@@ -6577,25 +6667,170 @@
       });
       var hits = [];
       for (var h0 = 0; h0 < scored.length && hits.length < 12; h0++) hits.push(scored[h0].e);
-      for (var h = 0; h < hits.length; h++) {
-        var entry = hits[h];
-        var notDone = usageItemBlocked(entry);
-        var room = usageRoomFor(entry.checklist, entry.key);
-        var full = !notDone && room.left <= 0;
-        var blocked = notDone || full;
-        var row = document.createElement('button');
-        row.type = 'button';
-        row.className = 'usage-suggest-row' + (blocked ? ' blocked' : '');
-        row.innerHTML = '<span class="usage-suggest-name">' + escapeHtml(entry.name) +
-          '<div class="usage-suggest-where">' + escapeHtml(entry.checklistName + ' \u203A ' + entry.where) + '</div>' +
-          (notDone ? '<div class="usage-suggest-why">' + escapeHtml(entry.checklistName) + ' not done today</div>' : '') +
-          (full ? '<div class="usage-suggest-why">' + escapeHtml(usageFullText(room)) + '</div>' : '') +
-          (usageQtyInList(entry) && !full ? '<div class="usage-suggest-have">' + usageQtyInList(entry) + ' in the list \u00B7 tap to add one</div>' : '') +
-          '</span>';
-        if (!blocked) {
-          row.onclick = (function(en) { return function() { addUsageItem(en); }; })(entry);
+      for (var h = 0; h < hits.length; h++) box.appendChild(usageEntryRow(hits[h], ''));
+    }
+
+    // One item to tap: greyed with the reason when it cannot be logged now
+    function usageEntryRow(entry, sideHtml) {
+      var notDone = usageItemBlocked(entry);
+      var room = usageRoomFor(entry.checklist, entry.key);
+      var full = !notDone && room.left <= 0;
+      var blocked = notDone || full;
+      var row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'usage-suggest-row' + (blocked ? ' blocked' : '');
+      row.innerHTML = '<span class="usage-suggest-name">' + escapeHtml(entry.name) +
+        '<div class="usage-suggest-where">' + escapeHtml(entry.checklistName + ' \u203A ' + entry.where) + '</div>' +
+        (notDone ? '<div class="usage-suggest-why">' + escapeHtml(entry.checklistName) + ' not done today</div>' : '') +
+        (full ? '<div class="usage-suggest-why">' + escapeHtml(usageFullText(room)) + '</div>' : '') +
+        (usageQtyInList(entry) && !full ? '<div class="usage-suggest-have">' + usageQtyInList(entry) + ' in the list \u00B7 tap to add one</div>' : '') +
+        '</span>' + (sideHtml || '');
+      if (!blocked) row.onclick = function() { addUsageItem(entry); };
+      return row;
+    }
+
+    // ---- Search view or the session's list
+    function showUsageView(view) {
+      usageView = view;
+      var sv = document.getElementById('usageSearchView');
+      var lv = document.getElementById('usageListView');
+      if (!sv || !lv) return;
+      sv.style.display = view === 'search' ? '' : 'none';
+      lv.style.display = view === 'list' ? '' : 'none';
+      var cart = document.getElementById('usageCartBtn');
+      if (cart) cart.classList.toggle('active', view === 'list');
+      if (view === 'search') {
+        var a = document.getElementById('usageAdded');
+        if (a) a.textContent = '';
+        renderUsageFreq();
+      }
+      resizeWidget();
+    }
+
+    // The List button: how many are in the list, and whether it needs saving
+    function updateUsageCart() {
+      var count = document.getElementById('usageCartCount');
+      var cart = document.getElementById('usageCartBtn');
+      if (!count || !cart) return;
+      var n = 0;
+      for (var i = 0; i < usageChosen.length; i++) if (!usageItemResolved(usageChosen[i])) n += usageChosen[i].qty || 0;
+      count.textContent = n;
+      var unsaved = usageListChanged();
+      cart.classList.toggle('unsaved', unsaved);
+      cart.title = unsaved ? (usageLotsIncomplete() ? 'Not saved: pick the lots in the list' : 'Not saved yet') : '';
+    }
+
+    // ---- Used most this month
+    // Every crew member's logged items for the rig since the 1st (by the
+    // working day, which starts at 8 AM), ranked by total quantity, top 10.
+    // Lines older than two days no longer change (a session list is kept a
+    // day), so their counts are kept on the tablet and refreshed once a
+    // day; the last two days come from the submissions the screen already has.
+    function shiftStartTs(now) {
+      var x = new Date(now.getTime());
+      if (x.getHours() < dayStartHour()) x.setDate(x.getDate() - 1);
+      x.setHours(dayStartHour(), 0, 0, 0);
+      return x.getTime();
+    }
+
+    function usageMonthOf(ts) { return shiftDay(new Date(ts)).slice(0, 7); }
+
+    function addMonthLines(counts, lines, month, from, until) {
+      for (var i = 0; i < lines.length; i++) {
+        var ln = lines[i];
+        if (!ln.qty || !(ln.ts >= from) || !(ln.ts < until) || usageMonthOf(ln.ts) !== month) continue;
+        var k = ln.checklist + '|' + ln.key;
+        counts[k] = (counts[k] || 0) + ln.qty;
+      }
+    }
+
+    function loadUsageMonth(rigNorm, recentList, callback) {
+      if (!recentList) { callback(null); return; }
+      var now = new Date();
+      var month = shiftDay(now).slice(0, 7);
+      var boundary = shiftStartTs(now) - 2 * 24 * 3600 * 1000;
+      var finish = function(frozen) {
+        if (!frozen) { callback(null); return; }
+        var counts = {};
+        for (var k in frozen) counts[k] = frozen[k];
+        addMonthLines(counts, usageEntriesFor(recentList, rigNorm), month, boundary, Infinity);
+        callback(counts);
+      };
+      // The 1st and 2nd of the month: nothing older to fetch
+      var monthStart = new Date(+month.slice(0, 4), +month.slice(5, 7) - 1, 1, dayStartHour(), 0, 0, 0).getTime();
+      if (monthStart >= boundary) { finish({}); return; }
+      var cache = readJsonStore(USAGE_MONTH_KEY, null);
+      if (cache && cache.month === month && cache.boundary === boundary && cache.rigs) { finish(cache.rigs[rigNorm] || {}); return; }
+      fetchSince(new Date(monthStart - 24 * 3600 * 1000), function(list) {
+        if (!list) { finish(null); return; }
+        var rigs = {};
+        var seen = {};
+        for (var i = 0; i < list.length; i++) {
+          var sy = submissionSyncData(list[i]);
+          if (sy && sy.type === 'usage' && sy.rig) seen[normalizeSelection(sy.rig)] = true;
         }
-        box.appendChild(row);
+        seen[rigNorm] = true;
+        for (var r in seen) {
+          rigs[r] = {};
+          addMonthLines(rigs[r], usageEntriesFor(list, r), month, monthStart, boundary);
+        }
+        writeJsonStore(USAGE_MONTH_KEY, { month: month, boundary: boundary, rigs: rigs });
+        finish(rigs[rigNorm]);
+      });
+    }
+
+    // Every submission since a date, a page of 1000 at a time
+    function fetchSince(since, callback) {
+      var apiKey = usageAvailable() ? JFCustomWidget.getWidgetSetting('jotformApiKey') : null;
+      var fp = getFormParams();
+      var formID = fp.formID || cachedFormID || null;
+      if (!apiKey || !formID) { callback(null); return; }
+      var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
+      var filter = encodeURIComponent(JSON.stringify({ 'created_at:gt': localDateString(since) + ' 00:00:00' }));
+      var all = [];
+      var page = function(offset) {
+        var url = apiBase + '/form/' + encodeURIComponent(formID) + '/submissions?apiKey=' + encodeURIComponent(apiKey) +
+                  '&limit=1000&offset=' + offset + '&orderby=id&direction=desc&filter=' + filter;
+        try {
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', url, true);
+          xhr.timeout = 20000;
+          xhr.onload = function() {
+            if (xhr.status !== 200) { callback(null); return; }
+            try {
+              var got = JSON.parse(xhr.responseText).content || [];
+              all = all.concat(got);
+              if (got.length === 1000 && offset < 4000) page(offset + 1000); else callback(all);
+            } catch (e) { callback(null); }
+          };
+          xhr.onerror = function() { callback(null); };
+          xhr.ontimeout = function() { callback(null); };
+          xhr.send();
+        } catch (e) { callback(null); }
+      };
+      page(0);
+    }
+
+    function renderUsageFreq() {
+      var box = document.getElementById('usageFreq');
+      if (!box) return;
+      var search = document.getElementById('usageSearch');
+      box.innerHTML = '';
+      if (search && search.value.trim()) return;   // typing: the search results take over
+      var title = '<div class="usage-freq-title">Used most this month</div>';
+      if (usageMonthCounts === undefined || !usageIndexList) { box.innerHTML = title + '<div class="usage-freq-note">Loading\u2026</div>'; return; }
+      if (usageMonthCounts === null) { box.innerHTML = title + '<div class="usage-freq-note">Could not load this month\u2019s use. Search for the item instead.</div>'; return; }
+      var ranked = [];
+      for (var k in usageMonthCounts) {
+        var entry = usageIndexMap[k];
+        if (entry && usageMonthCounts[k] > 0) ranked.push({ entry: entry, qty: usageMonthCounts[k] });
+      }
+      ranked.sort(function(a, b) { return b.qty - a.qty || a.entry.name.localeCompare(b.entry.name); });
+      ranked = ranked.slice(0, 10);
+      if (!ranked.length) { box.innerHTML = title + '<div class="usage-freq-note">Nothing logged on this rig since the 1st. Items show here once they are used.</div>'; return; }
+      box.innerHTML = title;
+      for (var i = 0; i < ranked.length; i++) {
+        box.appendChild(usageEntryRow(ranked[i].entry, '<span class="usage-freq-qty">' + ranked[i].qty + '<small>used</small></span>'));
       }
     }
 
@@ -6767,12 +7002,20 @@
         if (c.key === entry.key && c.checklist === entry.checklist && !usageItemCounted(c)) line = c;
       }
       if (line) line.qty += 1;
-      else usageChosen.push({ key: entry.key, checklist: entry.checklist, checklistName: entry.checklistName, name: entry.name, where: entry.where, qty: 1, ts: Date.now() });
+      else { line = { key: entry.key, checklist: entry.checklist, checklistName: entry.checklistName, name: entry.name, where: entry.where, qty: 1, ts: Date.now() }; usageChosen.push(line); }
       var search = document.getElementById('usageSearch');
       if (search) { search.value = ''; search.focus(); }
       var box = document.getElementById('usageSuggest');
       if (box) box.innerHTML = '';
       renderUsageChosen();
+      var note = document.getElementById('usageAdded');
+      if (note) {
+        note.textContent = 'Added ' + entry.name + (line.qty > 1 ? ' (' + line.qty + ' in the list)' : '') +
+          (usageLineLots(line) !== null ? '. Pick its lot in the List before saving.' : '. Open the List to save.');
+      }
+      var cart = document.getElementById('usageCartBtn');
+      if (cart) { cart.classList.remove('bump'); void cart.offsetWidth; cart.classList.add('bump'); }
+      renderUsageFreq();
     }
 
     // ---- Which lot each one used came from
@@ -6997,6 +7240,10 @@
         box.appendChild(note);
       }
       if (title && !box.children.length) title.style.display = 'none';
+      var emptyNote = document.getElementById('usageListEmpty');
+      if (emptyNote) emptyNote.style.display = box.children.length ? 'none' : 'block';
+      if (title) title.style.display = 'block';
+      updateUsageCart();
       var lotSteps = box.querySelectorAll('.usage-lot-step');
       for (var ls = 0; ls < lotSteps.length; ls++) {
         lotSteps[ls].onclick = function() {
