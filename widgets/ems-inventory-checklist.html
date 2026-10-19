@@ -3490,8 +3490,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.42.4';
+    var VERSION = '1.43.0';
     var CHANGELOG = [
+      { version: '1.43.0', date: '2026-10-19', changes: [
+        'The day starts at 8 AM, the shift change, instead of midnight: "Done today", "In progress", logging supplies (which needs the checklist done today) and the seal check (asked once per day) all follow it. A checklist done at 8:05 AM counts as done until 8 AM the next morning. The hour can be changed with the dayStartHour widget setting',
+      ]},
       { version: '1.42.4', date: '2026-10-19', changes: [
         'Supplies used: an item that the checklist\u2019s last submission recorded at full quantity (counted, restocked, or in a sealed area) no longer shows in the list; a note says how many were restocked. It stays in the session\u2019s record in Jotform. An item that submission recorded short (out of stock) stays on the list as counted',
       ]},
@@ -5650,7 +5653,7 @@
         if (!parsed.timestamp) return null;
         if ((Date.now() - parsed.timestamp) > STATE_EXPIRY_MS) return null;
         var d = new Date(parsed.timestamp);
-        if (localDateString(d) !== localDateString(new Date())) return null;
+        if (shiftDay(d) !== shiftDay(new Date())) return null;
         return parsed.timestamp;
       } catch (e) { return null; }
     }
@@ -5882,8 +5885,11 @@
 
     function submissionIsToday(sub, today) {
       var sel = submissionSelection(sub);
-      if (sel.timestamp) return localDateString(new Date(sel.timestamp)) === today;
-      return String(sub.created_at || '').indexOf(today) === 0;
+      if (sel.timestamp) return shiftDay(new Date(sel.timestamp)) === today;
+      // No device stamp: Jotform's created_at, read as local time
+      var m = String(sub.created_at || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+      if (!m) return false;
+      return shiftDay(new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5])) === today;
     }
 
     function submissionMatchesSelection(sub) {
@@ -5919,6 +5925,27 @@
       return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
     }
 
+    // The working day starts at the shift change (8 AM unless the
+    // dayStartHour widget setting says otherwise), not at midnight. A time
+    // before that hour belongs to the previous day.
+    var dayStartHourCache = null;
+    function dayStartHour() {
+      if (dayStartHourCache !== null) return dayStartHourCache;
+      var h = 8;
+      try {
+        var v = typeof JFCustomWidget !== 'undefined' && JFCustomWidget.getWidgetSetting ? JFCustomWidget.getWidgetSetting('dayStartHour') : null;
+        if (v !== undefined && v !== null && String(v).trim() !== '' && isFinite(parseInt(v, 10))) h = Math.max(0, Math.min(23, parseInt(v, 10)));
+      } catch (e) {}
+      dayStartHourCache = h;
+      return h;
+    }
+
+    function shiftDay(d) {
+      var x = new Date(d.getTime());
+      x.setHours(x.getHours() - dayStartHour());
+      return localDateString(x);
+    }
+
     function clockText(hours, minutes) {
       var h = hours % 12 || 12;
       return h + ':' + (minutes < 10 ? '0' : '') + minutes + ' ' + (hours >= 12 ? 'PM' : 'AM');
@@ -5934,7 +5961,7 @@
     // filter by created_at and filters again client-side to be safe.
     function fetchTodaySubmissions(apiBase, formID, apiKey, callback) {
       if (!formID || !apiKey) { callback(null); return; }
-      var today = localDateString(new Date());
+      var today = shiftDay(new Date());
       // Ask from yesterday on: created_at is in the account's zone, which may
       // sit a day either side of the device's; the real test happens below.
       var since = localDateString(new Date(Date.now() - 36 * 3600 * 1000));
@@ -5988,7 +6015,7 @@
       var localText = null;
       if (restoredLocalTs) {
         var d = new Date(restoredLocalTs);
-        if (localDateString(d) === localDateString(new Date())) {
+        if (shiftDay(d) === shiftDay(new Date())) {
           localText = 'In progress on this device, last change ' + clockText(d.getHours(), d.getMinutes());
         }
       }
@@ -6757,9 +6784,9 @@
     }
 
     function rememberSentSubmission(value, timestamp) {
-      var today = localDateString(new Date());
+      var today = shiftDay(new Date());
       var sent = readJsonStore(SENT_LOCAL_KEY, []).filter(function(e) {
-        return e && e.timestamp && localDateString(new Date(e.timestamp)) === today;
+        return e && e.timestamp && shiftDay(new Date(e.timestamp)) === today;
       });
       sent.push({ value: value, timestamp: timestamp });
       writeJsonStore(SENT_LOCAL_KEY, sent);
@@ -6770,13 +6797,13 @@
     function localSubmissions() {
       var fp = getFormParams();
       var qid = fp.qid || '0';
-      var today = localDateString(new Date());
+      var today = shiftDay(new Date());
       var out = [];
       var add = function(e, local) {
         if (!e || !e.value || !e.timestamp) return;
         var d = new Date(e.timestamp);
-        if (localDateString(d) !== today) return;
-        var sub = { id: 'local-' + e.timestamp, created_at: today + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':00', answers: {}, _local: local };
+        if (shiftDay(d) !== today) return;
+        var sub = { id: 'local-' + e.timestamp, created_at: localDateString(d) + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':00', answers: {}, _local: local };
         sub.answers[qid] = { answer: e.value };
         out.push(sub);
       };
@@ -9102,7 +9129,7 @@
           taggedAreas[areaName] = {
             taggedDate: now.toISOString().split('T')[0],
             taggedTimestamp: now.getTime(),
-            checkedOn: localDateString(now),
+            checkedOn: shiftDay(now),
             by: crewName()
           };
           sealed++;
@@ -9623,7 +9650,7 @@
       taggedAreas[areaName] = {
         taggedDate: now.toISOString().split('T')[0],
         taggedTimestamp: now.getTime(),
-        checkedOn: localDateString(now),
+        checkedOn: shiftDay(now),
         by: crewName()
       };
 
@@ -9793,7 +9820,7 @@
 
     // Visible seals not yet confirmed since the last submission
     function sealCheckPending() {
-      var today = localDateString(new Date());
+      var today = shiftDay(new Date());
       var vis = visibleSealedAreas();
       var out = [];
       for (var i = 0; i < vis.length; i++) {
@@ -9852,7 +9879,7 @@
     function answerSealCheck(areaName, stillSealed) {
       if (!taggedAreas[areaName]) return;
       if (stillSealed) {
-        taggedAreas[areaName].checkedOn = localDateString(new Date());
+        taggedAreas[areaName].checkedOn = shiftDay(new Date());
       } else {
         applySealBreak(areaName, 'missing', false);
       }
@@ -9867,7 +9894,7 @@
 
     function confirmAllSealsPresent() {
       var pending = sealCheckPending();
-      var today = localDateString(new Date());
+      var today = shiftDay(new Date());
       for (var i = 0; i < pending.length; i++) taggedAreas[pending[i]].checkedOn = today;
       buildUI();
       saveState();
