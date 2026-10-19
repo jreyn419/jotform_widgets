@@ -3651,8 +3651,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.47.0';
+    var VERSION = '1.48.0';
     var CHANGELOG = [
+      { version: '1.48.0', date: '2026-10-19', changes: [
+        'Supplies used: the items under the search are the rig\u2019s 10 used most last month (by total quantity), the same all month. From the 1st, the first tablet to open Supplies used counts the month that ended and saves it as one submission with a readable report (every rig, every item, by quantity) that shows in Jotform Tables; the other tablets read that record. A rig that logged nothing last month shows its last two weeks',
+        'Supplies used lists read back from Jotform with its HTML entity encoding taken off the item keys and names, so an item in a group (a key with \u201c>\u201d) matches its checklist row',
+      ]},
       { version: '1.47.0', date: '2026-10-19', changes: [
         'Supplies used: the session\u2019s list is its own view, opened with the List button at the top right, which shows how many are in it and turns orange while it is not saved. Tapping an item adds it to the list and stays on the search',
         'Under the search: the rig\u2019s 10 items used most this month (since the 1st), by total quantity, from every crew member\u2019s lists. Only items that have been used show. As soon as anything is typed, the search covers the rig\u2019s whole inventory, sorted as before',
@@ -6079,6 +6083,7 @@
       if (!parsed) return { rig: '', checklist: '', timestamp: null };
       // A supplies-used entry is not a checklist: it never counts as done
       if (parsed.type === 'usage') return { rig: '', checklist: '', timestamp: ts, usage: true };
+      if (parsed.type === 'usage_month') return { rig: '', checklist: '', timestamp: ts };
       return { rig: normalizeSelection(parsed.rig), checklist: normalizeSelection(parsed.checklist), timestamp: ts };
     }
 
@@ -6305,9 +6310,9 @@
     var usageLotsCache = {};                     // checklistNorm -> that checklist's lots
     var usageRigNorm = null;
     var usageView = 'search';                    // 'search' (search and items used most) or 'list' (the session's list)
-    var usageMonthCounts = undefined;            // checklist|key -> quantity logged this month; null when unknown
+    var usageRanking = undefined;                // { mode: 'last' | 'recent', month, counts: checklist|key -> { qty, ... } }; null when unknown
     var usageIndexList = null;
-    var USAGE_MONTH_KEY = 'ems_usage_month';     // this month's counts up to two days ago, per rig, refreshed each day
+    var USAGE_MONTH_KEY = 'ems_usage_month';     // last month's record, kept on the tablet for the month
 
 
     function usageAvailable() {
@@ -6404,7 +6409,7 @@
       usageOthersLots = {};
       usageLotsCache = {};
       usageRigNorm = normalizeSelection(rig.id);
-      usageMonthCounts = undefined;
+      usageRanking = undefined;
       usageIndexList = null;
       usageLastSync = {};
       usageAllData = null;
@@ -6577,10 +6582,10 @@
             }
           }
         }
-        // Used most this month, once what other lists hold is known (for the greyed rows)
-        loadUsageMonth(rigNorm, list, function(counts) {
+        // Used most last month, once what other lists hold is known (for the greyed rows)
+        loadUsageRanking(rigNorm, list, function(ranking) {
           if (token !== usageScreenToken) return;
-          usageMonthCounts = counts;
+          usageRanking = ranking;
           renderUsageFreq();
         });
         renderUsageChosen();
@@ -6720,67 +6725,145 @@
       cart.title = unsaved ? (usageLotsIncomplete() ? 'Not saved: pick the lots in the list' : 'Not saved yet') : '';
     }
 
-    // ---- Used most this month
-    // Every crew member's logged items for the rig since the 1st (by the
-    // working day, which starts at 8 AM), ranked by total quantity, top 10.
-    // Lines older than two days no longer change (a session list is kept a
-    // day), so their counts are kept on the tablet and refreshed once a
-    // day; the last two days come from the submissions the screen already has.
-    function shiftStartTs(now) {
-      var x = new Date(now.getTime());
-      if (x.getHours() < dayStartHour()) x.setDate(x.getDate() - 1);
-      x.setHours(dayStartHour(), 0, 0, 0);
-      return x.getTime();
-    }
-
+    // ---- Used most last month
+    // The rig's 10 items used most in the last calendar month (by the
+    // working day, which starts at 8 AM), by total quantity across every
+    // crew member's lists. The month is counted once: from the 1st, the
+    // first tablet to open Supplies used counts the month that ended from
+    // the session lists and saves the result as one submission (type
+    // usage_month, every rig, with a readable report for Jotform Tables).
+    // Every other tablet finds that record and keeps it for the month. A rig
+    // that logged nothing last month shows its last two weeks instead.
     function usageMonthOf(ts) { return shiftDay(new Date(ts)).slice(0, 7); }
 
-    function addMonthLines(counts, lines, month, from, until) {
+    function monthStartTs(month) {
+      return new Date(+month.slice(0, 4), +month.slice(5, 7) - 1, 1, dayStartHour(), 0, 0, 0).getTime();
+    }
+
+    function previousMonth(month) {
+      var y = +month.slice(0, 4), m = +month.slice(5, 7) - 1;
+      if (m === 0) { y--; m = 12; }
+      return y + '-' + (m < 10 ? '0' : '') + m;
+    }
+
+    function monthName(month) {
+      var names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      return names[+month.slice(5, 7) - 1] + ' ' + month.slice(0, 4);
+    }
+
+    // checklist|key -> { qty, name, where, checklistName } for a rig's lines in a month (or since a time)
+    function usageTally(list, rigNorm, month, sinceTs) {
+      var out = {};
+      var lines = usageEntriesFor(list, rigNorm);
       for (var i = 0; i < lines.length; i++) {
         var ln = lines[i];
-        if (!ln.qty || !(ln.ts >= from) || !(ln.ts < until) || usageMonthOf(ln.ts) !== month) continue;
+        if (!ln.qty) continue;
+        if (month ? usageMonthOf(ln.ts) !== month : !(ln.ts >= sinceTs)) continue;
         var k = ln.checklist + '|' + ln.key;
-        counts[k] = (counts[k] || 0) + ln.qty;
+        var c = out[k] || (out[k] = { qty: 0, name: ln.name || ln.key.split('::')[2], where: ln.where || ln.key.split('::')[0], checklistName: ln.checklistName || ln.checklist });
+        c.qty += ln.qty;
       }
+      return out;
     }
 
-    function loadUsageMonth(rigNorm, recentList, callback) {
+    function isMonthSnapshot(sync, month) {
+      return !!(sync && sync.type === 'usage_month' && sync.month === month && sync.rigs && typeof sync.rigs === 'object');
+    }
+
+    // The record's tallies with Jotform's entity encoding taken off the keys
+    function snapshotRigs(sync) {
+      var dec = function(t) { var x = document.createElement('textarea'); x.innerHTML = t; return x.value; };
+      var rigs = {};
+      for (var r in sync.rigs) {
+        var counts = sync.rigs[r] || {};
+        rigs[r] = {};
+        for (var k in counts) rigs[r][dec(k)] = counts[k];
+      }
+      return rigs;
+    }
+
+    function buildMonthValue(snap) {
+      var rule = '\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550';
+      var lines = ['SUPPLIES USED IN ' + monthName(snap.month).toUpperCase(), 'Monthly count of the supplies-used lists, by quantity', rule];
+      for (var r in snap.rigs) {
+        var counts = snap.rigs[r];
+        var keys = Object.keys(counts).sort(function(a, b) { return counts[b].qty - counts[a].qty || String(counts[a].name).localeCompare(String(counts[b].name)); });
+        lines.push('');
+        lines.push('Rig ' + r + (keys.length ? '' : ': nothing logged'));
+        for (var i = 0; i < keys.length; i++) {
+          var c = counts[keys[i]];
+          lines.push('  \u2022 ' + c.qty + ' \u00d7 ' + c.name + ' (' + c.checklistName + ' \u203A ' + c.where + ')');
+        }
+      }
+      return lines.join('\n') + '\n\n___SYNC_DATA___\n' + JSON.stringify(snap);
+    }
+
+    // The first saved record for the month, among the submissions of this month
+    function findMonthSnapshot(list, month) {
+      var best = null;
+      for (var i = 0; i < (list || []).length; i++) {
+        var sy = submissionSyncData(list[i]);
+        if (isMonthSnapshot(sy, month) && (!best || (parseFloat(sy.timestamp) || 0) < (parseFloat(best.timestamp) || 0))) best = sy;
+      }
+      return best;
+    }
+
+    var usageMonthBusy = false;
+    function loadUsageRanking(rigNorm, recentList, callback) {
       if (!recentList) { callback(null); return; }
-      var now = new Date();
-      var month = shiftDay(now).slice(0, 7);
-      var boundary = shiftStartTs(now) - 2 * 24 * 3600 * 1000;
-      var finish = function(frozen) {
-        if (!frozen) { callback(null); return; }
-        var counts = {};
-        for (var k in frozen) counts[k] = frozen[k];
-        addMonthLines(counts, usageEntriesFor(recentList, rigNorm), month, boundary, Infinity);
-        callback(counts);
+      var month = previousMonth(shiftDay(new Date()).slice(0, 7));
+      var use = function(rigs) {
+        var counts = (rigs && rigs[rigNorm]) || {};
+        for (var k in counts) if (counts[k] && counts[k].qty > 0) { callback({ mode: 'last', month: month, counts: counts }); return; }
+        callback({ mode: 'recent', month: month, counts: usageTally(recentList, rigNorm, null, Date.now() - 14 * 24 * 3600 * 1000) });
       };
-      // The 1st and 2nd of the month: nothing older to fetch
-      var monthStart = new Date(+month.slice(0, 4), +month.slice(5, 7) - 1, 1, dayStartHour(), 0, 0, 0).getTime();
-      if (monthStart >= boundary) { finish({}); return; }
       var cache = readJsonStore(USAGE_MONTH_KEY, null);
-      if (cache && cache.month === month && cache.boundary === boundary && cache.rigs) { finish(cache.rigs[rigNorm] || {}); return; }
-      fetchSince(new Date(monthStart - 24 * 3600 * 1000), function(list) {
-        if (!list) { finish(null); return; }
-        var rigs = {};
-        var seen = {};
-        for (var i = 0; i < list.length; i++) {
-          var sy = submissionSyncData(list[i]);
-          if (sy && sy.type === 'usage' && sy.rig) seen[normalizeSelection(sy.rig)] = true;
-        }
-        seen[rigNorm] = true;
-        for (var r in seen) {
-          rigs[r] = {};
-          addMonthLines(rigs[r], usageEntriesFor(list, r), month, monthStart, boundary);
-        }
-        writeJsonStore(USAGE_MONTH_KEY, { month: month, boundary: boundary, rigs: rigs });
-        finish(rigs[rigNorm]);
-      });
+      if (cache && cache.month === month && cache.rigs) { use(cache.rigs); return; }
+      if (usageMonthBusy) { callback(null); return; }
+      usageMonthBusy = true;
+      var done = function(rigs) {
+        usageMonthBusy = false;
+        if (!rigs) { callback(null); return; }
+        writeJsonStore(USAGE_MONTH_KEY, { month: month, rigs: rigs });
+        use(rigs);
+      };
+      // This month's submissions, oldest first: the record is usually among the first
+      var thisMonthStart = monthStartTs(shiftDay(new Date()).slice(0, 7));
+      var found = null;
+      fetchSince(new Date(thisMonthStart - 24 * 3600 * 1000), function(list) {
+        if (!list) { done(null); return; }
+        found = found || findMonthSnapshot(list, month);
+        if (found) { done(snapshotRigs(found)); return; }
+        // Not counted yet: count last month and save the record
+        fetchSince(new Date(monthStartTs(month) - 24 * 3600 * 1000), function(all) {
+          if (!all) { done(null); return; }
+          var already = findMonthSnapshot(all, month);
+          if (already) { done(snapshotRigs(already)); return; }
+          var rigIds = {};
+          var rigsList = (rigIndexData && rigIndexData.rigs) || [];
+          for (var ri = 0; ri < rigsList.length; ri++) rigIds[normalizeSelection(rigsList[ri].id)] = true;
+          for (var ai = 0; ai < all.length; ai++) {
+            var sy = submissionSyncData(all[ai]);
+            if (sy && sy.type === 'usage' && sy.rig) rigIds[normalizeSelection(sy.rig)] = true;
+          }
+          rigIds[rigNorm] = true;
+          var snap = { type: 'usage_month', month: month, rigs: {}, timestamp: Date.now(), by: crewName() || null };
+          for (var r in rigIds) snap.rigs[r] = usageTally(all, r, month, 0);
+          var value = buildMonthValue(snap);
+          postSubmission(value, function(ok) {
+            if (ok) rememberSentSubmission(value, snap.timestamp);
+            else queueSubmission(value, snap.timestamp);
+            done(snap.rigs);
+          });
+        });
+      }, { asc: true, pageSize: 100, stop: function(page) { found = found || findMonthSnapshot(page, month); return !!found; } });
     }
 
-    // Every submission since a date, a page of 1000 at a time
-    function fetchSince(since, callback) {
+    // Every submission since a date, a page at a time (1000 unless given);
+    // opts.stop(page) ends it early, opts.asc reads oldest first
+    function fetchSince(since, callback, opts) {
+      opts = opts || {};
+      var size = opts.pageSize || 1000;
       var apiKey = usageAvailable() ? JFCustomWidget.getWidgetSetting('jotformApiKey') : null;
       var fp = getFormParams();
       var formID = fp.formID || cachedFormID || null;
@@ -6790,7 +6873,7 @@
       var all = [];
       var page = function(offset) {
         var url = apiBase + '/form/' + encodeURIComponent(formID) + '/submissions?apiKey=' + encodeURIComponent(apiKey) +
-                  '&limit=1000&offset=' + offset + '&orderby=id&direction=desc&filter=' + filter;
+                  '&limit=' + size + '&offset=' + offset + '&orderby=id&direction=' + (opts.asc ? 'asc' : 'desc') + '&filter=' + filter;
         try {
           var xhr = new XMLHttpRequest();
           xhr.open('GET', url, true);
@@ -6800,7 +6883,8 @@
             try {
               var got = JSON.parse(xhr.responseText).content || [];
               all = all.concat(got);
-              if (got.length === 1000 && offset < 4000) page(offset + 1000); else callback(all);
+              if (opts.stop && opts.stop(got)) { callback(all); return; }
+              if (got.length === size && all.length < 5000) page(offset + size); else callback(all);
             } catch (e) { callback(null); }
           };
           xhr.onerror = function() { callback(null); };
@@ -6817,18 +6901,21 @@
       var search = document.getElementById('usageSearch');
       box.innerHTML = '';
       if (search && search.value.trim()) return;   // typing: the search results take over
-      var title = '<div class="usage-freq-title">Used most this month</div>';
-      if (usageMonthCounts === undefined || !usageIndexList) { box.innerHTML = title + '<div class="usage-freq-note">Loading\u2026</div>'; return; }
-      if (usageMonthCounts === null) { box.innerHTML = title + '<div class="usage-freq-note">Could not load this month\u2019s use. Search for the item instead.</div>'; return; }
+      var rk = usageRanking;
+      var title = '<div class="usage-freq-title">' + (rk && rk.mode === 'recent' ? 'Used most in the last two weeks' : 'Used most last month' + (rk ? ' (' + monthName(rk.month) + ')' : '')) + '</div>';
+      if (rk === undefined || !usageIndexList) { box.innerHTML = title + '<div class="usage-freq-note">Loading\u2026</div>'; return; }
+      if (rk === null) { box.innerHTML = title + '<div class="usage-freq-note">Could not load the supplies used. Search for the item instead.</div>'; return; }
       var ranked = [];
-      for (var k in usageMonthCounts) {
+      for (var k in rk.counts) {
         var entry = usageIndexMap[k];
-        if (entry && usageMonthCounts[k] > 0) ranked.push({ entry: entry, qty: usageMonthCounts[k] });
+        var q = rk.counts[k] && rk.counts[k].qty;
+        if (entry && q > 0) ranked.push({ entry: entry, qty: q });
       }
       ranked.sort(function(a, b) { return b.qty - a.qty || a.entry.name.localeCompare(b.entry.name); });
       ranked = ranked.slice(0, 10);
-      if (!ranked.length) { box.innerHTML = title + '<div class="usage-freq-note">Nothing logged on this rig since the 1st. Items show here once they are used.</div>'; return; }
-      box.innerHTML = title;
+      if (!ranked.length) { box.innerHTML = title + '<div class="usage-freq-note">Nothing logged on this rig ' + (rk.mode === 'recent' ? 'last month or in the last two weeks' : 'last month') + '. Items show here once they are used.</div>'; return; }
+      if (rk.mode === 'recent') box.innerHTML = title + '<div class="usage-freq-note">Nothing was logged on this rig in ' + monthName(rk.month) + '.</div>';
+      else box.innerHTML = title;
       for (var i = 0; i < ranked.length; i++) {
         box.appendChild(usageEntryRow(ranked[i].entry, '<span class="usage-freq-qty">' + ranked[i].qty + '<small>used</small></span>'));
       }
@@ -7716,16 +7803,17 @@
         if (!sessions[sess.id] || (sess.updated || 0) >= sessions[sess.id].updated) sessions[sess.id] = { updated: sess.updated || 0, items: sess.items || [], crew: sess.crew || null };
       }
       var out = [];
+      var dec = function(t) { if (typeof t !== 'string' || t.indexOf('&') === -1) return t; var x = document.createElement('textarea'); x.innerHTML = t; return x.value; };
       for (var lt in legacy) {
         var used = legacy[lt].used || {};
-        for (var cl in used) for (var key in used[cl]) out.push({ checklist: normalizeSelection(cl), key: key, qty: parseInt(used[cl][key], 10) || 0, ts: parseFloat(lt), session: null, crew: legacy[lt].crew || null });
+        for (var cl in used) for (var key in used[cl]) out.push({ checklist: normalizeSelection(cl), key: dec(key), qty: parseInt(used[cl][key], 10) || 0, ts: parseFloat(lt), session: null, crew: legacy[lt].crew || null });
       }
       for (var sid in sessions) {
         if (gone[sid]) continue;
         var its = sessions[sid].items || [];
         for (var j = 0; j < its.length; j++) {
-          out.push({ checklist: normalizeSelection(its[j].checklist), key: its[j].key, qty: parseInt(its[j].qty, 10) || 0, ts: parseFloat(its[j].ts) || sessions[sid].updated, session: sid,
-                     crew: sessions[sid].crew || null, name: its[j].name, where: its[j].where, checklistName: its[j].checklistName, lots: Array.isArray(its[j].lots) ? its[j].lots : null });
+          out.push({ checklist: normalizeSelection(its[j].checklist), key: dec(its[j].key), qty: parseInt(its[j].qty, 10) || 0, ts: parseFloat(its[j].ts) || sessions[sid].updated, session: sid,
+                     crew: sessions[sid].crew || null, name: dec(its[j].name), where: dec(its[j].where), checklistName: dec(its[j].checklistName), lots: Array.isArray(its[j].lots) ? its[j].lots : null });
         }
       }
       return out;
