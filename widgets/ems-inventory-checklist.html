@@ -1279,8 +1279,6 @@
     .usage-freq-title { font-size: 13px; font-weight: 700; color: #666; margin: 6px 4px 8px; text-transform: uppercase; letter-spacing: 0.03em; }
     .usage-freq { display: flex; flex-direction: column; gap: 6px; }
     .usage-freq-note { font-size: 13px; color: #888; margin: 0 4px 8px; }
-    .usage-freq-qty { flex-shrink: 0; text-align: right; font-size: 17px; font-weight: 700; color: #0b3d91; line-height: 1.1; }
-    .usage-freq-qty small { display: block; font-size: 11px; font-weight: 600; color: #777; }
     .usage-suggest-hint { font-size: 13px; color: #888; margin: 0 4px; }
     .usage-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 6px; }
     .usage-list-head .usage-chosen-title { margin: 6px 4px; }
@@ -1374,7 +1372,6 @@
     .usage-all-empty { padding: 30px 10px; text-align: center; color: #888; font-size: 14px; }
     .usage-resolved-note { font-size: 12px; color: #2e7d32; margin: 2px 4px 10px; }
     .usage-session-since { font-weight: 500; color: #999; text-transform: none; letter-spacing: 0; margin-left: 6px; }
-    .usage-suggest-have { font-size: 12px; color: #0b3d91; font-weight: 600; }
     .usage-chosen-name { font-size: 15px; font-weight: 700; color: #222; }
     .usage-chosen-where { font-size: 12px; color: #777; margin-top: 2px; }
 
@@ -3651,8 +3648,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.48.0';
+    var VERSION = '1.48.1';
     var CHANGELOG = [
+      { version: '1.48.1', date: '2026-10-19', changes: [
+        'Supplies used on the rig\u2019s list shows how many logged items are still to restock (from anyone\u2019s list) instead of how many were logged, and goes back to Log once the checks count them full, so a new shift does not see the last shift\u2019s items as its own',
+        'Supplies used: the rows under the search and the search results show only the item and where it is; no totals and no count of what is in the list',
+      ]},
       { version: '1.48.0', date: '2026-10-19', changes: [
         'Supplies used: the items under the search are the rig\u2019s 10 used most last month (by total quantity), the same all month. From the 1st, the first tablet to open Supplies used counts the month that ended and saves it as one submission with a readable report (every rig, every item, by quantity) that shows in Jotform Tables; the other tablets read that record. A rig that logged nothing last month shows its last two weeks',
         'Supplies used lists read back from Jotform with its HTML entity encoding taken off the item keys and names, so an item in a group (a key with \u201c>\u201d) matches its checklist row',
@@ -5953,12 +5954,10 @@
         var usageBtn = document.createElement('button');
         usageBtn.type = 'button';
         usageBtn.className = 'picker-row usage-btn';
-        var sessionNow = currentUsageSession(normalizeSelection(rig.id));
-        var loggedCount = 0;
-        if (sessionNow) for (var lc = 0; lc < (sessionNow.items || []).length; lc++) loggedCount += parseInt(sessionNow.items[lc].qty, 10) || 0;
-        usageBtn.innerHTML = '<span class="picker-row-name">Supplies used on a call</span><span class="picker-row-status">' + (loggedCount ? loggedCount + ' logged' : 'Log') + '</span>';
+        usageBtn.innerHTML = '<span class="picker-row-name">Supplies used on a call</span><span class="picker-row-status">Log</span>';
         usageBtn.onclick = (function(r) { return function() { renderUsageScreen(r); }; })(rig.id);
         picker.appendChild(usageBtn);
+        showUsageToRestock(rig, usageBtn.querySelector('.picker-row-status'));
       }
       var note = document.createElement('div');
       note.className = 'picker-note';
@@ -6688,7 +6687,6 @@
         '<div class="usage-suggest-where">' + escapeHtml(entry.checklistName + ' \u203A ' + entry.where) + '</div>' +
         (notDone ? '<div class="usage-suggest-why">' + escapeHtml(entry.checklistName) + ' not done today</div>' : '') +
         (full ? '<div class="usage-suggest-why">' + escapeHtml(usageFullText(room)) + '</div>' : '') +
-        (usageQtyInList(entry) && !full ? '<div class="usage-suggest-have">' + usageQtyInList(entry) + ' in the list \u00B7 tap to add one</div>' : '') +
         '</span>' + (sideHtml || '');
       if (!blocked) row.onclick = function() { addUsageItem(entry); };
       return row;
@@ -6917,7 +6915,7 @@
       if (rk.mode === 'recent') box.innerHTML = title + '<div class="usage-freq-note">Nothing was logged on this rig in ' + monthName(rk.month) + '.</div>';
       else box.innerHTML = title;
       for (var i = 0; i < ranked.length; i++) {
-        box.appendChild(usageEntryRow(ranked[i].entry, '<span class="usage-freq-qty">' + ranked[i].qty + '<small>used</small></span>'));
+        box.appendChild(usageEntryRow(ranked[i].entry, ''));
       }
     }
 
@@ -6948,9 +6946,28 @@
     // Each logged line with its status: pending (taken off at the next
     // opening), short (counted short since), or restocked (a later check had
     // it full)
-    function usageAllLines() {
-      if (!usageAllData) return [];
-      var list = usageAllData.list, rig = usageAllData.rig, rigNorm = normalizeSelection(rig.id);
+    // The Supplies used row on the rig's list: how many logged items are
+    // still to restock, from any crew member's list. Once the checks count
+    // them full again it goes back to Log, so a new shift that has run no
+    // calls does not see the last shift's items as its own.
+    function showUsageToRestock(rig, el) {
+      if (!el) return;
+      loadUsageIndex(rig, function(entries) {
+        for (var q = 0; q < entries.length; q++) usageRigQty[entries[q].checklist + '|' + entries[q].key] = entries[q].qty;
+        fetchRecentSubmissions(function(list) {
+          if (!list || !el.isConnected) return;
+          var lines = usageAllLines({ list: list, rig: rig });
+          var n = 0;
+          for (var i = 0; i < lines.length; i++) if (lines[i].status !== 'restocked') n += lines[i].qty;
+          el.textContent = n ? n + ' to restock' : 'Log';
+        });
+      });
+    }
+
+    function usageAllLines(data) {
+      data = data || usageAllData;
+      if (!data) return [];
+      var list = data.list, rig = data.rig, rigNorm = normalizeSelection(rig.id);
       var checks = {};
       for (var i = 0; i < list.length; i++) {
         var sel = submissionSelection(list[i]);
@@ -7066,14 +7083,6 @@
       return room.others ? base + ' (' + room.others + ' on other lists)' : base;
     }
 
-    function usageQtyInList(entry) {
-      var n = 0;
-      for (var i = 0; i < usageChosen.length; i++) {
-        if (usageChosen[i].key === entry.key && usageChosen[i].checklist === entry.checklist) n += usageChosen[i].qty;
-      }
-      return n;
-    }
-
     // Picking an item adds one: to its open line, or as a new line when
     // the line there is already counted
     function addUsageItem(entry) {
@@ -7097,7 +7106,7 @@
       renderUsageChosen();
       var note = document.getElementById('usageAdded');
       if (note) {
-        note.textContent = 'Added ' + entry.name + (line.qty > 1 ? ' (' + line.qty + ' in the list)' : '') +
+        note.textContent = 'Added ' + entry.name +
           (usageLineLots(line) !== null ? '. Pick its lot in the List before saving.' : '. Open the List to save.');
       }
       var cart = document.getElementById('usageCartBtn');
