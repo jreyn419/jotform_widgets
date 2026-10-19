@@ -1140,6 +1140,7 @@
       text-align: center;
     }
 
+    #pickerDetailBody { padding: 0 20px 20px; }
     .picker-detail-row { padding: 12px 0; border-bottom: 1px solid #eee; font-size: 15px; color: #333; }
     .picker-detail-row small { display: block; color: #777; font-size: 13px; margin-top: 2px; }
     .picker-detail-title { font-size: 13px; font-weight: 700; color: #777; text-transform: uppercase; margin: 16px 0 4px; }
@@ -2004,36 +2005,38 @@
       box-shadow: none;
     }
     
+    /* Light header in the app's style (like the reset and changelog dialogs) */
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px;
-      background: #333;
-      color: white;
+      padding: 14px 20px;
+      background: #f5f5f5;
+      color: #333;
+      border-bottom: 1px solid #e3e3e3;
       border-radius: 0;
       flex-shrink: 0;
     }
     
     .modal-header h2 {
       margin: 0;
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 17px;
+      font-weight: 700;
+      color: #333;
     }
     
     .modal-close {
       background: none;
       border: none;
-      color: white;
+      color: #999;
       font-size: 28px;
       cursor: pointer;
       line-height: 1;
-      padding: 0;
-      opacity: 0.7;
+      padding: 0 2px;
     }
     
     .modal-close:hover {
-      opacity: 1;
+      color: #555;
     }
     
     .modal-body {
@@ -2107,11 +2110,11 @@
 
     .shortage-group-header {
       padding: 12px 15px;
-      background: #333;
-      color: white;
-      font-size: 14px;
-      font-weight: 600;
-      border-bottom: 1px solid #222;
+      background: #eef5ff;
+      color: #0b3d91;
+      font-size: 15px;
+      font-weight: 700;
+      border-bottom: 1px solid #cfe0f7;
       position: sticky;
       top: 0;
       z-index: 3;
@@ -3484,8 +3487,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.41.2';
+    var VERSION = '1.41.3';
     var CHANGELOG = [
+      { version: '1.41.3', date: '2026-10-19', changes: [
+        'The full-screen sheets (Check the Seals, Items to Restock, Seal Areas and the details behind (i)) have a light header in the app\u2019s style instead of a dark bar, like the reset and changelog dialogs',
+        'Items to Restock: the area titles in the list are light blue instead of dark bars. The details sheet behind (i) has margins',
+      ]},
       { version: '1.41.2', date: '2026-10-19', changes: [
         'Supplies used: the header fits on one line on phones. The back button is just \u2039 there (\u2039 Checklists from 600px wide), like the checklist header',
       ]},
