@@ -976,15 +976,26 @@
 
     /* In-widget rig / checklist picker */
     .widget-header.has-selection {
-      justify-content: space-between;
+      justify-content: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
     }
+
+    .header-chips { display: none; gap: 6px; flex-shrink: 0; }
+    .widget-header.has-selection .header-chips { display: flex; }
+    .header-chips .crew-chip { margin-left: 0; }
+    /* A long checklist name wraps rather than being cut */
+    .widget-header.has-selection .selection-label { white-space: normal; overflow-wrap: normal; line-height: 1.15; }
+    /* Narrow screens: the back button is just the arrow, so the name has room */
+    .change-btn-text { display: none; }
+    @media (min-width: 600px) { .change-btn-text { display: inline; } }
 
     .selection-label {
       display: none;
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 700;
       color: #333;
-      padding-left: 5px;
+      padding-left: 2px;
       flex: 1;
       min-width: 0;
       overflow: hidden;
@@ -994,13 +1005,12 @@
 
     .change-btn {
       display: none;
-      margin-left: auto;
-      margin-right: 6px;
+      flex-shrink: 0;
       padding: 5px 10px;
       border: 1px solid #ced4da;
       border-radius: 6px;
       background: white;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       color: #333;
       cursor: pointer;
@@ -2944,8 +2954,9 @@
   <div class="widget-container loading" id="widgetContainer">
 
     <div class="widget-header" id="widgetHeader">
+      <button class="change-btn" id="changeSelectionBtn" onclick="openPicker()" title="Back to the checklists" aria-label="Back to the checklists">&#8249;<span class="change-btn-text"> Checklists</span></button>
       <span class="selection-label" id="selectionLabel"></span>
-      <button class="change-btn" id="changeSelectionBtn" onclick="openPicker()">Change</button>
+      <span class="header-chips" id="headerChips"></span>
       <button class="settings-btn" onclick="openResetDialog()" title="Settings">&#9881;</button>
     </div>
 
@@ -3471,8 +3482,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.41.0';
+    var VERSION = '1.41.1';
     var CHANGELOG = [
+      { version: '1.41.1', date: '2026-10-19', changes: [
+        'The header of an open checklist is laid out like the checklists screen: a back button (\u2039 Checklists on wider screens, \u2039 on phones), the checklist name, then the rig and crew chips. The rig chip goes to the rig choice; the crew chip changes the name and comes back to the same checklist where it left off',
+      ]},
       { version: '1.41.0', date: '2026-10-19', changes: [
         'A sealable area that checks out complete, with every item there and anything sealable inside it already sealed, asks right away: "Everything is here. Seal it now?" Seal records it with the crew member\u2019s name; Later leaves it for the seal list at the end of the check',
         'Areas with anything short never ask: they are sealed at the end, after restocking, as before. A container asks once the areas inside it are sealed',
@@ -5542,16 +5556,29 @@
       renderPicker(currentRig);
     }
 
+    // The open checklist's header, laid out like the checklists screen:
+    // back, the checklist name, then the rig and crew chips
     function setSelectionLabel(text) {
       var header = document.getElementById('widgetHeader');
       var label = document.getElementById('selectionLabel');
+      var chips = document.getElementById('headerChips');
       if (!header || !label) return;
       label.textContent = text || '';
-      if (text && currentCrew) {
-        var who = document.createElement('span');
-        who.className = 'selection-crew';
-        who.textContent = ' \u00B7 ' + crewShort(currentCrew.name);
-        label.appendChild(who);
+      if (chips) {
+        chips.innerHTML = '';
+        if (text && currentRig) {
+          var openRig = currentRig, openChecklist = currentChecklist;
+          var rc = rigChip(findRig(openRig) || { id: openRig });
+          rc.onclick = function() { openPicker(); renderPicker(null); };
+          chips.appendChild(rc);
+          var cc = crewChip(null);
+          // Leave the checklist (its progress is saved), pick the name, come back to it
+          cc.onclick = function() {
+            openPicker();
+            renderCrewScreen(function() { choosePair(openRig, openChecklist); });
+          };
+          chips.appendChild(cc);
+        }
       }
       header.classList.toggle('has-selection', !!text);
     }
@@ -5738,7 +5765,7 @@
           if (normalizeSelection(rig.checklists[i].id) === clNorm) clName = rig.checklists[i].name || clNorm;
         }
       }
-      setSelectionLabel('Rig ' + (rig ? (rig.name || rig.id) : rigNorm) + ' \u00B7 ' + clName);
+      setSelectionLabel(clName);
       resetRuntimeState();
       // Jotform's saved value only applies to the first load of the form
       var data = pickerLoadedOnce ? { value: '', formID: pickerData && pickerData.formID } : pickerData;
