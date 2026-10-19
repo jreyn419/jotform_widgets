@@ -1268,6 +1268,7 @@
     .usage-chosen-row.counted .usage-chosen-name { color: #6c757d; }
     .usage-chosen-note { font-size: 12px; color: #2e7d32; margin-top: 2px; }
     .usage-step:disabled { opacity: 0.35; cursor: default; }
+    .usage-resolved-note { font-size: 12px; color: #2e7d32; margin: 2px 4px 10px; }
     .usage-session-since { font-weight: 500; color: #999; text-transform: none; letter-spacing: 0; margin-left: 6px; }
     .usage-suggest-have { font-size: 12px; color: #0b3d91; font-weight: 600; }
     .usage-chosen-name { font-size: 15px; font-weight: 700; color: #222; }
@@ -3489,8 +3490,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.42.3';
+    var VERSION = '1.42.4';
     var CHANGELOG = [
+      { version: '1.42.4', date: '2026-10-19', changes: [
+        'Supplies used: an item that the checklist\u2019s last submission recorded at full quantity (counted, restocked, or in a sealed area) no longer shows in the list; a note says how many were restocked. It stays in the session\u2019s record in Jotform. An item that submission recorded short (out of stock) stays on the list as counted',
+      ]},
       { version: '1.42.3', date: '2026-10-19', changes: [
         'Supplies used: an item cannot be logged beyond what the rig carries. Other crew members\u2019 lists that no checklist has counted yet count against it too. At the limit, + is greyed out and the search says every one on the rig is already logged',
       ]},
@@ -6051,6 +6055,7 @@
     var USAGE_SESSIONS_KEY = 'ems_usage_sessions'; // this tablet's session lists
     var usageSession = null;                     // the session the screen edits, null before its first save
     var usageLastCheck = null;                   // checklistNorm -> time of its last submission, once known
+    var usageLastSync = {};                      // checklistNorm -> that submission's sync block
     var usageScreenToken = 0;
     var usageRigQty = {};                        // checklist|key -> how many the rig carries
     var usageOthers = {};                        // checklist|key -> logged on other lists, not yet counted
@@ -6148,6 +6153,7 @@
       recentSubsCache = null;
       usageRigQty = {};
       usageOthers = {};
+      usageLastSync = {};
       usageSession = currentUsageSession(rigNorm);
       usageChosen = usageSession ? JSON.parse(JSON.stringify(usageSession.items || [])) : [];
       usageLastCheck = null;
@@ -6238,6 +6244,7 @@
           }
         }
         usageLastCheck = list ? lastChecksFor(list, rigNorm) : {};
+        usageLastSync = list ? lastCheckSyncsFor(list, rigNorm) : {};
         // What other lists have logged that no checklist has counted yet
         usageOthers = {};
         if (list) {
@@ -6404,6 +6411,27 @@
       return !!(last && c.ts && c.ts <= last);
     }
 
+    // Counted by a submission that had the item at full quantity: restocked,
+    // nothing left to do. (Counted short stays on the list.)
+    function usageItemResolved(c) {
+      if (!usageItemCounted(c)) return false;
+      var last = usageLastSync[c.checklist];
+      if (!last || !last.sync) return false;
+      var dec = function(t) { var x = document.createElement('textarea'); x.innerHTML = t; return x.value; };
+      var area = c.key.split('::')[0];
+      var chain = [area].concat(areaAncestors(area));
+      var tagged = last.sync.taggedAreas || {};
+      for (var tk in tagged) {
+        var name = dec(tk);
+        if (chain.indexOf(name) !== -1) return true;   // sealed with everything in it
+      }
+      var states = last.sync.itemStates || {};
+      var st = states[c.key];
+      if (!st) for (var sk in states) if (dec(sk) === c.key) { st = states[sk]; break; }
+      var rigQty = usageRigQty[c.checklist + '|' + c.key];
+      return !!(st && rigQty && st.actual >= rigQty);
+    }
+
     function usageSignature(items) {
       var out = [];
       for (var i = 0; i < (items || []).length; i++) {
@@ -6440,8 +6468,10 @@
         save.textContent = usageSession ? 'Save changes' : 'Save';
       }
       var known = usageLastCheck !== null;
+      var resolved = 0;
       for (var i = 0; i < usageChosen.length; i++) {
         var c = usageChosen[i];
+        if (usageItemResolved(c)) { resolved += c.qty; continue; }
         var counted = usageItemCounted(c);
         var t = new Date(c.ts || Date.now());
         var row = document.createElement('div');
@@ -6461,6 +6491,13 @@
             '<button type="button" class="usage-step" data-i="' + i + '" data-d="1"' + (known && !atLimit ? '' : ' disabled') + ' title="' + (atLimit ? escapeHtml(usageFullText(usageRoomFor(c.checklist, c.key))) : '') + '">+</button>');
         box.appendChild(row);
       }
+      if (resolved) {
+        var note = document.createElement('div');
+        note.className = 'usage-resolved-note';
+        note.textContent = resolved + (resolved === 1 ? ' item' : ' items') + ' logged earlier ' + (resolved === 1 ? 'was' : 'were') + ' restocked: the last check counted ' + (resolved === 1 ? 'it' : 'them') + ' full. Kept in the session\u2019s record.';
+        box.appendChild(note);
+      }
+      if (title && !box.children.length) title.style.display = 'none';
       var steps = box.querySelectorAll('.usage-step');
       for (var s = 0; s < steps.length; s++) {
         steps[s].onclick = function() {
@@ -6941,6 +6978,18 @@
       for (var i = 0; i < (list || []).length; i++) {
         var sel = submissionSelection(list[i]);
         if (sel.rig === rigNorm && sel.checklist && sel.timestamp && sel.timestamp > (out[sel.checklist] || 0)) out[sel.checklist] = sel.timestamp;
+      }
+      return out;
+    }
+
+    // Each checklist's last submission for a rig: { ts, sync }
+    function lastCheckSyncsFor(list, rigNorm) {
+      var out = {};
+      for (var i = 0; i < (list || []).length; i++) {
+        var sel = submissionSelection(list[i]);
+        if (sel.rig !== rigNorm || !sel.checklist || !sel.timestamp) continue;
+        if (out[sel.checklist] && out[sel.checklist].ts >= sel.timestamp) continue;
+        out[sel.checklist] = { ts: sel.timestamp, sync: submissionSyncData(list[i]) || {} };
       }
       return out;
     }
