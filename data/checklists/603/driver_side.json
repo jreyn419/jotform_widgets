@@ -482,10 +482,6 @@
             {
               "name": "Emesis Basin",
               "qty": 1
-            },
-            {
-              "name": "Baby Caps (in the OB kits)",
-              "qty": 2
             }
           ]
         }
@@ -973,6 +969,20 @@
             },
             {
               "name": "Pen",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "area": "In Front of Airway Seat",
+      "categories": [
+        {
+          "name": "General",
+          "items": [
+            {
+              "name": "Responder Bag",
               "qty": 1
             }
           ]

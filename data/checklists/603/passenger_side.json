@@ -67,24 +67,6 @@
       "area": "Bench",
       "categories": [
         {
-          "name": "Right: Large Box",
-          "items": [
-            {
-              "name": "Electrode Bag",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "name": "Left",
-          "items": [
-            {
-              "name": "Responder Bag",
-              "qty": 1
-            }
-          ]
-        },
-        {
           "name": "Linens",
           "items": [
             {
@@ -134,6 +116,7 @@
     {
       "area": "Spinal Immobilization Bag",
       "childOf": "Bench",
+      "sealable": true,
       "categories": [
         {
           "name": "General",
@@ -323,6 +306,10 @@
             {
               "name": "Monitor Battery (charged)",
               "qty": 2
+            },
+            {
+              "name": "Electrode Bag",
+              "qty": 1
             }
           ]
         }
@@ -445,6 +432,7 @@
     {
       "area": "HFNC Cell,  “Universal”",
       "childOf": "Bottom Front Cabinet",
+      "sealable": true,
       "categories": [
         {
           "name": "Loose",
@@ -521,6 +509,7 @@
     {
       "area": "MCI Bag",
       "childOf": "Short Rear Cabinet",
+      "sealable": true,
       "categories": [
         {
           "name": "General",
@@ -528,10 +517,6 @@
             {
               "name": "Triage Tags",
               "qty": 50
-            },
-            {
-              "name": "Supervisor Vest",
-              "qty": 1
             },
             {
               "name": "Logistics Vest",
