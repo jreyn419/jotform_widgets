@@ -3489,8 +3489,13 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.42.1';
+    var VERSION = '1.42.2';
     var CHANGELOG = [
+      { version: '1.42.2', date: '2026-10-19', changes: [
+        'Supplies used on another tablet: opening the list now shows the latest version saved anywhere. An item removed or changed on one tablet is removed or changed on the other, and a list emptied on one is empty on the other',
+        'Progress kept on the tablet from before a checklist\u2019s last submission is discarded when the rig list or the checklist opens, so a submitted checklist always reopens fresh. Progress made after reopening a submitted checklist is kept as before',
+        'Once a checklist is submitted, nothing more is saved as progress for that visit (seals still are), so no late save can bring the finished counts back',
+      ]},
       { version: '1.42.1', date: '2026-10-19', changes: [
         'Removing or changing a supply now corrects its checklist however the checklist\u2019s progress was kept: each item taken off remembers how it was before, and each seal opened for it remembers the seal. It works for items taken off by an earlier version, after the 4-hour progress window, and after the seals are refreshed from Jotform',
         'A list emptied on another tablet no longer counts on this one; saving a list whose submission was removed elsewhere creates it again',
@@ -4037,6 +4042,8 @@
 
     function saveState() {
       if (!stateReady) return;
+      // This visit is submitted: its counts are done. Only the seals carry on.
+      if (apiSubmitDone) { saveSealState(); return; }
       try {
         var state = {
           itemStates: itemStates,
@@ -5606,6 +5613,27 @@
       header.classList.toggle('has-selection', !!text);
     }
 
+    // Progress kept on this tablet from no later than the checklist's last
+    // submission was submitted already: drop it so the checklist opens fresh
+    function dropSubmittedProgress(rigId, checklistId, list) {
+      var rigNorm = normalizeSelection(rigId), clNorm = normalizeSelection(checklistId);
+      var lastSub = 0;
+      for (var i = 0; i < (list || []).length; i++) {
+        var sel = submissionSelection(list[i]);
+        if (sel.rig === rigNorm && sel.checklist === clNorm && sel.timestamp && sel.timestamp > lastSub) lastSub = sel.timestamp;
+      }
+      if (!lastSub) return false;
+      try {
+        var key = getStorageKey(rigNorm, clNorm);
+        var stored = localStorage.getItem(key);
+        if (!stored) return false;
+        var parsed = JSON.parse(stored);
+        if (!parsed.timestamp || parsed.timestamp > lastSub + 5000) return false;
+        localStorage.removeItem(key);
+        return true;
+      } catch (e) { return false; }
+    }
+
     // Timestamp of local in-progress state for a pair, if it is from today
     function localProgressFor(rigId, checklistId) {
       try {
@@ -5734,6 +5762,7 @@
           }
           subs.sort(function(a, b) { return (submissionSelection(b).timestamp || 0) - (submissionSelection(a).timestamp || 0); });
           var submittedAt = subs.length ? subs[0] : null;
+          if (list) dropSubmittedProgress(rig.id, k, list);
           var localTs = localProgressFor(rig.id, k);
           var oldMore = el._row && el._row.querySelector('.picker-row-more');
           if (oldMore) oldMore.parentNode.removeChild(oldMore);
@@ -5791,6 +5820,7 @@
       }
       setSelectionLabel(clName);
       resetRuntimeState();
+      if (todaySubsCache && todaySubsCache.list) dropSubmittedProgress(rigNorm, clNorm, mergeLocalSubmissions(todaySubsCache.list));
       // Jotform's saved value only applies to the first load of the form
       var data = pickerLoadedOnce ? { value: '', formID: pickerData && pickerData.formID } : pickerData;
       pickerLoadedOnce = true;
@@ -6110,6 +6140,7 @@
       container.innerHTML = '';
       var rigNorm = normalizeSelection(rig.id);
       var token = ++usageScreenToken;
+      recentSubsCache = null;
       usageSession = currentUsageSession(rigNorm);
       usageChosen = usageSession ? JSON.parse(JSON.stringify(usageSession.items || [])) : [];
       usageLastCheck = null;
@@ -6183,6 +6214,15 @@
       // pick up this crew member's list from Jotform
       fetchRecentSubmissions(function(list) {
         if (token !== usageScreenToken || !document.getElementById('usageChosen')) return;
+        if (usageSession && list) {
+          // Saved again (or emptied) on another tablet since this copy
+          var untouched = !usageListChanged();
+          var fresh = refreshSessionFromRemote(usageSession, list);
+          if (fresh !== usageSession) {
+            usageSession = fresh;
+            if (untouched) usageChosen = fresh ? JSON.parse(JSON.stringify(fresh.items || [])) : [];
+          }
+        }
         if (!usageSession && list) {
           var adopted = adoptRemoteSession(list, rigNorm);
           if (adopted) {
@@ -6484,6 +6524,44 @@
         if (sessionIsCurrent(list[i], rigNorm) && (!best || list[i].started > best.started)) best = list[i];
       }
       return best;
+    }
+
+    // This tablet's copy of a list against Jotform's: a newer save from
+    // another tablet replaces it; a list Jotform no longer has (emptied
+    // elsewhere) is gone. Unsent changes here are kept. Returns the session
+    // to use, or null when it is gone.
+    function refreshSessionFromRemote(sess, list) {
+      if (!sess || sess.dirty) return sess;
+      var remote = null, remoteCount = 0;
+      for (var i = 0; i < (list || []).length; i++) {
+        if (list[i]._local) continue;
+        remoteCount++;
+        var sync = submissionSyncData(list[i]);
+        if (sync && sync.type === 'usage' && sync.session === sess.id && Array.isArray(sync.items)) {
+          if (!remote || parseFloat(sync.timestamp) > remote.updated) remote = { updated: parseFloat(sync.timestamp) || 0, items: sync.items, id: String(list[i].id) };
+        }
+      }
+      if (remote) {
+        if (remote.updated <= (sess.updated || 0)) return sess;
+        var newer = JSON.parse(JSON.stringify(sess));
+        newer.items = remote.items;
+        newer.updated = remote.updated;
+        newer.submissionId = remote.id;
+        newer.dirty = false;
+        storeUsageSession(newer);
+        return newer;
+      }
+      // Not on Jotform: emptied elsewhere, when the list is complete and this
+      // copy was sent and is not brand new (Jotform may not list it yet)
+      var complete = !list.partial && remoteCount < 100;
+      if (complete && sess.submissionId && (Date.now() - (sess.updated || 0)) > 120000) {
+        var gone = JSON.parse(JSON.stringify(sess));
+        gone.deleted = true;
+        gone.dirty = false;
+        storeUsageSession(gone);
+        return null;
+      }
+      return sess;
     }
 
     // The same crew member's list, saved from another tablet
@@ -11030,6 +11108,7 @@
             valid: true,
             value: buildChecklistSubmission().value
           });
+          apiSubmitDone = true;   // submitted: nothing more is saved as progress for this visit
 
           // Clear per-submission state so the next session starts fresh for
           // item counts, but keep the dedicated sealed-state key intact so
