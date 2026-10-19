@@ -2592,6 +2592,36 @@
     }
 
     /* Completion Popup */
+    /* Seal-now prompt: a sheet over the dock when a sealable area checks out complete */
+    .seal-prompt {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 240;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .seal-prompt.open { display: flex; }
+    .seal-prompt-card {
+      width: 100%;
+      max-width: 560px;
+      background: white;
+      border-radius: 16px 16px 0 0;
+      padding: 18px 18px 22px;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+    }
+    .seal-prompt-title { font-size: 13px; font-weight: 700; color: #0f6674; text-transform: uppercase; letter-spacing: 0.03em; }
+    .seal-prompt-name { font-size: 20px; font-weight: 700; color: #222; margin-top: 6px; overflow-wrap: anywhere; }
+    .seal-prompt-path { font-size: 13px; color: #777; margin-top: 2px; }
+    .seal-prompt-path:empty { display: none; }
+    .seal-prompt-text { font-size: 15px; color: #444; margin-top: 10px; }
+    .seal-prompt-buttons { display: flex; gap: 10px; margin-top: 16px; }
+    .seal-prompt-buttons button { flex: 1; padding: 16px; border-radius: 10px; font-size: 17px; font-weight: 700; cursor: pointer; }
+    .seal-prompt-later { background: white; border: 2px solid #ced4da; color: #333; }
+    .seal-prompt-seal { background: #17a2b8; border: 2px solid #17a2b8; color: white; }
+    .seal-prompt-seal:active { background: #138496; }
+
     .completion-overlay {
       display: none;
       position: fixed;
@@ -3048,6 +3078,19 @@
     </div>
 
     <!-- Completion Popup -->
+    <div class="seal-prompt" id="sealPrompt">
+      <div class="seal-prompt-card">
+        <div class="seal-prompt-title">&#x1F512; Everything is here</div>
+        <div class="seal-prompt-name" id="sealPromptName"></div>
+        <div class="seal-prompt-path" id="sealPromptPath"></div>
+        <div class="seal-prompt-text">Seal it now?</div>
+        <div class="seal-prompt-buttons">
+          <button type="button" class="seal-prompt-later" id="sealPromptLater" onclick="answerSealPrompt(false)">Later</button>
+          <button type="button" class="seal-prompt-seal" id="sealPromptSeal" onclick="answerSealPrompt(true)">Seal</button>
+        </div>
+      </div>
+    </div>
+
     <div class="completion-overlay" id="completionOverlay">
       <button class="completion-close" onclick="closeCompletionPopup()">&times;</button>
       <div class="completion-icon">&#10003;</div>
@@ -3428,8 +3471,12 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.40.0';
+    var VERSION = '1.41.0';
     var CHANGELOG = [
+      { version: '1.41.0', date: '2026-10-19', changes: [
+        'A sealable area that checks out complete, with every item there and anything sealable inside it already sealed, asks right away: "Everything is here. Seal it now?" Seal records it with the crew member\u2019s name; Later leaves it for the seal list at the end of the check',
+        'Areas with anything short never ask: they are sealed at the end, after restocking, as before. A container asks once the areas inside it are sealed',
+      ]},
       { version: '1.40.0', date: '2026-10-19', changes: [
         'Supplies used is one running list per session (the crew member on that rig, for 24 hours, like the remembered name and rig). Opening it shows everything logged so far; items can be added, changed or removed, then saved',
         'The list is a single Jotform submission that each save edits (and removes when the list is emptied), so Tables shows one up-to-date entry per session instead of one per call',
@@ -4796,6 +4843,7 @@
                 if (isChecked) {
                   autoCategoryAdvance(area, cat);
                   checkForCompletion();
+                  queueSealPrompts(area);
                 } else {
                   // Reopen so user can see unchecked items
                   var catKey = area + '::' + cat;
@@ -5153,6 +5201,8 @@
       inventoryFileQuestions = []; previousReadings = null; restoredLocalTs = null;
       expandedArea = null; expandedGroup = null; focusedKey = null;
       apiSubmitDone = false;
+      sealPromptDeclined = {};
+      closeSealPrompt();
       closeRestockModal();
       closeSealCheck();
       updateOosBanner();
@@ -8372,6 +8422,7 @@
         // Trigger auto-advance if we just checked everything
         autoCategoryAdvance(areaName, catName);
         checkForCompletion();
+        queueSealPrompts(areaName);
       } else {
         // Reopen the category so the user can see what was unchecked
         var catKey = areaName + '::' + catName;
@@ -8446,6 +8497,7 @@
         }
 
         checkForCompletion();
+        if (value >= (item ? item.required : 0)) queueSealPrompts(areaName);
       }
     }
 
@@ -9168,6 +9220,71 @@
         icon.style.transform = collapsedCategories[key] ? 'rotate(0deg)' : 'rotate(90deg)';
       }
       advanceFocus(focusedKey, false);
+    }
+
+    // ---- Seal as soon as a sealable area checks out complete
+    // When the last item of a sealable area is confirmed and everything in
+    // it is there (nothing short, nothing waiting on a restock) and every
+    // sealable area inside it is sealed, a sheet asks to seal it now. Later
+    // leaves it for the seal list at the end, and it does not ask again
+    // during this visit. A container asks once what is inside it is sealed.
+    var sealPromptQueue = [];
+    var sealPromptDeclined = {};
+
+    function sealPromptQualifies(name) {
+      return !!(enableTaggedAreas && stateReady && sealableAreas[name] && !taggedAreas[name] && !sealPromptDeclined[name] &&
+        isAreaDone(name) && unsealedSealableInside(name).length === 0);
+    }
+
+    // The area an item sits in, then the areas around it, innermost first
+    function queueSealPrompts(areaName) {
+      if (!areaName || !enableTaggedAreas) return;
+      var chain = [areaName].concat(areaAncestors(areaName).slice().reverse());
+      for (var i = 0; i < chain.length; i++) {
+        if (sealPromptQualifies(chain[i]) && sealPromptQueue.indexOf(chain[i]) === -1) sealPromptQueue.push(chain[i]);
+      }
+      if (sealPromptQueue.length) showNextSealPrompt();
+    }
+
+    function sealPromptOpen() {
+      var el = document.getElementById('sealPrompt');
+      return !!(el && el.classList.contains('open'));
+    }
+
+    function showNextSealPrompt() {
+      var el = document.getElementById('sealPrompt');
+      if (!el || sealPromptOpen()) return;
+      // Not while another sheet is up; try again shortly
+      var busy = document.querySelector('#sealCheckOverlay.open, #completionOverlay.open, #resetOverlay.open');
+      if (busy) { if (sealPromptQueue.length) setTimeout(showNextSealPrompt, 600); return; }
+      while (sealPromptQueue.length && !sealPromptQualifies(sealPromptQueue[0])) sealPromptQueue.shift();
+      if (!sealPromptQueue.length) return;
+      var name = sealPromptQueue[0];
+      document.getElementById('sealPromptName').textContent = name;
+      document.getElementById('sealPromptPath').textContent = areaAncestors(name).join(' \u203A ');
+      el.classList.add('open');
+    }
+
+    function answerSealPrompt(seal) {
+      var el = document.getElementById('sealPrompt');
+      if (el) el.classList.remove('open');
+      var name = sealPromptQueue.shift();
+      if (!name) return;
+      if (seal && sealPromptQualifies(name)) {
+        tagArea(name);
+        if (stateReady) saveState();
+        // The container around it may be ready to seal now
+        if (areaParent[name]) queueSealPrompts(areaParent[name]);
+      } else {
+        sealPromptDeclined[name] = true;
+      }
+      if (sealPromptQueue.length) setTimeout(showNextSealPrompt, 250);
+    }
+
+    function closeSealPrompt() {
+      sealPromptQueue = [];
+      var el = document.getElementById('sealPrompt');
+      if (el) el.classList.remove('open');
     }
 
     function tagArea(areaName) {
