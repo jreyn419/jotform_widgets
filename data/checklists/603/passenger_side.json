@@ -181,7 +181,8 @@
             {
               "name": "Lancets",
               "qty": 6,
-              "group": "Glucometer kit"
+              "group": "Glucometer kit",
+              "expires": true
             },
             {
               "name": "Sterile 2x2",
@@ -196,12 +197,14 @@
             {
               "name": "Alcohol Prep Pads",
               "qty": 6,
-              "group": "Glucometer kit"
+              "group": "Glucometer kit",
+              "expires": true
             },
             {
               "name": "Glucometer Test Strip",
               "qty": 1,
-              "group": "Glucometer kit"
+              "group": "Glucometer kit",
+              "expires": true
             },
             {
               "name": "Glucometer",
@@ -296,12 +299,14 @@
             {
               "name": "Adult/Child Defib Pads",
               "qty": 1,
-              "group": "Monitor Disposables, Temp Probes"
+              "group": "Monitor Disposables, Temp Probes",
+              "expires": true
             },
             {
               "name": "Infant/Pediatric Defib Pads",
               "qty": 1,
-              "group": "Monitor Disposables, Temp Probes"
+              "group": "Monitor Disposables, Temp Probes",
+              "expires": true
             },
             {
               "name": "Monitor Battery (charged)",
@@ -309,7 +314,8 @@
             },
             {
               "name": "Electrode Bag",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             }
           ]
         }
@@ -323,23 +329,28 @@
           "items": [
             {
               "name": "Sterile Water for Inhalation Bag 1000mL",
-              "qty": 3
+              "qty": 3,
+              "expires": true
             },
             {
               "name": "NS Bag 1000mL",
-              "qty": 6
+              "qty": 6,
+              "expires": true
             },
             {
               "name": "NS Bag 250mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "NS Bag 100 mL",
-              "qty": 5
+              "qty": 5,
+              "expires": true
             },
             {
               "name": "D10W Bag 25g/250mL",
-              "qty": 3
+              "qty": 3,
+              "expires": true
             }
           ]
         }

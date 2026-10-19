@@ -1268,6 +1268,43 @@
     .usage-chosen-row.counted .usage-chosen-name { color: #6c757d; }
     .usage-chosen-note { font-size: 12px; color: #2e7d32; margin-top: 2px; }
     .usage-step:disabled { opacity: 0.35; cursor: default; }
+    .lot-chip { display: inline-block; margin-top: 4px; padding: 3px 9px; border-radius: 10px; border: 1px solid #ced4da; background: white; color: #555; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .lot-chip.ok { border-color: #b7cff5; background: #eef5ff; color: #0b3d91; }
+    .lot-chip.due { border-color: #f5c06b; background: #fff3cd; color: #856404; }
+    .lot-chip.expired { border-color: #f1aeb5; background: #f8d7da; color: #842029; }
+    #lotsBody, #expiryBody { padding: 0 18px 90px; }
+    .lots-where { font-size: 13px; color: #777; margin: 12px 0 8px; }
+    .lot-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #e3e3e3; border-radius: 10px; margin-bottom: 8px; }
+    .lot-row.due { border-color: #f5c06b; background: #fffaf0; }
+    .lot-row.expired { border-color: #f1aeb5; background: #fff5f6; }
+    .lot-row-info { flex: 1; min-width: 0; }
+    .lot-row-lot { font-size: 15px; font-weight: 700; color: #222; overflow-wrap: anywhere; }
+    .lot-row-exp { font-size: 13px; color: #555; margin-top: 2px; }
+    .lot-remove { border: 1px solid #ced4da; background: white; border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 600; color: #842029; cursor: pointer; }
+    .lot-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; padding: 12px; border: 1px dashed #b7cff5; border-radius: 10px; background: #f8fbff; }
+    .lot-form input { flex: 1 1 140px; min-width: 0; padding: 10px; border: 1px solid #ced4da; border-radius: 8px; font-size: 15px; }
+    .lot-form select { padding: 10px 6px; border: 1px solid #ced4da; border-radius: 8px; font-size: 15px; background: white; }
+    .lot-form button { padding: 10px 16px; border: none; border-radius: 8px; background: #0066cc; color: white; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .lot-form-title { flex-basis: 100%; font-size: 12px; font-weight: 700; color: #0b3d91; text-transform: uppercase; letter-spacing: 0.03em; }
+    .lot-form-msg { flex-basis: 100%; font-size: 13px; color: #b45309; }
+    .lot-form-msg:empty { display: none; }
+    .lots-empty { font-size: 14px; color: #888; padding: 6px 2px; }
+    .modal-overlay.expiry-notice { z-index: 245; }
+    .expiry-intro { font-size: 14px; color: #555; margin: 12px 0; }
+    .expiry-row { padding: 12px; border: 1px solid #e3e3e3; border-radius: 10px; margin-bottom: 10px; }
+    .expiry-row.expired { border-color: #f1aeb5; background: #fff5f6; }
+    .expiry-row.due { border-color: #f5c06b; background: #fffaf0; }
+    .expiry-row.missing { border-style: dashed; }
+    .expiry-row.done { opacity: 0.55; }
+    .expiry-name { font-size: 16px; font-weight: 700; color: #222; }
+    .expiry-lot { font-size: 14px; color: #333; margin-top: 3px; }
+    .expiry-where { font-size: 13px; color: #777; margin-top: 2px; }
+    .expiry-sealed { font-size: 12px; color: #0f6674; margin-top: 4px; font-weight: 600; }
+    .expiry-btns { display: flex; gap: 8px; margin-top: 10px; }
+    .expiry-btns button { flex: 1; padding: 11px; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .expiry-btns .expiry-replace { background: #0066cc; color: white; border: 2px solid #0066cc; }
+    .expiry-btns .expiry-later { background: white; color: #333; border: 2px solid #ced4da; }
+    .expiry-result { font-size: 13px; color: #155724; font-weight: 600; margin-top: 8px; }
     .usage-all-btn { display: block; width: 100%; margin-top: 12px; padding: 12px; border: 2px solid #b7cff5; border-radius: 10px; background: #eef5ff; color: #0b3d91; font-size: 15px; font-weight: 700; cursor: pointer; }
     .usage-all-btn:disabled { opacity: 0.5; cursor: default; }
     .usage-all-tabs { display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid #eee; background: white; flex-shrink: 0; }
@@ -3063,6 +3100,29 @@
     </div>
 
     <!-- Seal Sheet: the last step, after counting and restocking -->
+    <div class="modal-overlay" id="lotsOverlay" onclick="closeLotsSheet()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2 id="lotsTitle">Lots</h2>
+          <button class="modal-close" onclick="closeLotsSheet()">×</button>
+        </div>
+        <div class="modal-body" id="lotsBody"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay expiry-notice" id="expiryOverlay">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Expiring This Month</h2>
+          <button class="modal-close" onclick="closeExpiryNotice()">×</button>
+        </div>
+        <div class="modal-body" id="expiryBody"></div>
+        <div class="modal-footer">
+          <button class="seal-all-btn expiry-done-btn" onclick="closeExpiryNotice()">Done</button>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-overlay" id="usageAllOverlay" onclick="closeUsageAll()">
       <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -3518,8 +3578,15 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.44.0';
+    var VERSION = '1.45.0';
     var CHANGELOG = [
+      { version: '1.45.0', date: '2026-10-19', changes: [
+        'Expiration tracking: medications and expirable equipment (marked "expires" in the checklist files) show their soonest expiration on the row. Tapping it lists the item\u2019s lot numbers with month and year; lots can be added or removed, several per item',
+        'From the monthly med check day (the 15th; medCheckDay widget setting) any lot expiring that month, or already expired, is listed when the checklist opens: the item, its lot and expiration, and where it is. Replaced asks for the new lot; Later keeps it on the list for the next opening',
+        'Replacing an item inside a sealed area opens that seal without a recount; the area must be sealed again before the checklist can be finished, and the widget asks to reseal it right away',
+        'Lots travel with the checklist like the seals: kept on the tablet and carried in every submission, so another tablet picks them up from the last one. The report lists lots due and replacements made',
+        'Entering lots is never required until the date in the lotTrackingStart widget setting (YYYY-MM-DD); from then on, an expirable item with no lot on file is listed too, and Add lot on one in a sealed area opens that seal the same way, without a recount',
+      ]},
       { version: '1.44.0', date: '2026-10-19', changes: [
         'Supplies used: a See all items button opens every crew member\u2019s logged items for the rig, today (from 8 AM) plus anything older still to restock, with tabs for All, To restock and Restocked. Each row says who logged it and when, and either when it will be taken off, that the last check counted it short, or which check restocked it and who did it. Read-only: each crew member still changes their own list',
       ]},
@@ -4000,6 +4067,9 @@
       }
     }
     var brokenSeals = []; // [{ area, reason, taggedDate, brokenTimestamp }]
+    var lots = {};            // itemKey -> [{ lot, exp: 'YYYY-MM', ts, by }]; carried over like the seals
+    var lotReplacements = []; // this visit: [{ key, name, oldLot, oldExp, lot, exp, by, ts }]
+    var expiryShown = false;  // the expiration notice was shown this visit
     var stateReady = false; // true after initial state load is complete
     var expandedArea = null; // currently expanded area name (standalone or child)
     var expandedGroup = null; // currently expanded parent group name
@@ -4093,6 +4163,7 @@
           brokenSeals: brokenSeals,
           o2States: o2States,
           questionAnswers: questionAnswers,
+          lotReplacements: lotReplacements,
           rig: currentRig,
           checklist: currentChecklist,
           crew: currentCrew,
@@ -4128,7 +4199,11 @@
         delete restockStatus[rk];
       }
       saveSealState();
+      var reportedReplacements = lotReplacements;
+      lotReplacements = [];
       var syncData = {
+        lots: lots,
+        lotReplacements: reportedReplacements,
         taggedAreas: taggedAreas,
         brokenSeals: reportedBreaks,
         itemStates: itemStates,
@@ -4171,6 +4246,7 @@
         var sealData = {
           taggedAreas: taggedAreas,
           brokenSeals: brokenSeals,
+          lots: lots,
           timestamp: Date.now()
         };
         localStorage.setItem(getSealStorageKey(), JSON.stringify(sealData));
@@ -4197,6 +4273,8 @@
             brokenSeals: brokenSeals,
             o2States: o2States,
             questionAnswers: questionAnswers,
+            lots: lots,
+            lotReplacements: lotReplacements,
             rig: currentRig,
             checklist: currentChecklist,
             crew: currentCrew,
@@ -4344,15 +4422,18 @@
             if (parsed.taggedAreas) parsed.taggedAreas = decodeParsedKeys(parsed.taggedAreas);
             if (parsed.itemStates) parsed.itemStates = decodeParsedKeys(parsed.itemStates);
             if (parsed.restockStatus) parsed.restockStatus = decodeParsedKeys(parsed.restockStatus);
+            if (parsed.lots) parsed.lots = decodeParsedKeys(parsed.lots);
 
             // Side effect: remember gauge readings from the last submission
             if (parsed.itemStates) capturePreviousReadings(parsed.itemStates, parsed.timestamp || 0);
 
             var taggedKeys = parsed.taggedAreas ? Object.keys(parsed.taggedAreas) : [];
-            if (parsed && parsed.taggedAreas && taggedKeys.length > 0) {
+            var hasLots = parsed.lots && typeof parsed.lots === 'object' && Object.keys(parsed.lots).length > 0;
+            if (parsed && ((parsed.taggedAreas && taggedKeys.length > 0) || hasLots)) {
               callback({
-                taggedAreas: parsed.taggedAreas,
+                taggedAreas: taggedKeys.length > 0 ? parsed.taggedAreas : null,
                 brokenSeals: parsed.brokenSeals || [],
+                lots: hasLots ? parsed.lots : null,
                 timestamp: parsed.timestamp || 0
               });
               return;
@@ -4450,6 +4531,7 @@
                 failNote: itemObj.failNote ? String(itemObj.failNote) : null
               };
             }
+            if (itemObj.expires) entry.expires = true;
             result[areaName][targetCat].push(entry);
           }
         }
@@ -4574,6 +4656,7 @@
       if (usedOnCall) {
         infoDiv.innerHTML += '<div class="item-note">' + usedOnCall + ' used on a call</div>';
       }
+      if (item.expires) infoDiv.appendChild(lotChip(key));
 
       // Tapping anywhere on the row (not a control) moves the focus here
       itemDiv.onclick = (function(k) {
@@ -5280,6 +5363,8 @@
       stateReady = false;
       INVENTORY = {};
       itemStates = {}; restockStatus = {}; taggedAreas = {}; brokenSeals = [];
+      lots = {}; lotReplacements = []; expiryShown = false;
+      closeExpiryNotice(); closeLotsSheet();
       collapsedCategories = {}; o2States = {}; questionAnswers = {}; customQuestions = [];
       categoryMeta = {}; sealableAreas = {}; areaHierarchy = {}; areaParent = {};
       inventoryFileQuestions = []; previousReadings = null; restoredLocalTs = null;
@@ -9678,6 +9763,7 @@
 
         // Fetch from server, forcing timestamp comparison to accept any remote data
         fetchLatestSealState(apiBase, formID, apiKey, qid, function(remote) {
+          if (remote && remote.lots) lots = remote.lots;
           if (remote && remote.taggedAreas) {
             taggedAreas = remote.taggedAreas;
             // Its broken seals were reported in that submission: not again
@@ -9754,6 +9840,305 @@
       advanceFocus(focusedKey, false);
     }
 
+    // ---- Expiration tracking
+    // Items marked "expires" in the checklist file carry lot numbers with an
+    // expiration month (YYYY-MM). From the monthly med check day on (the
+    // 15th, medCheckDay setting), a lot expiring that month or earlier is
+    // listed when the checklist opens until it is replaced. Lots are carried
+    // over like the seals: this tablet's seal store and every submission.
+    function medCheckDay() {
+      var d = 15;
+      try {
+        var v = JFCustomWidget.getWidgetSetting('medCheckDay');
+        if (v !== undefined && v !== null && String(v).trim() !== '' && isFinite(parseInt(v, 10))) d = Math.max(1, Math.min(28, parseInt(v, 10)));
+      } catch (e) {}
+      return d;
+    }
+
+    // Lot entry becomes required on this date (lotTrackingStart, YYYY-MM-DD); never without it
+    function lotEntryRequired() {
+      try {
+        var v = String(JFCustomWidget.getWidgetSetting('lotTrackingStart') || '').trim();
+        var m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!m) return false;
+        return new Date() >= new Date(+m[1], +m[2] - 1, +m[3]);
+      } catch (e) { return false; }
+    }
+
+    function expText(exp) {
+      var m = String(exp || '').match(/^(\d{4})-(\d{2})$/);
+      return m ? m[2] + '/' + m[1] : String(exp || '');
+    }
+
+    // 'expired' (an earlier month), 'due' (this month, on or after the check
+    // day), 'soon' (this month, before the check day), or null
+    function lotStatus(exp) {
+      var m = String(exp || '').match(/^(\d{4})-(\d{2})$/);
+      if (!m) return null;
+      var y = +m[1], mo = +m[2];
+      var now = new Date(), cy = now.getFullYear(), cm = now.getMonth() + 1;
+      if (y < cy || (y === cy && mo < cm)) return 'expired';
+      if (y === cy && mo === cm) return now.getDate() >= medCheckDay() ? 'due' : 'soon';
+      return null;
+    }
+
+    function itemLocation(key) {
+      var parts = key.split('::');
+      var chain = areaAncestors(parts[0]).concat([parts[0]]);
+      var cat = (parts[1] || '').replace(' > ', ' › ');
+      if (cat && cat !== 'General' && cat !== 'Loose') chain.push(cat);
+      return chain.join(' › ');
+    }
+
+    function sortedLots(key) {
+      return (lots[key] || []).slice().sort(function(a, b) { return String(a.exp).localeCompare(String(b.exp)); });
+    }
+
+    // Every lot to act on now, and with lot entry required, items with none
+    function expiryEntries() {
+      var out = [];
+      var required = lotEntryRequired();
+      for (var area in INVENTORY) {
+        for (var cat in INVENTORY[area]) {
+          var items = INVENTORY[area][cat];
+          for (var i = 0; i < items.length; i++) {
+            if (!items[i].expires) continue;
+            var key = generateKey(area, cat, items[i].name);
+            var list = sortedLots(key);
+            if (!list.length) {
+              if (required) out.push({ key: key, name: items[i].name, where: itemLocation(key), missing: true });
+              continue;
+            }
+            for (var l = 0; l < list.length; l++) {
+              var st = lotStatus(list[l].exp);
+              if (st === 'expired' || st === 'due') out.push({ key: key, name: items[i].name, where: itemLocation(key), lot: list[l], status: st });
+            }
+          }
+        }
+      }
+      return out;
+    }
+
+    function lotChip(key) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      var list = sortedLots(key);
+      if (!list.length) {
+        b.className = 'lot-chip';
+        b.textContent = '+ Lot';
+      } else {
+        var st = lotStatus(list[0].exp);
+        b.className = 'lot-chip ' + (st === 'expired' ? 'expired' : (st === 'due' ? 'due' : 'ok'));
+        b.textContent = (st === 'expired' ? 'Expired ' : 'Exp ') + expText(list[0].exp) + (list.length > 1 ? ' · ' + list.length + ' lots' : '');
+      }
+      b.onclick = function(e) { e.stopPropagation(); openLotsSheet(key); };
+      return b;
+    }
+
+    function monthYearSelects(idPrefix, preset) {
+      var now = new Date();
+      var py = preset ? +preset.slice(0, 4) : now.getFullYear() + 1;
+      var pm = preset ? +preset.slice(5, 7) : now.getMonth() + 1;
+      var months = '';
+      for (var m = 1; m <= 12; m++) months += '<option value="' + (m < 10 ? '0' : '') + m + '"' + (m === pm ? ' selected' : '') + '>' + (m < 10 ? '0' : '') + m + '</option>';
+      var years = '';
+      for (var y = now.getFullYear() - 2; y <= now.getFullYear() + 8; y++) years += '<option value="' + y + '"' + (y === py ? ' selected' : '') + '>' + y + '</option>';
+      return '<select id="' + idPrefix + 'Month" aria-label="Expiration month">' + months + '</select>' +
+             '<select id="' + idPrefix + 'Year" aria-label="Expiration year">' + years + '</select>';
+    }
+
+    function readMonthYear(idPrefix) {
+      return document.getElementById(idPrefix + 'Year').value + '-' + document.getElementById(idPrefix + 'Month').value;
+    }
+
+    var lotsSheetKey = null;
+    var lotsChanged = false;
+    function openLotsSheet(key) {
+      lotsSheetKey = key;
+      lotsChanged = false;
+      var p = key.split('::');
+      var item = findItem(p[0], p[1], p[2]);
+      document.getElementById('lotsTitle').textContent = item ? item.name : p[2];
+      renderLotsSheet();
+      document.getElementById('lotsOverlay').classList.add('open');
+    }
+
+    function renderLotsSheet() {
+      var key = lotsSheetKey;
+      var body = document.getElementById('lotsBody');
+      if (!key || !body) return;
+      var list = sortedLots(key);
+      var html = '<div class="lots-where">' + escapeHtml(itemLocation(key)) + '</div>';
+      if (!list.length) html += '<div class="lots-empty">No lot numbers entered yet.</div>';
+      for (var i = 0; i < list.length; i++) {
+        var st = lotStatus(list[i].exp);
+        var label = st === 'expired' ? 'Expired' : (st === 'due' ? 'Expires this month' : (st === 'soon' ? 'Expires this month (check on the ' + medCheckDay() + getOrdinalSuffix(medCheckDay()) + ')' : 'Expires'));
+        html += '<div class="lot-row ' + (st === 'expired' ? 'expired' : (st === 'due' ? 'due' : '')) + '"><div class="lot-row-info">' +
+          '<div class="lot-row-lot">Lot ' + escapeHtml(list[i].lot) + '</div>' +
+          '<div class="lot-row-exp">' + label + ' ' + expText(list[i].exp) + (list[i].by ? ' · entered by ' + escapeHtml(crewShort(list[i].by)) : '') + '</div></div>' +
+          '<button type="button" class="lot-remove" data-ts="' + list[i].ts + '">Remove</button></div>';
+      }
+      html += '<div class="lot-form"><div class="lot-form-title">Add a lot</div>' +
+        '<input type="text" id="lotNewNumber" placeholder="Lot number" autocomplete="off" autocapitalize="characters">' +
+        monthYearSelects('lotNew', null) + '<button type="button" id="lotAddBtn">Add</button><div class="lot-form-msg" id="lotFormMsg"></div></div>';
+      body.innerHTML = html;
+      var removes = body.querySelectorAll('.lot-remove');
+      for (var r = 0; r < removes.length; r++) {
+        removes[r].onclick = function() {
+          var ts = +this.getAttribute('data-ts');
+          lots[key] = (lots[key] || []).filter(function(x) { return x.ts !== ts; });
+          if (!lots[key].length) delete lots[key];
+          lotsChanged = true;
+          saveLots();
+          renderLotsSheet();
+        };
+      }
+      var input = document.getElementById('lotNewNumber');
+      var add = function() {
+        var lot = input.value.trim();
+        var msg = document.getElementById('lotFormMsg');
+        if (!lot) { msg.textContent = 'Enter the lot number.'; input.focus(); return; }
+        var exp = readMonthYear('lotNew');
+        (lots[key] = lots[key] || []).push({ lot: lot, exp: exp, ts: Date.now(), by: crewName() });
+        lotsChanged = true;
+        saveLots();
+        renderLotsSheet();
+      };
+      document.getElementById('lotAddBtn').onclick = add;
+      input.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); add(); } };
+    }
+
+    function saveLots() {
+      if (!stateReady) return;
+      saveSealState();
+      saveState();
+    }
+
+    function closeLotsSheet() {
+      var o = document.getElementById('lotsOverlay');
+      if (!o) return;
+      var wasOpen = o.classList.contains('open');
+      o.classList.remove('open');
+      if (wasOpen && lotsChanged) { lotsChanged = false; buildUI(); }
+      lotsSheetKey = null;
+    }
+
+    // ---- The notice when the checklist opens
+    function maybeStartExpiryCheck() {
+      if (!stateReady || expiryShown) return;
+      var entries = expiryEntries();
+      if (!entries.length) return;
+      if (document.querySelector('#sealCheckOverlay.open, #completionOverlay.open, #resetOverlay.open')) { setTimeout(maybeStartExpiryCheck, 600); return; }
+      expiryShown = true;
+      renderExpiryNotice(entries);
+      document.getElementById('expiryOverlay').classList.add('open');
+    }
+
+    function closeExpiryNotice() {
+      var o = document.getElementById('expiryOverlay');
+      if (o) o.classList.remove('open');
+    }
+
+    function sealedAround(key) {
+      var area = key.split('::')[0];
+      return areaAncestors(area).concat([area]).filter(function(a) { return !!taggedAreas[a]; });
+    }
+
+    function renderExpiryNotice(entries) {
+      var body = document.getElementById('expiryBody');
+      var html = '<div class="expiry-intro">The med check is on the ' + medCheckDay() + getOrdinalSuffix(medCheckDay()) + '. Replace these and enter the new lot:</div>';
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i];
+        var sealed = sealedAround(e.key);
+        html += '<div class="expiry-row ' + (e.missing ? 'missing' : e.status) + '" data-i="' + i + '">' +
+          '<div class="expiry-name">' + escapeHtml(e.name) + '</div>' +
+          (e.missing ? '<div class="expiry-lot">No lot on file</div>'
+                     : '<div class="expiry-lot">Lot ' + escapeHtml(e.lot.lot) + ' · ' + (e.status === 'expired' ? 'expired ' : 'expires ') + expText(e.lot.exp) + '</div>') +
+          '<div class="expiry-where">' + escapeHtml(e.where) + '</div>' +
+          (sealed.length ? '<div class="expiry-sealed">🔒 In a sealed area: no recount needed, but reseal it after ' + (e.missing ? 'reading the lot' : 'the swap') + '</div>' : '') +
+          '<div class="expiry-btns"><button type="button" class="expiry-replace">' + (e.missing ? 'Add lot' : 'Replaced') + '</button>' +
+          '<button type="button" class="expiry-later">Later</button></div></div>';
+      }
+      body.innerHTML = html;
+      var rows = body.querySelectorAll('.expiry-row');
+      for (var r = 0; r < rows.length; r++) {
+        (function(row, e) {
+          row.querySelector('.expiry-later').onclick = function() { row.classList.add('done'); row.querySelector('.expiry-btns').style.display = 'none'; };
+          row.querySelector('.expiry-replace').onclick = function() {
+            var prefix = 'exp' + row.getAttribute('data-i');
+            var btns = row.querySelector('.expiry-btns');
+            btns.style.display = 'none';
+            var form = document.createElement('div');
+            form.className = 'lot-form';
+            form.innerHTML = '<div class="lot-form-title">New lot</div><input type="text" id="' + prefix + 'Lot" placeholder="Lot number" autocomplete="off" autocapitalize="characters">' +
+              monthYearSelects(prefix, null) + '<button type="button">Save</button><div class="lot-form-msg"></div>';
+            row.appendChild(form);
+            var input = form.querySelector('input');
+            input.focus();
+            var save = function() {
+              var lot = input.value.trim();
+              if (!lot) { form.querySelector('.lot-form-msg').textContent = 'Enter the new lot number.'; input.focus(); return; }
+              var exp = readMonthYear(prefix);
+              var opened = replaceLot(e, lot, exp);
+              form.remove();
+              row.classList.add('done');
+              var res = document.createElement('div');
+              res.className = 'expiry-result';
+              res.textContent = (e.missing ? 'Lot ' : 'Replaced with lot ') + lot + ' (' + expText(exp) + ')' + (opened.length ? '. Reseal ' + opened[opened.length - 1] + ' when it is back in place.' : '.');
+              row.appendChild(res);
+            };
+            form.querySelector('button').onclick = save;
+            input.onkeydown = function(ev) { if (ev.key === 'Enter') { ev.preventDefault(); save(); } };
+          };
+        })(rows[r], entries[r]);
+      }
+    }
+
+    // Swap a lot. A sealed area around the item is opened for the swap
+    // without a recount (its contents are as they were sealed) and must be
+    // sealed again; the widget asks to reseal it right away.
+    function replaceLot(entry, newLot, newExp) {
+      var key = entry.key;
+      var now = Date.now();
+      var list = lots[key] || [];
+      if (!entry.missing) {
+        list = list.filter(function(x) { return !(x.ts === entry.lot.ts && x.lot === entry.lot.lot); });
+        lotReplacements.push({ key: key, name: entry.name, oldLot: entry.lot.lot, oldExp: entry.lot.exp, lot: newLot, exp: newExp, by: crewName(), ts: now });
+      }
+      list.push({ lot: newLot, exp: newExp, ts: now, by: crewName() });
+      lots[key] = list;
+      // Reading the lot off the package opens a sealed area just the same
+      var opened = [];
+      var chain = sealedAround(key);
+      for (var c = 0; c < chain.length; c++) {
+        var area = chain[c];
+        brokenSeals.push({ area: area, reason: entry.missing ? 'lot_entry' : 'replaced_expiring', taggedDate: taggedAreas[area].taggedDate, brokenTimestamp: now, by: crewName() });
+        delete taggedAreas[area];
+        // As it was sealed: everything there, nothing to recount
+        for (var cat in (INVENTORY[area] || {})) {
+          var items = INVENTORY[area][cat];
+          for (var i = 0; i < items.length; i++) itemStates[generateKey(area, cat, items[i].name)] = { actual: items[i].required, touched: true };
+        }
+        opened.push(area);
+      }
+      saveSealState();
+      saveState();
+      buildUI();
+      updateSummary();
+      if (opened.length) {
+        // Once the notice is closed: seals inside an opened container are now
+        // in view, so the seal check asks about them; then the reseal, innermost first
+        var innermost = opened[opened.length - 1];
+        var waitForNotice = function() {
+          if (document.querySelector('#expiryOverlay.open')) { setTimeout(waitForNotice, 400); return; }
+          maybeStartSealCheck();
+          queueSealPrompts(innermost);
+        };
+        waitForNotice();
+      }
+      return opened;
+    }
+
     // ---- Seal as soon as a sealable area checks out complete
     // When the last item of a sealable area is confirmed and everything in
     // it is there (nothing short, nothing waiting on a restock) and every
@@ -9787,7 +10172,7 @@
       var el = document.getElementById('sealPrompt');
       if (!el || sealPromptOpen()) return;
       // Not while another sheet is up; try again shortly
-      var busy = document.querySelector('#sealCheckOverlay.open, #completionOverlay.open, #resetOverlay.open');
+      var busy = document.querySelector('#sealCheckOverlay.open, #completionOverlay.open, #resetOverlay.open, #expiryOverlay.open');
       if (busy) { if (sealPromptQueue.length) setTimeout(showNextSealPrompt, 600); return; }
       while (sealPromptQueue.length && !sealPromptQualifies(sealPromptQueue[0])) sealPromptQueue.shift();
       if (!sealPromptQueue.length) return;
@@ -10015,6 +10400,7 @@
       if (!stateReady) return;
       if (sealCheckPending().length === 0) {
         if (sealCheckOpen()) closeSealCheck();
+        maybeStartExpiryCheck();
         return;
       }
       renderSealCheck();
@@ -10022,7 +10408,10 @@
     }
 
     function closeSealCheck() {
-      document.getElementById('sealCheckOverlay').classList.remove('open');
+      var o = document.getElementById('sealCheckOverlay');
+      var wasOpen = o.classList.contains('open');
+      o.classList.remove('open');
+      if (wasOpen) setTimeout(maybeStartExpiryCheck, 200);
     }
 
     function renderSealCheck() {
@@ -11005,6 +11394,10 @@
       }
       if (unansweredRequired > 0) summaryParts.push(unansweredRequired + ' unanswered question' + (unansweredRequired > 1 ? 's' : ''));
       if (flaggedAnswers > 0) summaryParts.push(flaggedAnswers + ' flagged answer' + (flaggedAnswers > 1 ? 's' : ''));
+      var expiryDue = expiryEntries();
+      var lotsDue = expiryDue.filter(function(e) { return !e.missing; });
+      if (lotsDue.length > 0) summaryParts.push(lotsDue.length + ' lot' + (lotsDue.length > 1 ? 's' : '') + ' expiring');
+      if (lotReplacements.length > 0) summaryParts.push(lotReplacements.length + ' lot' + (lotReplacements.length > 1 ? 's' : '') + ' replaced');
 
       // Helper: one-line description of a question's answer
       var questionLineText = function(q) {
@@ -11096,6 +11489,21 @@
         lines.push('');
       }
 
+      // --- Expiration ---
+      if (lotsDue.length > 0 || lotReplacements.length > 0) {
+        lines.push('\u23F3 EXPIRATION');
+        lines.push('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500');
+        for (var lr = 0; lr < lotReplacements.length; lr++) {
+          var rpl = lotReplacements[lr];
+          lines.push('  \u2022 Replaced: ' + rpl.name + ' \u2014 lot ' + rpl.oldLot + ' (' + expText(rpl.oldExp) + ') with lot ' + rpl.lot + ' (' + expText(rpl.exp) + ')' + (rpl.by ? ' by ' + rpl.by : ''));
+        }
+        for (var ld = 0; ld < lotsDue.length; ld++) {
+          var dueE = lotsDue[ld];
+          lines.push('  \u2022 ' + (dueE.status === 'expired' ? 'EXPIRED' : 'Expires this month') + ': ' + dueE.name + ' \u2014 lot ' + dueE.lot.lot + ' (' + expText(dueE.lot.exp) + '), ' + dueE.where);
+        }
+        lines.push('');
+      }
+
       // --- Broken Seals ---
       if (brokenSeals.length > 0) {
         lines.push('⛔ BROKEN SEALS (' + brokenSeals.length + ')');
@@ -11108,7 +11516,9 @@
             used_on_call: 'Opened on a call',
             child_broken: 'Opened: something inside was opened',
             parent_broken: 'Opened with its container',
-            manual_reset: 'Reset'
+            manual_reset: 'Reset',
+            replaced_expiring: 'Opened to replace an expiring item, resealed',
+            lot_entry: 'Opened to record lot numbers, resealed'
           })[bs.reason] || 'Opened';
           var bLine = '  • ' + bs.area + ' — ' + reasonLabel;
           if (bs.by) bLine += ' by ' + bs.by;
@@ -11319,12 +11729,14 @@
               }
               questionAnswers = _qa;
             }
+            if (Array.isArray(saved.lotReplacements)) lotReplacements = saved.lotReplacements;
           }
 
           // Always layer in the dedicated sealed-state store so that seals
           // persist across submissions and across users on the same device,
           // even when the per-submission state above is empty / stale.
           var sealData = loadSealState();
+          if (sealData && sealData.lots && typeof sealData.lots === 'object') lots = sealData.lots;
           if (sealData && sealData.taggedAreas) {
             // Use the more recent source for sealed state
             var savedSealTs = (saved && saved.timestamp) || 0;
@@ -11375,7 +11787,15 @@
             var localTs = preSaveSealTs;
 
             fetchLatestSealState(apiBase, formID, apiKey, qid, function(remote) {
+              if (remote && !remote.taggedAreas && remote.lots && remote.timestamp > localTs) {
+                // Only lots changed elsewhere: take them, keep this visit's counts
+                lots = remote.lots;
+                buildUI();
+                saveSealState();
+                maybeStartExpiryCheck();
+              }
               if (remote && remote.taggedAreas && remote.timestamp > localTs) {
+                if (remote.lots) lots = remote.lots;
                 taggedAreas = remote.taggedAreas;
                 // Its broken seals were reported in that submission: not again
                 autoBreakOverdueSeals();
@@ -11443,10 +11863,12 @@
           if (saved.brokenSeals) brokenSeals = saved.brokenSeals;
           if (saved.o2States && typeof saved.o2States === 'object') o2States = saved.o2States;
           if (saved.questionAnswers && typeof saved.questionAnswers === 'object') questionAnswers = saved.questionAnswers;
+          if (Array.isArray(saved.lotReplacements)) lotReplacements = saved.lotReplacements;
         }
 
         // Layer in dedicated sealed-state store
         var sealData = loadSealState();
+        if (sealData && sealData.lots && typeof sealData.lots === 'object') lots = sealData.lots;
         if (sealData && sealData.taggedAreas) {
           var savedSealTs = (saved && saved.timestamp) || 0;
           var dedicatedSealTs = sealData.timestamp || 0;

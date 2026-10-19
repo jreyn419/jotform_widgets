@@ -173,31 +173,38 @@
           "items": [
             {
               "name": "90+ kgs ORANGE",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "50-90 kgs GREEN",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "30-60 kgs YELLOW",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "25-35 kgs WHITE",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "10-25 kgs GRAY",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "5-12 kgs BLUE",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "2-5 kgs PINK",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             }
           ]
         }
@@ -213,43 +220,53 @@
           "items": [
             {
               "name": "Norepinephrine Bitartrate 4mg/4mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Labetalol 100mg/20mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Ondansetron 4mg/2mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Amiodarone 150mg/3mL",
-              "qty": 3
+              "qty": 3,
+              "expires": true
             },
             {
               "name": "Magnesium Sulfate 5g/10mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Adenosine 6mg/2mL",
-              "qty": 3
+              "qty": 3,
+              "expires": true
             },
             {
               "name": "Hydralazine 20mg/1mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Lidocaine 100mg/5mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Calcium Gluconate 1g/10mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Diphenhydramine 50mg/1mL",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             }
           ]
         },
@@ -258,7 +275,8 @@
           "items": [
             {
               "name": "Epinephrine 1mg/1mL",
-              "qty": 3
+              "qty": 3,
+              "expires": true
             },
             {
               "name": "MADs",
@@ -279,39 +297,48 @@
           "items": [
             {
               "name": "Sodium Bicarbonate Preload 50mEq/50mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Calcium Chloride 10% Preload",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "D50W Preload 25g/50mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Atropine Sulfate Preload 1mg/10mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Epinephrine Preload 1mg/10mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Naloxone Hydrochloride Preload 2mg/2mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "NS Bag 100mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "NS Bag 250mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Dopamine Bag 400mg/250mL",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             }
           ]
         },
@@ -320,7 +347,8 @@
           "items": [
             {
               "name": "NS Flushes 10mL",
-              "qty": 5
+              "qty": 5,
+              "expires": true
             }
           ]
         },
@@ -485,65 +513,78 @@
             {
               "name": "9.0 mm",
               "qty": 2,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "8.5 mm",
               "qty": 2,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "8.0 mm",
               "qty": 2,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "7.5 mm",
               "qty": 2,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "7.0 mm",
               "qty": 2,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "6.5 mm",
               "qty": 2,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "6.0 mm",
               "qty": 2,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "5.5 mm",
               "qty": 2,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "5.0 mm",
               "qty": 2,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "4.5 mm",
               "qty": 1,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "4.0 mm",
               "qty": 1,
-              "group": "ET Tube"
+              "group": "ET Tube",
+              "expires": true
             },
             {
               "name": "3.5 mm",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "3.0 mm",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             }
           ]
         },
@@ -628,7 +669,8 @@
             },
             {
               "name": "Lubricant Packet",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Laryngoscope Handle - Adult",
@@ -812,11 +854,13 @@
           "items": [
             {
               "name": "Colorimetric CO2 Detector",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Chest Decompression Needle",
-              "qty": 3
+              "qty": 3,
+              "expires": true
             },
             {
               "name": "NC - Adult",
@@ -1055,11 +1099,13 @@
           "items": [
             {
               "name": "NS flushes",
-              "qty": 5
+              "qty": 5,
+              "expires": true
             },
             {
               "name": "Electrode Bag (At least half full)",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             }
           ]
         }
@@ -1074,7 +1120,8 @@
           "items": [
             {
               "name": "Lancets",
-              "qty": 6
+              "qty": 6,
+              "expires": true
             },
             {
               "name": "Sterile 2x2",
@@ -1086,11 +1133,13 @@
             },
             {
               "name": "Alcohol Prep Pads",
-              "qty": 6
+              "qty": 6,
+              "expires": true
             },
             {
               "name": "Glucometer Test Strip",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "Glucometer",
@@ -1117,19 +1166,23 @@
             },
             {
               "name": "Adult Defibrillation Pad",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "Pediatric Defibrillation Pad",
-              "qty": 2
+              "qty": 2,
+              "expires": true
             },
             {
               "name": "PO aspirin",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             },
             {
               "name": "SL nitroglycerin",
-              "qty": 1
+              "qty": 1,
+              "expires": true
             }
           ]
         }
