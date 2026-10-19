@@ -1249,6 +1249,12 @@
     }
 
     .usage-chosen-info { flex: 1; min-width: 0; }
+    .usage-chosen-row.counted { background: #f8f9fa; border-style: dashed; }
+    .usage-chosen-row.counted .usage-chosen-name { color: #6c757d; }
+    .usage-chosen-note { font-size: 12px; color: #2e7d32; margin-top: 2px; }
+    .usage-step:disabled { opacity: 0.35; cursor: default; }
+    .usage-session-since { font-weight: 500; color: #999; text-transform: none; letter-spacing: 0; margin-left: 6px; }
+    .usage-suggest-have { font-size: 12px; color: #0b3d91; font-weight: 600; }
     .usage-chosen-name { font-size: 15px; font-weight: 700; color: #222; }
     .usage-chosen-where { font-size: 12px; color: #777; margin-top: 2px; }
 
@@ -3422,8 +3428,14 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.39.3';
+    var VERSION = '1.40.0';
     var CHANGELOG = [
+      { version: '1.40.0', date: '2026-10-19', changes: [
+        'Supplies used is one running list per session (the crew member on that rig, for 24 hours, like the remembered name and rig). Opening it shows everything logged so far; items can be added, changed or removed, then saved',
+        'The list is a single Jotform submission that each save edits (and removes when the list is emptied), so Tables shows one up-to-date entry per session instead of one per call',
+        'An item already counted by a checklist submission is shown as counted and can no longer be changed; each item keeps the time it was logged, so items added after a check are still taken off at the next one',
+        'The rig\u2019s list shows how many items this session has logged; the same crew member\u2019s list is picked up on another tablet',
+      ]},
       { version: '1.39.3', date: '2026-10-18', changes: [
         'When the widget moves on to the next area or group, or one is tapped open, it lands with that area\u2019s header at the top of the screen (just under the header of the group it sits in). Before, it lined up the first item instead and often left the header halfway down',
         'Areas near the end of the list reach the top too: room is added below the last area when needed',
@@ -5589,7 +5601,10 @@
         var usageBtn = document.createElement('button');
         usageBtn.type = 'button';
         usageBtn.className = 'picker-row usage-btn';
-        usageBtn.innerHTML = '<span class="picker-row-name">Supplies used on a call</span><span class="picker-row-status">Log</span>';
+        var sessionNow = currentUsageSession(normalizeSelection(rig.id));
+        var loggedCount = 0;
+        if (sessionNow) for (var lc = 0; lc < (sessionNow.items || []).length; lc++) loggedCount += parseInt(sessionNow.items[lc].qty, 10) || 0;
+        usageBtn.innerHTML = '<span class="picker-row-name">Supplies used on a call</span><span class="picker-row-status">' + (loggedCount ? loggedCount + ' logged' : 'Log') + '</span>';
         usageBtn.onclick = (function(r) { return function() { renderUsageScreen(r); }; })(rig.id);
         picker.appendChild(usageBtn);
       }
@@ -5600,6 +5615,7 @@
       setLoading(false);
       resizeWidget();
       flushUsageOutbox();
+      flushUsageSessions();
 
       var rigNorm = normalizeSelection(rig.id);
       var rowsCheckingTimer = setTimeout(function() {
@@ -5877,16 +5893,19 @@
     // =====================================================
     // SUPPLIES USED ON A CALL
     // =====================================================
-    // From the rig's list, "Supplies used on a call" opens a search screen.
-    // The crew picks items from the rig's checklists, sets how many were
-    // used, and Save writes a submission straight to this form through the
-    // API (the jotformApiKey needs full access for that). The submission
-    // carries a sync block of type "usage" and is never counted as a
-    // checklist. An item can only be logged once the checklist it belongs
-    // to has been submitted today. The next time that checklist opens, the
-    // entries newer than its last submission are subtracted: the row opens
-    // short, marked "N used on a call", and sits on the restock list.
-    // Submitting the checklist spends the entries.
+    // From the rig's list, "Supplies used on a call" opens the session's
+    // list: one per crew member and rig, kept 24 hours like the remembered
+    // name and rig. The crew adds items from the rig's checklists, changes
+    // or removes them, and Save writes the whole list as ONE submission to
+    // this form through the API (full-access jotformApiKey): created on the
+    // first save, edited on later ones, deleted when emptied. Its sync
+    // block is of type "usage" with a session id and items, each stamped
+    // with the time it was logged. It is never counted as a checklist. An
+    // item can only be logged once its checklist has been submitted today.
+    // The next time that checklist opens, the items logged after its last
+    // submission are subtracted: the row opens short, marked "N used on a
+    // call", and sits on the restock list. An item logged before the last
+    // submission has been counted and is locked in the list.
 
     var USAGE_OUTBOX_KEY = 'ems_usage_outbox';   // submissions (usage or checklist) not yet sent
     var SENT_LOCAL_KEY = 'ems_sent_local';       // submissions this tablet sent today, in case Jotform lists them late
@@ -5894,7 +5913,11 @@
     var USAGE_WINDOW_MS = 14 * 24 * 3600 * 1000;
     var recentSubsCache = null;                  // { ts, list }
     var usageIndexCache = {};                    // rigNorm -> [entry]
-    var usageChosen = [];                        // [{ key, checklist, checklistName, name, where, qty }]
+    var usageChosen = [];                        // the screen's working copy: [{ key, checklist, checklistName, name, where, qty, ts }]
+    var USAGE_SESSIONS_KEY = 'ems_usage_sessions'; // this tablet's session lists
+    var usageSession = null;                     // the session the screen edits, null before its first save
+    var usageLastCheck = null;                   // checklistNorm -> time of its last submission, once known
+    var usageScreenToken = 0;
     var usageDoneToday = null;                   // { checklistNorm: true } or null when unknown
     var usageAppliedFor = null;                  // rig|checklist the current load already handled
 
@@ -5983,7 +6006,11 @@
       if (widget) widget.classList.add('picker-open');
       setStatusStrip('info', '');
       container.innerHTML = '';
-      usageChosen = [];
+      var rigNorm = normalizeSelection(rig.id);
+      var token = ++usageScreenToken;
+      usageSession = currentUsageSession(rigNorm);
+      usageChosen = usageSession ? JSON.parse(JSON.stringify(usageSession.items || [])) : [];
+      usageLastCheck = null;
       usageDoneToday = null;
 
       var screen = document.createElement('div');
@@ -5994,7 +6021,10 @@
       back.type = 'button';
       back.className = 'picker-back';
       back.textContent = '\u2039 Checklists';
-      back.onclick = function() { renderPicker(rig.id); };
+      back.onclick = function() {
+        if (usageListChanged() && !confirm('Leave without saving the changes to this session\u2019s list?')) return;
+        renderPicker(rig.id);
+      };
       head.appendChild(back);
       var headText = document.createElement('span');
       headText.textContent = 'Supplies used';
@@ -6019,7 +6049,7 @@
       var chosenTitle = document.createElement('div');
       chosenTitle.className = 'usage-chosen-title';
       chosenTitle.id = 'usageChosenTitle';
-      chosenTitle.textContent = 'Used on this call';
+      chosenTitle.textContent = 'Logged this session';
       chosenTitle.style.display = 'none';
       screen.appendChild(chosenTitle);
       var chosen = document.createElement('div');
@@ -6042,7 +6072,23 @@
       screen.appendChild(msg);
       container.appendChild(screen);
       setLoading(false);
+      renderUsageChosen();
       resizeWidget();
+
+      // Which items checklists have already counted; on another tablet,
+      // pick up this crew member's list from Jotform
+      fetchRecentSubmissions(function(list) {
+        if (token !== usageScreenToken || !document.getElementById('usageChosen')) return;
+        if (!usageSession && list) {
+          var adopted = adoptRemoteSession(list, rigNorm);
+          if (adopted) {
+            usageSession = adopted;
+            if (!usageChosen.length) usageChosen = JSON.parse(JSON.stringify(adopted.items || []));
+          }
+        }
+        usageLastCheck = list ? lastChecksFor(list, rigNorm) : {};
+        renderUsageChosen();
+      });
 
       var index = null;
       var ready = function() {
@@ -6060,7 +6106,7 @@
           m.className = 'usage-msg';
           m.textContent = notDone.length
             ? 'Items from ' + notDone.join(', ') + ' cannot be logged until that checklist is done today.'
-            : 'Type a few letters, tap the item, set how many were used.';
+            : 'Type a few letters and tap the item to add it. Change the amounts below, then Save.';
         }
         renderUsageSuggestions(index, search.value);
       };
@@ -6094,9 +6140,6 @@
         var ok = true;
         for (var w = 0; w < words.length; w++) if (hay.indexOf(words[w]) === -1) { ok = false; break; }
         if (!ok) continue;
-        var already = false;
-        for (var c = 0; c < usageChosen.length; c++) if (usageChosen[c].key === e.key && usageChosen[c].checklist === e.checklist) already = true;
-        if (already) continue;
         var rank;
         if (name === q) rank = 0;
         else if (name.indexOf(q) === 0) rank = 1;
@@ -6121,6 +6164,7 @@
         row.innerHTML = '<span class="usage-suggest-name">' + escapeHtml(entry.name) +
           '<div class="usage-suggest-where">' + escapeHtml(entry.checklistName + ' \u203A ' + entry.where) + '</div>' +
           (blocked ? '<div class="usage-suggest-why">' + escapeHtml(entry.checklistName) + ' not done today</div>' : '') +
+          (usageQtyInList(entry) ? '<div class="usage-suggest-have">' + usageQtyInList(entry) + ' in the list \u00B7 tap to add one</div>' : '') +
           '</span>';
         if (!blocked) {
           row.onclick = (function(en) { return function() { addUsageItem(en); }; })(entry);
@@ -6129,13 +6173,48 @@
       }
     }
 
+    function usageQtyInList(entry) {
+      var n = 0;
+      for (var i = 0; i < usageChosen.length; i++) {
+        if (usageChosen[i].key === entry.key && usageChosen[i].checklist === entry.checklist) n += usageChosen[i].qty;
+      }
+      return n;
+    }
+
+    // Picking an item adds one: to its open line, or as a new line when
+    // the line there is already counted
     function addUsageItem(entry) {
-      usageChosen.push({ key: entry.key, checklist: entry.checklist, checklistName: entry.checklistName, name: entry.name, where: entry.where, qty: 1, max: entry.qty });
+      var line = null;
+      for (var i = 0; i < usageChosen.length; i++) {
+        var c = usageChosen[i];
+        if (c.key === entry.key && c.checklist === entry.checklist && !usageItemCounted(c)) line = c;
+      }
+      if (line) line.qty += 1;
+      else usageChosen.push({ key: entry.key, checklist: entry.checklist, checklistName: entry.checklistName, name: entry.name, where: entry.where, qty: 1, ts: Date.now() });
       var search = document.getElementById('usageSearch');
       if (search) { search.value = ''; search.focus(); }
       var box = document.getElementById('usageSuggest');
       if (box) box.innerHTML = '';
       renderUsageChosen();
+    }
+
+    // Logged before its checklist's last submission: already taken off and counted
+    function usageItemCounted(c) {
+      var last = usageLastCheck && usageLastCheck[c.checklist];
+      return !!(last && c.ts && c.ts <= last);
+    }
+
+    function usageSignature(items) {
+      var out = [];
+      for (var i = 0; i < (items || []).length; i++) {
+        var c = items[i];
+        if (c.qty > 0) out.push([c.checklist, c.key, c.qty, c.ts]);
+      }
+      return JSON.stringify(out);
+    }
+
+    function usageListChanged() {
+      return usageSignature(usageChosen) !== usageSignature(usageSession ? usageSession.items : []);
     }
 
     function renderUsageChosen() {
@@ -6144,17 +6223,41 @@
       var save = document.getElementById('usageSave');
       if (!box) return;
       box.innerHTML = '';
-      if (title) title.style.display = usageChosen.length ? 'block' : 'none';
-      if (save) save.disabled = usageChosen.length === 0;
+      if (title) {
+        title.style.display = usageChosen.length ? 'block' : 'none';
+        title.textContent = 'Logged this session';
+        if (usageSession) {
+          var st = new Date(usageSession.started);
+          var since = document.createElement('span');
+          since.className = 'usage-session-since';
+          since.textContent = 'since ' + clockText(st.getHours(), st.getMinutes());
+          title.appendChild(since);
+        }
+      }
+      var changed = usageListChanged();
+      if (save) {
+        save.disabled = !changed;
+        save.textContent = usageSession ? 'Save changes' : 'Save';
+      }
+      var known = usageLastCheck !== null;
       for (var i = 0; i < usageChosen.length; i++) {
         var c = usageChosen[i];
+        var counted = usageItemCounted(c);
+        var t = new Date(c.ts || Date.now());
         var row = document.createElement('div');
-        row.className = 'usage-chosen-row';
-        row.innerHTML = '<div class="usage-chosen-info"><div class="usage-chosen-name">' + escapeHtml(c.name) + '</div>' +
-          '<div class="usage-chosen-where">' + escapeHtml(c.checklistName + ' \u203A ' + c.where) + '</div></div>' +
-          '<button type="button" class="usage-step" data-i="' + i + '" data-d="-1">\u2212</button>' +
-          '<span class="usage-qty">' + c.qty + '</span>' +
-          '<button type="button" class="usage-step" data-i="' + i + '" data-d="1">+</button>';
+        row.className = 'usage-chosen-row' + (counted ? ' counted' : '');
+        var info = '<div class="usage-chosen-info"><div class="usage-chosen-name">' + escapeHtml(c.name) + '</div>' +
+          '<div class="usage-chosen-where">' + escapeHtml(c.checklistName + ' › ' + c.where) + ' · ' + clockText(t.getHours(), t.getMinutes()) + '</div>';
+        if (counted) {
+          var lt = new Date(usageLastCheck[c.checklist]);
+          info += '<div class="usage-chosen-note">Counted in the ' + clockText(lt.getHours(), lt.getMinutes()) + ' ' + escapeHtml(c.checklistName) + ' check</div>';
+        }
+        info += '</div>';
+        row.innerHTML = info + (counted
+          ? '<span class="usage-qty">' + c.qty + '</span>'
+          : '<button type="button" class="usage-step" data-i="' + i + '" data-d="-1"' + (known ? '' : ' disabled') + '>−</button>' +
+            '<span class="usage-qty">' + c.qty + '</span>' +
+            '<button type="button" class="usage-step" data-i="' + i + '" data-d="1"' + (known ? '' : ' disabled') + '>+</button>');
         box.appendChild(row);
       }
       var steps = box.querySelectorAll('.usage-step');
@@ -6163,7 +6266,7 @@
           var idx = parseInt(this.getAttribute('data-i'), 10);
           var d = parseInt(this.getAttribute('data-d'), 10);
           var item = usageChosen[idx];
-          if (!item) return;
+          if (!item || usageItemCounted(item)) return;
           item.qty += d;
           if (item.qty <= 0) usageChosen.splice(idx, 1);
           renderUsageChosen();
@@ -6172,48 +6275,193 @@
       resizeWidget();
     }
 
-    // The entry: a readable report for Jotform Tables plus the sync block
-    function buildUsageEntry(rig) {
-      var now = Date.now();
-      var used = {};
+    // The session's submission: a readable list for Jotform Tables plus the sync block
+    function buildUsageSessionValue(sess) {
+      var items = sess.items || [];
+      var start = new Date(sess.started);
+      var upd = new Date(sess.updated);
       var lines = [];
-      for (var i = 0; i < usageChosen.length; i++) {
-        var c = usageChosen[i];
-        if (!used[c.checklist]) used[c.checklist] = {};
-        used[c.checklist][c.key] = (used[c.checklist][c.key] || 0) + c.qty;
-        lines.push('  \u2022 ' + c.qty + ' \u00D7 ' + c.name + ' (' + c.checklistName + ' \u203A ' + c.where + ')');
+      for (var i = 0; i < items.length; i++) {
+        var c = items[i];
+        var t = new Date(c.ts || sess.updated);
+        lines.push('  • ' + c.qty + ' × ' + c.name + ' (' + c.checklistName + ' › ' + c.where + ') — ' + clockText(t.getHours(), t.getMinutes()));
       }
-      var d = new Date(now);
-      var report = 'SUPPLIES USED ON A CALL\nRig ' + normalizeSelection(rig.id) + ' \u00B7 ' + formatTagDate(localDateString(d)) + ' ' + clockText(d.getHours(), d.getMinutes()) +
-        (currentCrew ? '\nLogged by ' + currentCrew.name : '') +
-        '\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n' + lines.join('\n');
-      var sync = { type: 'usage', rig: normalizeSelection(rig.id), used: used, crew: currentCrew, timestamp: now };
-      return { value: report + '\n\n___SYNC_DATA___\n' + JSON.stringify(sync), sync: sync };
+      var rule = '════════════════════════════════════════';
+      var report = 'SUPPLIES USED ON CALLS\nRig ' + normalizeSelection(sess.rig) + ' · ' + formatTagDate(localDateString(start)) +
+        ', session from ' + clockText(start.getHours(), start.getMinutes()) +
+        (sess.updated !== sess.started ? ', last change ' + clockText(upd.getHours(), upd.getMinutes()) : '') +
+        (sess.crew ? '\nLogged by ' + sess.crew.name : '') + '\n' + rule + '\n' + lines.join('\n');
+      var sync = { type: 'usage', rig: normalizeSelection(sess.rig), session: sess.id, crew: sess.crew || null, started: sess.started, timestamp: sess.updated, items: items };
+      return report + '\n\n___SYNC_DATA___\n' + JSON.stringify(sync);
     }
 
-    function postSubmission(value, callback) {
+    // ---- The Jotform API: create, edit and delete a submission
+    function apiRequest(method, path, body, callback) {
       var apiKey = JFCustomWidget.getWidgetSetting('jotformApiKey');
       var apiBase = JFCustomWidget.getWidgetSetting('jotformApiBase') || 'https://api.jotform.com';
-      var fp = getFormParams();
-      var formID = fp.formID || cachedFormID || null;
-      var qid = fp.qid || null;
-      if (!apiKey || !formID || !qid) { callback(false); return; }
+      if (!apiKey) { callback(false, null, 0); return; }
       try {
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', apiBase + '/form/' + encodeURIComponent(formID) + '/submissions?apiKey=' + encodeURIComponent(apiKey), true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.open(method, apiBase + path + (path.indexOf('?') === -1 ? '?' : '&') + 'apiKey=' + encodeURIComponent(apiKey), true);
+        if (body !== null) xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.timeout = 10000;
         xhr.onload = function() {
           var ok = xhr.status >= 200 && xhr.status < 300;
-          if (ok) {
-            try { var r = JSON.parse(xhr.responseText); ok = !r.responseCode || r.responseCode < 300; } catch (e) {}
-          }
-          callback(ok);
+          var r = null;
+          try { r = JSON.parse(xhr.responseText); if (ok && r && r.responseCode && r.responseCode >= 300) ok = false; } catch (e) {}
+          callback(ok, r, xhr.status);
         };
-        xhr.onerror = function() { callback(false); };
-        xhr.ontimeout = function() { callback(false); };
-        xhr.send('submission[' + encodeURIComponent(qid) + ']=' + encodeURIComponent(value));
-      } catch (e) { callback(false); }
+        xhr.onerror = function() { callback(false, null, 0); };
+        xhr.ontimeout = function() { callback(false, null, 0); };
+        xhr.send(body);
+      } catch (e) { callback(false, null, 0); }
+    }
+
+    function answerBody(value) {
+      return 'submission[' + encodeURIComponent(getFormParams().qid) + ']=' + encodeURIComponent(value);
+    }
+
+    // callback(ok, newSubmissionId)
+    function postSubmission(value, callback) {
+      var fp = getFormParams();
+      var formID = fp.formID || cachedFormID || null;
+      if (!formID || !fp.qid) { callback(false, ''); return; }
+      apiRequest('POST', '/form/' + encodeURIComponent(formID) + '/submissions', answerBody(value), function(ok, r) {
+        var id = ok && r && r.content ? String(r.content.submissionID || r.content.id || '') : '';
+        callback(ok, id);
+      });
+    }
+
+    function editSubmission(id, value, callback) {
+      if (!getFormParams().qid) { callback(false); return; }
+      apiRequest('POST', '/submission/' + encodeURIComponent(id), answerBody(value), function(ok) { callback(ok); });
+    }
+
+    function deleteSubmission(id, callback) {
+      apiRequest('DELETE', '/submission/' + encodeURIComponent(id), null, function(ok, r, status) { callback(ok || status === 404); });
+    }
+
+    // ---- Session lists on this tablet
+    function readUsageSessions() {
+      var list = readJsonStore(USAGE_SESSIONS_KEY, []);
+      return Array.isArray(list) ? list : [];
+    }
+
+    function writeUsageSessions(list) {
+      var cutoff = Date.now() - USAGE_WINDOW_MS;
+      writeJsonStore(USAGE_SESSIONS_KEY, list.filter(function(x) { return x && (x.dirty || (x.updated || 0) > cutoff); }));
+    }
+
+    function storedUsageSession(id) {
+      var list = readUsageSessions();
+      for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+      return null;
+    }
+
+    function storeUsageSession(sess) {
+      var list = readUsageSessions();
+      var found = false;
+      for (var i = 0; i < list.length; i++) if (list[i].id === sess.id) { list[i] = sess; found = true; }
+      if (!found) list.push(sess);
+      writeUsageSessions(list);
+    }
+
+    function sessionIsCurrent(sess, rigNorm) {
+      if (!sess || sess.deleted || normalizeSelection(sess.rig) !== rigNorm) return false;
+      var crewId = currentCrew ? currentCrew.id : null;
+      if (((sess.crew && sess.crew.id) || null) !== crewId) return false;
+      return (Date.now() - (sess.started || 0)) < CREW_REMEMBER_MS;
+    }
+
+    function currentUsageSession(rigNorm) {
+      var list = readUsageSessions();
+      var best = null;
+      for (var i = 0; i < list.length; i++) {
+        if (sessionIsCurrent(list[i], rigNorm) && (!best || list[i].started > best.started)) best = list[i];
+      }
+      return best;
+    }
+
+    // The same crew member's list, saved from another tablet
+    function adoptRemoteSession(list, rigNorm) {
+      var best = null;
+      for (var i = 0; i < (list || []).length; i++) {
+        if (list[i]._local) continue;
+        var sync = submissionSyncData(list[i]);
+        if (!sync || sync.type !== 'usage' || !sync.session || !Array.isArray(sync.items)) continue;
+        var sess = { id: sync.session, rig: normalizeSelection(sync.rig), crew: sync.crew || null, started: parseFloat(sync.started) || 0,
+                     updated: parseFloat(sync.timestamp) || 0, submissionId: String(list[i].id), items: sync.items, dirty: false };
+        if (!sessionIsCurrent(sess, rigNorm)) continue;
+        if (!best || sess.updated > best.updated) best = sess;
+      }
+      if (!best || storedUsageSession(best.id)) return null;   // never bring back one removed here
+      storeUsageSession(best);
+      return best;
+    }
+
+    // Send one session's list: create, edit or delete its submission.
+    // A newer save made while this one was on its way is kept, not overwritten.
+    function syncUsageSession(sess, callback) {
+      var done = function(ok) {
+        var stored = storedUsageSession(sess.id);
+        if (stored && (stored.updated || 0) > (sess.updated || 0)) {
+          if (sess.submissionId) stored.submissionId = sess.submissionId;
+          storeUsageSession(stored);
+        } else {
+          if (ok) sess.dirty = false;
+          storeUsageSession(sess);
+        }
+        recentSubsCache = null;
+        callback(ok);
+      };
+      if (sess.deleted) {
+        if (!sess.submissionId) { done(true); return; }
+        deleteSubmission(sess.submissionId, done);
+        return;
+      }
+      var value = buildUsageSessionValue(sess);
+      if (sess.submissionId) { editSubmission(sess.submissionId, value, done); return; }
+      postSubmission(value, function(ok, id) {
+        if (ok && id) sess.submissionId = id;
+        done(ok && !!id);
+      });
+    }
+
+    // Lists that could not be sent go out whenever the picker shows. A list
+    // whose first save reached Jotform but whose reply was lost is found by
+    // its session id and edited instead of created twice.
+    var sessionsBusy = false;
+    function flushUsageSessions() {
+      if (sessionsBusy || !usageAvailable()) return;
+      var pending = readUsageSessions().filter(function(x) { return x.dirty; });
+      if (!pending.length) return;
+      sessionsBusy = true;
+      recentSubsCache = null;
+      fetchRecentRaw(function(list) {
+        if (!list) { sessionsBusy = false; return; }
+        var remote = {};
+        for (var i = 0; i < list.length; i++) {
+          var sy = submissionSyncData(list[i]);
+          if (sy && sy.type === 'usage' && sy.session) remote[sy.session] = String(list[i].id);
+        }
+        var next = function() {
+          if (!pending.length) {
+            sessionsBusy = false;
+            recentSubsCache = null;
+            // A save made meanwhile goes out too
+            if (readUsageSessions().some(function(x) { return x.dirty; })) setTimeout(flushUsageSessions, 0);
+            return;
+          }
+          var sess = storedUsageSession(pending.shift().id);
+          if (!sess || !sess.dirty) { next(); return; }
+          if (!sess.submissionId && remote[sess.id]) sess.submissionId = remote[sess.id];
+          syncUsageSession(sess, function(ok) {
+            if (!ok) { sessionsBusy = false; return; }
+            next();
+          });
+        };
+        next();
+      });
     }
 
     function queueSubmission(value, timestamp) {
@@ -6274,37 +6522,45 @@
       return merged;
     }
 
-    function rememberUsageLocally(sync) {
-      var local = readJsonStore(USAGE_LOCAL_KEY, []);
-      var cutoff = Date.now() - USAGE_WINDOW_MS;
-      local = local.filter(function(e) { return e && e.timestamp > cutoff; });
-      local.push(sync);
-      writeJsonStore(USAGE_LOCAL_KEY, local);
-    }
-
     function saveUsage(rig) {
-      if (!usageChosen.length) return;
-      var entry = buildUsageEntry(rig);
+      if (!usageListChanged()) return;
+      var rigNorm = normalizeSelection(rig.id);
+      var items = [];
+      for (var i = 0; i < usageChosen.length; i++) {
+        var c = usageChosen[i];
+        if (c.qty > 0) items.push({ key: c.key, checklist: c.checklist, checklistName: c.checklistName, name: c.name, where: c.where, qty: c.qty, ts: c.ts || Date.now() });
+      }
+      var now = Date.now();
+      // Start from the stored copy: a send in the meantime may have given it its submission id
+      var sess = usageSession ? (storedUsageSession(usageSession.id) || usageSession) : null;
+      if (!sess) {
+        if (!items.length) return;
+        sess = { id: 'us-' + now + '-' + Math.random().toString(36).slice(2, 7), rig: rigNorm,
+                 crew: currentCrew ? { id: currentCrew.id, name: currentCrew.name } : null, started: now, submissionId: null };
+      }
+      sess.items = items;
+      sess.updated = now;
+      sess.deleted = items.length === 0;
+      sess.dirty = true;
+      storeUsageSession(sess);
+      usageSession = sess;
       var save = document.getElementById('usageSave');
       var msg = document.getElementById('usageMsg');
       if (save) save.disabled = true;
-      if (msg) { msg.className = 'usage-msg'; msg.textContent = 'Saving\u2026'; }
-      rememberUsageLocally(entry.sync);
-      postSubmission(entry.value, function(ok) {
-        if (!ok) {
-          var outbox = readJsonStore(USAGE_OUTBOX_KEY, []);
-          outbox.push({ value: entry.value, timestamp: entry.sync.timestamp });
-          writeJsonStore(USAGE_OUTBOX_KEY, outbox);
-        }
-        recentSubsCache = null;
+      if (msg) { msg.className = 'usage-msg'; msg.textContent = 'Saving…'; }
+      var cleared = sess.deleted;
+      var finish = function(ok) {
         usageChosen = [];
         renderPicker(rig.id);
         var note = document.querySelector('.picker-note');
         if (note) {
           note.className = 'picker-note ' + (ok ? 'usage-msg ok' : 'usage-msg warn');
-          note.textContent = ok ? 'Supplies used saved.' : 'Saved on this tablet. It will be sent when Jotform can be reached.';
+          note.textContent = ok ? (cleared ? 'This session’s list was cleared.' : 'Supplies used saved.')
+                                : 'Saved on this tablet. It will be sent when Jotform can be reached.';
         }
-      });
+      };
+      if (sessionsBusy) { finish(true); return; }   // the send under way picks this save up when it is done
+      syncUsageSession(sess, finish);
     }
 
     // Entries that could not be sent are retried whenever the picker shows
@@ -6380,20 +6636,54 @@
     }
 
     // Usage entries for a rig, from Jotform and from this tablet, newest first
+    // Every logged item for a rig as { checklist, key, qty, ts }: entries
+    // saved before session lists (one time for the whole entry), session
+    // lists on Jotform, and this tablet's own lists, which win when newer.
     function usageEntriesFor(list, rigNorm) {
-      var byTs = {};
-      var add = function(sync) {
+      var legacy = {};
+      var sessions = {};
+      var gone = {};
+      var addSync = function(sync) {
         if (!sync || sync.type !== 'usage' || normalizeSelection(sync.rig) !== rigNorm) return;
         var ts = parseFloat(sync.timestamp);
-        if (!isFinite(ts)) return;
-        byTs[ts] = sync;
+        if (sync.session && Array.isArray(sync.items)) {
+          if (!sessions[sync.session] || ts >= sessions[sync.session].updated) sessions[sync.session] = { updated: ts || 0, items: sync.items };
+          return;
+        }
+        if (isFinite(ts)) legacy[ts] = sync;
       };
-      for (var i = 0; i < (list || []).length; i++) add(submissionSyncData(list[i]));
-      var local = readJsonStore(USAGE_LOCAL_KEY, []);
-      for (var l = 0; l < local.length; l++) add(local[l]);
+      for (var i = 0; i < (list || []).length; i++) addSync(submissionSyncData(list[i]));
+      var oldLocal = readJsonStore(USAGE_LOCAL_KEY, []);
+      for (var l = 0; l < oldLocal.length; l++) addSync(oldLocal[l]);
+      var mine = readUsageSessions();
+      for (var m = 0; m < mine.length; m++) {
+        var sess = mine[m];
+        if (normalizeSelection(sess.rig) !== rigNorm) continue;
+        if (sess.deleted) { gone[sess.id] = true; continue; }
+        if (!sessions[sess.id] || (sess.updated || 0) >= sessions[sess.id].updated) sessions[sess.id] = { updated: sess.updated || 0, items: sess.items || [] };
+      }
       var out = [];
-      for (var k in byTs) out.push(byTs[k]);
-      out.sort(function(a, b) { return b.timestamp - a.timestamp; });
+      for (var lt in legacy) {
+        var used = legacy[lt].used || {};
+        for (var cl in used) for (var key in used[cl]) out.push({ checklist: normalizeSelection(cl), key: key, qty: parseInt(used[cl][key], 10) || 0, ts: parseFloat(lt) });
+      }
+      for (var sid in sessions) {
+        if (gone[sid]) continue;
+        var its = sessions[sid].items || [];
+        for (var j = 0; j < its.length; j++) {
+          out.push({ checklist: normalizeSelection(its[j].checklist), key: its[j].key, qty: parseInt(its[j].qty, 10) || 0, ts: parseFloat(its[j].ts) || sessions[sid].updated });
+        }
+      }
+      return out;
+    }
+
+    // Time of each checklist's last submission for a rig
+    function lastChecksFor(list, rigNorm) {
+      var out = {};
+      for (var i = 0; i < (list || []).length; i++) {
+        var sel = submissionSelection(list[i]);
+        if (sel.rig === rigNorm && sel.checklist && sel.timestamp && sel.timestamp > (out[sel.checklist] || 0)) out[sel.checklist] = sel.timestamp;
+      }
       return out;
     }
 
@@ -6414,13 +6704,12 @@
       fetchRecentSubmissions(function(list) {
         if (!list || tag !== currentRig + '|' + currentChecklist || !stateReady) return;
         var since = lastSubmissionTs(list);
-        var entries = usageEntriesFor(list, currentRig);
+        var lines = usageEntriesFor(list, currentRig);
         var used = {};
-        for (var e = 0; e < entries.length; e++) {
-          var en = entries[e];
-          if (en.timestamp <= since) continue;
-          var mine = en.used && en.used[currentChecklist];
-          for (var key in (mine || {})) used[key] = (used[key] || 0) + (parseInt(mine[key], 10) || 0);
+        for (var e = 0; e < lines.length; e++) {
+          var ln = lines[e];
+          if (ln.checklist !== currentChecklist || !(ln.ts > since) || !ln.qty) continue;
+          used[ln.key] = (used[ln.key] || 0) + ln.qty;
         }
         var changed = false;
         for (var k in used) {
