@@ -1041,6 +1041,8 @@
     }
 
     .picker-back {
+      flex-shrink: 0;
+      white-space: nowrap;
       border: 1px solid #ced4da;
       background: white;
       border-radius: 6px;
@@ -3482,8 +3484,11 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.41.1';
+    var VERSION = '1.41.2';
     var CHANGELOG = [
+      { version: '1.41.2', date: '2026-10-19', changes: [
+        'Supplies used: the header fits on one line on phones. The back button is just \u2039 there (\u2039 Checklists from 600px wide), like the checklist header',
+      ]},
       { version: '1.41.1', date: '2026-10-19', changes: [
         'The header of an open checklist is laid out like the checklists screen: a back button (\u2039 Checklists on wider screens, \u2039 on phones), the checklist name, then the rig and crew chips. The rig chip goes to the rig choice; the crew chip changes the name and comes back to the same checklist where it left off',
       ]},
@@ -6097,7 +6102,9 @@
       var back = document.createElement('button');
       back.type = 'button';
       back.className = 'picker-back';
-      back.textContent = '\u2039 Checklists';
+      back.innerHTML = '\u2039<span class="change-btn-text"> Checklists</span>';
+      back.title = 'Back to the checklists';
+      back.setAttribute('aria-label', 'Back to the checklists');
       back.onclick = function() {
         if (usageListChanged() && !confirm('Leave without saving the changes to this session\u2019s list?')) return;
         renderPicker(rig.id);
