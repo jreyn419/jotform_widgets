@@ -64,6 +64,239 @@
       ]
     },
     {
+      "area": "Equipment Ladder",
+      "categories": [
+        {
+          "name": "Ladder",
+          "items": [
+            {
+              "name": "Pen Light",
+              "qty": 1
+            },
+            {
+              "name": "Temporal Temp Probe",
+              "qty": 1
+            },
+            {
+              "name": "Pen",
+              "qty": 1
+            },
+            {
+              "name": "3mL Syringe (With BD TwinPak)",
+              "qty": 8
+            },
+            {
+              "name": "4\"x4\" Sterile Sponge",
+              "qty": 10
+            },
+            {
+              "name": "2\"x2\" Sterile Sponge",
+              "qty": 10
+            },
+            {
+              "name": "14G ORANGE",
+              "qty": 6,
+              "group": "IV Catheter",
+              "expires": true
+            },
+            {
+              "name": "16G GRAY",
+              "qty": 6,
+              "group": "IV Catheter",
+              "expires": true
+            },
+            {
+              "name": "18G GREEN",
+              "qty": 6,
+              "group": "IV Catheter",
+              "expires": true
+            },
+            {
+              "name": "20G PINK",
+              "qty": 6,
+              "group": "IV Catheter",
+              "expires": true
+            },
+            {
+              "name": "22G BLUE",
+              "qty": 4,
+              "group": "IV Catheter",
+              "expires": true
+            },
+            {
+              "name": "24G YELLOW",
+              "qty": 4,
+              "group": "IV Catheter",
+              "expires": true
+            },
+            {
+              "name": "Rubber (Elastic) Tourniquet",
+              "qty": 6
+            },
+            {
+              "name": "Alcohol Prep Pads Box",
+              "qty": 1,
+              "expires": true
+            },
+            {
+              "name": "Iodine (Betadine) Prep Pads",
+              "qty": 4,
+              "expires": true
+            },
+            {
+              "name": "Chlorhexidine Swabs Box",
+              "qty": 1,
+              "expires": true
+            },
+            {
+              "name": "Nail Polish Remover Box",
+              "qty": 1
+            },
+            {
+              "name": "25G Safety Needle",
+              "qty": 4,
+              "group": "Needles"
+            },
+            {
+              "name": "23G Safety Needle",
+              "qty": 4,
+              "group": "Needles"
+            },
+            {
+              "name": "22G Safety Needle",
+              "qty": 4,
+              "group": "Needles"
+            },
+            {
+              "name": "21G Safety Needle",
+              "qty": 4,
+              "group": "Needles"
+            },
+            {
+              "name": "20G Safety Needle",
+              "qty": 4,
+              "group": "Needles"
+            },
+            {
+              "name": "Twinpak (Or blunt needle)",
+              "qty": 5,
+              "group": "Needles"
+            },
+            {
+              "name": "18G Filter Needle",
+              "qty": 2,
+              "group": "Needles"
+            },
+            {
+              "name": "1 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3,
+              "group": "Syringes"
+            },
+            {
+              "name": "3 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3,
+              "group": "Syringes"
+            },
+            {
+              "name": "5 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3,
+              "group": "Syringes"
+            },
+            {
+              "name": "10 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 3,
+              "group": "Syringes"
+            },
+            {
+              "name": "20 mL Syringe (Luer-Lock Tip, Without Needle)",
+              "qty": 1,
+              "group": "Syringes"
+            },
+            {
+              "name": "60mL Syringe (Luer-Lock Tip)",
+              "qty": 2,
+              "group": "Syringes"
+            },
+            {
+              "name": "3-Way Stopcocks",
+              "qty": 2
+            },
+            {
+              "name": "NS Flush",
+              "qty": 10,
+              "expires": true
+            },
+            {
+              "name": "Coban",
+              "qty": 6
+            },
+            {
+              "name": "Curos Caps",
+              "qty": 3
+            },
+            {
+              "name": "IV start kits",
+              "qty": 4,
+              "expires": true
+            },
+            {
+              "name": "IV Extension Set",
+              "qty": 6,
+              "expires": true
+            },
+            {
+              "name": "Tegaderm",
+              "qty": 6
+            },
+            {
+              "name": "1\" Tape (Cloth/Synthetic)",
+              "qty": 2
+            },
+            {
+              "name": "2\" Tape (Cloth/Synthetic)",
+              "qty": 2
+            },
+            {
+              "name": "Shears",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "name": "Right of Ladder",
+          "items": [
+            {
+              "name": "Heat Pack",
+              "qty": 4,
+              "expires": true
+            },
+            {
+              "name": "Cold Pack",
+              "qty": 4,
+              "expires": true
+            }
+          ]
+        },
+        {
+          "name": "Behind Ladder",
+          "items": [
+            {
+              "name": "Non-Sterile 4\"x4\" Gauze Sponges Sleeve",
+              "qty": 1
+            },
+            {
+              "name": "Non-Sterile 2\"x2\" Gauze Sponges Sleeve",
+              "qty": 1
+            },
+            {
+              "name": "Curad Adhesive Bandages Box",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
       "area": "Bench",
       "categories": [
         {
