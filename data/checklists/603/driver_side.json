@@ -31,11 +31,11 @@
             },
             {
               "name": "Sterile Water Humidifier Bottle (prefilled, screws onto O2 tree)",
-              "qty": 1,
+              "qty": 3,
               "expires": true
             },
             {
-              "name": "Potable Water",
+              "name": "Potable Water 1 L (2 regular bottles)",
               "qty": 1
             }
           ]
@@ -124,13 +124,13 @@
           "name": "Medications",
           "items": [
             {
-              "name": "Acetaminophen Bag 1000mg/100mL",
+              "name": "Aspirin Bottle 81 mg/tablet",
               "qty": 2,
               "expires": true
             },
             {
-              "name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
-              "qty": 6,
+              "name": "Sodium Bicarbonate Vial 50mEq/50mL",
+              "qty": 2,
               "expires": true
             },
             {
@@ -139,53 +139,13 @@
               "expires": true
             },
             {
-              "name": "Aspirin Bottle 81 mg/tablet",
-              "qty": 2,
-              "expires": true
-            },
-            {
-              "name": "Diphenhydramine PO 25mg/10mL",
-              "qty": 4,
-              "expires": true
-            },
-            {
-              "name": "Diphenhydramine 50mg/mL",
-              "qty": 2,
-              "expires": true
-            },
-            {
-              "name": "Labetalol 100mg/20mL",
-              "qty": 4,
-              "expires": true
-            },
-            {
-              "name": "Magnesium Sulfate 5g/10mL",
-              "qty": 1,
-              "expires": true
-            },
-            {
-              "name": "Epinephrine 1mg/1mL",
-              "qty": 5,
-              "expires": true
-            },
-            {
-              "name": "Norepinephrine 4mg/4mL",
-              "qty": 2,
-              "expires": true
-            },
-            {
               "name": "Adenosine 6mg/2mL",
               "qty": 3,
               "expires": true
             },
             {
-              "name": "Amiodarone 150mg/3mL",
-              "qty": 6,
-              "expires": true
-            },
-            {
-              "name": "Atropine Sulfate 1mg/1mL",
-              "qty": 4,
+              "name": "Ketorolac 30mg/mL",
+              "qty": 2,
               "expires": true
             },
             {
@@ -208,12 +168,27 @@
               "expires": true
             },
             {
+              "name": "Amiodarone 150mg/3mL",
+              "qty": 6,
+              "expires": true
+            },
+            {
               "name": "Lidocaine 100mg/5mL",
               "qty": 5,
               "expires": true
             },
             {
-              "name": "Ketorolac 30mg/mL",
+              "name": "Ibuprofen 200mg Tablets",
+              "qty": 4,
+              "expires": true
+            },
+            {
+              "name": "Atropine Sulfate 1mg/1mL",
+              "qty": 4,
+              "expires": true
+            },
+            {
+              "name": "Norepinephrine 4mg/4mL",
               "qty": 2,
               "expires": true
             },
@@ -228,7 +203,60 @@
               "expires": true
             },
             {
+              "name": "MADs",
+              "qty": 4
+            },
+            {
+              "name": "Epinephrine 1mg/1mL",
+              "qty": 5,
+              "expires": true
+            },
+            {
+              "name": "Labetalol 100mg/20mL",
+              "qty": 4,
+              "expires": true
+            },
+            {
+              "name": "Glucometer Test Strip",
+              "qty": 1,
+              "expires": true
+            },
+            {
+              "name": "Magnesium Sulfate 5g/10mL",
+              "qty": 1,
+              "expires": true
+            },
+            {
               "name": "Glucose Oral Gel 15 mg",
+              "qty": 2,
+              "expires": true
+            },
+            {
+              "name": "Lancets",
+              "qty": 6,
+              "expires": true
+            },
+            {
+              "name": "Albuterol Sulfate Inhalation Solution 2.5mg/3mL",
+              "qty": 6,
+              "expires": true
+            },
+            {
+              "name": "Diphenhydramine 50mg/mL",
+              "qty": 2,
+              "expires": true
+            },
+            {
+              "name": "Diphenhydramine PO 25mg/10mL",
+              "qty": 4,
+              "expires": true
+            },
+            {
+              "name": "Medication Labels",
+              "qty": 10
+            },
+            {
+              "name": "Acetaminophen Bag 1000mg/100mL",
               "qty": 2,
               "expires": true
             },
@@ -236,20 +264,20 @@
               "name": "Glucagon Injection Kits 1mg/1mL",
               "qty": 2,
               "expires": true
-            }
-          ]
-        },
-        {
-          "name": "Preloads",
-          "items": [
+            },
             {
-              "name": "Sodium Bicarbonate Preload 50mEq/50mL",
-              "qty": 1,
+              "name": "Dextrose 25% (D25)",
+              "qty": 2,
               "expires": true
             },
             {
-              "name": "Epinephrine Preload 1mg/10mL",
-              "qty": 8,
+              "name": "Dextrose 50% (D50) Preload 25g/50mL",
+              "qty": 2,
+              "expires": true
+            },
+            {
+              "name": "Sodium Bicarbonate Preload 50mEq/50mL",
+              "qty": 1,
               "expires": true
             },
             {
@@ -258,8 +286,8 @@
               "expires": true
             },
             {
-              "name": "Lidocaine HCl Preload 100mg/5mL",
-              "qty": 2,
+              "name": "Naloxone Hydrochloride Preload 2mg/2mL",
+              "qty": 4,
               "expires": true
             },
             {
@@ -268,18 +296,9 @@
               "expires": true
             },
             {
-              "name": "Naloxone Hydrochloride Preload 2mg/2mL",
-              "qty": 4,
+              "name": "Epinephrine Preload 1mg/10mL",
+              "qty": 8,
               "expires": true
-            },
-            {
-              "name": "Dextrose Preload 25g/50mL",
-              "qty": 2,
-              "expires": true
-            },
-            {
-              "name": "MADs",
-              "qty": 4
             }
           ]
         }
