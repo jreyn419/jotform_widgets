@@ -812,10 +812,6 @@
               "qty": 1
             },
             {
-              "name": "Temporal Thermometer",
-              "qty": 1
-            },
-            {
               "name": "Gloves - XS",
               "qty": 1,
               "group": "Gloves"
@@ -855,14 +851,6 @@
             {
               "name": "White Triage Tags",
               "qty": 5
-            },
-            {
-              "name": "Pen light",
-              "qty": 2
-            },
-            {
-              "name": "Pen",
-              "qty": 1
             }
           ]
         }

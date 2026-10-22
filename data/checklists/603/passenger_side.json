@@ -300,6 +300,15 @@
       "area": "Bench",
       "categories": [
         {
+          "name": "Top of Bench",
+          "items": [
+            {
+              "name": "Welch Allyn Temp Probe",
+              "qty": 1
+            }
+          ]
+        },
+        {
           "name": "Linens",
           "items": [
             {
