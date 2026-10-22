@@ -1266,6 +1266,33 @@
     .usage-chosen-info { flex: 1; min-width: 0; }
     .picker-title.usage-head { gap: 6px; }
     @media (max-width: 379px) { .usage-head-title { display: none; } }
+    .usage-screen { display: flex; flex-direction: column; min-height: 100%; box-sizing: border-box; padding-bottom: 0; }
+    .usage-bar { position: sticky; bottom: 0; margin-top: auto; padding: 14px 0 12px; background: linear-gradient(rgba(245,245,245,0), #f5f5f5 35%); z-index: 5; }
+    .usage-bar .usage-save { margin-top: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
+    .usage-review.quiet { background: white; color: #0066cc; border: 2px solid #0066cc; box-shadow: none; }
+    .usage-review.bump { animation: usageBump 0.35s ease-out; }
+    .crew-chip.static { cursor: default; display: inline-block; border-color: transparent; background: transparent; padding-left: 4px; padding-right: 4px; color: #555; }
+    .crew-chip.static:active { background: transparent; }
+    .rig-chip.static { color: #0b3d91; }
+    .usage-tag { display: inline-block; margin-right: 6px; padding: 0 6px; border-radius: 6px; background: #eef1f4; color: #555; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; vertical-align: 1px; }
+    .usage-all-link { display: block; margin: 14px auto 0; padding: 8px; border: none; background: none; color: #0b3d91; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer; }
+    .usage-all-link:disabled { color: #999; cursor: default; }
+    .usage-lots-sum { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: #0b3d91; }
+    .usage-lot-open { flex-shrink: 0; padding: 8px 14px; border: 2px solid #0066cc; border-radius: 8px; background: white; color: #0066cc; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .needs-lot .usage-lot-open { background: #0066cc; color: white; }
+    .modal-overlay.usage-lot-sheet { z-index: 248; }
+    #usageLotBody { padding: 0 18px 24px; }
+    .usage-lot-ask { font-size: 15px; font-weight: 600; color: #333; margin: 14px 0 10px; }
+    .usage-lot-pick { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; padding: 16px; margin-bottom: 8px; border: 2px solid #b7cff5; border-radius: 12px; background: #f8fbff; text-align: left; cursor: pointer; }
+    .usage-lot-pick:active:not(:disabled) { background: #e3eefc; }
+    .usage-lot-pick:disabled { opacity: 0.45; cursor: default; }
+    .usage-lot-pick.unlisted { border-style: dashed; background: white; }
+    .usage-lot-pick-name { font-size: 17px; font-weight: 700; color: #0b3d91; overflow-wrap: anywhere; }
+    .usage-lot-pick-exp { font-size: 13px; color: #555; white-space: nowrap; }
+    .usage-lot-pick-exp.due { color: #b45309; font-weight: 700; }
+    .usage-lot-picked-title { font-size: 12px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.03em; margin: 16px 0 6px; }
+    .usage-lot-picked { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid #eee; font-size: 15px; font-weight: 600; color: #222; }
+    .usage-lot-unpick { padding: 6px 10px; border: 1px solid #ced4da; border-radius: 8px; background: white; color: #842029; font-size: 13px; font-weight: 600; cursor: pointer; }
     .usage-cart-btn { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px 5px 12px; border: 2px solid #0066cc; border-radius: 14px; background: white; color: #0066cc; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
     .usage-cart-btn.active { background: #0066cc; color: white; }
     .usage-cart-count { min-width: 20px; padding: 1px 6px; border-radius: 10px; background: #0066cc; color: white; font-size: 12px; text-align: center; box-sizing: border-box; }
@@ -1274,8 +1301,6 @@
     .usage-cart-btn.unsaved .usage-cart-count { background: #d97706; color: white; }
     .usage-cart-btn.bump { animation: usageBump 0.35s ease-out; }
     @keyframes usageBump { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: scale(1); } }
-    .usage-added { font-size: 13px; font-weight: 600; color: #155724; margin: 0 4px 10px; }
-    .usage-added:empty { display: none; }
     .usage-freq-title { font-size: 13px; font-weight: 700; color: #666; margin: 6px 4px 8px; text-transform: uppercase; letter-spacing: 0.03em; }
     .usage-freq { display: flex; flex-direction: column; gap: 6px; }
     .usage-freq-note { font-size: 13px; color: #888; margin: 0 4px 8px; }
@@ -1286,16 +1311,7 @@
     .usage-list-empty { font-size: 14px; color: #888; padding: 18px 8px; text-align: center; }
     .usage-chosen-row.has-lots { flex-wrap: wrap; }
     .usage-chosen-row.needs-lot { border-color: #f5c06b; }
-    .usage-lots { flex-basis: 100%; border-top: 1px solid #eee; padding-top: 8px; }
-    .usage-lots-title { font-size: 12px; font-weight: 700; color: #0b3d91; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; }
-    .usage-lot { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
-    .usage-lot-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: #333; overflow-wrap: anywhere; }
-    .usage-lot-name small { font-weight: 500; color: #777; }
-    .usage-lot-name small.due { color: #b45309; font-weight: 700; }
-    .usage-lot.picked .usage-lot-name { color: #0b3d91; }
-    .usage-lot-step { width: 34px; height: 34px; border: none; border-radius: 8px; background: #e9ecef; font-size: 20px; font-weight: 700; color: #333; cursor: pointer; flex-shrink: 0; }
-    .usage-lot-step:disabled { opacity: 0.35; cursor: default; }
-    .usage-lot-qty { width: 24px; text-align: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+    .usage-lots { flex-basis: 100%; display: flex; align-items: center; gap: 10px; border-top: 1px solid #eee; padding-top: 8px; }
     .usage-lots-need { font-size: 13px; font-weight: 700; color: #b45309; margin-top: 4px; }
     .usage-chosen-row.counted { background: #f8f9fa; border-style: dashed; }
     .usage-chosen-row.counted .usage-chosen-name { color: #6c757d; }
@@ -1353,8 +1369,6 @@
     .expiry-btns .expiry-replace { background: #0066cc; color: white; border: 2px solid #0066cc; }
     .expiry-btns .expiry-later { background: white; color: #333; border: 2px solid #ced4da; }
     .expiry-result { font-size: 13px; color: #155724; font-weight: 600; margin-top: 8px; }
-    .usage-all-btn { display: block; width: 100%; margin-top: 12px; padding: 12px; border: 2px solid #b7cff5; border-radius: 10px; background: #eef5ff; color: #0b3d91; font-size: 15px; font-weight: 700; cursor: pointer; }
-    .usage-all-btn:disabled { opacity: 0.5; cursor: default; }
     .usage-all-tabs { display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid #eee; background: white; flex-shrink: 0; }
     .usage-all-tab { flex: 1; padding: 9px 6px; border: 1px solid #ced4da; border-radius: 8px; background: white; font-size: 13px; font-weight: 700; color: #555; cursor: pointer; }
     .usage-all-tab.active { background: #0b3d91; border-color: #0b3d91; color: white; }
@@ -3180,6 +3194,19 @@
       </div>
     </div>
 
+    <div class="modal-overlay lot-sheet usage-lot-sheet" id="usageLotOverlay" onclick="closeUsageLotSheet()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2 id="usageLotTitle">Which lot?</h2>
+          <button class="modal-close" onclick="closeUsageLotSheet()">×</button>
+        </div>
+        <div class="modal-body" id="usageLotBody"></div>
+        <div class="modal-footer">
+          <button class="seal-all-btn" onclick="closeUsageLotSheet()">Done</button>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-overlay expiry-notice" id="expiryOverlay">
       <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -3648,8 +3675,15 @@
     // VERSION & CHANGELOG
     // =====================================================
 
-    var VERSION = '1.48.1';
+    var VERSION = '1.49.0';
     var CHANGELOG = [
+      { version: '1.49.0', date: '2026-10-22', changes: [
+        'Supplies used: a bar at the bottom of the screen reads Review & Save once anything is added, and becomes Save on the list, so the list is not left unsaved',
+        'An item that keeps lots asks for its lot as soon as it is added: one large button per lot (and Lot not listed), a tap gives one used to that lot, and the sheet closes once every one has its lot. On the list, each such item shows its lots with Change, or Pick lot when one is still needed',
+        'Items used most leaves out what cannot be logged right now; one line says which checks are not done yet',
+        'See all items is a small link (See everything logged on this rig), with plainer wording: Waiting for the next check, Still short at the check, Restocked at the check',
+        'On the supplies screen the rig and crew member are shown, not tappable, and each item shows a short checklist tag before where it is',
+      ]},
       { version: '1.48.1', date: '2026-10-19', changes: [
         'Supplies used on the rig\u2019s list shows how many logged items are still to restock (from anyone\u2019s list) instead of how many were logged, and goes back to Log once the checks count them full, so a new shift does not see the last shift\u2019s items as its own',
         'Supplies used: the rows under the search and the search results show only the item and where it is; no totals and no count of what is in the list',
@@ -5635,22 +5669,25 @@
 
     // A small "J. Reynolds" button on the picker titles; tapping it changes the crew
     // The rig for the shift; tapping it is the only way to change rigs
-    function rigChip(rig) {
-      var chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'crew-chip rig-chip';
+    // label: shown, not tappable (where changing it mid-task would lose work)
+    function rigChip(rig, label) {
+      var chip = document.createElement(label ? 'span' : 'button');
+      if (!label) chip.type = 'button';
+      chip.className = 'crew-chip rig-chip' + (label ? ' static' : '');
       chip.textContent = 'Rig ' + (rig.name || rig.id);
-      chip.title = 'Change rig';
-      chip.onclick = function() { renderPicker(null); };
+      if (!label) {
+        chip.title = 'Change rig';
+        chip.onclick = function() { renderPicker(null); };
+      }
       return chip;
     }
 
-    function crewChip(back) {
-      var chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'crew-chip';
+    function crewChip(back, label) {
+      var chip = document.createElement(label ? 'span' : 'button');
+      if (!label) chip.type = 'button';
+      chip.className = 'crew-chip' + (label ? ' static' : '');
       chip.textContent = currentCrew ? crewShort(currentCrew.name) : 'Crew member';
-      chip.onclick = function() { renderCrewScreen(back); };
+      if (!label) chip.onclick = function() { renderCrewScreen(back); };
       return chip;
     }
 
@@ -6438,8 +6475,8 @@
       headText.className = 'usage-head-title';
       headText.textContent = 'Supplies';
       head.appendChild(headText);
-      head.appendChild(rigChip(rig));
-      head.appendChild(crewChip(function() { renderUsageScreen(rig.id); }));
+      head.appendChild(rigChip(rig, true));
+      head.appendChild(crewChip(null, true));
       // The session's list is its own view, opened from here like a cart
       var cart = document.createElement('button');
       cart.type = 'button';
@@ -6470,11 +6507,6 @@
       suggest.id = 'usageSuggest';
       searchView.appendChild(suggest);
 
-      var added = document.createElement('div');
-      added.className = 'usage-added';
-      added.id = 'usageAdded';
-      searchView.appendChild(added);
-
       var freq = document.createElement('div');
       freq.className = 'usage-freq';
       freq.id = 'usageFreq';
@@ -6488,9 +6520,9 @@
 
       var allBtn = document.createElement('button');
       allBtn.type = 'button';
-      allBtn.className = 'usage-all-btn';
+      allBtn.className = 'usage-all-link';
       allBtn.id = 'usageAllBtn';
-      allBtn.textContent = 'See all items';
+      allBtn.textContent = 'See everything logged on this rig';
       allBtn.disabled = true;
       allBtn.onclick = function() { openUsageAll('all'); };
       searchView.appendChild(allBtn);
@@ -6518,6 +6550,16 @@
       chosen.id = 'usageChosen';
       listView.appendChild(chosen);
 
+      // Kept at the bottom of the screen: Review & Save while searching, Save on the list
+      var bar = document.createElement('div');
+      bar.className = 'usage-bar';
+      bar.id = 'usageBar';
+      var review = document.createElement('button');
+      review.type = 'button';
+      review.className = 'usage-save usage-review';
+      review.id = 'usageReview';
+      review.onclick = function() { showUsageView('list'); };
+      bar.appendChild(review);
       var save = document.createElement('button');
       save.type = 'button';
       save.className = 'usage-save';
@@ -6525,10 +6567,11 @@
       save.textContent = 'Save';
       save.disabled = true;
       save.onclick = function() { saveUsage(rig); };
-      listView.appendChild(save);
+      bar.appendChild(save);
 
       screen.appendChild(searchView);
       screen.appendChild(listView);
+      screen.appendChild(bar);
       container.appendChild(screen);
       usageView = 'search';
       setLoading(false);
@@ -6605,8 +6648,8 @@
           }
           m.className = 'usage-msg';
           m.textContent = notDone.length
-            ? 'Items from ' + notDone.join(', ') + ' cannot be logged until that checklist is done today.'
-            : 'Type a few letters and tap the item to add it. Change the amounts below, then Save.';
+            ? notDone.join(' and ') + ' items can be logged once ' + (notDone.length === 1 ? 'that check is' : 'those checks are') + ' done today.'
+            : 'Search, or tap an item used often, to add it to the List.';
         }
         renderUsageSuggestions(index, search.value);
         renderUsageFreq();
@@ -6624,8 +6667,6 @@
       });
       loadUsageDoneToday(rig, function(done) { usageDoneToday = done; ready(); });
       search.oninput = function() {
-        var a = document.getElementById('usageAdded');
-        if (a) a.textContent = '';
         if (index) renderUsageSuggestions(index, search.value);
         renderUsageFreq();
       };
@@ -6684,7 +6725,7 @@
       row.type = 'button';
       row.className = 'usage-suggest-row' + (blocked ? ' blocked' : '');
       row.innerHTML = '<span class="usage-suggest-name">' + escapeHtml(entry.name) +
-        '<div class="usage-suggest-where">' + escapeHtml(entry.checklistName + ' \u203A ' + entry.where) + '</div>' +
+        '<div class="usage-suggest-where"><span class="usage-tag">' + escapeHtml(entry.checklistName) + '</span>' + escapeHtml(entry.where) + '</div>' +
         (notDone ? '<div class="usage-suggest-why">' + escapeHtml(entry.checklistName) + ' not done today</div>' : '') +
         (full ? '<div class="usage-suggest-why">' + escapeHtml(usageFullText(room)) + '</div>' : '') +
         '</span>' + (sideHtml || '');
@@ -6702,11 +6743,8 @@
       lv.style.display = view === 'list' ? '' : 'none';
       var cart = document.getElementById('usageCartBtn');
       if (cart) cart.classList.toggle('active', view === 'list');
-      if (view === 'search') {
-        var a = document.getElementById('usageAdded');
-        if (a) a.textContent = '';
-        renderUsageFreq();
-      }
+      updateUsageCart();
+      if (view === 'search') renderUsageFreq();
       resizeWidget();
     }
 
@@ -6721,6 +6759,18 @@
       var unsaved = usageListChanged();
       cart.classList.toggle('unsaved', unsaved);
       cart.title = unsaved ? (usageLotsIncomplete() ? 'Not saved: pick the lots in the list' : 'Not saved yet') : '';
+      // The bar: on the search, shown once there is something to review
+      var review = document.getElementById('usageReview');
+      var save = document.getElementById('usageSave');
+      var bar = document.getElementById('usageBar');
+      if (review && save && bar) {
+        var onList = usageView === 'list';
+        review.style.display = onList ? 'none' : '';
+        save.style.display = onList ? '' : 'none';
+        review.textContent = unsaved ? 'Review & Save \u00b7 ' + n + (n === 1 ? ' item' : ' items') : 'View the list \u00b7 ' + n + (n === 1 ? ' item' : ' items');
+        review.classList.toggle('quiet', !unsaved);
+        bar.style.display = (onList || n > 0 || unsaved) ? '' : 'none';
+      }
     }
 
     // ---- Used most last month
@@ -6910,7 +6960,10 @@
         if (entry && q > 0) ranked.push({ entry: entry, qty: q });
       }
       ranked.sort(function(a, b) { return b.qty - a.qty || a.entry.name.localeCompare(b.entry.name); });
-      ranked = ranked.slice(0, 10);
+      // Only what can be logged now (the line under the list says which checks are not done)
+      var any = ranked.length;
+      ranked = ranked.filter(function(r) { return !usageItemBlocked(r.entry) && usageRoomFor(r.entry.checklist, r.entry.key).left > 0; }).slice(0, 10);
+      if (any && !ranked.length) { box.innerHTML = title + '<div class="usage-freq-note">None of them can be logged right now. Search for the item instead.</div>'; return; }
       if (!ranked.length) { box.innerHTML = title + '<div class="usage-freq-note">Nothing logged on this rig ' + (rk.mode === 'recent' ? 'last month or in the last two weeks' : 'last month') + '. Items show here once they are used.</div>'; return; }
       if (rk.mode === 'recent') box.innerHTML = title + '<div class="usage-freq-note">Nothing was logged on this rig in ' + monthName(rk.month) + '.</div>';
       else box.innerHTML = title;
@@ -7046,13 +7099,13 @@
         var chip, note;
         if (x.status === 'restocked') {
           chip = '<span class="usage-chip restocked">Restocked</span>';
-          note = 'Restocked in the ' + usageWhenText(x.check.ts) + ' ' + escapeHtml(x.checklistName) + ' check' + (x.check.crew ? ' by ' + escapeHtml(crewShort(x.check.crew)) : '');
+          note = 'Restocked at the ' + usageWhenText(x.check.ts) + ' ' + escapeHtml(x.checklistName) + ' check' + (x.check.crew ? ' by ' + escapeHtml(crewShort(x.check.crew)) : '');
         } else if (x.status === 'short') {
           chip = '<span class="usage-chip short">To restock</span>';
-          note = 'Counted short in the ' + usageWhenText(x.check.ts) + ' ' + escapeHtml(x.checklistName) + ' check';
+          note = 'Still short at the ' + usageWhenText(x.check.ts) + ' ' + escapeHtml(x.checklistName) + ' check';
         } else {
           chip = '<span class="usage-chip to-restock">To restock</span>';
-          note = 'Taken off when ' + escapeHtml(x.checklistName) + ' is next opened';
+          note = 'Waiting for the next ' + escapeHtml(x.checklistName) + ' check';
         }
         html += '<div class="usage-all-row"><div class="usage-all-info">' +
           '<div class="usage-all-name">' + escapeHtml(x.name) + ' ×' + x.qty + '</div>' +
@@ -7104,14 +7157,10 @@
       var box = document.getElementById('usageSuggest');
       if (box) box.innerHTML = '';
       renderUsageChosen();
-      var note = document.getElementById('usageAdded');
-      if (note) {
-        note.textContent = 'Added ' + entry.name +
-          (usageLineLots(line) !== null ? '. Pick its lot in the List before saving.' : '. Open the List to save.');
-      }
-      var cart = document.getElementById('usageCartBtn');
-      if (cart) { cart.classList.remove('bump'); void cart.offsetWidth; cart.classList.add('bump'); }
+      var bumps = [document.getElementById('usageCartBtn'), document.getElementById('usageReview')];
+      for (var b = 0; b < bumps.length; b++) if (bumps[b]) { bumps[b].classList.remove('bump'); void bumps[b].offsetWidth; bumps[b].classList.add('bump'); }
       renderUsageFreq();
+      if (usageLineLots(line) !== null) openUsageLotSheet(usageChosen.indexOf(line));
     }
 
     // ---- Which lot each one used came from
@@ -7187,29 +7236,79 @@
       }).join(', ');
     }
 
-    function buildUsageLotsBlock(c, idx, lotList) {
-      var picked = usageLinePicked(c);
-      var left = c.qty - picked;
+    // On the list: which lots, or that one is still needed, with a button to the sheet
+    function buildUsageLotsBlock(c, idx) {
+      var left = c.qty - usageLinePicked(c);
       var wrap = document.createElement('div');
       wrap.className = 'usage-lots';
-      var html = '<div class="usage-lots-title">Which lot? Pick one for each used</div>';
+      var txt = usageLotsText(c);
+      wrap.innerHTML = '<div class="usage-lots-sum">' +
+        (left > 0 ? '<span class="usage-lots-need">Lot needed for ' + left + '</span>' : (left < 0 ? '<span class="usage-lots-need">' + (-left) + ' too many lots picked</span>' : '<span>' + escapeHtml(txt.charAt(0).toUpperCase() + txt.slice(1)) + '</span>')) +
+        '</div><button type="button" class="usage-lot-open" data-i="' + idx + '">' + (left > 0 ? 'Pick lot' : 'Change') + '</button>';
+      return wrap;
+    }
+
+    // ---- Which lot: a sheet with one button per lot. A tap gives one used
+    // to that lot; a picked lot can be taken back. It closes by itself once
+    // every one used has its lot.
+    var usageLotIdx = -1;
+    function openUsageLotSheet(idx) {
+      var c = usageChosen[idx];
+      if (!c || usageLineLots(c) === null) return;
+      usageLotIdx = idx;
+      renderUsageLotSheet();
+      document.getElementById('usageLotOverlay').classList.add('open');
+    }
+
+    function closeUsageLotSheet() {
+      var o = document.getElementById('usageLotOverlay');
+      if (o) o.classList.remove('open');
+      usageLotIdx = -1;
+    }
+
+    function renderUsageLotSheet() {
+      var c = usageChosen[usageLotIdx];
+      var body = document.getElementById('usageLotBody');
+      if (!c || !body) { closeUsageLotSheet(); return; }
+      document.getElementById('usageLotTitle').textContent = c.name;
+      var lotList = usageLineLots(c) || [];
+      var left = c.qty - usageLinePicked(c);
+      var html = '<div class="usage-lot-ask">' + (left > 0 ? (c.qty === 1 ? 'Which lot did it come from?' : 'Which lot? ' + left + ' of ' + c.qty + ' still to pick') :
+        (left < 0 ? (-left) + ' too many picked: take ' + (-left === 1 ? 'one' : 'some') + ' back below' : 'Every one used has its lot')) + '</div>';
       var opts = lotList.map(function(l) { return { id: lotId(l), lot: l.lot, exp: l.exp, room: usageLotRoom(c, l) }; });
       opts.push({ id: 'unlisted', lot: null, exp: null, room: Infinity });
       for (var o = 0; o < opts.length; o++) {
         var op = opts[o];
-        var mineHere = 0;
-        for (var j = 0; j < (c.lots || []).length; j++) if (c.lots[j].id === op.id) mineHere = c.lots[j].qty || 0;
         var st = op.exp ? lotStatus(op.exp) : null;
-        html += '<div class="usage-lot' + (mineHere ? ' picked' : '') + '"><div class="usage-lot-name">' +
-          (op.id === 'unlisted' ? 'Lot not listed' : 'Lot ' + escapeHtml(op.lot) + ' <small' + (st === 'expired' || st === 'due' ? ' class="due"' : '') + '>exp ' + expText(op.exp) +
-            (op.room !== Infinity ? ' \u00b7 ' + Math.max(0, op.room) + ' left' : '') + '</small>') + '</div>' +
-          '<button type="button" class="usage-lot-step" data-i="' + idx + '" data-id="' + escapeHtml(op.id) + '" data-d="-1"' + (mineHere > 0 ? '' : ' disabled') + '>\u2212</button>' +
-          '<span class="usage-lot-qty">' + mineHere + '</span>' +
-          '<button type="button" class="usage-lot-step" data-i="' + idx + '" data-id="' + escapeHtml(op.id) + '" data-d="1"' + (left > 0 && op.room > 0 ? '' : ' disabled') + '>+</button></div>';
+        var off = left <= 0 || op.room <= 0;
+        html += '<button type="button" class="usage-lot-pick' + (op.id === 'unlisted' ? ' unlisted' : '') + '" data-id="' + escapeHtml(op.id) + '"' + (off ? ' disabled' : '') + '>' +
+          (op.id === 'unlisted' ? '<span class="usage-lot-pick-name">Lot not listed</span>'
+            : '<span class="usage-lot-pick-name">Lot ' + escapeHtml(op.lot) + '</span><span class="usage-lot-pick-exp' + (st === 'expired' || st === 'due' ? ' due' : '') + '">exp ' + expText(op.exp) +
+              (op.room !== Infinity ? ' \u00b7 ' + Math.max(0, op.room) + ' left' : '') + '</span>') + '</button>';
       }
-      if (left !== 0) html += '<div class="usage-lots-need">' + (left > 0 ? 'Pick the lot for ' + left + ' more' : (-left) + ' more picked than used: take ' + (-left === 1 ? 'one' : 'them') + ' off a lot') + '</div>';
-      wrap.innerHTML = html;
-      return wrap;
+      var picks = (c.lots || []).filter(function(x) { return x.qty > 0; });
+      if (picks.length) {
+        html += '<div class="usage-lot-picked-title">Picked</div>';
+        for (var p = 0; p < picks.length; p++) {
+          html += '<div class="usage-lot-picked"><span>' + (picks[p].id === 'unlisted' ? 'Lot not listed' : 'Lot ' + escapeHtml(picks[p].lot)) + ' \u00d7' + picks[p].qty + '</span>' +
+            '<button type="button" class="usage-lot-unpick" data-id="' + escapeHtml(picks[p].id) + '" aria-label="Take one back">Take one back</button></div>';
+        }
+      }
+      body.innerHTML = html;
+      var picksBtns = body.querySelectorAll('.usage-lot-pick');
+      for (var i = 0; i < picksBtns.length; i++) {
+        picksBtns[i].onclick = function() {
+          var idx = usageLotIdx;
+          stepUsageLot(idx, this.getAttribute('data-id'), 1);
+          var line = usageChosen[idx];
+          if (line && usageLinePicked(line) === line.qty) { setTimeout(closeUsageLotSheet, 250); }
+          renderUsageLotSheet();
+        };
+      }
+      var backs = body.querySelectorAll('.usage-lot-unpick');
+      for (var k = 0; k < backs.length; k++) {
+        backs[k].onclick = function() { stepUsageLot(usageLotIdx, this.getAttribute('data-id'), -1); renderUsageLotSheet(); };
+      }
     }
 
     function stepUsageLot(idx, id, d) {
@@ -7308,7 +7407,7 @@
         var row = document.createElement('div');
         row.className = 'usage-chosen-row' + (counted ? ' counted' : '');
         var info = '<div class="usage-chosen-info"><div class="usage-chosen-name">' + escapeHtml(c.name) + '</div>' +
-          '<div class="usage-chosen-where">' + escapeHtml(c.checklistName + ' › ' + c.where) + ' · ' + clockText(t.getHours(), t.getMinutes()) + '</div>';
+          '<div class="usage-chosen-where"><span class="usage-tag">' + escapeHtml(c.checklistName) + '</span>' + escapeHtml(c.where) + ' · ' + clockText(t.getHours(), t.getMinutes()) + '</div>';
         if (counted) {
           var lt = new Date(usageLastCheck[c.checklist]);
           info += '<div class="usage-chosen-note">Counted in the ' + clockText(lt.getHours(), lt.getMinutes()) + ' ' + escapeHtml(c.checklistName) + ' check</div>';
@@ -7325,7 +7424,7 @@
         if (lineLots !== null) {
           row.classList.add('has-lots');
           if (usageLinePicked(c) !== c.qty) row.classList.add('needs-lot');
-          row.appendChild(buildUsageLotsBlock(c, i, lineLots));
+          row.appendChild(buildUsageLotsBlock(c, i));
         }
         box.appendChild(row);
       }
@@ -7340,11 +7439,9 @@
       if (emptyNote) emptyNote.style.display = box.children.length ? 'none' : 'block';
       if (title) title.style.display = 'block';
       updateUsageCart();
-      var lotSteps = box.querySelectorAll('.usage-lot-step');
-      for (var ls = 0; ls < lotSteps.length; ls++) {
-        lotSteps[ls].onclick = function() {
-          stepUsageLot(parseInt(this.getAttribute('data-i'), 10), this.getAttribute('data-id'), parseInt(this.getAttribute('data-d'), 10));
-        };
+      var lotOpens = box.querySelectorAll('.usage-lot-open');
+      for (var ls = 0; ls < lotOpens.length; ls++) {
+        lotOpens[ls].onclick = function() { openUsageLotSheet(parseInt(this.getAttribute('data-i'), 10)); };
       }
       var steps = box.querySelectorAll('.usage-step');
       for (var s = 0; s < steps.length; s++) {
@@ -7357,6 +7454,7 @@
           item.qty += d;
           if (item.qty <= 0) usageChosen.splice(idx, 1);
           renderUsageChosen();
+          if (item.qty > 0 && usageLineLots(item) !== null && usageLinePicked(item) !== item.qty) openUsageLotSheet(idx);
         };
       }
       resizeWidget();
