@@ -655,6 +655,14 @@
               "group": "OPAs/NPAs"
             },
             {
+              "name": "Yellow Triage Tags",
+              "qty": 20
+            },
+            {
+              "name": "White Triage Tags",
+              "qty": 5
+            },
+            {
               "name": "90kg ORANGE",
               "qty": 1,
               "group": "iGels",
@@ -843,14 +851,6 @@
             {
               "name": "Posey restraints (blue-wrist)",
               "qty": 2
-            },
-            {
-              "name": "Yellow Triage Tags",
-              "qty": 20
-            },
-            {
-              "name": "White Triage Tags",
-              "qty": 5
             }
           ]
         }
