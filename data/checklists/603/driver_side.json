@@ -134,11 +134,6 @@
               "expires": true
             },
             {
-              "name": "Sodium Bicarbonate Vial 50mEq/50mL",
-              "qty": 2,
-              "expires": true
-            },
-            {
               "name": "Ipratropium Bromide Inhalation Solution 0.5mg/2.5mL",
               "qty": 6,
               "expires": true
@@ -184,11 +179,6 @@
             },
             {
               "name": "Ibuprofen 200mg Tablets",
-              "qty": 4,
-              "expires": true
-            },
-            {
-              "name": "Atropine Sulfate 1mg/1mL",
               "qty": 4,
               "expires": true
             },
@@ -282,12 +272,12 @@
             },
             {
               "name": "Sodium Bicarbonate Preload 50mEq/50mL",
-              "qty": 1,
+              "qty": 2,
               "expires": true
             },
             {
               "name": "Atropine Sulfate Preload 1mg/10mL",
-              "qty": 2,
+              "qty": 3,
               "expires": true
             },
             {
