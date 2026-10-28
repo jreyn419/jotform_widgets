@@ -251,7 +251,7 @@
             },
             {
               "name": "Lidocaine 100mg/5mL",
-              "qty": 5,
+              "qty": 4,
               "expires": true
             },
             {
@@ -319,11 +319,6 @@
             {
               "name": "Atropine Sulfate Preload 1mg/10mL",
               "qty": 3,
-              "expires": true
-            },
-            {
-              "name": "Lidocaine HCl Preload 100mg/5mL",
-              "qty": 2,
               "expires": true
             },
             {
