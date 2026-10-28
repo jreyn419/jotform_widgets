@@ -96,6 +96,11 @@
               "expires": true
             },
             {
+              "name": "Acetaminophen Oral Suspension",
+              "qty": 1,
+              "expires": true
+            },
+            {
               "name": "Epinephrine auto-injector (adult) 0.3mg",
               "qty": 1,
               "expires": true
