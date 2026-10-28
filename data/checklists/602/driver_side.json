@@ -176,6 +176,11 @@
               "expires": true
             },
             {
+              "name": "Acetaminophen Oral Suspension",
+              "qty": 1,
+              "expires": true
+            },
+            {
               "name": "Aspirin Bottle 81 mg/tablet",
               "qty": 2,
               "expires": true
