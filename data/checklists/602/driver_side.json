@@ -197,7 +197,7 @@
             },
             {
               "name": "Sodium Bicarbonate Preload 50mEq/50mL",
-              "qty": 1,
+              "qty": 2,
               "expires": true
             },
             {
@@ -228,11 +228,6 @@
             {
               "name": "Amiodarone 150mg/3mL",
               "qty": 6,
-              "expires": true
-            },
-            {
-              "name": "Atropine Sulfate 1mg/1mL",
-              "qty": 4,
               "expires": true
             },
             {
@@ -323,7 +318,7 @@
             },
             {
               "name": "Atropine Sulfate Preload 1mg/10mL",
-              "qty": 2,
+              "qty": 3,
               "expires": true
             },
             {
