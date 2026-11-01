@@ -752,10 +752,6 @@
               "group": "French Suction Catheters"
             },
             {
-              "name": "Emesis Bags",
-              "qty": 1
-            },
-            {
               "name": "Manual Suction Device",
               "qty": 1
             },
@@ -846,6 +842,10 @@
             {
               "name": "Posey restraints (blue-wrist)",
               "qty": 2
+            },
+            {
+              "name": "Emesis Bags",
+              "qty": 1
             }
           ]
         }
