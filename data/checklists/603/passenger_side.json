@@ -60,6 +60,33 @@
               "group": "Manual BP Cuffs"
             }
           ]
+        },
+        {
+          "name": "Left Side",
+          "items": [
+            {
+              "name": "Heat Pack",
+              "qty": 4,
+              "expires": true
+            },
+            {
+              "name": "Cold Pack",
+              "qty": 4,
+              "expires": true
+            },
+            {
+              "name": "Non-Sterile 4\"x4\" Gauze Sponges Sleeve",
+              "qty": 1
+            },
+            {
+              "name": "Non-Sterile 2\"x2\" Gauze Sponges Sleeve",
+              "qty": 1
+            },
+            {
+              "name": "Curad Adhesive Bandages Box",
+              "qty": 1
+            }
+          ]
         }
       ]
     },
@@ -258,38 +285,6 @@
             },
             {
               "name": "Shears",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "name": "Right of Ladder",
-          "items": [
-            {
-              "name": "Heat Pack",
-              "qty": 4,
-              "expires": true
-            },
-            {
-              "name": "Cold Pack",
-              "qty": 4,
-              "expires": true
-            }
-          ]
-        },
-        {
-          "name": "Behind Ladder",
-          "items": [
-            {
-              "name": "Non-Sterile 4\"x4\" Gauze Sponges Sleeve",
-              "qty": 1
-            },
-            {
-              "name": "Non-Sterile 2\"x2\" Gauze Sponges Sleeve",
-              "qty": 1
-            },
-            {
-              "name": "Curad Adhesive Bandages Box",
               "qty": 1
             }
           ]
