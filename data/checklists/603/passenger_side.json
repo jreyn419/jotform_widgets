@@ -419,6 +419,11 @@
               "group": "Monitor Cables"
             },
             {
+              "name": "12-lead cables",
+              "qty": 1,
+              "group": "Monitor Cables"
+            },
+            {
               "name": "BP cuff connector tubing (short, bifurcated tubing)",
               "qty": 1,
               "group": "Monitor Cables"
