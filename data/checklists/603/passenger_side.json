@@ -620,6 +620,10 @@
               "qty": 1
             },
             {
+              "name": "Sapphire Infusion Pumps",
+              "qty": 5
+            },
+            {
               "name": "IV Pump Chargers",
               "qty": 3
             },
@@ -635,10 +639,6 @@
             {
               "name": "Hamilton T1 Ventilator",
               "qty": 1
-            },
-            {
-              "name": "Sapphire Infusion Pumps",
-              "qty": 5
             },
             {
               "name": "Bracket for 3 IV Pumps",
