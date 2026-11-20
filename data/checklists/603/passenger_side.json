@@ -566,11 +566,6 @@
           "name": "General",
           "items": [
             {
-              "name": "Sterile Water for Inhalation Bag 1000mL",
-              "qty": 3,
-              "expires": true
-            },
-            {
               "name": "NS Bag 1000mL",
               "qty": 6,
               "expires": true
@@ -669,6 +664,11 @@
             {
               "name": "Infant/Pediatric High-Flow Circuit",
               "qty": 3
+            },
+            {
+              "name": "Sterile Water for Inhalation Bag 1000mL",
+              "qty": 3,
+              "expires": true
             },
             {
               "name": "Bubbler",
