@@ -310,8 +310,7 @@
             {
               "name": "Lancets",
               "qty": 6,
-              "group": "Glucometer kit",
-              "expires": true
+              "group": "Glucometer kit"
             },
             {
               "name": "Sterile 2x2",

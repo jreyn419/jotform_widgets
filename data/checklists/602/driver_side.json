@@ -281,8 +281,7 @@
             },
             {
               "name": "Lancets",
-              "qty": 6,
-              "expires": true
+              "qty": 6
             },
             {
               "name": "Sterile Water for Inhalation Bag 1000mL",
